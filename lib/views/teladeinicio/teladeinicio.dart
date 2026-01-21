@@ -19,7 +19,7 @@ class Teladeinicio extends StatelessWidget {
           // Fundo ocupando a tela toda
           Positioned.fill(
             child: Image.asset(
-              "images/telainicio.png",
+              "images/costeira_tela.png",
               fit: BoxFit.cover,
             ),
           ),
@@ -40,7 +40,7 @@ class Teladeinicio extends StatelessWidget {
             child:
 
             Container(
-              height: MediaQuery.of(context).size.height * 0.55,
+              height: MediaQuery.of(context).size.height * 0.45,
               child: Stack(
                 children: [
                   Positioned(
@@ -50,7 +50,7 @@ class Teladeinicio extends StatelessWidget {
                     child:
                     Container(
                       width: MediaQuery.of(context).size.width - 40,
-                      height: 350,
+                      height: 280,
                       padding: const EdgeInsets.symmetric(vertical: 32, horizontal: 16),
                       decoration: BoxDecoration(
                         color: Colors.white,

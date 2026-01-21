@@ -34,7 +34,7 @@ class _IndicadoresState extends State<Indicadores>  with SingleTickerProviderSta
     return Scaffold(
       backgroundColor: Colors.white,
       body: Column(children: [
-        const SizedBox(height: 16),
+
         TabBar(
           controller: _tabController,
           tabs: const [

@@ -56,7 +56,6 @@ class _AnimaisState extends State<Animais> with SingleTickerProviderStateMixin {
           : null,
       body: Column(
         children: [
-          const SizedBox(height: 16),
           TabBar(
             controller: _tabController,
             tabs: const [

@@ -230,7 +230,7 @@ class _OnboardingPage extends StatelessWidget {
           ),
           Positioned(
             top: data.tipo != 2
-                ? MediaQuery.of(context).size.height * 0.6
+                ? MediaQuery.of(context).size.height * 0.7
                 : MediaQuery.of(context).size.height * 0.55,
             left: 0,
             right: 0,
@@ -302,9 +302,9 @@ class _OnboardingPage extends StatelessWidget {
                                 data.tag,
                                 textAlign: TextAlign.center,
                                 style: TextStyle(
-                                  color: const Color(0xFF00823A) /* pink-800 */,
+                                  color: const Color(0xFF00823A),
                                   fontSize: 12,
-                                  fontFamily: 'Inter',
+                                  fontFamily: 'Montserrat',
                                   fontWeight: FontWeight.w500,
                                   height: 1.50,
                                 ),
@@ -329,13 +329,14 @@ class _OnboardingPage extends StatelessWidget {
                       ? Text(
                           data.subtitle,
                           textAlign: TextAlign.center,
-                          style: TextStyle(
-                            color: const Color(0xFF8C8C8C),
-                            fontSize: 18,
-                            fontFamily: 'Montserrat',
-                            fontWeight: FontWeight.w500,
-                            height: 1.50,
-                          ),
+                    style: TextStyle(
+                      color: const Color(0xFF8C8C8C),
+                      fontSize: 14,
+                      fontFamily: 'Montserrat',
+                      fontWeight: FontWeight.w400,
+                      height: 1.50,
+                      letterSpacing: 0.10,
+                    ),
                         )
                       : Column(
                           children: [
@@ -418,18 +419,16 @@ class _OnboardingPage extends StatelessWidget {
                         children: [
                           Text(
                             data.buttonText,
+                            textAlign: TextAlign.center,
                             style: TextStyle(
                               color: Colors.white,
-                              fontSize: 16,
+                              fontSize: 12,
+                              fontFamily: 'Montserrat',
                               fontWeight: FontWeight.w600,
+                              height: 1.50,
                             ),
                           ),
-                          SizedBox(width: 8),
-                          Icon(
-                            Icons.arrow_forward_ios,
-                            size: 16,
-                            color: Colors.white,
-                          ),
+
                         ],
                       ),
                     ),

@@ -138,7 +138,6 @@ class _ComprasState extends State<Compras>  with SingleTickerProviderStateMixin 
         ),
       ),
       body: Column(children: [
-        const SizedBox(height: 16),
         TabBar(
           controller: _tabController,
           tabs: const [

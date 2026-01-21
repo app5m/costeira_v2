@@ -109,7 +109,7 @@ class _PotreirosState extends State<Potreiros> with SingleTickerProviderStateMix
             Row(
               children: [
                 Container(
-                  width: 90,
+                  width: 92,
                     margin: EdgeInsets.only(left: 20, bottom: 16),
                     padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
                     decoration: ShapeDecoration(

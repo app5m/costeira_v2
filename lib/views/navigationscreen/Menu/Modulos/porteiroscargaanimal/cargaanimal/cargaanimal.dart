@@ -29,7 +29,7 @@ class _CargaAnimalState extends State<CargaAnimal> {
             Row(
               children: [
                 Container(
-                  width: 90,
+                  width: 92,
                   margin: EdgeInsets.only(left: 20, bottom: 16, top: 16),
                   padding: const EdgeInsets.symmetric(
                     horizontal: 16,

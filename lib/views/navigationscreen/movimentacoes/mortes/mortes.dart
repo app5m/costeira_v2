@@ -142,7 +142,6 @@ class _MortesState extends State<Mortes>  with SingleTickerProviderStateMixin {
         ),
       ),
       body: Column(children: [
-        const SizedBox(height: 16),
         TabBar(
           controller: _tabController,
           tabs: const [
