@@ -7,9 +7,7 @@ class Potreiros extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-
     return DefaultTabController(
-
       length: 2,
       child: Scaffold(
         backgroundColor: Colors.white,
@@ -24,7 +22,10 @@ class Potreiros extends StatelessWidget {
           actions: const [
             Padding(
               padding: EdgeInsets.only(right: 12),
-              child: Icon(Icons.notifications_none, color: Colors.white),
+              child: Icon(
+                Icons.notifications_none,
+                color: Colors.white,
+              ),
             ),
           ],
           bottom: const TabBar(
@@ -45,6 +46,7 @@ class Potreiros extends StatelessWidget {
     );
   }
 }
+
 class _DadosTab extends StatelessWidget {
   const _DadosTab();
 
@@ -67,6 +69,7 @@ class _DadosTab extends StatelessWidget {
     );
   }
 }
+
 class _MonthSelector extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
@@ -95,7 +98,7 @@ class _MonthSelector extends StatelessWidget {
               blurRadius: 24,
               offset: Offset(0, 0),
               spreadRadius: 0,
-            )
+            ),
           ],
         ),
         child: Column(
@@ -151,12 +154,11 @@ class _MonthSelector extends StatelessWidget {
     );
   }
 }
+
 class _MapCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    return
-      Card(
-
+    return Card(
       color: Colors.white,
       elevation: 0,
       shape: RoundedRectangleBorder(
@@ -168,14 +170,12 @@ class _MapCard extends StatelessWidget {
         padding: const EdgeInsets.all(16),
 
         child: Column(
-
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-
             const Text(
               'Mapa geral dos potreiros',
               style: TextStyle(
-                color: const Color(0xFF313131),
+                color: Color(0xFF313131),
                 fontSize: 12,
                 fontFamily: 'Montserrat',
                 fontWeight: FontWeight.w500,
@@ -195,6 +195,7 @@ class _MapCard extends StatelessWidget {
     );
   }
 }
+
 class _InfoTable extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
@@ -223,7 +224,7 @@ class _InfoTable extends StatelessWidget {
               blurRadius: 24,
               offset: Offset(0, 0),
               spreadRadius: 0,
-            )
+            ),
           ],
         ),
         child: Stack(
@@ -234,7 +235,9 @@ class _InfoTable extends StatelessWidget {
               child: Container(
                 width: 316.69,
                 height: 1.13,
-                decoration: BoxDecoration(color: const Color(0xFFF1F1F5)),
+                decoration: BoxDecoration(
+                  color: const Color(0xFFF1F1F5),
+                ),
               ),
             ),
             Positioned(
@@ -243,7 +246,9 @@ class _InfoTable extends StatelessWidget {
               child: Container(
                 width: 316.69,
                 height: 1.13,
-                decoration: BoxDecoration(color: const Color(0xFFF1F1F5)),
+                decoration: BoxDecoration(
+                  color: const Color(0xFFF1F1F5),
+                ),
               ),
             ),
             Positioned(
@@ -252,7 +257,9 @@ class _InfoTable extends StatelessWidget {
               child: Container(
                 width: 1.13,
                 height: 86.06,
-                decoration: BoxDecoration(color: const Color(0xFFF1F1F5)),
+                decoration: BoxDecoration(
+                  color: const Color(0xFFF1F1F5),
+                ),
               ),
             ),
             Positioned(
@@ -261,7 +268,9 @@ class _InfoTable extends StatelessWidget {
               child: Container(
                 width: 1.13,
                 height: 86.06,
-                decoration: BoxDecoration(color: const Color(0xFFF1F1F5)),
+                decoration: BoxDecoration(
+                  color: const Color(0xFFF1F1F5),
+                ),
               ),
             ),
             Positioned(
@@ -457,15 +466,12 @@ class _DataRow extends StatelessWidget {
       padding: const EdgeInsets.symmetric(vertical: 6),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          Text(a),
-          Text(b),
-          Text(c),
-        ],
+        children: [Text(a), Text(b), Text(c)],
       ),
     );
   }
 }
+
 class _QualityCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
@@ -475,7 +481,7 @@ class _QualityCard extends StatelessWidget {
         borderRadius: BorderRadius.circular(16),
         side: BorderSide(color: Colors.grey.shade200),
       ),
-      child: Container(
+      child: SizedBox(
         width: double.infinity,
         child: Column(
           mainAxisSize: MainAxisSize.min,
@@ -483,7 +489,7 @@ class _QualityCard extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.center,
           spacing: 16,
           children: [
-            Container(
+            SizedBox(
               width: double.infinity,
               child: Row(
                 mainAxisSize: MainAxisSize.min,
@@ -509,7 +515,7 @@ class _QualityCard extends StatelessWidget {
                           blurRadius: 24,
                           offset: Offset(0, 0),
                           spreadRadius: 0,
-                        )
+                        ),
                       ],
                     ),
                     child: Column(
@@ -521,7 +527,8 @@ class _QualityCard extends StatelessWidget {
                         Row(
                           mainAxisSize: MainAxisSize.min,
                           mainAxisAlignment: MainAxisAlignment.start,
-                          crossAxisAlignment: CrossAxisAlignment.center,
+                          crossAxisAlignment:
+                              CrossAxisAlignment.center,
                           spacing: 4,
                           children: [
                             Text(
@@ -539,7 +546,8 @@ class _QualityCard extends StatelessWidget {
                         Row(
                           mainAxisSize: MainAxisSize.min,
                           mainAxisAlignment: MainAxisAlignment.start,
-                          crossAxisAlignment: CrossAxisAlignment.center,
+                          crossAxisAlignment:
+                              CrossAxisAlignment.center,
                           spacing: 16,
                           children: [
                             Text(
@@ -569,7 +577,7 @@ class _QualityCard extends StatelessWidget {
             ),
           ],
         ),
-      )
+      ),
     );
   }
 }

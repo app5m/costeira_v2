@@ -12,108 +12,102 @@ class _GraficosExcucaoState extends State<GraficosExcucao> {
   Widget build(BuildContext context) {
     return Expanded(
       child: SingleChildScrollView(
-        child: Column(children: [
-          _MonthSelector(),
-          Image.asset('images/execucao.png', width: MediaQuery.of(context).size.width, fit: BoxFit.cover,),
-          Image.asset('images/linhatemposanitario.png', width: MediaQuery.of(context).size.width, fit: BoxFit.cover,),
-          Image.asset('images/linhatemposanitario.png', width: MediaQuery.of(context).size.width, fit: BoxFit.cover,),
-          Image.asset('images/produtosaplicadoscategoria.png', width: MediaQuery.of(context).size.width, fit: BoxFit.cover,),
-          Container(
-            width: MediaQuery.of(context).size.width - 40,
-            height: 154,
-            clipBehavior: Clip.antiAlias,
-            decoration: ShapeDecoration(
-              color: Colors.white,
-              shape: RoundedRectangleBorder(
-                side: BorderSide(
-                  width: 1,
-                  color: const Color(0xFFEBEBEB),
-                ),
-                borderRadius: BorderRadius.circular(16),
-              ),
-              shadows: [
-                BoxShadow(
-                  color: Color(0x0A000000),
-                  blurRadius: 24,
-                  offset: Offset(0, 0),
-                  spreadRadius: 0,
-                )
-              ],
+        child: Column(
+          children: [
+            _MonthSelector(),
+            Image.asset(
+              'images/execucao.png',
+              width: MediaQuery.of(context).size.width,
+              fit: BoxFit.cover,
             ),
-            child: Stack(
-              children: [
-                Positioned(
-                  left: 5.66,
-                  top: 40.77,
-                  child: Container(
-                    width: 316.69,
-                    height: 1.13,
-                    decoration: BoxDecoration(color: const Color(0xFFF1F1F5)),
+            Image.asset(
+              'images/linhatemposanitario.png',
+              width: MediaQuery.of(context).size.width,
+              fit: BoxFit.cover,
+            ),
+            Image.asset(
+              'images/linhatemposanitario.png',
+              width: MediaQuery.of(context).size.width,
+              fit: BoxFit.cover,
+            ),
+            Image.asset(
+              'images/produtosaplicadoscategoria.png',
+              width: MediaQuery.of(context).size.width,
+              fit: BoxFit.cover,
+            ),
+            Container(
+              width: MediaQuery.of(context).size.width - 40,
+              height: 154,
+              clipBehavior: Clip.antiAlias,
+              decoration: ShapeDecoration(
+                color: Colors.white,
+                shape: RoundedRectangleBorder(
+                  side: BorderSide(
+                    width: 1,
+                    color: const Color(0xFFEBEBEB),
                   ),
+                  borderRadius: BorderRadius.circular(16),
                 ),
-                Positioned(
-                  left: 5.66,
-                  top: 97.38,
-                  child: Container(
-                    width: 316.69,
-                    height: 1.13,
-                    decoration: BoxDecoration(color: const Color(0xFFF1F1F5)),
+                shadows: [
+                  BoxShadow(
+                    color: Color(0x0A000000),
+                    blurRadius: 24,
+                    offset: Offset(0, 0),
+                    spreadRadius: 0,
                   ),
-                ),
-                Positioned(
-                  left: 113.10,
-                  top: 53.22,
-                  child: Container(
-                    width: 1.13,
-                    height: 86.06,
-                    decoration: BoxDecoration(color: const Color(0xFFF1F1F5)),
-                  ),
-                ),
-                Positioned(
-                  left: 214.90,
-                  top: 53.22,
-                  child: Container(
-                    width: 1.13,
-                    height: 86.06,
-                    decoration: BoxDecoration(color: const Color(0xFFF1F1F5)),
-                  ),
-                ),
-                Positioned(
-                  left: 25.54,
-                  top: 18.12,
-                  child: Text(
-                    'Responsável',
-                    textAlign: TextAlign.center,
-                    style: TextStyle(
-                      color: const Color(0xFF313131),
-                      fontSize: 12,
-                      fontFamily: 'Montserrat',
-                      fontWeight: FontWeight.w500,
+                ],
+              ),
+              child: Stack(
+                children: [
+                  Positioned(
+                    left: 5.66,
+                    top: 40.77,
+                    child: Container(
+                      width: 316.69,
+                      height: 1.13,
+                      decoration: BoxDecoration(
+                        color: const Color(0xFFF1F1F5),
+                      ),
                     ),
                   ),
-                ),
-                Positioned(
-                  left: 141,
-                  top: 18.12,
-                  child: Text(
-                    'Manejo',
-                    textAlign: TextAlign.center,
-                    style: TextStyle(
-                      color: const Color(0xFF313131),
-                      fontSize: 12,
-                      fontFamily: 'Montserrat',
-                      fontWeight: FontWeight.w500,
+                  Positioned(
+                    left: 5.66,
+                    top: 97.38,
+                    child: Container(
+                      width: 316.69,
+                      height: 1.13,
+                      decoration: BoxDecoration(
+                        color: const Color(0xFFF1F1F5),
+                      ),
                     ),
                   ),
-                ),
-                Positioned(
-                  left: 254.48,
-                  top: 18.12,
-                  child: SizedBox(
-                    width: 27.14,
-                    height: 16.99,
+                  Positioned(
+                    left: 113.10,
+                    top: 53.22,
+                    child: Container(
+                      width: 1.13,
+                      height: 86.06,
+                      decoration: BoxDecoration(
+                        color: const Color(0xFFF1F1F5),
+                      ),
+                    ),
+                  ),
+                  Positioned(
+                    left: 214.90,
+                    top: 53.22,
+                    child: Container(
+                      width: 1.13,
+                      height: 86.06,
+                      decoration: BoxDecoration(
+                        color: const Color(0xFFF1F1F5),
+                      ),
+                    ),
+                  ),
+                  Positioned(
+                    left: 25.54,
+                    top: 18.12,
                     child: Text(
-                      'Qtd',
+                      'Responsável',
                       textAlign: TextAlign.center,
                       style: TextStyle(
                         color: const Color(0xFF313131),
@@ -123,15 +117,79 @@ class _GraficosExcucaoState extends State<GraficosExcucao> {
                       ),
                     ),
                   ),
-                ),
-                Positioned(
-                  left: 254.48,
-                  top: 69.07,
-                  child: SizedBox(
-                    width: 28.28,
-                    height: 16.99,
+                  Positioned(
+                    left: 141,
+                    top: 18.12,
                     child: Text(
-                      '80',
+                      'Manejo',
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                        color: const Color(0xFF313131),
+                        fontSize: 12,
+                        fontFamily: 'Montserrat',
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                  ),
+                  Positioned(
+                    left: 254.48,
+                    top: 18.12,
+                    child: SizedBox(
+                      width: 27.14,
+                      height: 16.99,
+                      child: Text(
+                        'Qtd',
+                        textAlign: TextAlign.center,
+                        style: TextStyle(
+                          color: const Color(0xFF313131),
+                          fontSize: 12,
+                          fontFamily: 'Montserrat',
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                    ),
+                  ),
+                  Positioned(
+                    left: 254.48,
+                    top: 69.07,
+                    child: SizedBox(
+                      width: 28.28,
+                      height: 16.99,
+                      child: Text(
+                        '80',
+                        textAlign: TextAlign.center,
+                        style: TextStyle(
+                          color: const Color(0xFF8C8C8C),
+                          fontSize: 12,
+                          fontFamily: 'Montserrat',
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                    ),
+                  ),
+                  Positioned(
+                    left: 254.48,
+                    top: 109.84,
+                    child: SizedBox(
+                      width: 28.28,
+                      height: 16.99,
+                      child: Text(
+                        '120',
+                        textAlign: TextAlign.center,
+                        style: TextStyle(
+                          color: const Color(0xFF8C8C8C),
+                          fontSize: 12,
+                          fontFamily: 'Montserrat',
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                    ),
+                  ),
+                  Positioned(
+                    left: 134.30,
+                    top: 69.07,
+                    child: Text(
+                      'Descarna',
                       textAlign: TextAlign.center,
                       style: TextStyle(
                         color: const Color(0xFF8C8C8C),
@@ -141,15 +199,11 @@ class _GraficosExcucaoState extends State<GraficosExcucao> {
                       ),
                     ),
                   ),
-                ),
-                Positioned(
-                  left: 254.48,
-                  top: 109.84,
-                  child: SizedBox(
-                    width: 28.28,
-                    height: 16.99,
+                  Positioned(
+                    left: 132.16,
+                    top: 109.84,
                     child: Text(
-                      '120',
+                      'Vacinação',
                       textAlign: TextAlign.center,
                       style: TextStyle(
                         color: const Color(0xFF8C8C8C),
@@ -159,83 +213,59 @@ class _GraficosExcucaoState extends State<GraficosExcucao> {
                       ),
                     ),
                   ),
-                ),
-                Positioned(
-                  left: 134.30,
-                  top: 69.07,
-                  child: Text(
-                    'Descarna',
-                    textAlign: TextAlign.center,
-                    style: TextStyle(
-                      color: const Color(0xFF8C8C8C),
-                      fontSize: 12,
-                      fontFamily: 'Montserrat',
-                      fontWeight: FontWeight.w500,
-                    ),
-                  ),
-                ),
-                Positioned(
-                  left: 132.16,
-                  top: 109.84,
-                  child: Text(
-                    'Vacinação',
-                    textAlign: TextAlign.center,
-                    style: TextStyle(
-                      color: const Color(0xFF8C8C8C),
-                      fontSize: 12,
-                      fontFamily: 'Montserrat',
-                      fontWeight: FontWeight.w500,
-                    ),
-                  ),
-                ),
-                Positioned(
-                  left: 42.13,
-                  top: 69.07,
-                  child: SizedBox(
-                    width: 32.80,
-                    height: 16.99,
-                    child: Text(
-                      'Clara',
-                      textAlign: TextAlign.center,
-                      style: TextStyle(
-                        color: const Color(0xFF8C8C8C),
-                        fontSize: 12,
-                        fontFamily: 'Montserrat',
-                        fontWeight: FontWeight.w500,
+                  Positioned(
+                    left: 42.13,
+                    top: 69.07,
+                    child: SizedBox(
+                      width: 32.80,
+                      height: 16.99,
+                      child: Text(
+                        'Clara',
+                        textAlign: TextAlign.center,
+                        style: TextStyle(
+                          color: const Color(0xFF8C8C8C),
+                          fontSize: 12,
+                          fontFamily: 'Montserrat',
+                          fontWeight: FontWeight.w500,
+                        ),
                       ),
                     ),
                   ),
-                ),
-                Positioned(
-                  left: 41,
-                  top: 109.84,
-                  child: SizedBox(
-                    width: 33.93,
-                    height: 16.99,
-                    child: Text(
-                      'João',
-                      textAlign: TextAlign.center,
-                      style: TextStyle(
-                        color: const Color(0xFF8C8C8C),
-                        fontSize: 12,
-                        fontFamily: 'Montserrat',
-                        fontWeight: FontWeight.w500,
+                  Positioned(
+                    left: 41,
+                    top: 109.84,
+                    child: SizedBox(
+                      width: 33.93,
+                      height: 16.99,
+                      child: Text(
+                        'João',
+                        textAlign: TextAlign.center,
+                        style: TextStyle(
+                          color: const Color(0xFF8C8C8C),
+                          fontSize: 12,
+                          fontFamily: 'Montserrat',
+                          fontWeight: FontWeight.w500,
+                        ),
                       ),
                     ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
-          ),
-          SizedBox(height: 32,)
-        ],),
+            SizedBox(height: 32),
+          ],
+        ),
       ),
     );
   }
 
-
-
-  Widget buildContainer(String title, String valuePercentual, String value, Color colorText, Color colorContainer){
+  Widget buildContainer(
+    String title,
+    String valuePercentual,
+    String value,
+    Color colorText,
+    Color colorContainer,
+  ) {
     return Container(
       width: MediaQuery.of(context).size.width / 2 - 40,
       margin: EdgeInsets.symmetric(horizontal: 20),
@@ -243,10 +273,7 @@ class _GraficosExcucaoState extends State<GraficosExcucao> {
       decoration: ShapeDecoration(
         color: Colors.white,
         shape: RoundedRectangleBorder(
-          side: BorderSide(
-            width: 1,
-            color: const Color(0xFFEBEBEB),
-          ),
+          side: BorderSide(width: 1, color: const Color(0xFFEBEBEB)),
           borderRadius: BorderRadius.circular(12),
         ),
         shadows: [
@@ -255,7 +282,7 @@ class _GraficosExcucaoState extends State<GraficosExcucao> {
             blurRadius: 24,
             offset: Offset(0, 0),
             spreadRadius: 0,
-          )
+          ),
         ],
       ),
       child: Column(
@@ -264,7 +291,7 @@ class _GraficosExcucaoState extends State<GraficosExcucao> {
         crossAxisAlignment: CrossAxisAlignment.start,
         spacing: 16,
         children: [
-          Container(
+          SizedBox(
             width: double.infinity,
             child: Column(
               mainAxisSize: MainAxisSize.min,
@@ -291,7 +318,10 @@ class _GraficosExcucaoState extends State<GraficosExcucao> {
                   ],
                 ),
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 8,
+                    vertical: 2,
+                  ),
                   decoration: ShapeDecoration(
                     color: colorContainer,
                     shape: RoundedRectangleBorder(
@@ -342,6 +372,7 @@ class _GraficosExcucaoState extends State<GraficosExcucao> {
     );
   }
 }
+
 class _MonthSelector extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
@@ -352,10 +383,7 @@ class _MonthSelector extends StatelessWidget {
       decoration: ShapeDecoration(
         color: Colors.white,
         shape: RoundedRectangleBorder(
-          side: BorderSide(
-            width: 1,
-            color: const Color(0xFFEBEBEB),
-          ),
+          side: BorderSide(width: 1, color: const Color(0xFFEBEBEB)),
           borderRadius: BorderRadius.circular(8),
         ),
         shadows: [
@@ -364,7 +392,7 @@ class _MonthSelector extends StatelessWidget {
             blurRadius: 24,
             offset: Offset(0, 0),
             spreadRadius: 0,
-          )
+          ),
         ],
       ),
       child: Row(
@@ -383,7 +411,8 @@ class _MonthSelector extends StatelessWidget {
             ),
           ),
           Icon(Icons.arrow_forward_rounded),
-        ],),
+        ],
+      ),
     );
   }
 }

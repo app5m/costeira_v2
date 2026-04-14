@@ -10,6 +10,7 @@ class AddNascimento extends StatefulWidget {
 }
 
 class _AddNascimentoState extends State<AddNascimento> {
+  int? _selectedValue = 2;
 
   Widget buildTextField(String label, String hint) {
     return Column(
@@ -48,7 +49,10 @@ class _AddNascimentoState extends State<AddNascimento> {
             ),
             filled: true,
             fillColor: Color(0xFFEBEBEB),
-            contentPadding: EdgeInsets.symmetric(horizontal: 15, vertical: 16),
+            contentPadding: EdgeInsets.symmetric(
+              horizontal: 15,
+              vertical: 16,
+            ),
             border: OutlineInputBorder(
               borderRadius: BorderRadius.circular(8),
               borderSide: BorderSide.none,
@@ -59,7 +63,6 @@ class _AddNascimentoState extends State<AddNascimento> {
       ],
     );
   }
-  int? _selectedValue = 2;
 
   @override
   Widget build(BuildContext context) {
@@ -68,9 +71,11 @@ class _AddNascimentoState extends State<AddNascimento> {
       appBar: AppBar(
         backgroundColor: MyColors.colorPrimary,
         leading: GestureDetector(
-            onTap: (){
-              Navigator.pop(context);
-            },child: Icon(Icons.arrow_back_ios, color: Colors.white,)),
+          onTap: () {
+            Navigator.pop(context);
+          },
+          child: Icon(Icons.arrow_back_ios, color: Colors.white),
+        ),
         title: Text(
           'Adicionar nascimento',
           style: TextStyle(
@@ -82,91 +87,82 @@ class _AddNascimentoState extends State<AddNascimento> {
         ),
       ),
       body: SingleChildScrollView(
-        child: Container(
-          margin: EdgeInsets.symmetric(horizontal: 20),
-          child: Column(children: [
-            SizedBox(height: 16,),
-            buildTextField("Brinco",  'Ex: 2034',),
-            buildTextField("Data", "00/00/0000"),
-            buildTextField("Categoria de origem", 'Selecione',),
-            Row(
-              children: [
-                Text(
-                  'Sexo ',
-                  style: TextStyle(
-                    color: const Color(0xFF313131),
-                    fontSize: 14,
-                    fontFamily: 'Montserrat',
-                    fontWeight: FontWeight.w400,
-                    height: 1.50,
-                    letterSpacing: 0.10,
+        child: Padding(
+          padding: EdgeInsets.symmetric(horizontal: 20),
+          child: Column(
+            children: [
+              SizedBox(height: 16),
+              buildTextField("Brinco", 'Ex: 2034'),
+              buildTextField("Data", "00/00/0000"),
+              buildTextField("Categoria de origem", 'Selecione'),
+              Row(
+                children: [
+                  Text(
+                    'Sexo ',
+                    style: TextStyle(
+                      color: const Color(0xFF313131),
+                      fontSize: 14,
+                      fontFamily: 'Montserrat',
+                      fontWeight: FontWeight.w400,
+                      height: 1.50,
+                      letterSpacing: 0.10,
+                    ),
                   ),
-                ),
-              ],
-            ),
-            Row(
-              children: [
-                RadioGroup<int>(
-                  groupValue: _selectedValue,
-                  onChanged: (int? value) {
-                    setState(() {
-                      _selectedValue = value;
-                    });
-                  },
-                  child: Row(
-                    children: [
-                      Row(
-                        children: [
-                          Radio<int>(
-                            side: BorderSide(),
-                            value: 1, // Valor único para este botão
-                            groupValue: _selectedValue,
-                            onChanged: (int? value) {
-                              setState(() => _selectedValue = value);
-                            },
-                          ),
-                          Text('Macho', style: TextStyle(
-                            color: const Color(0xFF8C8C8C),
-                            fontSize: 14,
-                            fontFamily: 'Montserrat',
-                            fontWeight: FontWeight.w400,
-                            height: 1.50,
-                            letterSpacing: 0.10,
-                          ),),
-                        ],
-                      ),
-                      SizedBox(width: 20),
-                      Row(
-                        children: [
-                          Radio<int>(
-                            side: BorderSide(),
-                            value: 2, // Valor único para o segundo botão
-                            groupValue: _selectedValue,
-                            onChanged: (int? value) {
-                              setState(() => _selectedValue = value);
-                            },
-                          ),
-                          Text('Fêmea', style: TextStyle(
-                            color: const Color(0xFF8C8C8C),
-                            fontSize: 14,
-                            fontFamily: 'Montserrat',
-                            fontWeight: FontWeight.w400,
-                            height: 1.50,
-                            letterSpacing: 0.10,
-                          ),),
-                        ],
-                      ),
-                    ],
+                ],
+              ),
+              Row(
+                children: [
+                  RadioGroup<int>(
+                    groupValue: _selectedValue,
+                    onChanged: (int? value) {
+                      setState(() {
+                        _selectedValue = value;
+                      });
+                    },
+                    child: Row(
+                      children: [
+                        Row(
+                          children: [
+                            Radio<int>(side: BorderSide(), value: 1),
+                            Text(
+                              'Macho',
+                              style: TextStyle(
+                                color: const Color(0xFF8C8C8C),
+                                fontSize: 14,
+                                fontFamily: 'Montserrat',
+                                fontWeight: FontWeight.w400,
+                                height: 1.50,
+                                letterSpacing: 0.10,
+                              ),
+                            ),
+                          ],
+                        ),
+                        SizedBox(width: 20),
+                        Row(
+                          children: [
+                            Radio<int>(side: BorderSide(), value: 2),
+                            Text(
+                              'Fêmea',
+                              style: TextStyle(
+                                color: const Color(0xFF8C8C8C),
+                                fontSize: 14,
+                                fontFamily: 'Montserrat',
+                                fontWeight: FontWeight.w400,
+                                height: 1.50,
+                                letterSpacing: 0.10,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
                   ),
-                )
-              ],
-            ),
+                ],
+              ),
 
-            const SizedBox(height: 16),
+              const SizedBox(height: 16),
 
-            Container(
-              margin: EdgeInsets.symmetric(horizontal: 0),
-              child: SizedBox(
+              SizedBox(
                 width: double.infinity,
                 height: 50,
                 child: ElevatedButton(
@@ -179,19 +175,22 @@ class _AddNascimentoState extends State<AddNascimento> {
                   onPressed: () {
                     Navigator.pop(context);
                   },
-                  child: const Text("Adicionar",textAlign: TextAlign.center,
+                  child: const Text(
+                    "Adicionar",
+                    textAlign: TextAlign.center,
                     style: TextStyle(
                       color: Colors.white,
                       fontSize: 14,
                       fontFamily: 'Montserrat',
                       fontWeight: FontWeight.w600,
                       height: 1.29,
-                    ),),
+                    ),
+                  ),
                 ),
               ),
-            ),
-            const SizedBox(height: 32),
-          ],),
+              const SizedBox(height: 32),
+            ],
+          ),
         ),
       ),
     );

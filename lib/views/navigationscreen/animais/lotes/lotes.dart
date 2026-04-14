@@ -1,5 +1,3 @@
-
-
 import 'package:costeira/views/navigationscreen/animais/lotes/editalote/editalote.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
@@ -17,130 +15,155 @@ class _LotesState extends State<Lotes> {
   @override
   Widget build(BuildContext context) {
     return Expanded(
-      child: Column(children: [
-        // SizedBox(height: 16,),
-        // Row(children: [
-        //   Container(
-        //     padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
-        //     decoration: ShapeDecoration(
-        //       shape: RoundedRectangleBorder(
-        //         side: BorderSide(
-        //           width: 1,
-        //           color: const Color(0xFFE6E6E6),
-        //         ),
-        //         borderRadius: BorderRadius.circular(64),
-        //       ),
-        //     ),
-        //     child: Row(
-        //       mainAxisSize: MainAxisSize.min,
-        //       mainAxisAlignment: MainAxisAlignment.center,
-        //       crossAxisAlignment: CrossAxisAlignment.center,
-        //       spacing: 4,
-        //       children: [
-        //         Text(
-        //           'Filtro',
-        //           textAlign: TextAlign.center,
-        //           style: TextStyle(
-        //             color: const Color(0xFF8C8C8C),
-        //             fontSize: 12,
-        //             fontFamily: 'Montserrat',
-        //             fontWeight: FontWeight.w500,
-        //             height: 1.50,
-        //           ),
-        //         ),
-        //         SizedBox(width: 8,),
-        //         SvgPicture.asset('icon/header.svg'),
-        //       ],
-        //     ),
-        //   )
-        // ],),
-        SizedBox(height: 16,),
-        Expanded(child: ListView.builder(
-            itemCount: 3,
-            itemBuilder: (context, index) {
-              return Container(
-                width: MediaQuery.of(context).size.width - 40,
-                margin: EdgeInsets.only(bottom: 8, left: 20, right: 20),
-                padding: const EdgeInsets.all(16),
-                decoration: ShapeDecoration(
-                  color: Colors.white,
-                  shape: RoundedRectangleBorder(
-                    side: BorderSide(
-                      width: 1,
-                      color: const Color(0xFFEBEBEB),
-                    ),
-                    borderRadius: BorderRadius.circular(12),
+      child: Column(
+        children: [
+          // SizedBox(height: 16,),
+          // Row(children: [
+          //   Container(
+          //     padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+          //     decoration: ShapeDecoration(
+          //       shape: RoundedRectangleBorder(
+          //         side: BorderSide(
+          //           width: 1,
+          //           color: const Color(0xFFE6E6E6),
+          //         ),
+          //         borderRadius: BorderRadius.circular(64),
+          //       ),
+          //     ),
+          //     child: Row(
+          //       mainAxisSize: MainAxisSize.min,
+          //       mainAxisAlignment: MainAxisAlignment.center,
+          //       crossAxisAlignment: CrossAxisAlignment.center,
+          //       spacing: 4,
+          //       children: [
+          //         Text(
+          //           'Filtro',
+          //           textAlign: TextAlign.center,
+          //           style: TextStyle(
+          //             color: const Color(0xFF8C8C8C),
+          //             fontSize: 12,
+          //             fontFamily: 'Montserrat',
+          //             fontWeight: FontWeight.w500,
+          //             height: 1.50,
+          //           ),
+          //         ),
+          //         SizedBox(width: 8,),
+          //         SvgPicture.asset('icon/header.svg'),
+          //       ],
+          //     ),
+          //   )
+          // ],),
+          SizedBox(height: 16),
+          Expanded(
+            child: ListView.builder(
+              itemCount: 3,
+              itemBuilder: (context, index) {
+                return Container(
+                  width: MediaQuery.of(context).size.width - 40,
+                  margin: EdgeInsets.only(
+                    bottom: 8,
+                    left: 20,
+                    right: 20,
                   ),
-                  shadows: [
-                    BoxShadow(
-                      color: Color(0x0A000000),
-                      blurRadius: 24,
-                      offset: Offset(0, 0),
-                      spreadRadius: 0,
-                    )
-                  ],
-                ),
-                child: Row(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Row(
-                      mainAxisSize: MainAxisSize.min,
-                      mainAxisAlignment: MainAxisAlignment.start,
-                      crossAxisAlignment: CrossAxisAlignment.center,
-                      spacing: 8,
-                      children: [
-                        Text(
-                          'Lote:',
-                          textAlign: TextAlign.center,
-                          style: TextStyle(
-                            color: const Color(0xFF8C8C8C),
-                            fontSize: 12,
-                            fontFamily: 'Montserrat',
-                            fontWeight: FontWeight.w500,
-                          ),
-                        ),
-                        Text(
-                          'A ',
-                          textAlign: TextAlign.center,
-                          style: TextStyle(
-                            color: const Color(0xFF313131),
-                            fontSize: 14,
-                            fontFamily: 'Montserrat',
-                            fontWeight: FontWeight.w600,
-                          ),
-                        ),
-                      ],
+                  padding: const EdgeInsets.all(16),
+                  decoration: ShapeDecoration(
+                    color: Colors.white,
+                    shape: RoundedRectangleBorder(
+                      side: BorderSide(
+                        width: 1,
+                        color: const Color(0xFFEBEBEB),
+                      ),
+                      borderRadius: BorderRadius.circular(12),
                     ),
-                    Column(
-                      mainAxisAlignment: MainAxisAlignment.start,
-                      children: [
-                        Row(
-                          mainAxisSize: MainAxisSize.min,
-                          mainAxisAlignment: MainAxisAlignment.start,
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          spacing: 16,
-                          children: [
-                            GestureDetector(
-                                onTap: (){
-                                  _showModalBottomSheetExcluir(context);
-                                },
-                                child: SvgPicture.asset('icon/trash.svg')),
-
-                            GestureDetector(
+                    shadows: [
+                      BoxShadow(
+                        color: Color(0x0A000000),
+                        blurRadius: 24,
+                        offset: Offset(0, 0),
+                        spreadRadius: 0,
+                      ),
+                    ],
+                  ),
+                  child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Row(
+                        mainAxisSize: MainAxisSize.min,
+                        mainAxisAlignment: MainAxisAlignment.start,
+                        crossAxisAlignment: CrossAxisAlignment.center,
+                        spacing: 8,
+                        children: [
+                          Text(
+                            'Lote:',
+                            textAlign: TextAlign.center,
+                            style: TextStyle(
+                              color: const Color(0xFF8C8C8C),
+                              fontSize: 12,
+                              fontFamily: 'Montserrat',
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ),
+                          Text(
+                            'A ',
+                            textAlign: TextAlign.center,
+                            style: TextStyle(
+                              color: const Color(0xFF313131),
+                              fontSize: 14,
+                              fontFamily: 'Montserrat',
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                        ],
+                      ),
+                      Column(
+                        mainAxisAlignment: MainAxisAlignment.start,
+                        children: [
+                          Row(
+                            mainAxisSize: MainAxisSize.min,
+                            mainAxisAlignment:
+                                MainAxisAlignment.start,
+                            crossAxisAlignment:
+                                CrossAxisAlignment.start,
+                            spacing: 16,
+                            children: [
+                              GestureDetector(
                                 onTap: () {
-                                  Navigator.push(context,
-                                      MaterialPageRoute(builder: (_) => const EditLote()));
+                                  _showModalBottomSheetExcluir(
+                                    context,
+                                  );
                                 },
-                                child: SvgPicture.asset('icon/square-pen.svg')),
-                          ],
-                        )
-                      ],)
-                  ],
-                ),
-              );
-            }))
-      ],),
+                                child: SvgPicture.asset(
+                                  'icon/trash.svg',
+                                ),
+                              ),
+
+                              GestureDetector(
+                                onTap: () {
+                                  Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (_) =>
+                                          const EditLote(),
+                                    ),
+                                  );
+                                },
+                                child: SvgPicture.asset(
+                                  'icon/square-pen.svg',
+                                ),
+                              ),
+                            ],
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                );
+              },
+            ),
+          ),
+        ],
+      ),
     );
   }
 
@@ -149,11 +172,13 @@ class _LotesState extends State<Lotes> {
       backgroundColor: Colors.white,
       context: context,
       shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.only(
-            topLeft: Radius.circular(16),
-            topRight: Radius.circular(16),
-          )),
+        borderRadius: BorderRadius.only(
+          topLeft: Radius.circular(16),
+          topRight: Radius.circular(16),
+        ),
+      ),
       builder: (BuildContext bc) {
+        // ignore: avoid_unnecessary_containers
         return Container(
           child: Column(
             mainAxisSize: MainAxisSize.min,
@@ -172,7 +197,8 @@ class _LotesState extends State<Lotes> {
                           shape: RoundedRectangleBorder(
                             side: BorderSide(
                               width: 2,
-                              strokeAlign: BorderSide.strokeAlignCenter,
+                              strokeAlign:
+                                  BorderSide.strokeAlignCenter,
                               color: Color(0xFFE2E2E2),
                             ),
                           ),
@@ -184,11 +210,7 @@ class _LotesState extends State<Lotes> {
                       margin: EdgeInsets.symmetric(horizontal: 20),
                       child: Row(
                         mainAxisAlignment: MainAxisAlignment.end,
-                        children: [
-                          Icon(
-                            Icons.close,
-                          ),
-                        ],
+                        children: [Icon(Icons.close)],
                       ),
                     ),
                     SizedBox(height: 16),
@@ -205,10 +227,11 @@ class _LotesState extends State<Lotes> {
                         Text(
                           "Excluir lote",
                           style: TextStyle(
-                              fontFamily: 'Montserrat',
-                              fontWeight: FontWeight.w600,
-                              fontSize: 16,
-                              color: Color(0xff000000)),
+                            fontFamily: 'Montserrat',
+                            fontWeight: FontWeight.w600,
+                            fontSize: 16,
+                            color: Color(0xff000000),
+                          ),
                         ),
                       ],
                     ),
@@ -229,46 +252,48 @@ class _LotesState extends State<Lotes> {
                     SizedBox(height: 16),
                     Column(
                       children: [
-                        Container(
-                          width: MediaQuery.of(context).size.width - 40,
+                        SizedBox(
+                          width:
+                              MediaQuery.of(context).size.width - 40,
                           height: 50,
                           child: ElevatedButton(
                             onPressed: () async {
                               //  desativeAccount(context);
                             },
-                            child: Text(
-                              "Excluir",
-                              style: TextStyle(color: Colors.red),
-                            ),
                             style: ElevatedButton.styleFrom(
-                              shape: RoundedRectangleBorder(borderRadius: BorderRadiusGeometry.circular(8)),
+                              shape: RoundedRectangleBorder(
+                                borderRadius:
+                                    BorderRadiusGeometry.circular(8),
+                              ),
                               side: BorderSide(color: Colors.red),
                               elevation: 0,
                               backgroundColor: Colors.transparent,
                             ),
+                            child: Text(
+                              "Excluir",
+                              style: TextStyle(color: Colors.red),
+                            ),
                           ),
                         ),
-                        SizedBox(
-                          width: 8,
-                        ),
+                        SizedBox(width: 8),
                         TextButton(
-                          onPressed: () => Navigator.of(context).pop(false),
+                          onPressed: () =>
+                              Navigator.of(context).pop(false),
                           child: Text(
                             "Cancelar",
                             style: TextStyle(
                               fontSize: 16,
                               color: MyColors.colorOnPrimary,
                               decoration: TextDecoration.underline,
-                              decorationColor: MyColors.colorOnPrimary,
+                              decorationColor:
+                                  MyColors.colorOnPrimary,
                             ),
                           ),
                         ),
-                        SizedBox(
-                          width: 8,
-                        ),
+                        SizedBox(width: 8),
                       ],
                     ),
-                    SizedBox(height: 16)
+                    SizedBox(height: 16),
                   ],
                 ),
               ),

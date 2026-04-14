@@ -1,19 +1,15 @@
-// import 'package:daf/views/navigation/dashboard/dashboard.dart';
-// import 'package:daf/views/navigation/laudo/laudo.dart';
-// import 'package:daf/views/navigation/perfil/perfil.dart';
-// import 'package:daf/views/navigation/usuarios/usuarios.dart';
+import 'package:costeira/core/storage/session_storage.dart';
+import 'package:costeira/features/auth/models/user_session.dart';
 import 'package:costeira/views/navigationscreen/animais/animais.dart';
 import 'package:costeira/views/navigationscreen/dashbord/dashboard.dart';
 import 'package:costeira/views/navigationscreen/indicadores/indicadores.dart';
 import 'package:costeira/views/navigationscreen/movimentacoes/movimentacoes.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_svg/svg.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 
 import '../../theme/colors.dart';
 import 'Menu/Menu.dart';
-import 'home/home.dart';
 import 'notification/notification.dart';
-
 
 class NavigationScreen extends StatefulWidget {
   const NavigationScreen({super.key});
@@ -24,11 +20,33 @@ class NavigationScreen extends StatefulWidget {
 
 class _NavigationScreenState extends State<NavigationScreen> {
   int _selectedIndex = 0;
-  bool isVisible = false;
-  PageController _pageController = PageController(initialPage: 0);
+  final PageController _pageController = PageController(initialPage: 0);
+  UserSession? _user;
 
-  String getTitulo(int tela) {
-    switch (tela) {
+  @override
+  void initState() {
+    super.initState();
+    _loadUser();
+  }
+
+  Future<void> _loadUser() async {
+    final user = await SessionStorage.getUserSession();
+    if (!mounted) {
+      return;
+    }
+    setState(() {
+      _user = user;
+    });
+  }
+
+  @override
+  void dispose() {
+    _pageController.dispose();
+    super.dispose();
+  }
+
+  String get _title {
+    switch (_selectedIndex) {
       case 0:
         return 'Dashboard';
       case 1:
@@ -37,17 +55,16 @@ class _NavigationScreenState extends State<NavigationScreen> {
         return 'Movimentações';
       case 3:
         return 'Indicadores';
-        case 4:
+      case 4:
         return 'Menu';
-    // Você pode adicionar outros cases aqui
       default:
-        return ''; // retorno padrão caso não encontre o case
+        return '';
     }
   }
 
-  PreferredSizeWidget customAppBar(BuildContext context) {
+  PreferredSizeWidget _customAppBar(BuildContext context) {
     return PreferredSize(
-      preferredSize: Size.fromHeight(90),
+      preferredSize: const Size.fromHeight(90),
       child: AppBar(
         backgroundColor: MyColors.colorPrimary,
         elevation: 0,
@@ -57,182 +74,159 @@ class _NavigationScreenState extends State<NavigationScreen> {
           padding: const EdgeInsets.only(left: 16),
           child: GestureDetector(
             onTap: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(builder: (context) => Menu()),
+              Navigator.of(context).push(
+                MaterialPageRoute(builder: (_) => const Menu()),
               );
             },
-            child: CircleAvatar(
+            child: const CircleAvatar(
               radius: 20,
-              backgroundImage: NetworkImage('https://thispersondoesnotexist.com/'),
+              backgroundColor: Color(0xFFEBEBEB),
+              child: Icon(Icons.person, color: Colors.grey),
             ),
           ),
         ),
         title: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            RichText(
-              text: TextSpan(
+            Text.rich(
+              TextSpan(
                 text: 'Olá ',
-                style: TextStyle(
+                style: const TextStyle(
                   color: Colors.white,
                   fontSize: 16,
-                  fontFamily: 'Montserrat',
                   fontWeight: FontWeight.w600,
                 ),
                 children: [
                   TextSpan(
-                    text: 'Guilherme!',
-                    style: TextStyle(
-                      fontWeight: FontWeight.w700,
-                      color: Colors.white,
-                    ),
+                    text: _user?.name.isNotEmpty == true ? _user!.name : 'Usuário',
+                    style: const TextStyle(fontWeight: FontWeight.w700),
                   ),
                 ],
               ),
             ),
             Text(
-              'guilherme@email.com',
-              style: TextStyle(
+              _user?.email ?? '',
+              style: const TextStyle(
                 color: Colors.white,
                 fontSize: 12,
-                fontFamily: 'Montserrat',
                 fontWeight: FontWeight.w400,
               ),
             ),
           ],
         ),
         actions: [
-
           IconButton(
-            icon: SvgPicture.asset("icon/noti.svg", color: Colors.white,),
-            color: Colors.white,
+            icon: SvgPicture.asset(
+              'icon/noti.svg',
+              colorFilter: const ColorFilter.mode(
+                Colors.white,
+                BlendMode.srcIn,
+              ),
+            ),
             onPressed: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => NotificacoesScreen(),
-                ),
+              Navigator.of(context).push(
+                MaterialPageRoute(builder: (_) => const NotificacoesScreen()),
               );
             },
           ),
-          SizedBox(width: 12),
+          const SizedBox(width: 12),
         ],
       ),
     );
   }
 
-
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: Colors.white,
-      appBar: _selectedIndex == 0 ? customAppBar(context) : AppBar(
-        backgroundColor: MyColors.colorPrimary,
-        leading: Container(),
-        titleSpacing: 0,
-        leadingWidth: 20,
-        centerTitle: false,
-        title: Text(getTitulo(_selectedIndex),style: TextStyle(
+    final defaultAppBar = AppBar(
+      backgroundColor: MyColors.colorPrimary,
+      leadingWidth: 20,
+      titleSpacing: 0,
+      title: Text(
+        _title,
+        style: const TextStyle(
           color: Colors.white,
           fontSize: 16,
-          fontFamily: 'Montserrat',
           fontWeight: FontWeight.w600,
-        ),),
-        actions: [
-
-          IconButton(
-            icon: SvgPicture.asset("icon/noti.svg", color: Colors.white,),
-            color: Colors.white,
-            onPressed: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => NotificacoesScreen(),
-                ),
-              );
-            },
-          ),
-          SizedBox(width: 12),
-
-        ],
-      ),
-      body: Container(
-        margin: EdgeInsets.only(top: 0),
-        child: PageView(
-          controller: _pageController,
-          physics: NeverScrollableScrollPhysics(),
-          onPageChanged: (int onPageChanged) {
-            setState(() {
-              _selectedIndex = onPageChanged;
-            });
-          },
-          children: [
-
-            Dashboard(),
-          Animais(),
-            Movimentacoes(),
-         Indicadores(),
-            Menu(),
-          ],
         ),
+      ),
+      actions: [
+        IconButton(
+          icon: SvgPicture.asset(
+            'icon/noti.svg',
+            colorFilter: const ColorFilter.mode(
+              Colors.white,
+              BlendMode.srcIn,
+            ),
+          ),
+          onPressed: () {
+            Navigator.of(context).push(
+              MaterialPageRoute(builder: (_) => const NotificacoesScreen()),
+            );
+          },
+        ),
+        const SizedBox(width: 12),
+      ],
+    );
+
+    return Scaffold(
+      backgroundColor: Colors.white,
+      appBar: _selectedIndex == 0 ? _customAppBar(context) : defaultAppBar,
+      body: PageView(
+        controller: _pageController,
+        physics: const NeverScrollableScrollPhysics(),
+        onPageChanged: (page) {
+          setState(() {
+            _selectedIndex = page;
+          });
+        },
+        children: const [
+          Dashboard(),
+          Animais(),
+          Movimentacoes(),
+          Indicadores(),
+          Menu(),
+        ],
       ),
       bottomNavigationBar: BottomNavigationBar(
         backgroundColor: Colors.white,
-        items: [
-          _buildNavBarItem("icon/layout-dashboard.svg", 0),
-          _buildNavBarItem("icon/cow-light.svg", 1),
-          _buildNavBarItem("icon/arrow-left-right.svg", 2),
-          _buildNavBarItem("icon/chart-column.svg", 3),
-          _buildNavBarItem("icon/menu.svg", 4),
-        ],
-        showSelectedLabels: false,
         currentIndex: _selectedIndex,
-        selectedItemColor: Colors.grey,
+        showSelectedLabels: false,
+        items: [
+          _buildNavBarItem('icon/layout-dashboard.svg', 0),
+          _buildNavBarItem('icon/cow-light.svg', 1),
+          _buildNavBarItem('icon/arrow-left-right.svg', 2),
+          _buildNavBarItem('icon/chart-column.svg', 3),
+          _buildNavBarItem('icon/menu.svg', 4),
+        ],
         onTap: _onNavItemTapped,
       ),
     );
   }
 
-  Future<void> _onNavItemTapped(int index) async {
-    // bool getLogin = await Preferences.getLogin();
-    // if(getLogin){
-    //   verificaUser(context);
-    //   setState(() {
-    //     _selectedIndex = index;
-    //     _pageController.animateToPage(index,
-    //         duration: Duration(milliseconds: 400), curve: Curves.linear);
-    //   });
-    // }else{
-    //   if(index != 0){
-    //     _showModalBottomSheetLogin(context);
-    //   }
-    // }
+  void _onNavItemTapped(int index) {
     setState(() {
       _selectedIndex = index;
-      _pageController.animateToPage(index,
-          duration: Duration(milliseconds: 400), curve: Curves.linear);
     });
-
+    _pageController.animateToPage(
+      index,
+      duration: const Duration(milliseconds: 400),
+      curve: Curves.linear,
+    );
   }
 
   BottomNavigationBarItem _buildNavBarItem(String icon, int index) {
     return BottomNavigationBarItem(
-      backgroundColor: Colors.white,
-      icon: Column(
-        children: [
-          Container(
-            margin: EdgeInsets.all(4),
-            child: SvgPicture.asset(
-              icon,
-              color:
-              _selectedIndex == index ? MyColors.colorPrimary : Colors.grey,
-            ),
-          ),
-        ],
-      ),
       label: '',
+      icon: Padding(
+        padding: const EdgeInsets.all(4),
+        child: SvgPicture.asset(
+          icon,
+          colorFilter: ColorFilter.mode(
+            _selectedIndex == index ? MyColors.colorPrimary : Colors.grey,
+            BlendMode.srcIn,
+          ),
+        ),
+      ),
     );
-  } //navegaÇao icones rodape
+  }
 }
-

@@ -1,42 +1,18 @@
-import 'dart:convert';
-
-
+import 'package:costeira/theme/colors.dart';
+import 'package:costeira/core/api/api_exception.dart';
+import 'package:costeira/core/models/user_coordinates.dart';
+import 'package:costeira/core/services/push_token_service.dart';
+import 'package:costeira/core/storage/session_storage.dart';
+import 'package:costeira/features/auth/repositories/auth_repository.dart';
+import 'package:costeira/views/login/pendingapproval/pending_approval.dart';
+import 'package:costeira/views/navigationscreen/navigationscreen.dart';
+import 'package:costeira/views/shared/widgets/app_buttons.dart';
 import 'package:flutter/material.dart';
-import 'package:fluttertoast/fluttertoast.dart';
+import 'package:flutter/services.dart';
 import 'package:pinput/pinput.dart';
 
-//
-// import '../../componentesDialog/dialog_alert_error.dart';
-// import '../../componentesDialog/fonte_size.dart';
-import '../../theme/colors.dart';
-import '../navigationscreen/navigationscreen.dart';
-
-
-// import '../../config/constants.dart';
-// import '../../config/preferences.dart';
-// import '../../config/requests.dart';
-// import '../../model/user.dart';
-// import '../../theme/colors.dart';
-// import '../navigation/navigation.screen.dart';
-
-// import '../componentesDialog/dialog_alert_error.dart';
-// import '../componentesDialog/fonte_size.dart';
-// import '../config/constants.dart';
-// import '../config/preferences.dart';
-// import '../config/requests.dart';
-// import '../model/user.dart';
-// import '../theme/colors.dart';
-// import '../views/navigation/navigation.screen.dart';
-
-
 class ValidationCode extends StatefulWidget {
-  final String email;
-  final String password;
-  final String lat;
-  final String long;
-  final int tipo;
-
-  ValidationCode({
+  const ValidationCode({
     super.key,
     required this.email,
     required this.password,
@@ -45,713 +21,213 @@ class ValidationCode extends StatefulWidget {
     required this.tipo,
   });
 
+  final String email;
+  final String password;
+  final String lat;
+  final String long;
+  final int tipo;
+
   @override
   State<ValidationCode> createState() => _ValidationCodeState();
 }
 
 class _ValidationCodeState extends State<ValidationCode> {
-  List<TextEditingController> _controllers = List.generate(4, (_) => TextEditingController());
-  final pinController = TextEditingController();
-  final focusNode = FocusNode();
-  final formKey = GlobalKey<FormState>();
+  final _formKey = GlobalKey<FormState>();
+  final _pinController = TextEditingController();
+  final _focusNode = FocusNode();
+  final AuthRepository _authRepository = AuthRepository();
+  final PushTokenService _pushTokenService = PushTokenService.instance;
+  bool _isLoading = false;
 
-  // Botão com Progress
-  bool isLoadingLogin = false;
-  bool isLoadingRegistre = false;
-
-  // Future<String?> getFCM(String id) async {
-  //   final FirebaseMessaging _firebaseMessaging = FirebaseMessaging.instance;
-  //   await Preferences.init();
-  //   bool logg = await Preferences.getLogin();
-  //
-  //
-  //
-  //
-  //   String? savedFcmToken = await Preferences.getInstanceTokenFcm();
-  //   //nameUser = (await Preferences.getUserData()!.name)!;
-  //   String? currentFcmToken = await _firebaseMessaging.getToken();
-  //   if (savedFcmToken != null && savedFcmToken == currentFcmToken) {
-  //     print('FCM: não salvou');
-  //     return savedFcmToken;
-  //   }
-  //   var _type = '';
-  //   if (Platform.isAndroid) {
-  //     _type = WSConstantes.FCM_TYPE_ANDROID;
-  //   } else if (Platform.isIOS) {
-  //     _type = WSConstantes.FCM_TYPE_IOS;
-  //   }
-  //   final body = {
-  //     WSConstantes.ID_USER: id,
-  //     WSConstantes.TYPE: _type,
-  //     WSConstantes.REGIST_ID: currentFcmToken,
-  //     WSConstantes.TOKENID: WSConstantes.TOKEN
-  //   };
-  //   final response = await requestsWebServices.sendPostRequest(
-  //       WSConstantes.SAVE_FCM, body);
-  //
-  //   print('FCM: $currentFcmToken');
-  //   print('RESPOSTA: $response');
-  //
-  //   // Salvamos o FCM atual nas preferências.
-  //   await Preferences.saveInstanceTokenFcm("token", currentFcmToken!);
-  //
-  //   return currentFcmToken;
-  //
-  // }
-  String codefull = '';
-  // final requestsWebServices = RequestsWebServices(WSConstantes.URLBASE);
-  //
-  // Future<void> sendCode(
-  //     String email, String password, String latitude, String longitude) async {
-  //   Preferences.init();
-  //   if (validatonLogin(email, password)) {
-  //     try {
-  //       final body = {
-  //         WSConstantes.EMAIL: email,
-  //         WSConstantes.PASSWORD: password,
-  //         WSConstantes.LATITUDE: latitude,
-  //         WSConstantes.LONGITUDE: longitude,
-  //         WSConstantes.TOKENID: WSConstantes.TOKEN
-  //       };
-  //
-  //       final response = await requestsWebServices.sendPostRequest(
-  //           WSConstantes.DOIS_FATORES, body);
-  //
-  //       final decodedResponse = jsonDecode(response);
-  //
-  //       if (decodedResponse is List && decodedResponse.isNotEmpty) {
-  //         final userResponse = decodedResponse[0];
-  //         final status = userResponse['status'];
-  //         final message = userResponse['msg'];
-  //
-  //         if (status == '01') {
-  //           setState(() {
-  //             Fluttertoast.showToast(
-  //               msg: message,
-  //               toastLength: Toast.LENGTH_SHORT,
-  //               gravity: ToastGravity.BOTTOM,
-  //             );
-  //           });
-  //         } else if (status == '02') {
-  //           showDialog(
-  //             context: context,
-  //             builder: (BuildContext context) {
-  //               return DialogError(
-  //                 title: "Atenção!",
-  //                 content: message,
-  //                 btnConfirm: TextButton(
-  //                     style: TextButton.styleFrom(
-  //                         foregroundColor: MyColors.colorPrimary),
-  //                     onPressed: () {
-  //                       Navigator.of(context).pop();
-  //                     },
-  //                     child: Text(
-  //                       'Voltar',
-  //                       style: TextStyle(
-  //                         fontSize: FontSizes.subTitulo,
-  //                         fontWeight: FontWeight.w600,
-  //                         fontFamily: 'Poppins',
-  //                       ),
-  //                     )),
-  //               );
-  //             },
-  //           );
-  //         } else if (status == '03') {
-  //           showDialog(
-  //             context: context,
-  //             builder: (BuildContext context) {
-  //               return DialogError(
-  //                 title: "Atenção!",
-  //                 content: message,
-  //                 btnConfirm: TextButton(
-  //                     style: TextButton.styleFrom(
-  //                         foregroundColor: MyColors.colorPrimary),
-  //                     onPressed: () {
-  //                       Navigator.of(context).pop();
-  //                     },
-  //                     child: Text(
-  //                       'Voltar',
-  //                       style: TextStyle(
-  //                         fontSize: FontSizes.subTitulo,
-  //                         fontWeight: FontWeight.w600,
-  //                         fontFamily: 'Poppins',
-  //                       ),
-  //                     )),
-  //               );
-  //             },
-  //           );
-  //         } else {
-  //           showDialog(
-  //             context: context,
-  //             builder: (BuildContext context) {
-  //               return DialogError(
-  //                 title: "Atenção!",
-  //                 content: "Ocorreu um erro durante o login.",
-  //                 btnConfirm: TextButton(
-  //                     style: TextButton.styleFrom(
-  //                         foregroundColor: MyColors.colorPrimary),
-  //                     onPressed: () {
-  //                       Navigator.of(context).pop();
-  //                     },
-  //                     child: Text(
-  //                       'Voltar',
-  //                       style: TextStyle(
-  //                         fontSize: FontSizes.subTitulo,
-  //                         fontWeight: FontWeight.w600,
-  //                         fontFamily: 'Poppins',
-  //                       ),
-  //                     )),
-  //               );
-  //             },
-  //           );
-  //         }
-  //       } else {
-  //         showDialog(
-  //           context: context,
-  //           builder: (BuildContext context) {
-  //             return DialogError(
-  //               title: "Atenção!",
-  //               content: "Ocorreu um erro durante o login.",
-  //               btnConfirm: TextButton(
-  //                   style: TextButton.styleFrom(
-  //                       foregroundColor: MyColors.colorPrimary),
-  //                   onPressed: () {
-  //                     Navigator.of(context).pop();
-  //                   },
-  //                   child: Text(
-  //                     'Voltar',
-  //                     style: TextStyle(
-  //                       fontSize: FontSizes.subTitulo,
-  //                       fontWeight: FontWeight.w600,
-  //                       fontFamily: 'Poppins',
-  //                     ),
-  //                   )),
-  //             );
-  //           },
-  //         );
-  //       }
-  //     } catch (e) {
-  //       print('Erro durante a requisição: $e');
-  //       showDialog(
-  //         context: context,
-  //         builder: (BuildContext context) {
-  //           return DialogError(
-  //             title: "Atenção!",
-  //             content: "Erro durante a requisição: $e",
-  //             btnConfirm: TextButton(
-  //                 style: TextButton.styleFrom(
-  //                     foregroundColor: MyColors.colorPrimary),
-  //                 onPressed: () {
-  //                   Navigator.of(context).pop();
-  //                 },
-  //                 child: Text(
-  //                   'Voltar',
-  //                   style: TextStyle(
-  //                     fontSize: FontSizes.subTitulo,
-  //                     fontWeight: FontWeight.w600,
-  //                     fontFamily: 'Poppins',
-  //                   ),
-  //                 )),
-  //           );
-  //         },
-  //       );
-  //     } finally {
-  //       setState(() {
-  //         isLoadingLogin = false;
-  //       });
-  //     }
-  //   } else {
-  //     setState(() {
-  //       isLoadingRegistre = false;
-  //     });
-  //   }
-  // }
-  //
-  // Future<void> loginCode(String email, String password, String codigo) async {
-  //   Preferences.init();
-  //   if (validatonLogin(email, password)) {
-  //     try {
-  //       final body = {
-  //         WSConstantes.EMAIL: email,
-  //         WSConstantes.PASSWORD: password,
-  //         WSConstantes.CODE: codigo,
-  //         WSConstantes.TOKENID: WSConstantes.TOKEN
-  //       };
-  //
-  //       final response =
-  //       await requestsWebServices.sendPostRequest(WSConstantes.LOGIN, body);
-  //
-  //       final decodedResponse = jsonDecode(response);
-  //
-  //       if (decodedResponse is List && decodedResponse.isNotEmpty) {
-  //         final userResponse = decodedResponse[0];
-  //         final status = userResponse['status'];
-  //         final message = userResponse['msg'];
-  //         //  int userId = userResponse['id'];
-  //
-  //         if (status == '01') {
-  //           int userId = userResponse['id'];
-  //           final name = userResponse['nome'];
-  //           final apelido = userResponse['apelido'];
-  //           final documento = userResponse['documento'];
-  //           final email = userResponse['email'];
-  //           final phone = userResponse['celular'];
-  //
-  //           final user = UserModel(
-  //               id: userId,
-  //               name: name,
-  //               email: email,
-  //               cellphone: phone,
-  //               apelido: apelido,
-  //               cpf: documento,
-  //               tipo: widget.tipo.toString());
-  //
-  //           await Preferences.setUserData(user);
-  //           await Preferences.setLogin(true);
-  //           Navigator.push(
-  //               context,
-  //               MaterialPageRoute(
-  //                   builder: (context) => NavigationScreen(
-  //                   )));
-  //         } else if (status == '02') {
-  //           //
-  //           showDialog(
-  //             context: context,
-  //             builder: (BuildContext context) {
-  //               return DialogError(
-  //                 title: "Atenção!",
-  //                 content: message,
-  //                 btnConfirm: TextButton(
-  //                     style: TextButton.styleFrom(
-  //                         foregroundColor: MyColors.colorPrimary),
-  //                     onPressed: () {
-  //                       Navigator.of(context).pop();
-  //                     },
-  //                     child: Text(
-  //                       'Voltar',
-  //                       style: TextStyle(
-  //                         fontSize: FontSizes.subTitulo,
-  //                         fontWeight: FontWeight.w600,
-  //                         fontFamily: 'Poppins',
-  //                       ),
-  //                     )),
-  //               );
-  //             },
-  //           );
-  //           // getFCM(userId.toString());
-  //
-  //         } else if (status == '03') {
-  //           showDialog(
-  //             context: context,
-  //             builder: (BuildContext context) {
-  //               return DialogError(
-  //                 title: "Atenção!",
-  //                 content: message,
-  //                 btnConfirm: TextButton(
-  //                     style: TextButton.styleFrom(
-  //                         foregroundColor: MyColors.colorPrimary),
-  //                     onPressed: () {
-  //                       Navigator.of(context).pop();
-  //                     },
-  //                     child: Text(
-  //                       'Voltar',
-  //                       style: TextStyle(
-  //                         fontSize: FontSizes.subTitulo,
-  //                         fontWeight: FontWeight.w600,
-  //                         fontFamily: 'Poppins',
-  //                       ),
-  //                     )),
-  //               );
-  //             },
-  //           );
-  //         } else {
-  //           showDialog(
-  //             context: context,
-  //             builder: (BuildContext context) {
-  //               return DialogError(
-  //                 title: "Atenção!",
-  //                 content: "Ocorreu um erro durante o login.",
-  //                 btnConfirm: TextButton(
-  //                     style: TextButton.styleFrom(
-  //                         foregroundColor: MyColors.colorPrimary),
-  //                     onPressed: () {
-  //                       Navigator.of(context).pop();
-  //                     },
-  //                     child: Text(
-  //                       'Voltar',
-  //                       style: TextStyle(
-  //                         fontSize: FontSizes.subTitulo,
-  //                         fontWeight: FontWeight.w600,
-  //                         fontFamily: 'Poppins',
-  //                       ),
-  //                     )),
-  //               );
-  //             },
-  //           );
-  //         }
-  //       } else {
-  //         showDialog(
-  //           context: context,
-  //           builder: (BuildContext context) {
-  //             return DialogError(
-  //               title: "Atenção!",
-  //               content: "Ocorreu um erro durante o login.",
-  //               btnConfirm: TextButton(
-  //                   style: TextButton.styleFrom(
-  //                       foregroundColor: MyColors.colorPrimary),
-  //                   onPressed: () {
-  //                     Navigator.of(context).pop();
-  //                   },
-  //                   child: Text(
-  //                     'Voltar',
-  //                     style: TextStyle(
-  //                       fontSize: FontSizes.subTitulo,
-  //                       fontWeight: FontWeight.w600,
-  //                       fontFamily: 'Poppins',
-  //                     ),
-  //                   )),
-  //             );
-  //           },
-  //         );
-  //       }
-  //     } catch (e) {
-  //       print('Erro durante a requisição: $e');
-  //       showDialog(
-  //         context: context,
-  //         builder: (BuildContext context) {
-  //           return DialogError(
-  //             title: "Atenção!",
-  //             content: "Erro durante a requisição: $e",
-  //             btnConfirm: TextButton(
-  //                 style: TextButton.styleFrom(
-  //                     foregroundColor: MyColors.colorPrimary),
-  //                 onPressed: () {
-  //                   Navigator.of(context).pop();
-  //                 },
-  //                 child: Text(
-  //                   'Voltar',
-  //                   style: TextStyle(
-  //                     fontSize: FontSizes.subTitulo,
-  //                     fontWeight: FontWeight.w600,
-  //                     fontFamily: 'Poppins',
-  //                   ),
-  //                 )),
-  //           );
-  //         },
-  //       );
-  //     } finally {
-  //       setState(() {
-  //         isLoadingLogin = false;
-  //       });
-  //     }
-  //   } else {
-  //     setState(() {
-  //       isLoadingRegistre = false;
-  //     });
-  //   }
-  // }
-  //
-  // bool validatonLogin(String email, String password) {
-  //   bool validation = false;
-  //   if (!validationEmail(email)) {
-  //     setState(() {
-  //       Fluttertoast.showToast(
-  //         msg: WSConstantes.MSG_EMAIL_INVALIDO,
-  //         toastLength: Toast.LENGTH_SHORT,
-  //         gravity: ToastGravity.BOTTOM,
-  //       );
-  //       isLoadingLogin = false;
-  //       validation = false;
-  //     });
-  //   } else if (password.isEmpty || password.length < 6) {
-  //     setState(() {
-  //       Fluttertoast.showToast(
-  //         msg: WSConstantes.MSG_PASSWORD_INVALIDO,
-  //         toastLength: Toast.LENGTH_SHORT,
-  //         gravity: ToastGravity.BOTTOM,
-  //       );
-  //       isLoadingLogin = false;
-  //       validation = false;
-  //     });
-  //   } else {
-  //     validation = true;
-  //   }
-  //
-  //   return validation;
-  // }
-  //
-  // bool validationEmail(String email) {
-  //   final regex = RegExp(r'^[\w-]+(\.[\w-]+)*@([\w-]+\.)+[a-zA-Z]{2,7}$');
-  //   return regex.hasMatch(email);
-  // }
   @override
   void dispose() {
-    pinController.dispose();
-    focusNode.dispose();
+    _pinController.dispose();
+    _focusNode.dispose();
     super.dispose();
-  }
-
-  String getCodeFromControllers(List<TextEditingController> controllers) {
-    String code = '';
-    for (var controller in controllers) {
-      code += controller.text;
-    }
-    return code;
   }
 
   @override
   Widget build(BuildContext context) {
-    const focusedBorderColor = Colors.grey;
-    const fillColor = Colors.white;
-    const borderColor = Colors.grey;
-    final double buttonWidth = MediaQuery.of(context).size.width - 40;
     final defaultPinTheme = PinTheme(
       width: 56,
       height: 56,
       textStyle: const TextStyle(
         fontSize: 22,
-        color: Color.fromRGBO(30, 60, 87, 1),
+        color: Color(0xFF313131),
+        fontWeight: FontWeight.w600,
       ),
       decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(19),
-        border: Border.all(color: borderColor),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: const Color(0xFFD9D9D9)),
+        color: Colors.white,
       ),
     );
-    var widthFull = MediaQuery.of(context).size.width;
-    var heightFull = MediaQuery.of(context).size.height;
+    final screenHeight = MediaQuery.of(context).size.height;
+
     return Scaffold(
       backgroundColor: Colors.white,
-
       body: Stack(
         children: [
           Positioned.fill(
-            child:Container(height: heightFull, color: MyColors.colorPrimary,),
+            child: Image.asset(
+              'images/costeira_tela.png',
+              fit: BoxFit.cover,
+            ),
           ),
           SafeArea(
             top: false,
             bottom: false,
             child: SingleChildScrollView(
-              reverse: true, // para subir quando teclado abrir
+              reverse: true,
               child: ConstrainedBox(
-                constraints: BoxConstraints(
-                  minHeight: heightFull,
-                ),
+                constraints: BoxConstraints(minHeight: screenHeight),
                 child: IntrinsicHeight(
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.end,
                     children: [
                       Container(
-                        width: widthFull,
-                        // Usar flexível em height para evitar overflow com teclado
+                        width: double.infinity,
                         constraints: BoxConstraints(
-                          maxHeight: heightFull * 0.93,
+                          maxHeight: screenHeight * 0.93,
                         ),
-                        padding: EdgeInsets.symmetric(horizontal: 20),
-                        decoration: ShapeDecoration(
+                        padding: const EdgeInsets.symmetric(horizontal: 20),
+                        decoration: const BoxDecoration(
                           color: Colors.white,
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.only(
-                              topLeft: Radius.circular(24),
-                              topRight: Radius.circular(24),
-                            ),
+                          borderRadius: BorderRadius.only(
+                            topLeft: Radius.circular(24),
+                            topRight: Radius.circular(24),
                           ),
                         ),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                SizedBox(height: 32),
-                                Row(
-                                  children: [
-                                    GestureDetector(
-                                        onTap: (){
-                                          Navigator.pop(context);
-                                        },
-                                        child: Icon(Icons.arrow_back_ios, color: Colors.black)),
-                                  ],
-                                ),
-                                SizedBox(height: 16),
-                                Column(
-
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Text(
-                                      'Autenticação',
-                                      style: TextStyle(
-                                        color: const Color(0xFF313131),
-                                        fontSize: 24,
-                                        fontFamily: 'Montserrat',
-                                        fontWeight: FontWeight.w600,
-                                      ),
-                                    )
-                                  ],
-                                ),
-                                SizedBox(height: 8),
-                                Padding(
-                                  padding: const EdgeInsets.symmetric(horizontal: 0),
-                                  child: Column(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
-                                    children: [
-                                      Text(
-                                        'Digite o código enviado para o seu email \n${widget.email}',
-                                        style: TextStyle(
-                                          color: Color(0xFF8691A8),
-                                          fontSize: 16,
-                                          fontFamily: 'Montserrat',
-                                          fontWeight: FontWeight.w500,
-                                          height: 1.50,
-                                        ),
-                                      ),
-
-                                    ],
+                        child: Form(
+                          key: _formKey,
+                          onChanged: () => setState(() {}),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  const SizedBox(height: 32),
+                                  IconButton(
+                                    onPressed: () => Navigator.of(context).pop(),
+                                    icon: const Icon(
+                                      Icons.arrow_back_ios,
+                                      color: Colors.black,
+                                      size: 20,
+                                    ),
+                                    padding: EdgeInsets.zero,
+                                    constraints: const BoxConstraints(),
                                   ),
-                                ),
-                              ],
-                            ),
-                            Column(
-                              children: [
-                                Row(
-                                  mainAxisAlignment: MainAxisAlignment.center,
-                                  children: [
-                                    Form(
-                                      key: formKey,
-                                      child: Column(
-                                        mainAxisAlignment: MainAxisAlignment.center,
-                                        crossAxisAlignment: CrossAxisAlignment.center,
-                                        children: [
-                                          Directionality(
-                                            // Specify direction if desired
-                                            textDirection: TextDirection.ltr,
-                                            child: Pinput(
-                                              controller: pinController,
-                                              focusNode: focusNode,
-                                              // androidSmsAutofillMethod:
-                                              // AndroidSmsAutofillMethod.smsUserConsentApi,
-                                              // listenForMultipleSmsOnAndroid: true,
-                                              defaultPinTheme: defaultPinTheme,
-                                              separatorBuilder: (index) => const SizedBox(width: 8),
-                                              validator: (value) {
-                                                return value == '2222' ? null : null;
-                                              },
-                                              // onClipboardFound: (value) {
-                                              //   debugPrint('onClipboardFound: $value');
-                                              //   pinController.setText(value);
-                                              // },
-                                              hapticFeedbackType: HapticFeedbackType.lightImpact,
-                                              onCompleted: (pin) {
-                                                debugPrint('onCompleted: $pin');
-                                                setState(() {
-                                                  codefull = pin;
-                                                });
-                                              },
-                                              onChanged: (value) {
-                                                debugPrint('onChanged: $value');
-                                              },
-                                              cursor: Column(
-                                                mainAxisAlignment: MainAxisAlignment.end,
-                                                children: [
-                                                  Container(
-                                                    margin: const EdgeInsets.only(bottom: 9),
-                                                    width: 22,
-                                                    height: 1,
-                                                    color: focusedBorderColor,
-                                                  ),
-                                                ],
-                                              ),
-                                              focusedPinTheme: defaultPinTheme.copyWith(
-                                                decoration: defaultPinTheme.decoration!.copyWith(
-                                                  borderRadius: BorderRadius.circular(8),
-                                                  border: Border.all(color: focusedBorderColor),
-                                                ),
-                                              ),
-                                              submittedPinTheme: defaultPinTheme.copyWith(
-                                                decoration: defaultPinTheme.decoration!.copyWith(
-                                                  color: fillColor,
-                                                  borderRadius: BorderRadius.circular(8),
-                                                  border: Border.all(color: focusedBorderColor),
-                                                ),
-                                              ),
-                                              errorPinTheme: defaultPinTheme.copyBorderWith(
-                                                border: Border.all(color: Colors.redAccent),
+                                  const SizedBox(height: 16),
+                                  const Text(
+                                    'Autenticação',
+                                    style: TextStyle(
+                                      color: Color(0xFF313131),
+                                      fontSize: 24,
+                                      fontWeight: FontWeight.w600,
+                                    ),
+                                  ),
+                                  const SizedBox(height: 8),
+                                  Text(
+                                    'Digite o código enviado para o seu e-mail\n${widget.email}',
+                                    style: const TextStyle(
+                                      color: Color(0xFF8691A8),
+                                      fontSize: 16,
+                                      fontWeight: FontWeight.w500,
+                                      height: 1.5,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                              Column(
+                                children: [
+                                  const SizedBox(height: 32),
+                                  Row(
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    children: [
+                                      Directionality(
+                                        textDirection: TextDirection.ltr,
+                                        child: Pinput(
+                                          controller: _pinController,
+                                          focusNode: _focusNode,
+                                          length: 4,
+                                          defaultPinTheme: defaultPinTheme,
+                                          separatorBuilder: (_) =>
+                                              const SizedBox(width: 8),
+                                          keyboardType: TextInputType.number,
+                                          inputFormatters: [
+                                            FilteringTextInputFormatter
+                                                .digitsOnly,
+                                          ],
+                                          validator: (value) {
+                                            if ((value ?? '').length != 4) {
+                                              return 'Informe o código completo';
+                                            }
+                                            return null;
+                                          },
+                                          hapticFeedbackType:
+                                              HapticFeedbackType.lightImpact,
+                                          focusedPinTheme:
+                                              defaultPinTheme.copyWith(
+                                            decoration: defaultPinTheme
+                                                .decoration!
+                                                .copyWith(
+                                              border: Border.all(
+                                                color: MyColors.colorPrimary,
                                               ),
                                             ),
                                           ),
-                                        ],
+                                          submittedPinTheme:
+                                              defaultPinTheme.copyWith(
+                                            decoration: defaultPinTheme
+                                                .decoration!
+                                                .copyWith(
+                                              border: Border.all(
+                                                color: const Color(0xFFD9D9D9),
+                                              ),
+                                            ),
+                                          ),
+                                        ),
                                       ),
-                                    ),
-                                  ],
-                                ),
-                                SizedBox(height: 16),
-                                Text('Não recebeu o código?',
-                                  style: TextStyle(
-                                    color: Color(0xFF8A8A8A),
-                                    fontSize: 14,
-                                    fontFamily: 'Montserrat',
-                                    fontWeight: FontWeight.w600,
-                                  ),),
-                                InkWell(
-                                  onTap: () {
-                                    // sendCode(widget.email, widget.password, widget.lat,
-                                    //     widget.long);
-                                  },
-                                  child: Text(
-                                    'Reenviar código',
+                                    ],
+                                  ),
+                                  const SizedBox(height: 16),
+                                  const Text(
+                                    'Não recebeu o código?',
                                     style: TextStyle(
+                                      color: Color(0xFF8A8A8A),
                                       fontSize: 14,
-                                      fontWeight: FontWeight.w500,
-                                      color: MyColors.colorPrimary,
-                                      decoration: TextDecoration.underline,
-                                      decorationColor: MyColors.colorPrimary,
-                                      decorationThickness: 1.0,
+                                      fontWeight: FontWeight.w600,
                                     ),
                                   ),
-                                ),
-                              ],
-                            ),
-
-                            Column(
-                              crossAxisAlignment: CrossAxisAlignment.center,
-                              children: [
-
-                                ElevatedButton(
-                                  onPressed: () {
-                                    Navigator.pushReplacement(
-                                      context,
-                                      MaterialPageRoute(
-                                        builder: (context) => NavigationScreen(),
+                                  TextButton(
+                                    onPressed: _isLoading ? null : _resendCode,
+                                    child: Text(
+                                      'Reenviar código',
+                                      style: TextStyle(
+                                        fontSize: 14,
+                                        fontWeight: FontWeight.w500,
+                                        color: MyColors.colorPrimary,
+                                        decoration: TextDecoration.underline,
+                                        decorationColor:
+                                            MyColors.colorPrimary,
                                       ),
-                                    );
-
-                                  },
-                                  style: ElevatedButton.styleFrom(
-                                    elevation: 6,
-                                    shadowColor: Colors.black,
-                                    backgroundColor: MyColors.colorPrimary,
-                                    minimumSize: Size(double.infinity, 48),
-                                    padding: EdgeInsets.zero,
-                                    shape: RoundedRectangleBorder(
-                                      borderRadius: BorderRadius.circular(12),
                                     ),
                                   ),
-                                  child: Text(
-                                    'Avançar',
-                                    textAlign: TextAlign.center,
-                                    style: TextStyle(
-                                      color: Colors.white,
-                                      fontSize: 12,
-                                      fontFamily: 'Poppins',
-                                      fontWeight: FontWeight.w500,
-                                      height: 1.50,
-                                    ),
-                                  ),
+                                ],
+                              ),
+                              Padding(
+                                padding:
+                                    const EdgeInsets.only(top: 24, bottom: 32),
+                                child: PrimaryButton(
+                                  label: 'Avançar',
+                                  isLoading: _isLoading,
+                                  onPressed: _canSubmit ? _submit : null,
                                 ),
-                                SizedBox(height: 32),
-                              ],
-                            ),
-                          ],
+                              ),
+                            ],
+                          ),
                         ),
                       ),
                     ],
@@ -764,8 +240,122 @@ class _ValidationCodeState extends State<ValidationCode> {
       ),
     );
   }
-  double progress = 0; // valor de 0 até 1
-  bool isLoading = false;
 
+  Future<void> _submit() async {
+    if (!_formKey.currentState!.validate()) {
+      return;
+    }
+
+    FocusScope.of(context).unfocus();
+    setState(() {
+      _isLoading = true;
+    });
+
+    try {
+      final result = await _authRepository.login(
+        email: widget.email,
+        password: widget.password,
+        code: _pinController.text.trim(),
+        tipo: widget.tipo,
+      );
+
+      _showMessage(result.message.message);
+
+      if (!mounted) {
+        return;
+      }
+
+      if (result.message.status == '02') {
+        Navigator.of(context).pushAndRemoveUntil(
+          MaterialPageRoute(
+            builder: (_) => PendingApprovalPage(
+              message: result.message.message,
+              email: widget.email,
+            ),
+          ),
+          (route) => false,
+        );
+        return;
+      }
+
+      if (!result.message.isSuccess || result.user == null) {
+        return;
+      }
+
+      await SessionStorage.saveUserSession(result.user!);
+      await _saveFcmIfAvailable(result.user!.id);
+
+      if (!mounted) {
+        return;
+      }
+
+      Navigator.of(context).pushAndRemoveUntil(
+        MaterialPageRoute(builder: (_) => const NavigationScreen()),
+        (route) => false,
+      );
+    } on ApiException catch (error) {
+      _showMessage(error.message);
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+        });
+      }
+    }
+  }
+
+  Future<void> _resendCode() async {
+    setState(() {
+      _isLoading = true;
+    });
+
+    try {
+      final response = await _authRepository.sendTwoFactor(
+        email: widget.email,
+        password: widget.password,
+        coordinates: UserCoordinates(
+          latitude: widget.lat,
+          longitude: widget.long,
+        ),
+      );
+      _showMessage(response.message);
+    } on ApiException catch (error) {
+      _showMessage(error.message);
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+        });
+      }
+    }
+  }
+
+  Future<void> _saveFcmIfAvailable(int userId) async {
+    final pushToken = await _pushTokenService.getDeviceToken();
+    final platformType = _pushTokenService.platformType;
+    if (pushToken == null || pushToken.isEmpty || platformType == 0) {
+      return;
+    }
+
+    try {
+      await _authRepository.saveFcm(
+        userId: userId,
+        type: platformType,
+        registrationId: pushToken,
+      );
+    } on ApiException {
+      // O login não deve falhar por causa do FCM.
+    }
+  }
+
+  void _showMessage(String message) {
+    if (!mounted) {
+      return;
+    }
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text(message)),
+    );
+  }
+
+  bool get _canSubmit => _pinController.text.trim().length == 4;
 }
-

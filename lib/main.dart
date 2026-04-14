@@ -1,5 +1,8 @@
+import 'package:costeira/core/services/push_token_service.dart';
 import 'package:costeira/theme/colors.dart';
 import 'package:costeira/views/splsh/splash.dart';
+import 'package:firebase_core/firebase_core.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 
 // class ThemeModel extends ChangeNotifier {
@@ -17,7 +20,15 @@ import 'package:flutter/material.dart';
 //   }
 // }
 
-void main() {
+Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
+  await Firebase.initializeApp();
+}
+
+Future<void> main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await Firebase.initializeApp();
+  FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
+  await PushTokenService.instance.initialize();
   runApp(const MyApp());
 }
 
@@ -32,19 +43,16 @@ class MyApp extends StatelessWidget {
       title: 'Costeira',
       theme: ThemeData(
         useMaterial3: true,
-
         colorScheme: ColorScheme(
           primary: MyColors.colorPrimary,
-          background: const Color(0xFFF1F3F4),
           brightness: Brightness.light,
           onPrimary: Colors.white,
-          onBackground: const Color(0xFF313131),
           secondary: const Color(0xFFF1F3F4),
           onSecondary: Colors.white,
           error: Colors.red,
           onError: Colors.white,
-          surface: const Color(0xFFEBEBEB),
-          onSurface: Colors.white,
+          surface: const Color(0xFFF1F3F4),
+          onSurface: const Color(0xFF313131),
         ),
 
         fontFamily: 'Montserrat',

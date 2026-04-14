@@ -1,8 +1,5 @@
-import 'dart:io';
-
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
-
 
 class Home extends StatefulWidget {
   const Home({super.key});
@@ -46,7 +43,10 @@ class _HomeState extends State<Home> {
             child: Column(
               children: [
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 16,
+                    vertical: 8,
+                  ),
                   decoration: ShapeDecoration(
                     color: Colors.white,
                     shape: RoundedRectangleBorder(
@@ -58,7 +58,7 @@ class _HomeState extends State<Home> {
                         blurRadius: 24,
                         offset: const Offset(0, 0),
                         spreadRadius: 0,
-                      )
+                      ),
                     ],
                   ),
                 ),
@@ -71,7 +71,10 @@ class _HomeState extends State<Home> {
             left: 16,
             right: 16,
             child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+              padding: const EdgeInsets.symmetric(
+                horizontal: 16,
+                vertical: 14,
+              ),
               decoration: ShapeDecoration(
                 color: Colors.white,
                 shape: RoundedRectangleBorder(
@@ -87,7 +90,7 @@ class _HomeState extends State<Home> {
                     blurRadius: 24,
                     offset: const Offset(0, 0),
                     spreadRadius: 0,
-                  )
+                  ),
                 ],
               ),
               child: Row(

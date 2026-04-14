@@ -41,6 +41,13 @@ dependencies:
   mask_text_input_formatter: ^2.9.0
   pinput: ^6.0.1
   flutter_speed_dial: ^7.0.0
+  dio: ^5.9.0
+  shared_preferences: ^2.5.3
+  geolocator: ^14.0.2
+  permission_handler: ^12.0.1
+  image_picker: ^1.2.0
+  firebase_core: ^4.1.1
+  firebase_messaging: ^16.0.1
 
 dev_dependencies:
   flutter_test:

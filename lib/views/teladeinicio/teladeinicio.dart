@@ -1,8 +1,6 @@
 import 'package:costeira/views/Cadastro/cadastrocliente.dart';
 import 'package:flutter/material.dart';
-// import 'package:ichef/views/cadastrogoogle/cadastrogoogle.dart';
 
-import '../../main.dart';
 import '../login/login.dart';
 
 class Teladeinicio extends StatelessWidget {
@@ -13,7 +11,7 @@ class Teladeinicio extends StatelessWidget {
     final colors = Theme.of(context).colorScheme;
 
     return Scaffold(
-      backgroundColor: colors.background,
+      backgroundColor: colors.surface,
       body: Stack(
         children: [
           // Fundo ocupando a tela toda
@@ -39,7 +37,7 @@ class Teladeinicio extends StatelessWidget {
             right: 0,
             child:
 
-            Container(
+            SizedBox(
               height: MediaQuery.of(context).size.height * 0.45,
               child: Stack(
                 children: [
@@ -106,7 +104,7 @@ class Teladeinicio extends StatelessWidget {
                             onTap: () {
                               Navigator.push(
                                 context,
-                                MaterialPageRoute(builder: (context) => Cadastro()), // sua tela de cadastro
+                                MaterialPageRoute(builder: (context) => const Cadastro()),
                               );
                             },
                             child: Container(
@@ -146,7 +144,7 @@ class Teladeinicio extends StatelessWidget {
                             onTap: () {
                               Navigator.push(
                                 context,
-                                MaterialPageRoute(builder: (context) => Login()), // sua tela de cadastro
+                                MaterialPageRoute(builder: (context) => const Login()),
                               );
                             },
                             child:

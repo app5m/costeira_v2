@@ -11,9 +11,6 @@ import '../meusdados.dart';
 import 'climachuva/clima.dart';
 import 'estoquedeinsumos/estoqueinsumos.dart';
 
-
-
-
 class modulos extends StatefulWidget {
   const modulos({super.key});
 
@@ -22,7 +19,7 @@ class modulos extends StatefulWidget {
 }
 
 class _modulosState extends State<modulos> {
-//  final requestsWebServices = RequestsWebServices(WSConstantes.URLBASE);
+  //  final requestsWebServices = RequestsWebServices(WSConstantes.URLBASE);
 
   // Future<String?> desativeAccount(BuildContext context) async {
   //   await Preferences.init();
@@ -71,130 +68,123 @@ class _modulosState extends State<modulos> {
       backgroundColor: Colors.white,
       context: context,
       shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.only(
-            topLeft: Radius.circular(16),
-            topRight: Radius.circular(16),
-          )),
+        borderRadius: BorderRadius.only(
+          topLeft: Radius.circular(16),
+          topRight: Radius.circular(16),
+        ),
+      ),
       builder: (BuildContext bc) {
-        return Container(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Container(
-                padding: EdgeInsets.only(top: 8),
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    SizedBox(height: 8),
-                    Opacity(
-                      opacity: 0.70,
-                      child: Container(
-                        width: 72,
-                        decoration: ShapeDecoration(
-                          shape: RoundedRectangleBorder(
-                            side: BorderSide(
-                              width: 2,
-                              strokeAlign: BorderSide.strokeAlignCenter,
-                              color: Color(0xFFE2E2E2),
-                            ),
+        return Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Container(
+              padding: EdgeInsets.only(top: 8),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  SizedBox(height: 8),
+                  Opacity(
+                    opacity: 0.70,
+                    child: Container(
+                      width: 72,
+                      decoration: ShapeDecoration(
+                        shape: RoundedRectangleBorder(
+                          side: BorderSide(
+                            width: 2,
+                            strokeAlign: BorderSide.strokeAlignCenter,
+                            color: Color(0xFFE2E2E2),
                           ),
                         ),
                       ),
                     ),
-                    SizedBox(height: 8),
-                    Container(
-                      margin: EdgeInsets.symmetric(horizontal: 20),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.end,
-                        children: [
-                          Icon(
-                            Icons.close,
-                          ),
-                        ],
-                      ),
+                  ),
+                  SizedBox(height: 8),
+                  Container(
+                    margin: EdgeInsets.symmetric(horizontal: 20),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.end,
+                      children: [Icon(Icons.close)],
                     ),
-                    SizedBox(height: 16),
-                    SvgPicture.asset(
-                      'icon/desativarvermenho.svg',
-                      width: 80,
-                      height: 80,
-                      color: Colors.red,
-                    ),
-                    SizedBox(height: 16),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Text(
-                          "Desativar Conta?",
-                          style: TextStyle(
-                              fontFamily: 'Montserrat',
-                              fontWeight: FontWeight.w600,
-                              fontSize: 16,
-                              color: Color(0xff000000)),
-                        ),
-                      ],
-                    ),
-                    SizedBox(height: 8),
-                    Padding(
-                      padding: const EdgeInsets.all(0.0),
-                      child: Text(
-                        "Tem certeza que deseja\ndesativar sua conta?",
-                        textAlign: TextAlign.center,
+                  ),
+                  SizedBox(height: 16),
+                  SvgPicture.asset(
+                    'icon/desativarvermenho.svg',
+                    width: 80,
+                    height: 80,
+                    color: Colors.red,
+                  ),
+                  SizedBox(height: 16),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Text(
+                        "Desativar Conta?",
                         style: TextStyle(
                           fontFamily: 'Montserrat',
-                          fontWeight: FontWeight.w400,
-                          fontSize: 14,
-                          color: Color(0xFF8692A8),
+                          fontWeight: FontWeight.w600,
+                          fontSize: 16,
+                          color: Color(0xff000000),
                         ),
                       ),
+                    ],
+                  ),
+                  SizedBox(height: 8),
+                  Padding(
+                    padding: const EdgeInsets.all(0.0),
+                    child: Text(
+                      "Tem certeza que deseja\ndesativar sua conta?",
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                        fontFamily: 'Montserrat',
+                        fontWeight: FontWeight.w400,
+                        fontSize: 14,
+                        color: Color(0xFF8692A8),
+                      ),
                     ),
-                    SizedBox(height: 16),
-                    Column(
-                      children: [
-                        Container(
-                          width: MediaQuery.of(context).size.width - 40,
-                          height: 50,
-                          child: ElevatedButton(
-                            onPressed: () async {
-                              //  desativeAccount(context);
-                            },
-                            child: Text(
-                              "Sair",
-                              style: TextStyle(color: Colors.black),
-                            ),
-                            style: ElevatedButton.styleFrom(
-                              side: BorderSide(color: Colors.red),
-                              elevation: 0,
-                              backgroundColor: Colors.transparent,
-                            ),
+                  ),
+                  SizedBox(height: 16),
+                  Column(
+                    children: [
+                      SizedBox(
+                        width: MediaQuery.of(context).size.width - 40,
+                        height: 50,
+                        child: ElevatedButton(
+                          onPressed: () async {
+                            //  desativeAccount(context);
+                          },
+                          style: ElevatedButton.styleFrom(
+                            side: BorderSide(color: Colors.red),
+                            elevation: 0,
+                            backgroundColor: Colors.transparent,
                           ),
-                        ),
-                        SizedBox(
-                          width: 8,
-                        ),
-                        TextButton(
-                          onPressed: () => Navigator.of(context).pop(false),
                           child: Text(
-                            "Cancelar",
-                            style: TextStyle(
-                              fontSize: 16,
-                              color: MyColors.colorOnPrimary,
-                              decoration: TextDecoration.underline,
-                              decorationColor: MyColors.colorOnPrimary,
-                            ),
+                            "Sair",
+                            style: TextStyle(color: Colors.black),
                           ),
                         ),
-                        SizedBox(
-                          width: 8,
+                      ),
+                      SizedBox(width: 8),
+                      TextButton(
+                        onPressed: () =>
+                            Navigator.of(context).pop(false),
+                        child: Text(
+                          "Cancelar",
+                          style: TextStyle(
+                            fontSize: 16,
+                            color: MyColors.colorOnPrimary,
+                            decoration: TextDecoration.underline,
+                            decorationColor: MyColors.colorOnPrimary,
+                          ),
                         ),
-                      ],
-                    ),
-                    SizedBox(height: 16)
-                  ],
-                ),
+                      ),
+                      SizedBox(width: 8),
+                    ],
+                  ),
+                  SizedBox(height: 16),
+                ],
               ),
-            ],
-          ),
+            ),
+          ],
         );
       },
     );
@@ -205,10 +195,11 @@ class _modulosState extends State<modulos> {
       backgroundColor: Colors.white,
       context: context,
       shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.only(
-            topLeft: Radius.circular(16),
-            topRight: Radius.circular(16),
-          )),
+        borderRadius: BorderRadius.only(
+          topLeft: Radius.circular(16),
+          topRight: Radius.circular(16),
+        ),
+      ),
       builder: (BuildContext bc) {
         return Container(
           child: Column(
@@ -228,7 +219,8 @@ class _modulosState extends State<modulos> {
                           shape: RoundedRectangleBorder(
                             side: BorderSide(
                               width: 2,
-                              strokeAlign: BorderSide.strokeAlignCenter,
+                              strokeAlign:
+                                  BorderSide.strokeAlignCenter,
                               color: Color(0xFFE2E2E2),
                             ),
                           ),
@@ -240,11 +232,7 @@ class _modulosState extends State<modulos> {
                       margin: EdgeInsets.symmetric(horizontal: 20),
                       child: Row(
                         mainAxisAlignment: MainAxisAlignment.end,
-                        children: [
-                          Icon(
-                            Icons.close,
-                          ),
-                        ],
+                        children: [Icon(Icons.close)],
                       ),
                     ),
                     SizedBox(height: 16),
@@ -261,10 +249,11 @@ class _modulosState extends State<modulos> {
                         Text(
                           "Sair do Aplicativo?",
                           style: TextStyle(
-                              fontFamily: 'Montserrat',
-                              fontWeight: FontWeight.w600,
-                              fontSize: 16,
-                              color: Color(0xff000000)),
+                            fontFamily: 'Montserrat',
+                            fontWeight: FontWeight.w600,
+                            fontSize: 16,
+                            color: Color(0xff000000),
+                          ),
                         ),
                       ],
                     ),
@@ -285,8 +274,9 @@ class _modulosState extends State<modulos> {
                     SizedBox(height: 16),
                     Column(
                       children: [
-                        Container(
-                          width: MediaQuery.of(context).size.width - 40,
+                        SizedBox(
+                          width:
+                              MediaQuery.of(context).size.width - 40,
                           height: 50,
                           child: ElevatedButton(
                             onPressed: () async {
@@ -295,43 +285,43 @@ class _modulosState extends State<modulos> {
                               Navigator.pushAndRemoveUntil(
                                 context,
                                 MaterialPageRoute(
-                                    builder: (context) => Teladeinicio()),
-                                    (Route<dynamic> route) =>
-                                false, // Remove todas as telas anteriores
+                                  builder: (context) =>
+                                      Teladeinicio(),
+                                ),
+                                (Route<dynamic> route) =>
+                                    false, // Remove todas as telas anteriores
                               );
                             },
-                            child: Text(
-                              "Sair",
-                              style: TextStyle(color: Colors.black),
-                            ),
                             style: ElevatedButton.styleFrom(
                               side: BorderSide(color: Colors.red),
                               elevation: 0,
                               backgroundColor: Colors.transparent,
                             ),
+                            child: Text(
+                              "Sair",
+                              style: TextStyle(color: Colors.black),
+                            ),
                           ),
                         ),
-                        SizedBox(
-                          width: 8,
-                        ),
+                        SizedBox(width: 8),
                         TextButton(
-                          onPressed: () => Navigator.of(context).pop(false),
+                          onPressed: () =>
+                              Navigator.of(context).pop(false),
                           child: Text(
                             "Cancelar",
                             style: TextStyle(
                               fontSize: 16,
                               color: MyColors.colorOnPrimary,
                               decoration: TextDecoration.underline,
-                              decorationColor: MyColors.colorOnPrimary,
+                              decorationColor:
+                                  MyColors.colorOnPrimary,
                             ),
                           ),
                         ),
-                        SizedBox(
-                          width: 8,
-                        ),
+                        SizedBox(width: 8),
                       ],
                     ),
-                    SizedBox(height: 16)
+                    SizedBox(height: 16),
                   ],
                 ),
               ),
@@ -383,501 +373,481 @@ class _modulosState extends State<modulos> {
   @override
   Widget build(BuildContext context) {
     return // userPerfilCliente != null ?
-      Scaffold(
-        backgroundColor: Colors.white,
-        appBar: AppBar(
-          backgroundColor: MyColors.colorPrimary,
-          leading: GestureDetector(
-              onTap: (){
-                Navigator.pop(context);
-              },
-              child: Icon(Icons.arrow_back_ios, color: Colors.white,)),
-          title: Text(
-            'Módulos',
-            style: TextStyle(
-              color: Colors.white,
-              fontSize: 16,
-              fontFamily: 'Montserrat',
-              fontWeight: FontWeight.w600,
-            ),
+    Scaffold(
+      backgroundColor: Colors.white,
+      appBar: AppBar(
+        backgroundColor: MyColors.colorPrimary,
+        leading: GestureDetector(
+          onTap: () {
+            Navigator.pop(context);
+          },
+          child: Icon(Icons.arrow_back_ios, color: Colors.white),
+        ),
+        title: Text(
+          'Módulos',
+          style: TextStyle(
+            color: Colors.white,
+            fontSize: 16,
+            fontFamily: 'Montserrat',
+            fontWeight: FontWeight.w600,
           ),
         ),
-        body: SingleChildScrollView(
-          child: Container(
-            margin: EdgeInsets.symmetric(horizontal: 30),
-            child: Column(
-              children: [
-                SizedBox(
-                  height: 16,
-                ),
+      ),
+      body: SingleChildScrollView(
+        child: Container(
+          margin: EdgeInsets.symmetric(horizontal: 30),
+          child: Column(
+            children: [
+              SizedBox(height: 16),
 
-                SizedBox(
-                  height: 16,
-                ),
+              SizedBox(height: 16),
 
-                Column(
-                  children: [
-                    SizedBox(height: 24),
-                    GestureDetector(
-                      onTap: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) => protetoresecarga(),
-                          ),
-                        );
-                      },
-                      child: Container(
-                        width: MediaQuery.of(context).size.width - 60,
-                        padding: const EdgeInsets.all(16),
-                        decoration: ShapeDecoration(
-                          color: Colors.white,
-                          shape: RoundedRectangleBorder(
-                            side: const BorderSide(
-                              width: 1,
-                              color: Color(0xFFEBEBEB),
-                            ),
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                          shadows: const [
-                            BoxShadow(
-                              color: Color(0x0A000000),
-                              blurRadius: 24,
-                              offset: Offset(0, 0),
-                            )
-                          ],
+              Column(
+                children: [
+                  SizedBox(height: 24),
+                  GestureDetector(
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => protetoresecarga(),
                         ),
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            Row(
-                              children: [
-                                const SizedBox(width: 8),
-                                const Text(
-                                  'Potreiros e Carga Animal',
-                                  style: TextStyle(
-                                    color: const Color(0xFF313131),
-                                    fontSize: 14,
-                                    fontFamily: 'Montserrat',
-                                    fontWeight: FontWeight.w500,
-                                    letterSpacing: 0.10,
-                                  ),
-                                )
-                              ],
-                            ),
-                            SvgPicture.asset(
-                              'icon/Arrow.svg',
-                              width: 24,
-                              height: 24,
-                            )
-                          ],
+                      );
+                    },
+                    child: Container(
+                      width: MediaQuery.of(context).size.width - 60,
+                      padding: const EdgeInsets.all(16),
+                      decoration: ShapeDecoration(
+                        color: Colors.white,
+                        shape: RoundedRectangleBorder(
+                          side: const BorderSide(
+                            width: 1,
+                            color: Color(0xFFEBEBEB),
+                          ),
+                          borderRadius: BorderRadius.circular(12),
                         ),
+                        shadows: const [
+                          BoxShadow(
+                            color: Color(0x0A000000),
+                            blurRadius: 24,
+                            offset: Offset(0, 0),
+                          ),
+                        ],
                       ),
-                    ), //Potreiros e Carga Animal
-                    SizedBox(height: 16),
-                    GestureDetector(
-                      onTap: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) => Sanitarios(),
+                      child: Row(
+                        mainAxisAlignment:
+                            MainAxisAlignment.spaceBetween,
+                        children: [
+                          Row(
+                            children: [
+                              const SizedBox(width: 8),
+                              const Text(
+                                'Potreiros e Carga Animal',
+                                style: TextStyle(
+                                  color: Color(0xFF313131),
+                                  fontSize: 14,
+                                  fontFamily: 'Montserrat',
+                                  fontWeight: FontWeight.w500,
+                                  letterSpacing: 0.10,
+                                ),
+                              ),
+                            ],
                           ),
-                        );
-                      },
-                      child:   Container(
-                        width: MediaQuery.of(context).size.width - 60,
-                        padding: const EdgeInsets.all(16),
-                        decoration: ShapeDecoration(
-                          color: Colors.white,
-                          shape: RoundedRectangleBorder(
-                            side: const BorderSide(
-                              width: 1,
-                              color: Color(0xFFEBEBEB),
-                            ),
-                            borderRadius: BorderRadius.circular(12),
+                          SvgPicture.asset(
+                            'icon/Arrow.svg',
+                            width: 24,
+                            height: 24,
                           ),
-                          shadows: const [
-                            BoxShadow(
-                              color: Color(0x0A000000),
-                              blurRadius: 24,
-                              offset: Offset(0, 0),
-                            )
-                          ],
-                        ),
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            Row(
-                              children: [
-
-                                const SizedBox(width: 8),
-                                const Text(
-                                  'Sanitários ',
-                                  style: TextStyle(
-                                    color: const Color(0xFF313131),
-                                    fontSize: 14,
-                                    fontFamily: 'Montserrat',
-                                    fontWeight: FontWeight.w500,
-                                    letterSpacing: 0.10,
-                                  ),
-                                )
-                              ],
-                            ),
-                            SvgPicture.asset(
-                              'icon/Arrow.svg',
-                              width: 24,
-                              height: 24,
-                            )
-                          ],
-                        ),
-                      ),
-                    ), //Sanitários
-                    SizedBox(height: 16),
-                    GestureDetector(
-                      onTap: () {
-                        // Navigator.push(
-                        //   context,
-                        //   MaterialPageRoute(
-                        //     builder: (context) => Clima(),
-                        //   ),
-                        // );
-                      },
-                      child:   Container(
-                        width: MediaQuery.of(context).size.width - 60,
-                        padding: const EdgeInsets.all(16),
-                        decoration: ShapeDecoration(
-                          color: Colors.white,
-                          shape: RoundedRectangleBorder(
-                            side: const BorderSide(
-                              width: 1,
-                              color: Color(0xFFEBEBEB),
-                            ),
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                          shadows: const [
-                            BoxShadow(
-                              color: Color(0x0A000000),
-                              blurRadius: 24,
-                              offset: Offset(0, 0),
-                            )
-                          ],
-                        ),
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            Row(
-                              children: [
-
-                                const SizedBox(width: 8),
-                                const Text(
-                                  'Reprodução ',
-                                  style: TextStyle(
-                                    color: const Color(0xFF313131),
-                                    fontSize: 14,
-                                    fontFamily: 'Montserrat',
-                                    fontWeight: FontWeight.w500,
-                                    letterSpacing: 0.10,
-                                  ),
-                                )
-                              ],
-                            ),
-                            SvgPicture.asset(
-                              'icon/Arrow.svg',
-                              width: 24,
-                              height: 24,
-                            )
-                          ],
-                        ),
-                      ),
-                    ), //Reprodução
-                    SizedBox(height: 16),
-                    GestureDetector(
-                      onTap: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) => Clima(),
-                          ),
-                        );
-                      },
-                      child:  Container(
-                        width: MediaQuery.of(context).size.width - 60,
-                        padding: const EdgeInsets.all(16),
-                        decoration: ShapeDecoration(
-                          color: Colors.white,
-                          shape: RoundedRectangleBorder(
-                            side: const BorderSide(
-                              width: 1,
-                              color: Color(0xFFEBEBEB),
-                            ),
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                          shadows: const [
-                            BoxShadow(
-                              color: Color(0x0A000000),
-                              blurRadius: 24,
-                              offset: Offset(0, 0),
-                            )
-                          ],
-                        ),
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            Row(
-                              children: [
-
-                                const SizedBox(width: 8),
-                                const Text(
-                                  'Clima e Chuvas ',
-                                  style: TextStyle(
-                                    color: const Color(0xFF313131),
-                                    fontSize: 14,
-                                    fontFamily: 'Montserrat',
-                                    fontWeight: FontWeight.w500,
-                                    letterSpacing: 0.10,
-                                  ),
-                                )
-                              ],
-                            ),
-                            SvgPicture.asset(
-                              'icon/Arrow.svg',
-                              width: 24,
-                              height: 24,
-                            )
-                          ],
-                        ),
-                      ),
-                    ), //Clima e Chuvas
-
-
-
-
-
-   
-                    SizedBox(height: 16),
-
-                    GestureDetector(
-                      onTap: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) => Tarefas(),
-                          ),
-                        );
-                      },
-                      child: Container(
-                        width: MediaQuery.of(context).size.width - 60,
-                        padding: const EdgeInsets.all(16),
-                        decoration: ShapeDecoration(
-                          color: Colors.white,
-                          shape: RoundedRectangleBorder(
-                            side: const BorderSide(
-                              width: 1,
-                              color: Color(0xFFEBEBEB),
-                            ),
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                          shadows: const [
-                            BoxShadow(
-                              color: Color(0x0A000000),
-                              blurRadius: 24,
-                              offset: Offset(0, 0),
-                            )
-                          ],
-                        ),
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            Row(
-                              children: [
-
-                                const SizedBox(width: 8),
-                                const Text(
-                                  'Tarefas  ',
-                                  style: TextStyle(
-                                    color: const Color(0xFF313131),
-                                    fontSize: 14,
-                                    fontFamily: 'Montserrat',
-                                    fontWeight: FontWeight.w500,
-                                    letterSpacing: 0.10,
-                                  ),
-                                )
-                              ],
-                            ),
-                            SvgPicture.asset(
-                              'icon/Arrow.svg',
-                              width: 24,
-                              height: 24,
-                            )
-                          ],
-                        ),
-                      ),
-                    ), //Clima e Chuvas
-
-
-
-
-
-               
-
-                    SizedBox(height: 16),
-                    GestureDetector(
-                      onTap: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) => Insumos(),
-                          ),
-                        );
-                      },
-                      child: Container(
-                        width: MediaQuery.of(context).size.width - 60,
-                        padding: const EdgeInsets.all(16),
-                        decoration: ShapeDecoration(
-                          color: Colors.white,
-                          shape: RoundedRectangleBorder(
-                            side: const BorderSide(
-                              width: 1,
-                              color: Color(0xFFEBEBEB),
-                            ),
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                          shadows: const [
-                            BoxShadow(
-                              color: Color(0x0A000000),
-                              blurRadius: 24,
-                              offset: Offset(0, 0),
-                            )
-                          ],
-                        ),
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            Row(
-                              children: [
-
-                                const SizedBox(width: 8),
-                                const Text(
-                                  'Estoque de Insumos  ',
-                                  style: TextStyle(
-                                    color: const Color(0xFF313131),
-                                    fontSize: 14,
-                                    fontFamily: 'Montserrat',
-                                    fontWeight: FontWeight.w500,
-                                    letterSpacing: 0.10,
-                                  ),
-                                )
-                              ],
-                            ),
-                            SvgPicture.asset(
-                              'icon/Arrow.svg',
-                              width: 24,
-                              height: 24,
-                            )
-                          ],
-                        ),
-                      ),
-                    ), //Clima e Chuvas
-
-
-
-
-
-                    // Container(
-                    //   // margin: EdgeInsets.symmetric(horizontal: 20),
-                    //   width: MediaQuery.of(context).size.width - 40,
-                    //   height: 48,
-                    //   child: ElevatedButton(
-                    //     onPressed: () {
-                    //       _showModalBottomSheetExit(context);
-                    //     },
-                    //     child: Text(
-                    //       "Sair",
-                    //       style: TextStyle(
-                    //         color: MyColors.colorPrimary,
-                    //         fontFamily: 'Montserrat',
-                    //         fontWeight: FontWeight.w500,
-                    //       ),
-                    //     ),
-                    //     style: ElevatedButton.styleFrom(
-                    //       backgroundColor: Colors.transparent,
-                    //       elevation: 0,
-                    //       shape: RoundedRectangleBorder(
-                    //         side: BorderSide(color: MyColors.colorPrimary),
-                    //         borderRadius: BorderRadius.circular(8),
-                    //       ),
-                    //     ),
-                    //   ),
-                    // ),
-                    SizedBox(height: 16),
-                    GestureDetector(
-                      onTap: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) => PastagensNutricaoSuplemento(),
-                          ),
-                        );
-                      },
-                      child:  Container(
-                        width: MediaQuery.of(context).size.width - 60,
-                        padding: const EdgeInsets.all(16),
-                        decoration: ShapeDecoration(
-                          color: Colors.white,
-                          shape: RoundedRectangleBorder(
-                            side: const BorderSide(
-                              width: 1,
-                              color: Color(0xFFEBEBEB),
-                            ),
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                          shadows: const [
-                            BoxShadow(
-                              color: Color(0x0A000000),
-                              blurRadius: 24,
-                              offset: Offset(0, 0),
-                            )
-                          ],
-                        ),
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            Row(
-                              children: [
-
-                                const SizedBox(width: 8),
-                                const Text(
-                                  'Pasctagens, Nutrição e Suplem. ',
-                                  style: TextStyle(
-                                    color: const Color(0xFF313131),
-                                    fontSize: 14,
-                                    fontFamily: 'Montserrat',
-                                    fontWeight: FontWeight.w500,
-                                    letterSpacing: 0.10,
-                                  ),
-                                )
-                              ],
-                            ),
-                            SvgPicture.asset(
-                              'icon/Arrow.svg',
-                              width: 24,
-                              height: 24,
-                            )
-                          ],
-                        ),
+                        ],
                       ),
                     ),
+                  ), //Potreiros e Carga Animal
+                  SizedBox(height: 16),
+                  GestureDetector(
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => Sanitarios(),
+                        ),
+                      );
+                    },
+                    child: Container(
+                      width: MediaQuery.of(context).size.width - 60,
+                      padding: const EdgeInsets.all(16),
+                      decoration: ShapeDecoration(
+                        color: Colors.white,
+                        shape: RoundedRectangleBorder(
+                          side: const BorderSide(
+                            width: 1,
+                            color: Color(0xFFEBEBEB),
+                          ),
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        shadows: const [
+                          BoxShadow(
+                            color: Color(0x0A000000),
+                            blurRadius: 24,
+                            offset: Offset(0, 0),
+                          ),
+                        ],
+                      ),
+                      child: Row(
+                        mainAxisAlignment:
+                            MainAxisAlignment.spaceBetween,
+                        children: [
+                          Row(
+                            children: [
+                              const SizedBox(width: 8),
+                              const Text(
+                                'Sanitários ',
+                                style: TextStyle(
+                                  color: Color(0xFF313131),
+                                  fontSize: 14,
+                                  fontFamily: 'Montserrat',
+                                  fontWeight: FontWeight.w500,
+                                  letterSpacing: 0.10,
+                                ),
+                              ),
+                            ],
+                          ),
+                          SvgPicture.asset(
+                            'icon/Arrow.svg',
+                            width: 24,
+                            height: 24,
+                          ),
+                        ],
+                      ),
+                    ),
+                  ), //Sanitários
+                  SizedBox(height: 16),
+                  GestureDetector(
+                    onTap: () {
+                      // Navigator.push(
+                      //   context,
+                      //   MaterialPageRoute(
+                      //     builder: (context) => Clima(),
+                      //   ),
+                      // );
+                    },
+                    child: Container(
+                      width: MediaQuery.of(context).size.width - 60,
+                      padding: const EdgeInsets.all(16),
+                      decoration: ShapeDecoration(
+                        color: Colors.white,
+                        shape: RoundedRectangleBorder(
+                          side: const BorderSide(
+                            width: 1,
+                            color: Color(0xFFEBEBEB),
+                          ),
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        shadows: const [
+                          BoxShadow(
+                            color: Color(0x0A000000),
+                            blurRadius: 24,
+                            offset: Offset(0, 0),
+                          ),
+                        ],
+                      ),
+                      child: Row(
+                        mainAxisAlignment:
+                            MainAxisAlignment.spaceBetween,
+                        children: [
+                          Row(
+                            children: [
+                              const SizedBox(width: 8),
+                              const Text(
+                                'Reprodução ',
+                                style: TextStyle(
+                                  color: Color(0xFF313131),
+                                  fontSize: 14,
+                                  fontFamily: 'Montserrat',
+                                  fontWeight: FontWeight.w500,
+                                  letterSpacing: 0.10,
+                                ),
+                              ),
+                            ],
+                          ),
+                          SvgPicture.asset(
+                            'icon/Arrow.svg',
+                            width: 24,
+                            height: 24,
+                          ),
+                        ],
+                      ),
+                    ),
+                  ), //Reprodução
+                  SizedBox(height: 16),
+                  GestureDetector(
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => Clima(),
+                        ),
+                      );
+                    },
+                    child: Container(
+                      width: MediaQuery.of(context).size.width - 60,
+                      padding: const EdgeInsets.all(16),
+                      decoration: ShapeDecoration(
+                        color: Colors.white,
+                        shape: RoundedRectangleBorder(
+                          side: const BorderSide(
+                            width: 1,
+                            color: Color(0xFFEBEBEB),
+                          ),
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        shadows: const [
+                          BoxShadow(
+                            color: Color(0x0A000000),
+                            blurRadius: 24,
+                            offset: Offset(0, 0),
+                          ),
+                        ],
+                      ),
+                      child: Row(
+                        mainAxisAlignment:
+                            MainAxisAlignment.spaceBetween,
+                        children: [
+                          Row(
+                            children: [
+                              const SizedBox(width: 8),
+                              const Text(
+                                'Clima e Chuvas ',
+                                style: TextStyle(
+                                  color: Color(0xFF313131),
+                                  fontSize: 14,
+                                  fontFamily: 'Montserrat',
+                                  fontWeight: FontWeight.w500,
+                                  letterSpacing: 0.10,
+                                ),
+                              ),
+                            ],
+                          ),
+                          SvgPicture.asset(
+                            'icon/Arrow.svg',
+                            width: 24,
+                            height: 24,
+                          ),
+                        ],
+                      ),
+                    ),
+                  ), //Clima e Chuvas
 
+                  SizedBox(height: 16),
 
+                  GestureDetector(
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => Tarefas(),
+                        ),
+                      );
+                    },
+                    child: Container(
+                      width: MediaQuery.of(context).size.width - 60,
+                      padding: const EdgeInsets.all(16),
+                      decoration: ShapeDecoration(
+                        color: Colors.white,
+                        shape: RoundedRectangleBorder(
+                          side: const BorderSide(
+                            width: 1,
+                            color: Color(0xFFEBEBEB),
+                          ),
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        shadows: const [
+                          BoxShadow(
+                            color: Color(0x0A000000),
+                            blurRadius: 24,
+                            offset: Offset(0, 0),
+                          ),
+                        ],
+                      ),
+                      child: Row(
+                        mainAxisAlignment:
+                            MainAxisAlignment.spaceBetween,
+                        children: [
+                          Row(
+                            children: [
+                              const SizedBox(width: 8),
+                              const Text(
+                                'Tarefas  ',
+                                style: TextStyle(
+                                  color: Color(0xFF313131),
+                                  fontSize: 14,
+                                  fontFamily: 'Montserrat',
+                                  fontWeight: FontWeight.w500,
+                                  letterSpacing: 0.10,
+                                ),
+                              ),
+                            ],
+                          ),
+                          SvgPicture.asset(
+                            'icon/Arrow.svg',
+                            width: 24,
+                            height: 24,
+                          ),
+                        ],
+                      ),
+                    ),
+                  ), //Clima e Chuvas
 
-                  ],
-                )
-              ],
-            ),
+                  SizedBox(height: 16),
+                  GestureDetector(
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => Insumos(),
+                        ),
+                      );
+                    },
+                    child: Container(
+                      width: MediaQuery.of(context).size.width - 60,
+                      padding: const EdgeInsets.all(16),
+                      decoration: ShapeDecoration(
+                        color: Colors.white,
+                        shape: RoundedRectangleBorder(
+                          side: const BorderSide(
+                            width: 1,
+                            color: Color(0xFFEBEBEB),
+                          ),
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        shadows: const [
+                          BoxShadow(
+                            color: Color(0x0A000000),
+                            blurRadius: 24,
+                            offset: Offset(0, 0),
+                          ),
+                        ],
+                      ),
+                      child: Row(
+                        mainAxisAlignment:
+                            MainAxisAlignment.spaceBetween,
+                        children: [
+                          Row(
+                            children: [
+                              const SizedBox(width: 8),
+                              const Text(
+                                'Estoque de Insumos  ',
+                                style: TextStyle(
+                                  color: Color(0xFF313131),
+                                  fontSize: 14,
+                                  fontFamily: 'Montserrat',
+                                  fontWeight: FontWeight.w500,
+                                  letterSpacing: 0.10,
+                                ),
+                              ),
+                            ],
+                          ),
+                          SvgPicture.asset(
+                            'icon/Arrow.svg',
+                            width: 24,
+                            height: 24,
+                          ),
+                        ],
+                      ),
+                    ),
+                  ), //Clima e Chuvas
+                  // Container(
+                  //   // margin: EdgeInsets.symmetric(horizontal: 20),
+                  //   width: MediaQuery.of(context).size.width - 40,
+                  //   height: 48,
+                  //   child: ElevatedButton(
+                  //     onPressed: () {
+                  //       _showModalBottomSheetExit(context);
+                  //     },
+                  //     child: Text(
+                  //       "Sair",
+                  //       style: TextStyle(
+                  //         color: MyColors.colorPrimary,
+                  //         fontFamily: 'Montserrat',
+                  //         fontWeight: FontWeight.w500,
+                  //       ),
+                  //     ),
+                  //     style: ElevatedButton.styleFrom(
+                  //       backgroundColor: Colors.transparent,
+                  //       elevation: 0,
+                  //       shape: RoundedRectangleBorder(
+                  //         side: BorderSide(color: MyColors.colorPrimary),
+                  //         borderRadius: BorderRadius.circular(8),
+                  //       ),
+                  //     ),
+                  //   ),
+                  // ),
+                  SizedBox(height: 16),
+                  GestureDetector(
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) =>
+                              PastagensNutricaoSuplemento(),
+                        ),
+                      );
+                    },
+                    child: Container(
+                      width: MediaQuery.of(context).size.width - 60,
+                      padding: const EdgeInsets.all(16),
+                      decoration: ShapeDecoration(
+                        color: Colors.white,
+                        shape: RoundedRectangleBorder(
+                          side: const BorderSide(
+                            width: 1,
+                            color: Color(0xFFEBEBEB),
+                          ),
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        shadows: const [
+                          BoxShadow(
+                            color: Color(0x0A000000),
+                            blurRadius: 24,
+                            offset: Offset(0, 0),
+                          ),
+                        ],
+                      ),
+                      child: Row(
+                        mainAxisAlignment:
+                            MainAxisAlignment.spaceBetween,
+                        children: [
+                          Row(
+                            children: [
+                              const SizedBox(width: 8),
+                              const Text(
+                                'Pasctagens, Nutrição e Suplem. ',
+                                style: TextStyle(
+                                  color: Color(0xFF313131),
+                                  fontSize: 14,
+                                  fontFamily: 'Montserrat',
+                                  fontWeight: FontWeight.w500,
+                                  letterSpacing: 0.10,
+                                ),
+                              ),
+                            ],
+                          ),
+                          SvgPicture.asset(
+                            'icon/Arrow.svg',
+                            width: 24,
+                            height: 24,
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ],
           ),
         ),
-      )
+      ),
+    )
     //  : Column(children: [Center(child: CircularProgressIndicator())],)
-        ;
+    ;
   }
 }

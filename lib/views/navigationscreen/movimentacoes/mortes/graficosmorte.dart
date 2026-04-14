@@ -12,16 +12,31 @@ class _GraficosMorteState extends State<GraficosMorte> {
   Widget build(BuildContext context) {
     return Expanded(
       child: SingleChildScrollView(
-        child: Column(children: [
-
-          Image.asset('images/linhamortalidade.png', width: MediaQuery.of(context).size.width, fit: BoxFit.cover,),
-          Image.asset('images/causadamorte.png', width: MediaQuery.of(context).size.width, fit: BoxFit.cover,),
-        ],),
+        child: Column(
+          children: [
+            Image.asset(
+              'images/linhamortalidade.png',
+              width: MediaQuery.of(context).size.width,
+              fit: BoxFit.cover,
+            ),
+            Image.asset(
+              'images/causadamorte.png',
+              width: MediaQuery.of(context).size.width,
+              fit: BoxFit.cover,
+            ),
+          ],
+        ),
       ),
     );
   }
 
-  Widget buildContainer(String title, String valuePercentual, String value, Color colorText, Color colorContainer){
+  Widget buildContainer(
+    String title,
+    String valuePercentual,
+    String value,
+    Color colorText,
+    Color colorContainer,
+  ) {
     return Container(
       width: MediaQuery.of(context).size.width / 2 - 40,
       margin: EdgeInsets.symmetric(horizontal: 20),
@@ -29,10 +44,7 @@ class _GraficosMorteState extends State<GraficosMorte> {
       decoration: ShapeDecoration(
         color: Colors.white,
         shape: RoundedRectangleBorder(
-          side: BorderSide(
-            width: 1,
-            color: const Color(0xFFEBEBEB),
-          ),
+          side: BorderSide(width: 1, color: const Color(0xFFEBEBEB)),
           borderRadius: BorderRadius.circular(12),
         ),
         shadows: [
@@ -41,7 +53,7 @@ class _GraficosMorteState extends State<GraficosMorte> {
             blurRadius: 24,
             offset: Offset(0, 0),
             spreadRadius: 0,
-          )
+          ),
         ],
       ),
       child: Column(
@@ -50,7 +62,7 @@ class _GraficosMorteState extends State<GraficosMorte> {
         crossAxisAlignment: CrossAxisAlignment.start,
         spacing: 16,
         children: [
-          Container(
+          SizedBox(
             width: double.infinity,
             child: Column(
               mainAxisSize: MainAxisSize.min,
@@ -77,7 +89,10 @@ class _GraficosMorteState extends State<GraficosMorte> {
                   ],
                 ),
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 8,
+                    vertical: 2,
+                  ),
                   decoration: ShapeDecoration(
                     color: colorContainer,
                     shape: RoundedRectangleBorder(

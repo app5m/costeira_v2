@@ -1,13 +1,15 @@
+import 'package:costeira/core/api/api_exception.dart';
+import 'package:costeira/core/storage/session_storage.dart';
+import 'package:costeira/features/account/repositories/account_repository.dart';
+import 'package:costeira/features/auth/models/user_session.dart';
+import 'package:costeira/views/navigationscreen/Menu/meusdados.dart';
 import 'package:costeira/views/navigationscreen/Menu/updatepassword.dart';
+import 'package:costeira/views/navigationscreen/notification/notification.dart';
+import 'package:costeira/views/shared/widgets/primary_app_bar.dart';
+import 'package:costeira/views/shared/widgets/settings_option_tile.dart';
+import 'package:costeira/views/teladeinicio/teladeinicio.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_svg/svg.dart';
-
-import '../../../../theme/colors.dart';
-import '../../teladeinicio/teladeinicio.dart';
-import 'meusdados.dart';
-
-
-
+import 'package:flutter_svg/flutter_svg.dart';
 
 class Minhaconta extends StatefulWidget {
   const Minhaconta({super.key});
@@ -17,555 +19,219 @@ class Minhaconta extends StatefulWidget {
 }
 
 class _MinhacontaState extends State<Minhaconta> {
-//  final requestsWebServices = RequestsWebServices(WSConstantes.URLBASE);
-
-  // Future<String?> desativeAccount(BuildContext context) async {
-  //   await Preferences.init();
-  //   var _userId = await Preferences.getUserData()!.id;
-  //   final user = UserModel();
-  //
-  //   final body = {
-  //     WSConstantes.ID: _userId,
-  //     WSConstantes.TOKENID: WSConstantes.TOKEN
-  //   };
-  //
-  //   final response = await requestsWebServices.sendPostRequest(
-  //       WSConstantes.DESATIVE_ACCOUNT, body);
-  //   final decodedResponse = jsonDecode(response);
-  //   if (decodedResponse.isNotEmpty) {
-  //     user.status = decodedResponse[0]['status'];
-  //     user.msg = decodedResponse[0]['msg'];
-  //
-  //     if (user.status == "01") {
-  //       Fluttertoast.showToast(
-  //         msg: user.msg!,
-  //         toastLength: Toast.LENGTH_SHORT,
-  //         gravity: ToastGravity.BOTTOM,
-  //       );
-  //       await Preferences.clearUserData();
-  //
-  //       Navigator.pushAndRemoveUntil(
-  //         context,
-  //         MaterialPageRoute(builder: (context) => TelaDeInicio()),
-  //             (Route<
-  //             dynamic> route) => false, // Remove todas as hotel anteriores
-  //       );
-  //     } else {
-  //       Fluttertoast.showToast(
-  //         msg: user.msg!,
-  //         toastLength: Toast.LENGTH_SHORT,
-  //         gravity: ToastGravity.BOTTOM,
-  //       );
-  //     }
-  //     print('Status ${user.status}, Mensagem: ${user.msg}');
-  //   }
-  // }
-  //
-  void _showModalBottomSheetDesative(BuildContext context) {
-    showModalBottomSheet(
-      backgroundColor: Colors.white,
-      context: context,
-      shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.only(
-            topLeft: Radius.circular(16),
-            topRight: Radius.circular(16),
-          )),
-      builder: (BuildContext bc) {
-        return Container(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Container(
-                padding: EdgeInsets.only(top: 8),
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    SizedBox(height: 8),
-                    Opacity(
-                      opacity: 0.70,
-                      child: Container(
-                        width: 72,
-                        decoration: ShapeDecoration(
-                          shape: RoundedRectangleBorder(
-                            side: BorderSide(
-                              width: 2,
-                              strokeAlign: BorderSide.strokeAlignCenter,
-                              color: Color(0xFFE2E2E2),
-                            ),
-                          ),
-                        ),
-                      ),
-                    ),
-                    SizedBox(height: 8),
-                    Container(
-                      margin: EdgeInsets.symmetric(horizontal: 20),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.end,
-                        children: [
-                          Icon(
-                            Icons.close,
-                          ),
-                        ],
-                      ),
-                    ),
-                    SizedBox(height: 16),
-                    SvgPicture.asset(
-                      'icon/desativarvermenho.svg',
-                      width: 80,
-                      height: 80,
-                      color: Colors.red,
-                    ),
-                    SizedBox(height: 16),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Text(
-                          "Desativar Conta?",
-                          style: TextStyle(
-                              fontFamily: 'Montserrat',
-                              fontWeight: FontWeight.w600,
-                              fontSize: 16,
-                              color: Color(0xff000000)),
-                        ),
-                      ],
-                    ),
-                    SizedBox(height: 8),
-                    Padding(
-                      padding: const EdgeInsets.all(0.0),
-                      child: Text(
-                        "Tem certeza que deseja\ndesativar sua conta?",
-                        textAlign: TextAlign.center,
-                        style: TextStyle(
-                          fontFamily: 'Montserrat',
-                          fontWeight: FontWeight.w400,
-                          fontSize: 14,
-                          color: Color(0xFF8692A8),
-                        ),
-                      ),
-                    ),
-                    SizedBox(height: 16),
-                    Column(
-                      children: [
-                        Container(
-                          width: MediaQuery.of(context).size.width - 40,
-                          height: 50,
-                          child: ElevatedButton(
-                            onPressed: () async {
-                              //  desativeAccount(context);
-                            },
-                            child: Text(
-                              "Sair",
-                              style: TextStyle(color: Colors.black),
-                            ),
-                            style: ElevatedButton.styleFrom(
-                              side: BorderSide(color: Colors.red),
-                              elevation: 0,
-                              backgroundColor: Colors.transparent,
-                            ),
-                          ),
-                        ),
-                        SizedBox(
-                          width: 8,
-                        ),
-                        TextButton(
-                          onPressed: () => Navigator.of(context).pop(false),
-                          child: Text(
-                            "Cancelar",
-                            style: TextStyle(
-                              fontSize: 16,
-                              color: MyColors.colorOnPrimary,
-                              decoration: TextDecoration.underline,
-                              decorationColor: MyColors.colorOnPrimary,
-                            ),
-                          ),
-                        ),
-                        SizedBox(
-                          width: 8,
-                        ),
-                      ],
-                    ),
-                    SizedBox(height: 16)
-                  ],
-                ),
-              ),
-            ],
-          ),
-        );
-      },
-    );
-  }
-
-  void _showModalBottomSheetExit(BuildContext context) {
-    showModalBottomSheet(
-      backgroundColor: Colors.white,
-      context: context,
-      shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.only(
-            topLeft: Radius.circular(16),
-            topRight: Radius.circular(16),
-          )),
-      builder: (BuildContext bc) {
-        return Container(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Container(
-                padding: EdgeInsets.only(top: 8),
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    SizedBox(height: 8),
-                    Opacity(
-                      opacity: 0.70,
-                      child: Container(
-                        width: 72,
-                        decoration: ShapeDecoration(
-                          shape: RoundedRectangleBorder(
-                            side: BorderSide(
-                              width: 2,
-                              strokeAlign: BorderSide.strokeAlignCenter,
-                              color: Color(0xFFE2E2E2),
-                            ),
-                          ),
-                        ),
-                      ),
-                    ),
-                    SizedBox(height: 8),
-                    Container(
-                      margin: EdgeInsets.symmetric(horizontal: 20),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.end,
-                        children: [
-                          Icon(
-                            Icons.close,
-                          ),
-                        ],
-                      ),
-                    ),
-                    SizedBox(height: 16),
-                    SvgPicture.asset(
-                      'icon/Logout.svg',
-                      width: 80,
-                      height: 80,
-                      color: Colors.red,
-                    ),
-                    SizedBox(height: 16),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Text(
-                          "Sair do Aplicativo?",
-                          style: TextStyle(
-                              fontFamily: 'Montserrat',
-                              fontWeight: FontWeight.w600,
-                              fontSize: 16,
-                              color: Color(0xff000000)),
-                        ),
-                      ],
-                    ),
-                    SizedBox(height: 8),
-                    Padding(
-                      padding: const EdgeInsets.all(0.0),
-                      child: Text(
-                        "Tem certeza que deseja \nsair da sua conta?",
-                        textAlign: TextAlign.center,
-                        style: TextStyle(
-                          fontFamily: 'Montserrat',
-                          fontWeight: FontWeight.w400,
-                          fontSize: 14,
-                          color: Color(0xFF8692A8),
-                        ),
-                      ),
-                    ),
-                    SizedBox(height: 16),
-                    Column(
-                      children: [
-                        Container(
-                          width: MediaQuery.of(context).size.width - 40,
-                          height: 50,
-                          child: ElevatedButton(
-                            onPressed: () async {
-                              // await Preferences.init();
-                              // Preferences.clearUserData();
-                              Navigator.pushAndRemoveUntil(
-                                context,
-                                MaterialPageRoute(
-                                    builder: (context) => Teladeinicio()),
-                                    (Route<dynamic> route) =>
-                                false, // Remove todas as telas anteriores
-                              );
-                            },
-                            child: Text(
-                              "Sair",
-                              style: TextStyle(color: Colors.black),
-                            ),
-                            style: ElevatedButton.styleFrom(
-                              side: BorderSide(color: Colors.red),
-                              elevation: 0,
-                              backgroundColor: Colors.transparent,
-                            ),
-                          ),
-                        ),
-                        SizedBox(
-                          width: 8,
-                        ),
-                        TextButton(
-                          onPressed: () => Navigator.of(context).pop(false),
-                          child: Text(
-                            "Cancelar",
-                            style: TextStyle(
-                              fontSize: 16,
-                              color: MyColors.colorOnPrimary,
-                              decoration: TextDecoration.underline,
-                              decorationColor: MyColors.colorOnPrimary,
-                            ),
-                          ),
-                        ),
-                        SizedBox(
-                          width: 8,
-                        ),
-                      ],
-                    ),
-                    SizedBox(height: 16)
-                  ],
-                ),
-              ),
-            ],
-          ),
-        );
-      },
-    );
-  }
-
-  // UserPerfilCliente? userPerfilCliente;
-  // bool not1 = false;
-  // bool not2 = false;
-  //
-  // Future<String?> getUserData(BuildContext context) async {
-  //   await Preferences.init();
-  //   var _userId = await Preferences.getUserData()!.id;
-  //
-  //   final body = {
-  //     WSConstantes.ID_USER: _userId,
-  //     WSConstantes.TOKENID: WSConstantes.TOKEN
-  //   };
-  //
-  //   final response = await requestsWebServices.sendPostRequest(
-  //       WSConstantes.PERFIL_USER, body);
-  //   final decodedResponse = jsonDecode(response);
-  //
-  //   if (decodedResponse.isNotEmpty) {
-  //
-  //     setState(() {
-  //       userPerfilCliente = UserPerfilCliente.fromJson(decodedResponse);
-  //     });
-  //
-  //     setState(() {
-  //       not1 = userPerfilCliente!.notificacoesConfig![0].chamados == 1;
-  //       not2 = userPerfilCliente!.notificacoesConfig![0].novidades == 1;
-  //     });
-  //
-  //
-  //   }
-  // }
+  final AccountRepository _accountRepository = AccountRepository();
+  UserSession? _user;
+  bool _isLoading = false;
 
   @override
   void initState() {
-    // getUserData(context);
     super.initState();
+    _loadUser();
+  }
+
+  Future<void> _loadUser() async {
+    final user = await SessionStorage.getUserSession();
+    if (!mounted) {
+      return;
+    }
+    setState(() {
+      _user = user;
+    });
   }
 
   @override
   Widget build(BuildContext context) {
-    return // userPerfilCliente != null ?
-      Scaffold(
-        backgroundColor: Colors.white,
-        appBar: AppBar(
-          backgroundColor: MyColors.colorPrimary,
-          leading: GestureDetector(
-              onTap: (){
-                Navigator.pop(context);
+    return Scaffold(
+      backgroundColor: Colors.white,
+      appBar: PrimarySectionAppBar(
+        context: context,
+        title: 'Minha conta',
+      ),
+      body: ListView(
+        padding: const EdgeInsets.all(20),
+        children: [
+          Column(
+            children: [
+              CircleAvatar(
+                radius: 36,
+                backgroundColor: const Color(0xFFEBEBEB),
+                child: SvgPicture.asset(
+                  'icon/user-round.svg',
+                  width: 36,
+                  height: 36,
+                ),
+              ),
+              const SizedBox(height: 12),
+              Text(
+                _user?.name.isNotEmpty == true ? _user!.name : 'Usuário',
+                style: const TextStyle(
+                  color: Color(0xFF313131),
+                  fontSize: 18,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+              const SizedBox(height: 4),
+              Text(
+                _user?.email ?? 'Sem e-mail',
+                style: const TextStyle(
+                  color: Color(0xFF8C8C8C),
+                  fontSize: 14,
+                  fontWeight: FontWeight.w400,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 24),
+          SettingsOptionTile(
+            title: 'Editar dados',
+            onTap: () {
+              Navigator.of(context).push(
+                MaterialPageRoute(builder: (_) => const MeusDados()),
+              );
+            },
+          ),
+          const SizedBox(height: 16),
+          SettingsOptionTile(
+            title: 'Notificações',
+            onTap: () {
+              Navigator.of(context).push(
+                MaterialPageRoute(builder: (_) => const NotificacoesScreen()),
+              );
+            },
+          ),
+          const SizedBox(height: 16),
+          SettingsOptionTile(
+            title: 'Alterar senha',
+            onTap: () {
+              Navigator.of(context).push(
+                MaterialPageRoute(builder: (_) => const UpdatePassword()),
+              );
+            },
+          ),
+          const SizedBox(height: 16),
+          SettingsOptionTile(
+            title: 'Desativar conta',
+            textColor: Colors.red,
+            onTap: () => _showConfirmationDialog(
+              context: context,
+              title: 'Desativar conta?',
+              description: 'Tem certeza que deseja desativar sua conta?',
+              actionLabel: 'Desativar',
+              actionColor: Colors.red,
+              onConfirm: _deactivateAccount,
+            ),
+          ),
+          const SizedBox(height: 16),
+          SettingsOptionTile(
+            title: 'Sair',
+            textColor: Colors.red,
+            onTap: () => _showConfirmationDialog(
+              context: context,
+              title: 'Sair do aplicativo?',
+              description: 'Tem certeza que deseja sair da sua conta?',
+              actionLabel: 'Sair',
+              actionColor: Colors.red,
+              onConfirm: _logout,
+            ),
+          ),
+          if (_isLoading) ...[
+            const SizedBox(height: 24),
+            const Center(child: CircularProgressIndicator()),
+          ],
+        ],
+      ),
+    );
+  }
+
+  Future<void> _deactivateAccount() async {
+    if (_user == null) {
+      _showMessage('Usuário não autenticado.');
+      return;
+    }
+
+    setState(() {
+      _isLoading = true;
+    });
+
+    try {
+      final response = await _accountRepository.deactivateAccount(_user!.id);
+      _showMessage(response.message);
+      if (response.isSuccess) {
+        await SessionStorage.clearUserSession();
+        if (!mounted) {
+          return;
+        }
+        Navigator.of(context).pushAndRemoveUntil(
+          MaterialPageRoute(builder: (_) => const Teladeinicio()),
+          (route) => false,
+        );
+      }
+    } on ApiException catch (error) {
+      _showMessage(error.message);
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+        });
+      }
+    }
+  }
+
+  Future<void> _logout() async {
+    await SessionStorage.clearUserSession();
+    if (!mounted) {
+      return;
+    }
+    Navigator.of(context).pushAndRemoveUntil(
+      MaterialPageRoute(builder: (_) => const Teladeinicio()),
+      (route) => false,
+    );
+  }
+
+  Future<void> _showConfirmationDialog({
+    required BuildContext context,
+    required String title,
+    required String description,
+    required String actionLabel,
+    required Color actionColor,
+    required Future<void> Function() onConfirm,
+  }) {
+    return showDialog<void>(
+      context: context,
+      builder: (dialogContext) {
+        return AlertDialog(
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16),
+          ),
+          title: Text(title),
+          content: Text(description),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(dialogContext).pop(),
+              child: const Text('Cancelar'),
+            ),
+            TextButton(
+              onPressed: () async {
+                Navigator.of(dialogContext).pop();
+                await onConfirm();
               },
-              child: Icon(Icons.arrow_back_ios, color: Colors.white,)),
-          title: Text(
-            'Minha Conta',
-            style: TextStyle(
-              color: Colors.white,
-              fontSize: 16,
-              fontFamily: 'Montserrat',
-              fontWeight: FontWeight.w600,
+              child: Text(
+                actionLabel,
+                style: TextStyle(color: actionColor),
+              ),
             ),
-          ),
-        ),
-        body: SingleChildScrollView(
-          child: Container(
-            margin: EdgeInsets.symmetric(horizontal: 30),
-            child: Column(
-              children: [
-                SizedBox(
-                  height: 16,
-                ),
+          ],
+        );
+      },
+    );
+  }
 
-                SizedBox(
-                  height: 16,
-                ),
-      
-                Column(
-                  children: [
-                    SizedBox(height: 24),
-                    GestureDetector(
-                      onTap: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) => MeusDados(),
-                          ),
-                        );
-                      },
-                      child: Container(
-                        width: MediaQuery.of(context).size.width - 60,
-                        padding: const EdgeInsets.all(16),
-                        decoration: ShapeDecoration(
-                          color: Colors.white,
-                          shape: RoundedRectangleBorder(
-                            side: const BorderSide(
-                              width: 1,
-                              color: Color(0xFFEBEBEB),
-                            ),
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                          shadows: const [
-                            BoxShadow(
-                              color: Color(0x0A000000),
-                              blurRadius: 24,
-                              offset: Offset(0, 0),
-                            )
-                          ],
-                        ),
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            Row(
-                              children: [
-                                const Text(
-                                  'Meus dados',
-                                  style: TextStyle(
-                                    color: Color(0xFF313131),
-                                    fontSize: 14,
-                                    fontFamily: 'Montserrat',
-                                    fontWeight: FontWeight.w500,
-                                    letterSpacing: 0.10,
-                                  ),
-                                ),
-                              ],
-                            ),
-                            SvgPicture.asset(
-                              'icon/Arrow.svg',
-                              width: 24,
-                              height: 24,
-                            )
-                          ],
-                        ),
-                      ),
-                    ), //Minha Conta
-                    SizedBox(height: 16),
-                    GestureDetector(
-                      onTap: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) => UpdatePassword(),
-                          ),
-                        );
-                      },
-                      child: Container(
-                        width: MediaQuery.of(context).size.width - 60,
-                        padding: const EdgeInsets.all(16),
-                        decoration: ShapeDecoration(
-                          color: Colors.white,
-                          shape: RoundedRectangleBorder(
-                            side: const BorderSide(
-                              width: 1,
-                              color: Color(0xFFEBEBEB),
-                            ),
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                          shadows: const [
-                            BoxShadow(
-                              color: Color(0x0A000000),
-                              blurRadius: 24,
-                              offset: Offset(0, 0),
-                            )
-                          ],
-                        ),
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            Row(
-                              children: [
-
-                                const Text(
-                                  'Alterar senha',
-                                  style: TextStyle(
-                                    color: const Color(0xFF313131),
-                                    fontSize: 14,
-                                    fontFamily: 'Montserrat',
-                                    fontWeight: FontWeight.w500,
-                                    letterSpacing: 0.10,
-                                  ),
-                                )
-                              ],
-                            ),
-                            SvgPicture.asset(
-                              'icon/Arrow.svg',
-                              width: 24,
-                              height: 24,
-                            )
-                          ],
-                        ),
-                      ),
-                    ), //Módulos
-                    SizedBox(height: 16),
-                    SizedBox(height: 16),
-
-
-
-
-                    // Container(
-                    //   // margin: EdgeInsets.symmetric(horizontal: 20),
-                    //   width: MediaQuery.of(context).size.width - 40,
-                    //   height: 48,
-                    //   child: ElevatedButton(
-                    //     onPressed: () {
-                    //       _showModalBottomSheetExit(context);
-                    //     },
-                    //     child: Text(
-                    //       "Sair",
-                    //       style: TextStyle(
-                    //         color: MyColors.colorPrimary,
-                    //         fontFamily: 'Montserrat',
-                    //         fontWeight: FontWeight.w500,
-                    //       ),
-                    //     ),
-                    //     style: ElevatedButton.styleFrom(
-                    //       backgroundColor: Colors.transparent,
-                    //       elevation: 0,
-                    //       shape: RoundedRectangleBorder(
-                    //         side: BorderSide(color: MyColors.colorPrimary),
-                    //         borderRadius: BorderRadius.circular(8),
-                    //       ),
-                    //     ),
-                    //   ),
-                    // ),
-                    SizedBox(height: 32),
-                  ],
-                )
-              ],
-            ),
-          ),
-        ),
-      )
-    //  : Column(children: [Center(child: CircularProgressIndicator())],)
-        ;
+  void _showMessage(String message) {
+    if (!mounted) {
+      return;
+    }
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text(message)),
+    );
   }
 }

@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "63273697604",
+    "project_id": "costeira-4bfab",
+    "storage_bucket": "costeira-4bfab.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:63273697604:android:6826c81967d58dcbded711",
+        "android_client_info": {
+          "package_name": "com.costeira"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyABGXIQIa622VivH1awcdaSZDjm9sOulQA"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

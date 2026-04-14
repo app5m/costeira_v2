@@ -12,17 +12,37 @@ class _GraficosManejoState extends State<GraficosManejo> {
   Widget build(BuildContext context) {
     return Expanded(
       child: SingleChildScrollView(
-        child: Column(children: [
-          _MonthSelector(),
-          Image.asset('images/mapaareamanejas.png', width: MediaQuery.of(context).size.width, fit: BoxFit.cover,),
-          Image.asset('images/manejopotreiro.png', width: MediaQuery.of(context).size.width, fit: BoxFit.cover,),
-          Image.asset('images/comparativoprodutividade.png', width: MediaQuery.of(context).size.width, fit: BoxFit.cover,),
-        ],),
+        child: Column(
+          children: [
+            _MonthSelector(),
+            Image.asset(
+              'images/mapaareamanejas.png',
+              width: MediaQuery.of(context).size.width,
+              fit: BoxFit.cover,
+            ),
+            Image.asset(
+              'images/manejopotreiro.png',
+              width: MediaQuery.of(context).size.width,
+              fit: BoxFit.cover,
+            ),
+            Image.asset(
+              'images/comparativoprodutividade.png',
+              width: MediaQuery.of(context).size.width,
+              fit: BoxFit.cover,
+            ),
+          ],
+        ),
       ),
     );
   }
 
-  Widget buildContainer(String title, String valuePercentual, String value, Color colorText, Color colorContainer){
+  Widget buildContainer(
+    String title,
+    String valuePercentual,
+    String value,
+    Color colorText,
+    Color colorContainer,
+  ) {
     return Container(
       width: MediaQuery.of(context).size.width / 2 - 40,
       margin: EdgeInsets.symmetric(horizontal: 20),
@@ -30,10 +50,7 @@ class _GraficosManejoState extends State<GraficosManejo> {
       decoration: ShapeDecoration(
         color: Colors.white,
         shape: RoundedRectangleBorder(
-          side: BorderSide(
-            width: 1,
-            color: const Color(0xFFEBEBEB),
-          ),
+          side: BorderSide(width: 1, color: const Color(0xFFEBEBEB)),
           borderRadius: BorderRadius.circular(12),
         ),
         shadows: [
@@ -42,7 +59,7 @@ class _GraficosManejoState extends State<GraficosManejo> {
             blurRadius: 24,
             offset: Offset(0, 0),
             spreadRadius: 0,
-          )
+          ),
         ],
       ),
       child: Column(
@@ -51,7 +68,7 @@ class _GraficosManejoState extends State<GraficosManejo> {
         crossAxisAlignment: CrossAxisAlignment.start,
         spacing: 16,
         children: [
-          Container(
+          SizedBox(
             width: double.infinity,
             child: Column(
               mainAxisSize: MainAxisSize.min,
@@ -78,7 +95,10 @@ class _GraficosManejoState extends State<GraficosManejo> {
                   ],
                 ),
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 8,
+                    vertical: 2,
+                  ),
                   decoration: ShapeDecoration(
                     color: colorContainer,
                     shape: RoundedRectangleBorder(
@@ -129,6 +149,7 @@ class _GraficosManejoState extends State<GraficosManejo> {
     );
   }
 }
+
 class _MonthSelector extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
@@ -139,10 +160,7 @@ class _MonthSelector extends StatelessWidget {
       decoration: ShapeDecoration(
         color: Colors.white,
         shape: RoundedRectangleBorder(
-          side: BorderSide(
-            width: 1,
-            color: const Color(0xFFEBEBEB),
-          ),
+          side: BorderSide(width: 1, color: const Color(0xFFEBEBEB)),
           borderRadius: BorderRadius.circular(8),
         ),
         shadows: [
@@ -151,7 +169,7 @@ class _MonthSelector extends StatelessWidget {
             blurRadius: 24,
             offset: Offset(0, 0),
             spreadRadius: 0,
-          )
+          ),
         ],
       ),
       child: Row(
@@ -170,7 +188,8 @@ class _MonthSelector extends StatelessWidget {
             ),
           ),
           Icon(Icons.arrow_forward_rounded),
-        ],),
+        ],
+      ),
     );
   }
 }

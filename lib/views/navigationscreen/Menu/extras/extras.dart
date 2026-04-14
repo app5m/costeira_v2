@@ -6,9 +6,6 @@ import '../../../teladeinicio/teladeinicio.dart';
 import '../Modulos/modulos.dart';
 import '../minhaconta.dart';
 
-
-
-
 class Extras extends StatefulWidget {
   const Extras({super.key});
 
@@ -17,7 +14,7 @@ class Extras extends StatefulWidget {
 }
 
 class _ExtrasState extends State<Extras> {
-//  final requestsWebServices = RequestsWebServices(WSConstantes.URLBASE);
+  //  final requestsWebServices = RequestsWebServices(WSConstantes.URLBASE);
 
   // Future<String?> desativeAccount(BuildContext context) async {
   //   await Preferences.init();
@@ -66,11 +63,13 @@ class _ExtrasState extends State<Extras> {
       backgroundColor: Colors.white,
       context: context,
       shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.only(
-            topLeft: Radius.circular(16),
-            topRight: Radius.circular(16),
-          )),
+        borderRadius: BorderRadius.only(
+          topLeft: Radius.circular(16),
+          topRight: Radius.circular(16),
+        ),
+      ),
       builder: (BuildContext bc) {
+        // ignore: avoid_unnecessary_containers
         return Container(
           child: Column(
             mainAxisSize: MainAxisSize.min,
@@ -89,7 +88,8 @@ class _ExtrasState extends State<Extras> {
                           shape: RoundedRectangleBorder(
                             side: BorderSide(
                               width: 2,
-                              strokeAlign: BorderSide.strokeAlignCenter,
+                              strokeAlign:
+                                  BorderSide.strokeAlignCenter,
                               color: Color(0xFFE2E2E2),
                             ),
                           ),
@@ -101,11 +101,7 @@ class _ExtrasState extends State<Extras> {
                       margin: EdgeInsets.symmetric(horizontal: 20),
                       child: Row(
                         mainAxisAlignment: MainAxisAlignment.end,
-                        children: [
-                          Icon(
-                            Icons.close,
-                          ),
-                        ],
+                        children: [Icon(Icons.close)],
                       ),
                     ),
                     SizedBox(height: 16),
@@ -122,10 +118,11 @@ class _ExtrasState extends State<Extras> {
                         Text(
                           "Desativar Conta?",
                           style: TextStyle(
-                              fontFamily: 'Montserrat',
-                              fontWeight: FontWeight.w600,
-                              fontSize: 16,
-                              color: Color(0xff000000)),
+                            fontFamily: 'Montserrat',
+                            fontWeight: FontWeight.w600,
+                            fontSize: 16,
+                            color: Color(0xff000000),
+                          ),
                         ),
                       ],
                     ),
@@ -146,45 +143,44 @@ class _ExtrasState extends State<Extras> {
                     SizedBox(height: 16),
                     Column(
                       children: [
-                        Container(
-                          width: MediaQuery.of(context).size.width - 40,
+                        SizedBox(
+                          width:
+                              MediaQuery.of(context).size.width - 40,
                           height: 50,
                           child: ElevatedButton(
                             onPressed: () async {
                               //  desativeAccount(context);
                             },
-                            child: Text(
-                              "Sair",
-                              style: TextStyle(color: Colors.black),
-                            ),
                             style: ElevatedButton.styleFrom(
                               side: BorderSide(color: Colors.red),
                               elevation: 0,
                               backgroundColor: Colors.transparent,
                             ),
+                            child: Text(
+                              "Sair",
+                              style: TextStyle(color: Colors.black),
+                            ),
                           ),
                         ),
-                        SizedBox(
-                          width: 8,
-                        ),
+                        SizedBox(width: 8),
                         TextButton(
-                          onPressed: () => Navigator.of(context).pop(false),
+                          onPressed: () =>
+                              Navigator.of(context).pop(false),
                           child: Text(
                             "Cancelar",
                             style: TextStyle(
                               fontSize: 16,
                               color: MyColors.colorOnPrimary,
                               decoration: TextDecoration.underline,
-                              decorationColor: MyColors.colorOnPrimary,
+                              decorationColor:
+                                  MyColors.colorOnPrimary,
                             ),
                           ),
                         ),
-                        SizedBox(
-                          width: 8,
-                        ),
+                        SizedBox(width: 8),
                       ],
                     ),
-                    SizedBox(height: 16)
+                    SizedBox(height: 16),
                   ],
                 ),
               ),
@@ -200,138 +196,132 @@ class _ExtrasState extends State<Extras> {
       backgroundColor: Colors.white,
       context: context,
       shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.only(
-            topLeft: Radius.circular(16),
-            topRight: Radius.circular(16),
-          )),
+        borderRadius: BorderRadius.only(
+          topLeft: Radius.circular(16),
+          topRight: Radius.circular(16),
+        ),
+      ),
       builder: (BuildContext bc) {
-        return Container(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Container(
-                padding: EdgeInsets.only(top: 8),
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    SizedBox(height: 8),
-                    Opacity(
-                      opacity: 0.70,
-                      child: Container(
-                        width: 72,
-                        decoration: ShapeDecoration(
-                          shape: RoundedRectangleBorder(
-                            side: BorderSide(
-                              width: 2,
-                              strokeAlign: BorderSide.strokeAlignCenter,
-                              color: Color(0xFFE2E2E2),
-                            ),
+        return Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Container(
+              padding: EdgeInsets.only(top: 8),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  SizedBox(height: 8),
+                  Opacity(
+                    opacity: 0.70,
+                    child: Container(
+                      width: 72,
+                      decoration: ShapeDecoration(
+                        shape: RoundedRectangleBorder(
+                          side: BorderSide(
+                            width: 2,
+                            strokeAlign: BorderSide.strokeAlignCenter,
+                            color: Color(0xFFE2E2E2),
                           ),
                         ),
                       ),
                     ),
-                    SizedBox(height: 8),
-                    Container(
-                      margin: EdgeInsets.symmetric(horizontal: 20),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.end,
-                        children: [
-                          Icon(
-                            Icons.close,
-                          ),
-                        ],
-                      ),
+                  ),
+                  SizedBox(height: 8),
+                  Container(
+                    margin: EdgeInsets.symmetric(horizontal: 20),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.end,
+                      children: [Icon(Icons.close)],
                     ),
-                    SizedBox(height: 16),
-                    SvgPicture.asset(
-                      'icon/Logout.svg',
-                      width: 80,
-                      height: 80,
-                      color: Colors.red,
-                    ),
-                    SizedBox(height: 16),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Text(
-                          "Sair do Aplicativo?",
-                          style: TextStyle(
-                              fontFamily: 'Montserrat',
-                              fontWeight: FontWeight.w600,
-                              fontSize: 16,
-                              color: Color(0xff000000)),
-                        ),
-                      ],
-                    ),
-                    SizedBox(height: 8),
-                    Padding(
-                      padding: const EdgeInsets.all(0.0),
-                      child: Text(
-                        "Tem certeza que deseja \nsair da sua conta?",
-                        textAlign: TextAlign.center,
+                  ),
+                  SizedBox(height: 16),
+                  SvgPicture.asset(
+                    'icon/Logout.svg',
+                    width: 80,
+                    height: 80,
+                    color: Colors.red,
+                  ),
+                  SizedBox(height: 16),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Text(
+                        "Sair do Aplicativo?",
                         style: TextStyle(
                           fontFamily: 'Montserrat',
-                          fontWeight: FontWeight.w400,
-                          fontSize: 14,
-                          color: Color(0xFF8692A8),
+                          fontWeight: FontWeight.w600,
+                          fontSize: 16,
+                          color: Color(0xff000000),
                         ),
                       ),
+                    ],
+                  ),
+                  SizedBox(height: 8),
+                  Padding(
+                    padding: const EdgeInsets.all(0.0),
+                    child: Text(
+                      "Tem certeza que deseja \nsair da sua conta?",
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                        fontFamily: 'Montserrat',
+                        fontWeight: FontWeight.w400,
+                        fontSize: 14,
+                        color: Color(0xFF8692A8),
+                      ),
                     ),
-                    SizedBox(height: 16),
-                    Column(
-                      children: [
-                        Container(
-                          width: MediaQuery.of(context).size.width - 40,
-                          height: 50,
-                          child: ElevatedButton(
-                            onPressed: () async {
-                              // await Preferences.init();
-                              // Preferences.clearUserData();
-                              Navigator.pushAndRemoveUntil(
-                                context,
-                                MaterialPageRoute(
-                                    builder: (context) => Teladeinicio()),
-                                    (Route<dynamic> route) =>
-                                false, // Remove todas as telas anteriores
-                              );
-                            },
-                            child: Text(
-                              "Sair",
-                              style: TextStyle(color: Colors.black),
-                            ),
-                            style: ElevatedButton.styleFrom(
-                              side: BorderSide(color: Colors.red),
-                              elevation: 0,
-                              backgroundColor: Colors.transparent,
-                            ),
+                  ),
+                  SizedBox(height: 16),
+                  Column(
+                    children: [
+                      SizedBox(
+                        width: MediaQuery.of(context).size.width - 40,
+                        height: 50,
+                        child: ElevatedButton(
+                          onPressed: () async {
+                            // await Preferences.init();
+                            // Preferences.clearUserData();
+                            Navigator.pushAndRemoveUntil(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => Teladeinicio(),
+                              ),
+                              (Route<dynamic> route) =>
+                                  false, // Remove todas as telas anteriores
+                            );
+                          },
+                          style: ElevatedButton.styleFrom(
+                            side: BorderSide(color: Colors.red),
+                            elevation: 0,
+                            backgroundColor: Colors.transparent,
                           ),
-                        ),
-                        SizedBox(
-                          width: 8,
-                        ),
-                        TextButton(
-                          onPressed: () => Navigator.of(context).pop(false),
                           child: Text(
-                            "Cancelar",
-                            style: TextStyle(
-                              fontSize: 16,
-                              color: MyColors.colorOnPrimary,
-                              decoration: TextDecoration.underline,
-                              decorationColor: MyColors.colorOnPrimary,
-                            ),
+                            "Sair",
+                            style: TextStyle(color: Colors.black),
                           ),
                         ),
-                        SizedBox(
-                          width: 8,
+                      ),
+                      SizedBox(width: 8),
+                      TextButton(
+                        onPressed: () =>
+                            Navigator.of(context).pop(false),
+                        child: Text(
+                          "Cancelar",
+                          style: TextStyle(
+                            fontSize: 16,
+                            color: MyColors.colorOnPrimary,
+                            decoration: TextDecoration.underline,
+                            decorationColor: MyColors.colorOnPrimary,
+                          ),
                         ),
-                      ],
-                    ),
-                    SizedBox(height: 16)
-                  ],
-                ),
+                      ),
+                      SizedBox(width: 8),
+                    ],
+                  ),
+                  SizedBox(height: 16),
+                ],
               ),
-            ],
-          ),
+            ),
+          ],
         );
       },
     );
@@ -378,244 +368,242 @@ class _ExtrasState extends State<Extras> {
   @override
   Widget build(BuildContext context) {
     return // userPerfilCliente != null ?
-      Scaffold(
-        backgroundColor: Colors.white,
-        appBar: AppBar(
-          backgroundColor: MyColors.colorPrimary,
-          leading: GestureDetector(
-              onTap: (){
-                Navigator.pop(context);
-              },
-              child: Icon(Icons.arrow_back_ios, color: Colors.white,)),
-          title: Text(
-            'Extras',
-            style: TextStyle(
-              color: Colors.white,
-              fontSize: 16,
-              fontFamily: 'Montserrat',
-              fontWeight: FontWeight.w600,
-            ),
+    Scaffold(
+      backgroundColor: Colors.white,
+      appBar: AppBar(
+        backgroundColor: MyColors.colorPrimary,
+        leading: GestureDetector(
+          onTap: () {
+            Navigator.pop(context);
+          },
+          child: Icon(Icons.arrow_back_ios, color: Colors.white),
+        ),
+        title: Text(
+          'Extras',
+          style: TextStyle(
+            color: Colors.white,
+            fontSize: 16,
+            fontFamily: 'Montserrat',
+            fontWeight: FontWeight.w600,
           ),
         ),
-        body: SingleChildScrollView(
-          child: Container(
-            margin: EdgeInsets.symmetric(horizontal: 30),
-            child: Column(
-              children: [
-                SizedBox(
-                  height: 16,
-                ),
-                SizedBox(
-                  height: 16,
-                ),
+      ),
+      body: SingleChildScrollView(
+        child: Container(
+          margin: EdgeInsets.symmetric(horizontal: 30),
+          child: Column(
+            children: [
+              SizedBox(height: 16),
+              SizedBox(height: 16),
 
-                Column(
-                  children: [
-                    SizedBox(height: 24),
-                    GestureDetector(
-                      onTap: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) => const Minhaconta(), // Adicione 'const' para performance
-                          ),
-                        );
-                      },
-                      child:  Container( // Mova o Container para cá diretamente
-                        width: MediaQuery.of(context).size.width - 60,
-                        padding: const EdgeInsets.all(16),
-                        decoration: ShapeDecoration(
-                          color: Colors.white,
-                          shape: RoundedRectangleBorder(
-                            side: const BorderSide(
-                              width: 1,
-                              color: Color(0xFFEBEBEB),
-                            ),
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                          shadows: const [
-                            BoxShadow(
-                              color: Color(0x0A000000),
-                              blurRadius: 24,
-                              offset: Offset(0, 0),
-                            )
-                          ],
+              Column(
+                children: [
+                  SizedBox(height: 24),
+                  GestureDetector(
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) =>
+                              const Minhaconta(), // Adicione 'const' para performance
                         ),
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            Row(
-                              children: [
-                                const SizedBox(width: 8),
-                                const Text(
-                                  'Suporte ',
-                                  style: TextStyle(
-                                    color: Color(0xFF313131),
-                                    fontSize: 14,
-                                    fontFamily: 'Montserrat',
-                                    fontWeight: FontWeight.w500,
-                                    letterSpacing: 0.10,
-                                  ),
+                      );
+                    },
+                    child: Container(
+                      // Mova o Container para cá diretamente
+                      width: MediaQuery.of(context).size.width - 60,
+                      padding: const EdgeInsets.all(16),
+                      decoration: ShapeDecoration(
+                        color: Colors.white,
+                        shape: RoundedRectangleBorder(
+                          side: const BorderSide(
+                            width: 1,
+                            color: Color(0xFFEBEBEB),
+                          ),
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        shadows: const [
+                          BoxShadow(
+                            color: Color(0x0A000000),
+                            blurRadius: 24,
+                            offset: Offset(0, 0),
+                          ),
+                        ],
+                      ),
+                      child: Row(
+                        mainAxisAlignment:
+                            MainAxisAlignment.spaceBetween,
+                        children: [
+                          Row(
+                            children: [
+                              const SizedBox(width: 8),
+                              const Text(
+                                'Suporte ',
+                                style: TextStyle(
+                                  color: Color(0xFF313131),
+                                  fontSize: 14,
+                                  fontFamily: 'Montserrat',
+                                  fontWeight: FontWeight.w500,
+                                  letterSpacing: 0.10,
                                 ),
-                              ],
-                            ),
-                            SvgPicture.asset(
-                              'icon/Arrow.svg',
-                              width: 24,
-                              height: 24,
-                            )
-                          ],
-                        ),
+                              ),
+                            ],
+                          ),
+                          SvgPicture.asset(
+                            'icon/Arrow.svg',
+                            width: 24,
+                            height: 24,
+                          ),
+                        ],
                       ),
                     ),
-                    SizedBox(height: 16),
-                    GestureDetector(
-                      onTap: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) => modulos(),
-                          ),
-                        );
-                      },
-                      child: Container(
-                        width: MediaQuery.of(context).size.width - 60,
-                        padding: const EdgeInsets.all(16),
-                        decoration: ShapeDecoration(
-                          color: Colors.white,
-                          shape: RoundedRectangleBorder(
-                            side: const BorderSide(
-                              width: 1,
-                              color: Color(0xFFEBEBEB),
-                            ),
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                          shadows: const [
-                            BoxShadow(
-                              color: Color(0x0A000000),
-                              blurRadius: 24,
-                              offset: Offset(0, 0),
-                            )
-                          ],
+                  ),
+                  SizedBox(height: 16),
+                  GestureDetector(
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => modulos(),
                         ),
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            Row(
-                              children: [
-
-                                const SizedBox(width: 8),
-                                const Text(
-                                  'Termos de uso',
-                                  style: TextStyle(
-                                    color: const Color(0xFF313131),
-                                    fontSize: 14,
-                                    fontFamily: 'Montserrat',
-                                    fontWeight: FontWeight.w500,
-                                    letterSpacing: 0.10,
-                                  ),
-                                )
-                              ],
-                            ),
-                            SvgPicture.asset(
-                              'icon/Arrow.svg',
-                              width: 24,
-                              height: 24,
-                            ),                              ],
+                      );
+                    },
+                    child: Container(
+                      width: MediaQuery.of(context).size.width - 60,
+                      padding: const EdgeInsets.all(16),
+                      decoration: ShapeDecoration(
+                        color: Colors.white,
+                        shape: RoundedRectangleBorder(
+                          side: const BorderSide(
+                            width: 1,
+                            color: Color(0xFFEBEBEB),
+                          ),
+                          borderRadius: BorderRadius.circular(12),
                         ),
+                        shadows: const [
+                          BoxShadow(
+                            color: Color(0x0A000000),
+                            blurRadius: 24,
+                            offset: Offset(0, 0),
+                          ),
+                        ],
                       ),
-                    ), //Módulos
-                    SizedBox(height: 16),
-                    GestureDetector(
-                      onTap: () {
-                        _showModalBottomSheetDesative(context);
-                      },
-                      child: Container(
-                        width: MediaQuery.of(context).size.width - 60,
-                        padding: const EdgeInsets.all(16),
-                        decoration: ShapeDecoration(
-                          color: Colors.white,
-                          shape: RoundedRectangleBorder(
-                            side: const BorderSide(
-                              width: 1,
-                              color: Color(0xFFEBEBEB),
-                            ),
-                            borderRadius: BorderRadius.circular(12),
+                      child: Row(
+                        mainAxisAlignment:
+                            MainAxisAlignment.spaceBetween,
+                        children: [
+                          Row(
+                            children: [
+                              const SizedBox(width: 8),
+                              const Text(
+                                'Termos de uso',
+                                style: TextStyle(
+                                  color: Color(0xFF313131),
+                                  fontSize: 14,
+                                  fontFamily: 'Montserrat',
+                                  fontWeight: FontWeight.w500,
+                                  letterSpacing: 0.10,
+                                ),
+                              ),
+                            ],
                           ),
-                          shadows: const [
-                            BoxShadow(
-                              color: Color(0x0A000000),
-                              blurRadius: 24,
-                              offset: Offset(0, 0),
-                            )
-                          ],
-                        ),
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            Row(
-                              children: [
-
-                                const SizedBox(width: 8),
-                                const Text(
-                                  'Desativar conta',
-                                  style: TextStyle(
-                                    color: const Color(0xFF313131),
-                                    fontSize: 14,
-                                    fontFamily: 'Montserrat',
-                                    fontWeight: FontWeight.w500,
-                                    letterSpacing: 0.10,
-                                  ),
-                                )
-                              ],
-                            ),
-                            SvgPicture.asset(
-                              'icon/Arrow.svg',
-                              width: 24,
-                              height: 24,
-                            ),                              ],
-                        ),
+                          SvgPicture.asset(
+                            'icon/Arrow.svg',
+                            width: 24,
+                            height: 24,
+                          ),
+                        ],
                       ),
-                    ), //Módulos
-
-
-
-
-                    // Container(
-                    //   // margin: EdgeInsets.symmetric(horizontal: 20),
-                    //   width: MediaQuery.of(context).size.width - 40,
-                    //   height: 48,
-                    //   child: ElevatedButton(
-                    //     onPressed: () {
-                    //       _showModalBottomSheetExit(context);
-                    //     },
-                    //     child: Text(
-                    //       "Sair",
-                    //       style: TextStyle(
-                    //         color: MyColors.colorPrimary,
-                    //         fontFamily: 'Montserrat',
-                    //         fontWeight: FontWeight.w500,
-                    //       ),
-                    //     ),
-                    //     style: ElevatedButton.styleFrom(
-                    //       backgroundColor: Colors.transparent,
-                    //       elevation: 0,
-                    //       shape: RoundedRectangleBorder(
-                    //         side: BorderSide(color: MyColors.colorPrimary),
-                    //         borderRadius: BorderRadius.circular(8),
-                    //       ),
-                    //     ),
-                    //   ),
-                    // ),
-                    SizedBox(height: 32),
-                  ],
-                )
-              ],
-            ),
+                    ),
+                  ), //Módulos
+                  SizedBox(height: 16),
+                  GestureDetector(
+                    onTap: () {
+                      _showModalBottomSheetDesative(context);
+                    },
+                    child: Container(
+                      width: MediaQuery.of(context).size.width - 60,
+                      padding: const EdgeInsets.all(16),
+                      decoration: ShapeDecoration(
+                        color: Colors.white,
+                        shape: RoundedRectangleBorder(
+                          side: const BorderSide(
+                            width: 1,
+                            color: Color(0xFFEBEBEB),
+                          ),
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        shadows: const [
+                          BoxShadow(
+                            color: Color(0x0A000000),
+                            blurRadius: 24,
+                            offset: Offset(0, 0),
+                          ),
+                        ],
+                      ),
+                      child: Row(
+                        mainAxisAlignment:
+                            MainAxisAlignment.spaceBetween,
+                        children: [
+                          Row(
+                            children: [
+                              const SizedBox(width: 8),
+                              const Text(
+                                'Desativar conta',
+                                style: TextStyle(
+                                  color: Color(0xFF313131),
+                                  fontSize: 14,
+                                  fontFamily: 'Montserrat',
+                                  fontWeight: FontWeight.w500,
+                                  letterSpacing: 0.10,
+                                ),
+                              ),
+                            ],
+                          ),
+                          SvgPicture.asset(
+                            'icon/Arrow.svg',
+                            width: 24,
+                            height: 24,
+                          ),
+                        ],
+                      ),
+                    ),
+                  ), //Módulos
+                  // Container(
+                  //   // margin: EdgeInsets.symmetric(horizontal: 20),
+                  //   width: MediaQuery.of(context).size.width - 40,
+                  //   height: 48,
+                  //   child: ElevatedButton(
+                  //     onPressed: () {
+                  //       _showModalBottomSheetExit(context);
+                  //     },
+                  //     child: Text(
+                  //       "Sair",
+                  //       style: TextStyle(
+                  //         color: MyColors.colorPrimary,
+                  //         fontFamily: 'Montserrat',
+                  //         fontWeight: FontWeight.w500,
+                  //       ),
+                  //     ),
+                  //     style: ElevatedButton.styleFrom(
+                  //       backgroundColor: Colors.transparent,
+                  //       elevation: 0,
+                  //       shape: RoundedRectangleBorder(
+                  //         side: BorderSide(color: MyColors.colorPrimary),
+                  //         borderRadius: BorderRadius.circular(8),
+                  //       ),
+                  //     ),
+                  //   ),
+                  // ),
+                  SizedBox(height: 32),
+                ],
+              ),
+            ],
           ),
         ),
-      )
+      ),
+    )
     //  : Column(children: [Center(child: CircularProgressIndicator())],)
-        ;
+    ;
   }
 }

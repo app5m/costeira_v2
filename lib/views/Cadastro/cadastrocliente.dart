@@ -1,6 +1,12 @@
+import 'package:costeira/core/api/api_exception.dart';
+import 'package:costeira/features/auth/repositories/auth_repository.dart';
+import 'package:costeira/features/auth/models/register_draft.dart';
+import 'package:costeira/views/shared/widgets/app_buttons.dart';
+import 'package:costeira/views/shared/widgets/app_form_field.dart';
+import 'package:costeira/views/shared/widgets/flow_page_scaffold.dart';
 import 'package:flutter/material.dart';
+import 'package:mask_text_input_formatter/mask_text_input_formatter.dart';
 
-import '../../theme/colors.dart';
 import 'cadastrotwo.dart';
 
 class Cadastro extends StatefulWidget {
@@ -16,6 +22,17 @@ class _CadastroState extends State<Cadastro> {
   final _nomeFantasiaController = TextEditingController();
   final _razaoSocialController = TextEditingController();
   final _inscricaoEstadualController = TextEditingController();
+  final AuthRepository _authRepository = AuthRepository();
+  final _cnpjMaskFormatter = MaskTextInputFormatter(
+    mask: '##.###.###/####-##',
+    filter: {'#': RegExp(r'\d')},
+  );
+  bool _isValidatingCnpj = false;
+  bool _isCnpjApproved = false;
+  String? _cnpjMessage;
+  bool _cnpjMessageIsError = false;
+  String _lastValidatedCnpj = '';
+  int _cnpjValidationRequestId = 0;
 
   @override
   void dispose() {
@@ -28,243 +45,215 @@ class _CadastroState extends State<Cadastro> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: const Color(0xFF00823A),
-      body: SafeArea(
-        bottom: false,
-        child: Stack(
+    return FlowPageScaffold(
+      title: 'Cadastrar',
+      subtitle: 'Informe os dados da empresa para iniciar o cadastro.',
+      body: Form(
+        key: _formKey,
+        onChanged: () => setState(() {}),
+        child: Column(
           children: [
-            // Faixa verde de fundo
-            Container(
-              height: 80,
-              width: double.infinity,
-              color: const Color(0xFF00823A),
+            _buildCnpjField(),
+            const SizedBox(height: 16),
+            AppFormField(
+              label: 'Nome fantasia',
+              hintText: 'Nome fantasia',
+              controller: _nomeFantasiaController,
+              validator: _requiredField,
             ),
-
-            // Conteúdo
-            Column(
-              children: [
-                // deixa um espaço para a faixa verde
-                const SizedBox(height: 20),
-
-                Expanded(
-                  child: Container(
-                    width: double.infinity,
-                    decoration: const BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.only(
-                        topLeft: Radius.circular(24),
-                        topRight: Radius.circular(24),
-                      ),
-                    ),
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        SingleChildScrollView(
-                          padding: const EdgeInsets.all(20),
-                          child: Form(
-                            key: _formKey,
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Row(
-                                  children: [
-                                    GestureDetector(
-                                      onTap: () => Navigator.pop(context),
-                                      child: const Icon(Icons.arrow_back_ios, size: 20),
-                                    ),
-
-                                  ],
-                                ),
-                                const SizedBox(height: 8),
-                                const Text(
-                                  'Cadastrar',
-                                  style: TextStyle(
-                                    color: Color(0xFF313131),
-                                    fontSize: 24,
-                                    fontFamily: 'Montserrat',
-                                    fontWeight: FontWeight.w500,
-                                  ),
-                                ),
-                                const SizedBox(height: 8),
-                                const Text(
-                                  'Preencha os campos abaixo.',
-                                  style: TextStyle(
-                                    color: const Color(0xFF8C8C8C),
-                                    fontSize: 14,
-                                    fontFamily: 'Montserrat',
-                                    fontWeight: FontWeight.w400,
-                                    height: 1.50,
-                                    letterSpacing: 0.10,
-                                  ),
-                                ),
-                                const SizedBox(height: 24),
-
-                                _buildTextField(
-                                  'CNPJ',
-                                  _cnpjController,
-                                  '00.000.000/0000-00',
-                                      (value) => _validateCNPJ(value),
-                                ),
-                                const SizedBox(height: 16),
-
-                                _buildTextField(
-                                  'Nome Fantasia',
-                                  _nomeFantasiaController,
-                                  'Nome Fantasia',
-                                      (value) =>
-                                  (value == null || value.isEmpty)
-                                      ? 'Campo obrigatório'
-                                      : null,
-                                ),
-                                const SizedBox(height: 16),
-
-                                _buildTextField(
-                                  'Razão Social',
-                                  _razaoSocialController,
-                                  'Razão Social',
-                                      (value) =>
-                                  (value == null || value.isEmpty)
-                                      ? 'Campo obrigatório'
-                                      : null,
-                                ),
-                                const SizedBox(height: 16),
-
-                                _buildTextField(
-                                  'Inscrição Estadual',
-                                  _inscricaoEstadualController,
-                                  '000.000.000',
-                                      (value) => null,
-                                ),
-                              ],
-                            ),
-                          ),
-                        ),
-                        Container(
-                          margin: EdgeInsets.symmetric(horizontal: 20),
-                          child: Column(children: [
-
-
-                            SizedBox(
-                              width: double.infinity,
-                              height: 48,
-                              child: ElevatedButton(
-                                onPressed: _onSubmit,
-                                style: ElevatedButton.styleFrom(
-                                  backgroundColor: const Color(0xFF00823A),
-                                  foregroundColor: Colors.white,
-                                  padding: const EdgeInsets.symmetric(vertical: 16),
-                                  shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(8),
-                                  ),
-                                ),
-                                child: const Text(
-                                  'Avançar',
-                                  textAlign: TextAlign.center,
-                                  style: TextStyle(
-                                    color: Colors.white,
-                                    fontSize: 12,
-                                    fontFamily: 'Montserrat',
-                                    fontWeight: FontWeight.w600,
-                                    height: 1.50,
-                                  ),
-                                ),
-                              ),
-                            ),
-                            const SizedBox(height: 32),
-                          ],),
-                        )
-                      ],
-                    ),
-                  ),
-                ),
-              ],
+            const SizedBox(height: 16),
+            AppFormField(
+              label: 'Razão social',
+              hintText: 'Razão social',
+              controller: _razaoSocialController,
+              validator: _requiredField,
+            ),
+            const SizedBox(height: 16),
+            AppFormField(
+              label: 'Inscrição estadual',
+              hintText: '000.000.000',
+              controller: _inscricaoEstadualController,
             ),
           ],
         ),
       ),
+      footer: PrimaryButton(
+        label: 'Avançar',
+        isLoading: _isValidatingCnpj,
+        onPressed: _canSubmit ? _submit : null,
+      ),
     );
   }
 
-  Widget _buildTextField(
-      String label,
-      TextEditingController controller,
-      String hintText,
-      String? Function(String?)? validator,
-      ) {
+  Future<void> _submit() async {
+    if (!_formKey.currentState!.validate()) {
+      return;
+    }
+
+    if (!mounted) {
+      return;
+    }
+
+    Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (_) => Cadastrotwo(
+          draft: RegisterDraft(
+            cnpj: _cnpjController.text.trim(),
+            nomeFantasia: _nomeFantasiaController.text.trim(),
+            razaoSocial: _razaoSocialController.text.trim(),
+            ie: _inscricaoEstadualController.text.trim(),
+          ),
+        ),
+      ),
+    );
+  }
+
+  String? _requiredField(String? value) {
+    if ((value ?? '').trim().isEmpty) {
+      return 'Campo obrigatório';
+    }
+    return null;
+  }
+
+  String? _validateCnpj(String? value) {
+    final cleanValue = (value ?? '').replaceAll(RegExp(r'\D'), '');
+    if (cleanValue.isEmpty) {
+      return 'Campo obrigatório';
+    }
+    if (cleanValue.length != 14) {
+      return 'CNPJ inválido';
+    }
+    return null;
+  }
+
+  Widget _buildCnpjField() {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          label,
+          'CNPJ',
           style: const TextStyle(
             color: Color(0xFF313131),
             fontSize: 14,
-            fontFamily: 'Montserrat',
             fontWeight: FontWeight.w400,
-            height: 1.50,
-            letterSpacing: 0.10,
+            height: 1.5,
+            letterSpacing: 0.1,
           ),
         ),
         const SizedBox(height: 8),
         TextFormField(
-          controller: controller,
-          validator: validator,
+          controller: _cnpjController,
+          keyboardType: TextInputType.number,
+          inputFormatters: [_cnpjMaskFormatter],
+          autovalidateMode: AutovalidateMode.onUserInteraction,
+          validator: _validateCnpj,
+          onChanged: _handleCnpjChanged,
           style: const TextStyle(
-            color: Color(0xFF8C8C8C),
+            color: Color(0xFF313131),
             fontSize: 14,
-            fontFamily: 'Montserrat',
-            fontWeight: FontWeight.w400,
-            height: 1.50,
-            letterSpacing: 0.10,
+            fontWeight: FontWeight.w500,
           ),
-          decoration: _inputDecoration(hintText),
+          decoration: InputDecoration(
+            hintText: '00.000.000/0000-00',
+            hintStyle: const TextStyle(
+              color: Color(0xFF8C8C8C),
+              fontSize: 14,
+              fontWeight: FontWeight.w400,
+              height: 1.5,
+              letterSpacing: 0.1,
+            ),
+            suffixIcon: _isValidatingCnpj
+                ? const Padding(
+                    padding: EdgeInsets.all(14),
+                    child: SizedBox(
+                      width: 18,
+                      height: 18,
+                      child: CircularProgressIndicator(strokeWidth: 2),
+                    ),
+                  )
+                : _isCnpjApproved
+                    ? const Icon(
+                        Icons.check_circle,
+                        color: Colors.green,
+                      )
+                    : null,
+          ),
         ),
+        if (_cnpjMessage != null) ...[
+          const SizedBox(height: 6),
+          Text(
+            _cnpjMessage!,
+            style: TextStyle(
+              color: _cnpjMessageIsError ? Colors.red : Colors.green,
+              fontSize: 12,
+              fontWeight: FontWeight.w500,
+            ),
+          ),
+        ],
       ],
     );
   }
 
-  InputDecoration _inputDecoration(String hintText) {
-    return InputDecoration(
-      filled: true,
-      fillColor: const Color(0xFFEBEBEB),
-      border: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(8),
-        borderSide: const BorderSide(color: Color(0xFFEBEBEB), width: 1),
-      ),
-      enabledBorder: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(8),
-        borderSide: const BorderSide(color: Color(0xFFEBEBEB), width: 1),
-      ),
-      focusedBorder: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(8),
-        borderSide: const BorderSide(color: Color(0xFFEBEBEB), width: 1),
-      ),
-      contentPadding:
-      const EdgeInsets.symmetric(horizontal: 12, vertical: 13.5),
-      hintText: hintText,
-      hintStyle: const TextStyle(
-        color: Color(0xFF8C8C8C),
-        fontSize: 14,
-        fontFamily: 'Montserrat',
-        fontWeight: FontWeight.w400,
-        height: 1.50,
-        letterSpacing: 0.10,
-      ),
-    );
+  void _handleCnpjChanged(String value) {
+    final cleanValue = value.replaceAll(RegExp(r'\D'), '');
+
+    if (cleanValue.length < 14) {
+      setState(() {
+        _isCnpjApproved = false;
+        _isValidatingCnpj = false;
+        _cnpjMessage = null;
+        _cnpjMessageIsError = false;
+        _lastValidatedCnpj = '';
+      });
+      return;
+    }
+
+    if (cleanValue.length == 14 && _lastValidatedCnpj != cleanValue) {
+      _validateCnpjRemotely(value, cleanValue);
+    }
   }
 
-  String? _validateCNPJ(String? value) {
-    if (value == null || value.isEmpty) return 'Campo obrigatório';
-    final cleanCNPJ = value.replaceAll(RegExp(r'[^\d]'), '');
-    if (cleanCNPJ.length != 14) return 'CNPJ inválido';
-    return null;
+  Future<void> _validateCnpjRemotely(String formattedValue, String cleanValue) async {
+    final requestId = ++_cnpjValidationRequestId;
+
+    setState(() {
+      _isValidatingCnpj = true;
+      _isCnpjApproved = false;
+      _cnpjMessage = null;
+      _cnpjMessageIsError = false;
+    });
+
+    try {
+      final response = await _authRepository.validateCnpj(formattedValue.trim());
+      if (!mounted || requestId != _cnpjValidationRequestId) {
+        return;
+      }
+
+      setState(() {
+        _lastValidatedCnpj = cleanValue;
+        _isValidatingCnpj = false;
+        _isCnpjApproved = response.isSuccess;
+        _cnpjMessage = response.isSuccess ? 'CNPJ validado com sucesso.' : 'CNPJ inválido.';
+        _cnpjMessageIsError = !response.isSuccess;
+      });
+    } on ApiException {
+      if (!mounted || requestId != _cnpjValidationRequestId) {
+        return;
+      }
+
+      setState(() {
+        _lastValidatedCnpj = cleanValue;
+        _isValidatingCnpj = false;
+        _isCnpjApproved = false;
+        _cnpjMessage = 'CNPJ inválido.';
+        _cnpjMessageIsError = true;
+      });
+    }
   }
 
-  void _onSubmit() {
-    Navigator.of(context).push(
-      MaterialPageRoute(builder: (context) => const Cadastrotwo()),
-    );
-  }
+  bool get _canSubmit =>
+      _validateCnpj(_cnpjController.text) == null &&
+      _isCnpjApproved &&
+      _requiredField(_nomeFantasiaController.text) == null &&
+      _requiredField(_razaoSocialController.text) == null;
 }
-

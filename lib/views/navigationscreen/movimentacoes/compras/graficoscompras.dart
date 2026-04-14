@@ -11,26 +11,64 @@ class _GraficosComprasState extends State<GraficosCompras> {
   @override
   Widget build(BuildContext context) {
     return Expanded(
-      child: Column(children: [
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            buildContainer('Total comprado', '+2,4% último mês', 'R\$ 184.750,00', Color(0xFF228046), Color(0xFFACFFB3)),
-            buildContainer('kg totais', '+1,2% último mês',  '52.300 kg', Color(0xFF228046), Color(0xFFACFFB3)),
-          ],),
-        SizedBox(height: 16,),
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            buildContainer('Preço médio', '-3,1% último mês', 'R\$ 7,53/kg', Color(0xFF802222), Color(0xFFFFACAC)),
-            buildContainer('Total de cabeças', '+1,2% último mês', '98 cabeças', Color(0xFF228046), Color(0xFFACFFB3)),
-          ],),
-        Image.asset('images/compras.png', width: MediaQuery.of(context).size.width, fit: BoxFit.cover,),
-      ],),
+      child: Column(
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              buildContainer(
+                'Total comprado',
+                '+2,4% último mês',
+                'R\$ 184.750,00',
+                Color(0xFF228046),
+                Color(0xFFACFFB3),
+              ),
+              buildContainer(
+                'kg totais',
+                '+1,2% último mês',
+                '52.300 kg',
+                Color(0xFF228046),
+                Color(0xFFACFFB3),
+              ),
+            ],
+          ),
+          SizedBox(height: 16),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              buildContainer(
+                'Preço médio',
+                '-3,1% último mês',
+                'R\$ 7,53/kg',
+                Color(0xFF802222),
+                Color(0xFFFFACAC),
+              ),
+              buildContainer(
+                'Total de cabeças',
+                '+1,2% último mês',
+                '98 cabeças',
+                Color(0xFF228046),
+                Color(0xFFACFFB3),
+              ),
+            ],
+          ),
+          Image.asset(
+            'images/compras.png',
+            width: MediaQuery.of(context).size.width,
+            fit: BoxFit.cover,
+          ),
+        ],
+      ),
     );
   }
 
-  Widget buildContainer(String title, String valuePercentual, String value, Color colorText, Color colorContainer){
+  Widget buildContainer(
+    String title,
+    String valuePercentual,
+    String value,
+    Color colorText,
+    Color colorContainer,
+  ) {
     return Container(
       width: MediaQuery.of(context).size.width / 2 - 40,
       margin: EdgeInsets.symmetric(horizontal: 20),
@@ -38,10 +76,7 @@ class _GraficosComprasState extends State<GraficosCompras> {
       decoration: ShapeDecoration(
         color: Colors.white,
         shape: RoundedRectangleBorder(
-          side: BorderSide(
-            width: 1,
-            color: const Color(0xFFEBEBEB),
-          ),
+          side: BorderSide(width: 1, color: const Color(0xFFEBEBEB)),
           borderRadius: BorderRadius.circular(12),
         ),
         shadows: [
@@ -50,7 +85,7 @@ class _GraficosComprasState extends State<GraficosCompras> {
             blurRadius: 24,
             offset: Offset(0, 0),
             spreadRadius: 0,
-          )
+          ),
         ],
       ),
       child: Column(
@@ -59,7 +94,7 @@ class _GraficosComprasState extends State<GraficosCompras> {
         crossAxisAlignment: CrossAxisAlignment.start,
         spacing: 16,
         children: [
-          Container(
+          SizedBox(
             width: double.infinity,
             child: Column(
               mainAxisSize: MainAxisSize.min,
@@ -86,7 +121,10 @@ class _GraficosComprasState extends State<GraficosCompras> {
                   ],
                 ),
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 8,
+                    vertical: 2,
+                  ),
                   decoration: ShapeDecoration(
                     color: colorContainer,
                     shape: RoundedRectangleBorder(

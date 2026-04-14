@@ -1,8 +1,11 @@
 import 'dart:async';
 
+import 'package:costeira/core/storage/session_storage.dart';
 import 'package:flutter/material.dart';
 
+import '../navigationscreen/navigationscreen.dart';
 import '../onboarding/onboarding.view.dart';
+import '../teladeinicio/teladeinicio.dart';
 
 
 
@@ -19,14 +22,24 @@ class Splash extends StatefulWidget {
 }
 
 class _SplashState extends State<Splash> {
-  bool isLoggedIn = false;
-
   Future<void> verificUser() async {
-    // await Preferences.init();
-    // isLoggedIn = await Preferences.getLogin();
+    final isLoggedIn = await SessionStorage.isLoggedIn();
+    final hasSeenOnboarding = await SessionStorage.hasSeenOnboarding();
+
+    if (!mounted) {
+      return;
+    }
 
     if (isLoggedIn) {
-      // Navigator.push(context, MaterialPageRoute(builder: (context) => NavigationScreen(tipo: 1,)));
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (context) => const NavigationScreen()),
+      );
+    } else if (hasSeenOnboarding) {
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (context) => const Teladeinicio()),
+      );
     } else {
       Navigator.pushReplacement(
         context,
@@ -64,4 +77,3 @@ class _SplashState extends State<Splash> {
     );
   }
 }
-

@@ -1,236 +1,150 @@
+import 'package:costeira/features/auth/models/register_draft.dart';
+import 'package:costeira/views/shared/widgets/app_buttons.dart';
+import 'package:costeira/views/shared/widgets/app_form_field.dart';
+import 'package:costeira/views/shared/widgets/flow_page_scaffold.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:flutter/services.dart';
 
-import '../../theme/colors.dart';
-import 'Cadastrothree.dart' show Cadastrotree;
+import 'cadastro_three.dart';
 
-class Cadastrotwo extends StatelessWidget {
-  const Cadastrotwo({super.key});
+class Cadastrotwo extends StatefulWidget {
+  const Cadastrotwo({
+    super.key,
+    required this.draft,
+  });
+
+  final RegisterDraft draft;
+
+  @override
+  State<Cadastrotwo> createState() => _CadastrotwoState();
+}
+
+class _CadastrotwoState extends State<Cadastrotwo> {
+  final _formKey = GlobalKey<FormState>();
+  final _nameController = TextEditingController();
+  final _whatsAppController = TextEditingController();
+  final _cpfController = TextEditingController();
+
+  @override
+  void dispose() {
+    _nameController.dispose();
+    _whatsAppController.dispose();
+    _cpfController.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: Color(0xFF00823A),
-      body: SafeArea(
-        bottom: false,
-        child: Stack(
+    return FlowPageScaffold(
+      title: 'Cadastrar',
+      subtitle: 'Agora informe os dados do responsável.',
+      body: Form(
+        key: _formKey,
+        onChanged: () => setState(() {}),
+        child: Column(
           children: [
-            // Topo verde fixo de fundo
-            Container(
-              height: 80,
-              width: double.infinity,
-              color: const Color(0xFF00823A),
-            ),
-
-            // Conteúdo principal
-            Column(
-              children: [
-                // Espaço para o topo verde
-                const SizedBox(height: 20),
-
-                Expanded(
-                  child: Container(
-                    width: double.infinity,
-                    decoration: const BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.only(
-                        topLeft: Radius.circular(24),
-                        topRight: Radius.circular(24),
-                      ),
-                    ),
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        SingleChildScrollView(
-                          padding: const EdgeInsets.all(20),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.stretch,
-                            children: [
-                              Row(
-                                children: [
-                                  GestureDetector(
-                                    onTap: () => Navigator.pop(context),
-                                    child: const Icon(Icons.arrow_back_ios, size: 20),
-                                  ),
-
-                                ],
-                              ),
-                              const SizedBox(height: 8),
-                              const Text(
-                                'Cadastrar',
-                                style: TextStyle(
-                                  color: Color(0xFF313131),
-                                  fontSize: 24,
-                                  fontFamily: 'Montserrat',
-                                  fontWeight: FontWeight.w500,
-                                ),
-                              ),
-                              const SizedBox(height: 8),
-                              const Text(
-                                'Preencha os campos abaixo.',
-                                style: TextStyle(
-                                  color: const Color(0xFF8C8C8C),
-                                  fontSize: 14,
-                                  fontFamily: 'Montserrat',
-                                  fontWeight: FontWeight.w400,
-                                  height: 1.50,
-                                  letterSpacing: 0.10,
-                                ),
-                              ),
-                              const SizedBox(height: 24),
-
-
-                              // Foto
-                              Center(
-                                child: Stack(
-                                  children: [
-                                    CircleAvatar(
-                                      radius: 44,
-                                      backgroundColor: const Color(0xFFEBEBEB),
-                                      child: SvgPicture.asset('icon/user-round.svg',
-                                        width: 44,
-                                        height: 44,
-
-                                      ),
-                                    ),
-                                    Positioned(
-                                      bottom: 0,
-                                      right: 0,
-                                      child: CircleAvatar(
-                                        radius: 16,
-                                        backgroundColor: const Color(0xFFEBEBEB),
-                                        child: SvgPicture.asset('icon/edit-rounded.svg',
-                                          width: 16,
-                                          height: 16,
-
-                                        ),
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ),
-
-                              const SizedBox(height: 36),
-
-                              _label("Nome completo"),
-                              _textField("Insira seu nome"),
-
-                              const SizedBox(height: 18),
-
-                              _label("WhatsApp"),
-                              _textField("(00) 00000-0000"),
-
-                              const SizedBox(height: 18),
-
-                              _label("CPF"),
-                              _textField("000.000.000-00"),
-
-                              const SizedBox(height: 32),
-
-                              // Botão sempre no final do conteúdo
-
-                            ],
-                          ),
-                        ),
-                        Container(
-                          margin: EdgeInsets.symmetric(horizontal: 20),
-                          child: Column(children: [
-                            SizedBox(
-                              width: double.infinity,
-                              height: 48,
-                              child: ElevatedButton(
-                                style: ElevatedButton.styleFrom(
-                                  backgroundColor: const Color(0xFF00823A),
-                                  foregroundColor: Colors.white,
-                                  shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(8),
-                                  ),
-                                ),
-                                onPressed: () {
-                                  Navigator.push(
-                                    context,
-                                    MaterialPageRoute(
-                                      builder: (context) => Cadastrotree(),
-                                    ),
-                                  );
-                                },
-                                child: const Text(
-                                  'Avançar',
-                                  textAlign: TextAlign.center,
-                                  style: TextStyle(
-                                    color: Colors.white,
-                                    fontSize: 12,
-                                    fontFamily: 'Montserrat',
-                                    fontWeight: FontWeight.w600,
-                                    height: 1.50,
-                                  ),
-                                )
-                              ),
-                            ),
-
-                            const SizedBox(height: 32),
-                          ],),
-                        )
-                      ],
+            Center(
+              child: Stack(
+                children: [
+                  CircleAvatar(
+                    radius: 44,
+                    backgroundColor: const Color(0xFFEBEBEB),
+                    child: SvgPicture.asset(
+                      'icon/user-round.svg',
+                      width: 44,
+                      height: 44,
                     ),
                   ),
-                ),
-              ],
+                  Positioned(
+                    bottom: 0,
+                    right: 0,
+                    child: CircleAvatar(
+                      radius: 16,
+                      backgroundColor: const Color(0xFFEBEBEB),
+                      child: SvgPicture.asset(
+                        'icon/edit-rounded.svg',
+                        width: 16,
+                        height: 16,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 36),
+            AppFormField(
+              label: 'Nome completo',
+              hintText: 'Insira seu nome',
+              controller: _nameController,
+              validator: _requiredField,
+            ),
+            const SizedBox(height: 18),
+            AppFormField(
+              label: 'WhatsApp',
+              hintText: '(00) 00000-0000',
+              controller: _whatsAppController,
+              keyboardType: TextInputType.phone,
+              inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+              validator: _requiredField,
+            ),
+            const SizedBox(height: 18),
+            AppFormField(
+              label: 'CPF',
+              hintText: '000.000.000-00',
+              controller: _cpfController,
+              keyboardType: TextInputType.number,
+              inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+              validator: _validateCpf,
             ),
           ],
         ),
       ),
+      footer: PrimaryButton(
+        label: 'Avançar',
+        onPressed: _canSubmit ? _submit : null,
+      ),
     );
   }
 
-  Widget _label(String text) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 6),
-      child: Text(
-        text,
-        style: const TextStyle(
-          color: Color(0xFF313131),
-          fontSize: 14,
-          fontFamily: 'Montserrat',
-          fontWeight: FontWeight.w400,
-          height: 1.5,
-          letterSpacing: 0.10,
+  void _submit() {
+    if (!_formKey.currentState!.validate()) {
+      return;
+    }
+
+    Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (_) => Cadastrotree(
+          draft: widget.draft.copyWith(
+            nome: _nameController.text.trim(),
+            celular: _whatsAppController.text.trim(),
+            documento: _cpfController.text.trim(),
+          ),
         ),
       ),
     );
   }
 
-  Widget _textField(String hint) {
-    return TextField(
-      decoration: InputDecoration(
-        hintText: hint,
-        hintStyle: const TextStyle(
-          color: Color(0xFF8C8C8C),
-          fontSize: 14,
-          fontFamily: 'Montserrat',
-          fontWeight: FontWeight.w400,
-          height: 1.5,
-          letterSpacing: 0.10,
-        ),
-        filled: true,
-        fillColor: const Color(0xFFEBEBEB),
-        contentPadding: const EdgeInsets.symmetric(
-          horizontal: 12,
-          vertical: 14,
-        ),
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(8),
-          borderSide: BorderSide.none,
-        ),
-        enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(8),
-          borderSide: BorderSide.none,
-        ),
-        focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(8),
-          borderSide: BorderSide.none,
-        ),
-      ),
-    );
+  String? _requiredField(String? value) {
+    if ((value ?? '').trim().isEmpty) {
+      return 'Campo obrigatório';
+    }
+    return null;
   }
+
+  String? _validateCpf(String? value) {
+    final cleanValue = (value ?? '').replaceAll(RegExp(r'\D'), '');
+    if (cleanValue.isEmpty) {
+      return 'Campo obrigatório';
+    }
+    if (cleanValue.length != 11) {
+      return 'CPF inválido';
+    }
+    return null;
+  }
+
+  bool get _canSubmit =>
+      _requiredField(_nameController.text) == null &&
+      _requiredField(_whatsAppController.text) == null &&
+      _validateCpf(_cpfController.text) == null;
 }
