@@ -20,7 +20,9 @@ class NavigationScreen extends StatefulWidget {
 
 class _NavigationScreenState extends State<NavigationScreen> {
   int _selectedIndex = 0;
-  final PageController _pageController = PageController(initialPage: 0);
+  final PageController _pageController = PageController(
+    initialPage: 0,
+  );
   UserSession? _user;
 
   @override
@@ -74,9 +76,9 @@ class _NavigationScreenState extends State<NavigationScreen> {
           padding: const EdgeInsets.only(left: 16),
           child: GestureDetector(
             onTap: () {
-              Navigator.of(context).push(
-                MaterialPageRoute(builder: (_) => const Menu()),
-              );
+              Navigator.of(
+                context,
+              ).push(MaterialPageRoute(builder: (_) => const Menu()));
             },
             child: const CircleAvatar(
               radius: 20,
@@ -98,8 +100,12 @@ class _NavigationScreenState extends State<NavigationScreen> {
                 ),
                 children: [
                   TextSpan(
-                    text: _user?.name.isNotEmpty == true ? _user!.name : 'Usuário',
-                    style: const TextStyle(fontWeight: FontWeight.w700),
+                    text: _user?.name.isNotEmpty == true
+                        ? _user!.name
+                        : 'Usuário',
+                    style: const TextStyle(
+                      fontWeight: FontWeight.w700,
+                    ),
                   ),
                 ],
               ),
@@ -125,7 +131,9 @@ class _NavigationScreenState extends State<NavigationScreen> {
             ),
             onPressed: () {
               Navigator.of(context).push(
-                MaterialPageRoute(builder: (_) => const NotificacoesScreen()),
+                MaterialPageRoute(
+                  builder: (_) => const NotificacoesScreen(),
+                ),
               );
             },
           ),
@@ -141,12 +149,15 @@ class _NavigationScreenState extends State<NavigationScreen> {
       backgroundColor: MyColors.colorPrimary,
       leadingWidth: 20,
       titleSpacing: 0,
-      title: Text(
-        _title,
-        style: const TextStyle(
-          color: Colors.white,
-          fontSize: 16,
-          fontWeight: FontWeight.w600,
+      title: Padding(
+        padding: const EdgeInsets.only(left: 16.0),
+        child: Text(
+          _title,
+          style: const TextStyle(
+            color: Colors.white,
+            fontSize: 16,
+            fontWeight: FontWeight.w600,
+          ),
         ),
       ),
       actions: [
@@ -160,7 +171,9 @@ class _NavigationScreenState extends State<NavigationScreen> {
           ),
           onPressed: () {
             Navigator.of(context).push(
-              MaterialPageRoute(builder: (_) => const NotificacoesScreen()),
+              MaterialPageRoute(
+                builder: (_) => const NotificacoesScreen(),
+              ),
             );
           },
         ),
@@ -170,7 +183,9 @@ class _NavigationScreenState extends State<NavigationScreen> {
 
     return Scaffold(
       backgroundColor: Colors.white,
-      appBar: _selectedIndex == 0 ? _customAppBar(context) : defaultAppBar,
+      appBar: _selectedIndex == 0
+          ? _customAppBar(context)
+          : defaultAppBar,
       body: PageView(
         controller: _pageController,
         physics: const NeverScrollableScrollPhysics(),
@@ -222,7 +237,9 @@ class _NavigationScreenState extends State<NavigationScreen> {
         child: SvgPicture.asset(
           icon,
           colorFilter: ColorFilter.mode(
-            _selectedIndex == index ? MyColors.colorPrimary : Colors.grey,
+            _selectedIndex == index
+                ? MyColors.colorPrimary
+                : Colors.grey,
             BlendMode.srcIn,
           ),
         ),

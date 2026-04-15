@@ -10,6 +10,8 @@ class WSConstantes {
   static const String desativarConta = '/usuarios/desativarconta/';
   static const String saveFcm = '/usuarios/savefcm';
   static const String notificacoes = '/usuarios/notificacoes/';
+  static const String perfil = '/usuarios/perfil/';
+  static const String updateUser = '/usuarios/updateUser';
   static const String updatePassword = '/usuarios/updatepassword/';
   static const String updateAvatar = '/usuarios/updateavatar/';
   static const String utilLista = '/util/lista';

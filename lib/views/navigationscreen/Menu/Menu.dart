@@ -1,3 +1,9 @@
+import 'package:costeira/config/ws_constantes.dart';
+import 'package:costeira/core/api/api_exception.dart';
+import 'package:costeira/core/storage/session_storage.dart';
+import 'package:costeira/features/account/models/account_profile.dart';
+import 'package:costeira/features/account/repositories/account_repository.dart';
+import 'package:costeira/features/auth/models/user_session.dart';
 import 'package:costeira/views/navigationscreen/Menu/extras/extras.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
@@ -15,6 +21,11 @@ class Menu extends StatefulWidget {
 }
 
 class _MenuState extends State<Menu> {
+  final AccountRepository _accountRepository = AccountRepository();
+  UserSession? _user;
+  AccountProfile? _profile;
+  bool _isLoadingProfile = true;
+
   //  final requestsWebServices = RequestsWebServices(WSConstantes.URLBASE);
 
   // Future<String?> desativeAccount(BuildContext context) async {
@@ -59,139 +70,6 @@ class _MenuState extends State<Menu> {
   //   }
   // }
   //
-  void _showModalBottomSheetDesative(BuildContext context) {
-    showModalBottomSheet(
-      backgroundColor: Colors.white,
-      context: context,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.only(
-          topLeft: Radius.circular(16),
-          topRight: Radius.circular(16),
-        ),
-      ),
-      builder: (BuildContext bc) {
-        // ignore: avoid_unnecessary_containers
-        return Container(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Container(
-                padding: EdgeInsets.only(top: 8),
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    SizedBox(height: 8),
-                    Opacity(
-                      opacity: 0.70,
-                      child: Container(
-                        width: 72,
-                        decoration: ShapeDecoration(
-                          shape: RoundedRectangleBorder(
-                            side: BorderSide(
-                              width: 2,
-                              strokeAlign:
-                                  BorderSide.strokeAlignCenter,
-                              color: Color(0xFFE2E2E2),
-                            ),
-                          ),
-                        ),
-                      ),
-                    ),
-                    SizedBox(height: 8),
-                    Container(
-                      margin: EdgeInsets.symmetric(horizontal: 20),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.end,
-                        children: [Icon(Icons.close)],
-                      ),
-                    ),
-                    SizedBox(height: 16),
-                    SvgPicture.asset(
-                      'icon/desativarvermenho.svg',
-                      width: 80,
-                      height: 80,
-                      color: Colors.red,
-                    ),
-                    SizedBox(height: 16),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Text(
-                          "Desativar Conta?",
-                          style: TextStyle(
-                            fontFamily: 'Montserrat',
-                            fontWeight: FontWeight.w600,
-                            fontSize: 16,
-                            color: Color(0xff000000),
-                          ),
-                        ),
-                      ],
-                    ),
-                    SizedBox(height: 8),
-                    Padding(
-                      padding: const EdgeInsets.all(0.0),
-                      child: Text(
-                        "Tem certeza que deseja\ndesativar sua conta?",
-                        textAlign: TextAlign.center,
-                        style: TextStyle(
-                          fontFamily: 'Montserrat',
-                          fontWeight: FontWeight.w400,
-                          fontSize: 14,
-                          color: Color(0xFF8692A8),
-                        ),
-                      ),
-                    ),
-                    SizedBox(height: 16),
-                    Column(
-                      children: [
-                        SizedBox(
-                          width:
-                              MediaQuery.of(context).size.width - 40,
-                          height: 50,
-                          child: ElevatedButton(
-                            onPressed: () async {
-                              //  desativeAccount(context);
-                            },
-                            style: ElevatedButton.styleFrom(
-                              side: BorderSide(color: Colors.red),
-                              elevation: 0,
-                              backgroundColor: Colors.transparent,
-                            ),
-                            child: Text(
-                              "Sair",
-                              style: TextStyle(color: Colors.black),
-                            ),
-                          ),
-                        ),
-                        SizedBox(width: 8),
-                        TextButton(
-                          onPressed: () =>
-                              Navigator.of(context).pop(false),
-                          child: Text(
-                            "Cancelar",
-                            style: TextStyle(
-                              fontSize: 16,
-                              color: MyColors.colorOnPrimary,
-                              decoration: TextDecoration.underline,
-                              decorationColor:
-                                  MyColors.colorOnPrimary,
-                            ),
-                          ),
-                        ),
-                        SizedBox(width: 8),
-                      ],
-                    ),
-                    SizedBox(height: 16),
-                  ],
-                ),
-              ),
-            ],
-          ),
-        );
-      },
-    );
-  }
-
   void _showModalBottomSheetExit(BuildContext context) {
     showModalBottomSheet(
       backgroundColor: Colors.white,
@@ -362,8 +240,61 @@ class _MenuState extends State<Menu> {
 
   @override
   void initState() {
-    // getUserData(context);
     super.initState();
+    _loadProfile();
+  }
+
+  Future<void> _loadProfile() async {
+    final user = await SessionStorage.getUserSession();
+    if (!mounted) {
+      return;
+    }
+
+    setState(() {
+      _user = user;
+      _isLoadingProfile = true;
+    });
+
+    if (user == null) {
+      setState(() {
+        _isLoadingProfile = false;
+      });
+      return;
+    }
+
+    try {
+      final profile = await _accountRepository.fetchProfile(userId: user.id);
+      if (!mounted) {
+        return;
+      }
+
+      setState(() {
+        _profile = profile;
+        _isLoadingProfile = false;
+      });
+    } on ApiException {
+      if (!mounted) {
+        return;
+      }
+
+      setState(() {
+        _isLoadingProfile = false;
+      });
+    }
+  }
+
+  String? get _avatarUrl {
+    final avatar = _profile?.avatar.trim() ?? '';
+    if (avatar.isEmpty) {
+      return null;
+    }
+    if (avatar.startsWith('http://') || avatar.startsWith('https://')) {
+      return avatar;
+    }
+    if (avatar.startsWith('/')) {
+      return '${Uri.parse(WSConstantes.urlBase).origin}$avatar';
+    }
+    return null;
   }
 
   @override
@@ -385,12 +316,6 @@ class _MenuState extends State<Menu> {
                     height: 80,
                     clipBehavior: Clip.antiAlias,
                     decoration: ShapeDecoration(
-                      image: DecorationImage(
-                        image: NetworkImage(
-                          'https://thispersondoesnotexist.com/',
-                        ),
-                        fit: BoxFit.cover,
-                      ),
                       shape: RoundedRectangleBorder(
                         side: BorderSide(
                           width: 1,
@@ -399,10 +324,15 @@ class _MenuState extends State<Menu> {
                         borderRadius: BorderRadius.circular(258),
                       ),
                     ),
+                    child: _buildProfileAvatar(),
                   ),
                   SizedBox(height: 8),
                   Text(
-                    'Joao Jardim',
+                    _profile?.name.isNotEmpty == true
+                        ? _profile!.name
+                        : _user?.name.isNotEmpty == true
+                            ? _user!.name
+                            : 'Usuário',
                     style: TextStyle(
                       color: const Color(0xFF313131),
                       fontSize: 24,
@@ -412,7 +342,9 @@ class _MenuState extends State<Menu> {
                   ),
                   SizedBox(width: 8),
                   Text(
-                    'Email@a.com',
+                    _profile?.email.isNotEmpty == true
+                        ? _profile!.email
+                        : _user?.email ?? '',
                     style: TextStyle(
                       color: const Color(0xFF8C8C8C),
                       fontSize: 14,
@@ -553,7 +485,7 @@ class _MenuState extends State<Menu> {
                                     const Text(
                                       'Módulos',
                                       style: TextStyle(
-                                        color: const Color(
+                                        color: Color(
                                           0xFF313131,
                                         ),
                                         fontSize: 14,
@@ -627,7 +559,7 @@ class _MenuState extends State<Menu> {
                                     const Text(
                                       'Extras',
                                       style: TextStyle(
-                                        color: const Color(
+                                        color: Color(
                                           0xFF313131,
                                         ),
                                         fontSize: 14,
@@ -734,5 +666,39 @@ class _MenuState extends State<Menu> {
     )
     //  : Column(children: [Center(child: CircularProgressIndicator())],)
     ;
+  }
+
+  Widget _buildProfileAvatar() {
+    if (_isLoadingProfile) {
+      return const Center(
+        child: SizedBox(
+          width: 24,
+          height: 24,
+          child: CircularProgressIndicator(strokeWidth: 2),
+        ),
+      );
+    }
+
+    if (_avatarUrl != null) {
+      return Image.network(
+        _avatarUrl!,
+        fit: BoxFit.cover,
+        errorBuilder: (_, __, ___) => _buildAvatarFallback(),
+      );
+    }
+
+    return _buildAvatarFallback();
+  }
+
+  Widget _buildAvatarFallback() {
+    return Container(
+      color: const Color(0xFFEBEBEB),
+      alignment: Alignment.center,
+      child: const Icon(
+        Icons.person,
+        color: Colors.grey,
+        size: 36,
+      ),
+    );
   }
 }

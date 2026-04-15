@@ -16,6 +16,7 @@ class AppFormField extends StatelessWidget {
     this.onChanged,
     this.inputFormatters,
     this.autofillHints,
+    this.readOnly = false,
   });
 
   final String label;
@@ -30,6 +31,7 @@ class AppFormField extends StatelessWidget {
   final ValueChanged<String>? onChanged;
   final List<TextInputFormatter>? inputFormatters;
   final Iterable<String>? autofillHints;
+  final bool readOnly;
 
   @override
   Widget build(BuildContext context) {
@@ -53,6 +55,7 @@ class AppFormField extends StatelessWidget {
           keyboardType: keyboardType,
           textInputAction: textInputAction,
           obscureText: obscureText,
+          readOnly: readOnly,
           maxLength: maxLength,
           onChanged: onChanged,
           inputFormatters: inputFormatters,

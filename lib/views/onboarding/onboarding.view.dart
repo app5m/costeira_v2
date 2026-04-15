@@ -31,7 +31,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
       subtitle:
           'Reúna todos os dados operacionais,\n financeiros e de produção.',
       buttonText: 'Avançar',
-      iconTitle: 'icon/iaicone.svg',
+      iconTitle: 'icon/circle-star.svg',
       tipo: 2,
       textOneRow:
           'Reúna todos os dados operacionais,\n financeiros e de produção.',
