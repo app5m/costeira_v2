@@ -27,10 +27,7 @@ class _HomeState extends State<Home> {
         onPressed: () {}, // Função vazia
         child: Padding(
           padding: const EdgeInsets.all(12.0),
-          child: SvgPicture.asset(
-            'icon/pata.svg',
-            color: Colors.white,
-          ),
+          child: SvgPicture.asset('icon/pata.svg', color: Colors.white),
         ),
       ),
       body: Stack(
@@ -71,17 +68,11 @@ class _HomeState extends State<Home> {
             left: 16,
             right: 16,
             child: Container(
-              padding: const EdgeInsets.symmetric(
-                horizontal: 16,
-                vertical: 14,
-              ),
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
               decoration: ShapeDecoration(
                 color: Colors.white,
                 shape: RoundedRectangleBorder(
-                  side: const BorderSide(
-                    width: 1,
-                    color: Color(0xFFEBEBEB),
-                  ),
+                  side: const BorderSide(width: 1, color: Color(0xFFEBEBEB)),
                   borderRadius: BorderRadius.circular(12),
                 ),
                 shadows: [

@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 
 import '../../../../../../../theme/colors.dart';
 
-
 class DetailSuplemento extends StatefulWidget {
   const DetailSuplemento({super.key});
 
@@ -11,7 +10,6 @@ class DetailSuplemento extends StatefulWidget {
 }
 
 class _DetailSuplementoState extends State<DetailSuplemento> {
-
   Widget buildTextField(String label, String hint) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -60,6 +58,7 @@ class _DetailSuplementoState extends State<DetailSuplemento> {
       ],
     );
   }
+
   Widget buildTextField5Line(String label, String hint) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -110,6 +109,7 @@ class _DetailSuplementoState extends State<DetailSuplemento> {
       ],
     );
   }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -117,9 +117,11 @@ class _DetailSuplementoState extends State<DetailSuplemento> {
       appBar: AppBar(
         backgroundColor: MyColors.colorPrimary,
         leading: GestureDetector(
-            onTap: (){
-              Navigator.pop(context);
-            },child: Icon(Icons.arrow_back_ios, color: Colors.white,)),
+          onTap: () {
+            Navigator.pop(context);
+          },
+          child: Icon(Icons.arrow_back_ios, color: Colors.white),
+        ),
         title: Text(
           'Detalhes do Supl. e Consumo',
           style: TextStyle(
@@ -133,25 +135,26 @@ class _DetailSuplementoState extends State<DetailSuplemento> {
       body: SingleChildScrollView(
         child: Container(
           margin: EdgeInsets.symmetric(horizontal: 20),
-          child: Column(children: [
-            SizedBox(height: 16,),
-            buildTextField("Potreiro", "Selecionar"),
-            buildTextField("Data de", "Selecionar"),
-            buildTextField("Data até", "Selecione"),
-            buildTextField("Lote", "Selecione"),
-            buildTextField("Piquete", "Selecione"),
-            buildTextField("Produto utilizado", "Insira aqui"),
-            buildTextField("Quantidade ", "00 kg"),
-            buildTextField("Peso médio do lote", "00 kg"),
-            buildTextField("Consumo estimado", "00 kg"),
-            buildTextField("Consumo estimado", "0,0 kg/animal/dia"),
-            buildTextField("Período entre abastecimentos", "0 dias"),
-            buildTextField("Consumo real", "0 kg/animal/dia"),
-            buildTextField("Observações", "Ex: Consumo dentro do espe..."),
+          child: Column(
+            children: [
+              SizedBox(height: 16),
+              buildTextField("Potreiro", "Selecionar"),
+              buildTextField("Data de", "Selecionar"),
+              buildTextField("Data até", "Selecione"),
+              buildTextField("Lote", "Selecione"),
+              buildTextField("Piquete", "Selecione"),
+              buildTextField("Produto utilizado", "Insira aqui"),
+              buildTextField("Quantidade ", "00 kg"),
+              buildTextField("Peso médio do lote", "00 kg"),
+              buildTextField("Consumo estimado", "00 kg"),
+              buildTextField("Consumo estimado", "0,0 kg/animal/dia"),
+              buildTextField("Período entre abastecimentos", "0 dias"),
+              buildTextField("Consumo real", "0 kg/animal/dia"),
+              buildTextField("Observações", "Ex: Consumo dentro do espe..."),
 
-
-            const SizedBox(height: 32),
-          ],),
+              const SizedBox(height: 32),
+            ],
+          ),
         ),
       ),
     );

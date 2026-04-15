@@ -37,7 +37,10 @@ class _CargaAnimalState extends State<CargaAnimal> {
                   ),
                   decoration: ShapeDecoration(
                     shape: RoundedRectangleBorder(
-                      side: BorderSide(width: 1, color: const Color(0xFFE6E6E6)),
+                      side: BorderSide(
+                        width: 1,
+                        color: const Color(0xFFE6E6E6),
+                      ),
                       borderRadius: BorderRadius.circular(64),
                     ),
                   ),
@@ -64,16 +67,27 @@ class _CargaAnimalState extends State<CargaAnimal> {
               ],
             ),
             _MonthSelector(),
-            SizedBox(height: 16,),
+            SizedBox(height: 16),
             BuildContainer('UA/hectare por potreiro', '4,8 UA/ha'),
-            SizedBox(height: 16,),
+            SizedBox(height: 16),
             BuildContainer('Kg/hectare por potreiro', '2.160 kg/ha'),
-            SizedBox(height: 16,),
+            SizedBox(height: 16),
             BuildContainer('Carga média da fazenda', '1,42 UA/ha e 640 kg/ha'),
-            Image.asset('images/mapageraldosporteiros.png', width: MediaQuery.of(context).size.width, fit: BoxFit.contain,),
-            Image.asset('images/uaha.png', width: MediaQuery.of(context).size.width, fit: BoxFit.contain,),
-            Image.asset('images/uaha2.png', width: MediaQuery.of(context).size.width, fit: BoxFit.contain,),
-
+            Image.asset(
+              'images/mapageraldosporteiros.png',
+              width: MediaQuery.of(context).size.width,
+              fit: BoxFit.contain,
+            ),
+            Image.asset(
+              'images/uaha.png',
+              width: MediaQuery.of(context).size.width,
+              fit: BoxFit.contain,
+            ),
+            Image.asset(
+              'images/uaha2.png',
+              width: MediaQuery.of(context).size.width,
+              fit: BoxFit.contain,
+            ),
           ],
         ),
       ),
@@ -99,28 +113,30 @@ class _CargaAnimalState extends State<CargaAnimal> {
           ),
         ],
       ),
-      child: Column(children: [
-        Text(
-          title,
-          textAlign: TextAlign.center,
-          style: TextStyle(
-            color: const Color(0xFF8C8C8C),
-            fontSize: 12,
-            fontFamily: 'Montserrat',
-            fontWeight: FontWeight.w500,
+      child: Column(
+        children: [
+          Text(
+            title,
+            textAlign: TextAlign.center,
+            style: TextStyle(
+              color: const Color(0xFF8C8C8C),
+              fontSize: 12,
+              fontFamily: 'Montserrat',
+              fontWeight: FontWeight.w500,
+            ),
           ),
-        ),
-        Text(
-          value,
-          textAlign: TextAlign.center,
-          style: TextStyle(
-            color: const Color(0xFF313131),
-            fontSize: 14,
-            fontFamily: 'Montserrat',
-            fontWeight: FontWeight.w500,
+          Text(
+            value,
+            textAlign: TextAlign.center,
+            style: TextStyle(
+              color: const Color(0xFF313131),
+              fontSize: 14,
+              fontFamily: 'Montserrat',
+              fontWeight: FontWeight.w500,
+            ),
           ),
-        )
-      ],),
+        ],
+      ),
     );
   }
 }

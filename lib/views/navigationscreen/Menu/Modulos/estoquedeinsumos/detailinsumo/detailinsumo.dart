@@ -2,8 +2,6 @@ import 'package:flutter/material.dart';
 
 import '../../../../../../theme/colors.dart';
 
-
-
 class DetailInsumo extends StatefulWidget {
   const DetailInsumo({super.key});
 
@@ -12,7 +10,6 @@ class DetailInsumo extends StatefulWidget {
 }
 
 class _DetailInsumoState extends State<DetailInsumo> {
-
   Widget buildTextField(String label, String hint) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -61,6 +58,7 @@ class _DetailInsumoState extends State<DetailInsumo> {
       ],
     );
   }
+
   Widget buildTextField5Line(String label, String hint) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -111,6 +109,7 @@ class _DetailInsumoState extends State<DetailInsumo> {
       ],
     );
   }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -118,9 +117,11 @@ class _DetailInsumoState extends State<DetailInsumo> {
       appBar: AppBar(
         backgroundColor: MyColors.colorPrimary,
         leading: GestureDetector(
-            onTap: (){
-              Navigator.pop(context);
-            },child: Icon(Icons.arrow_back_ios, color: Colors.white,)),
+          onTap: () {
+            Navigator.pop(context);
+          },
+          child: Icon(Icons.arrow_back_ios, color: Colors.white),
+        ),
         title: Text(
           'Detalhes do insumo',
           style: TextStyle(
@@ -134,19 +135,21 @@ class _DetailInsumoState extends State<DetailInsumo> {
       body: SingleChildScrollView(
         child: Container(
           margin: EdgeInsets.symmetric(horizontal: 20),
-          child: Column(children: [
-            SizedBox(height: 16,),
-            buildTextField("Tipo de insumo", "Medicamento"),
-            buildTextField("Nome comercial", "Ivermectina 1%"),
-            buildTextField("Fornecedor", "VetFarma"),
-            buildTextField("Quantidade", "500 kg"),
-            buildTextField("Preço por kg", "R\$ 2,80/kg"),
-            buildTextField("Valor total", "R\$ 1.400,00"),
-            buildTextField("Validade", "12/11/2025"),
-            buildTextField("Observações", "ELote armazenado no galpão 2..."),
+          child: Column(
+            children: [
+              SizedBox(height: 16),
+              buildTextField("Tipo de insumo", "Medicamento"),
+              buildTextField("Nome comercial", "Ivermectina 1%"),
+              buildTextField("Fornecedor", "VetFarma"),
+              buildTextField("Quantidade", "500 kg"),
+              buildTextField("Preço por kg", "R\$ 2,80/kg"),
+              buildTextField("Valor total", "R\$ 1.400,00"),
+              buildTextField("Validade", "12/11/2025"),
+              buildTextField("Observações", "ELote armazenado no galpão 2..."),
 
-            const SizedBox(height: 32),
-          ],),
+              const SizedBox(height: 32),
+            ],
+          ),
         ),
       ),
     );

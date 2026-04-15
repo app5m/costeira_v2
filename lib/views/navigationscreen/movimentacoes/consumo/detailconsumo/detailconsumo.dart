@@ -10,7 +10,6 @@ class DetailConsumo extends StatefulWidget {
 }
 
 class _DetailConsumoState extends State<DetailConsumo> {
-
   Widget buildTextField(String label, String hint) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -67,9 +66,11 @@ class _DetailConsumoState extends State<DetailConsumo> {
       appBar: AppBar(
         backgroundColor: MyColors.colorPrimary,
         leading: GestureDetector(
-            onTap: (){
-              Navigator.pop(context);
-            },child: Icon(Icons.arrow_back_ios, color: Colors.white,)),
+          onTap: () {
+            Navigator.pop(context);
+          },
+          child: Icon(Icons.arrow_back_ios, color: Colors.white),
+        ),
         title: Text(
           'Detalhes consumo',
           style: TextStyle(
@@ -83,18 +84,17 @@ class _DetailConsumoState extends State<DetailConsumo> {
       body: SingleChildScrollView(
         child: Container(
           margin: EdgeInsets.symmetric(horizontal: 20),
-          child: Column(children: [
-            SizedBox(height: 16,),
-            buildTextField("Brinco", "Ex: 2034"),
-            buildTextField("Data", "00/00/0000"),
-            buildTextField("Categoria", "Selecionar"),
-            buildTextField("Peso médio", "000 kg"),
+          child: Column(
+            children: [
+              SizedBox(height: 16),
+              buildTextField("Brinco", "Ex: 2034"),
+              buildTextField("Data", "00/00/0000"),
+              buildTextField("Categoria", "Selecionar"),
+              buildTextField("Peso médio", "000 kg"),
 
-
-
-
-            const SizedBox(height: 32),
-          ],),
+              const SizedBox(height: 32),
+            ],
+          ),
         ),
       ),
     );

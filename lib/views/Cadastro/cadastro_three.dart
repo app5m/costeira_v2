@@ -10,10 +10,7 @@ import 'package:flutter/material.dart';
 import '../validationCode/validation.code.dart';
 
 class Cadastrotree extends StatefulWidget {
-  const Cadastrotree({
-    super.key,
-    required this.draft,
-  });
+  const Cadastrotree({super.key, required this.draft});
 
   final RegisterDraft draft;
 
@@ -218,8 +215,8 @@ class _CadastrotreeState extends State<Cadastrotree> {
     if (!mounted) {
       return;
     }
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text(message)),
-    );
+    ScaffoldMessenger.of(
+      context,
+    ).showSnackBar(SnackBar(content: Text(message)));
   }
 }

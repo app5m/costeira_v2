@@ -26,10 +26,7 @@ class _GraficosMorteState extends State<GraficosMorte> {
               decoration: ShapeDecoration(
                 color: Colors.white,
                 shape: RoundedRectangleBorder(
-                  side: BorderSide(
-                    width: 1,
-                    color: const Color(0xFFEBEBEB),
-                  ),
+                  side: BorderSide(width: 1, color: const Color(0xFFEBEBEB)),
                   borderRadius: BorderRadius.circular(16),
                 ),
                 shadows: [

@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 
 import '../../../../../../../theme/colors.dart';
 
-
 class AddManejo extends StatefulWidget {
   const AddManejo({super.key});
 
@@ -11,7 +10,6 @@ class AddManejo extends StatefulWidget {
 }
 
 class _AddManejoState extends State<AddManejo> {
-
   Widget buildTextField(String label, String hint) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -60,6 +58,7 @@ class _AddManejoState extends State<AddManejo> {
       ],
     );
   }
+
   Widget buildTextField5Line(String label, String hint) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -118,9 +117,11 @@ class _AddManejoState extends State<AddManejo> {
       appBar: AppBar(
         backgroundColor: MyColors.colorPrimary,
         leading: GestureDetector(
-            onTap: (){
-              Navigator.pop(context);
-            },child: Icon(Icons.arrow_back_ios, color: Colors.white,)),
+          onTap: () {
+            Navigator.pop(context);
+          },
+          child: Icon(Icons.arrow_back_ios, color: Colors.white),
+        ),
         title: Text(
           'Adicionar manejo',
           style: TextStyle(
@@ -134,46 +135,51 @@ class _AddManejoState extends State<AddManejo> {
       body: SingleChildScrollView(
         child: Container(
           margin: EdgeInsets.symmetric(horizontal: 20),
-          child: Column(children: [
-            SizedBox(height: 16,),
-            buildTextField("Potreiro", "Selecionar"),
-            buildTextField("Data de", "Selecionar"),
-            buildTextField("Data até", "Selecione"),
-            buildTextField("Lote", "Selecione"),
-            buildTextField("Tipo de manejo", "Selecione"),
-            buildTextField("Quantidade usada", "00 kg"),
-            buildTextField("Observações", "Ex: Roçada realizada p..."),
+          child: Column(
+            children: [
+              SizedBox(height: 16),
+              buildTextField("Potreiro", "Selecionar"),
+              buildTextField("Data de", "Selecionar"),
+              buildTextField("Data até", "Selecione"),
+              buildTextField("Lote", "Selecione"),
+              buildTextField("Tipo de manejo", "Selecione"),
+              buildTextField("Quantidade usada", "00 kg"),
+              buildTextField("Observações", "Ex: Roçada realizada p..."),
 
-            const SizedBox(height: 16),
+              const SizedBox(height: 16),
 
-            Container(
-              margin: EdgeInsets.symmetric(horizontal: 0),
-              child: SizedBox(
-                width: double.infinity,
-                height: 50,
-                child: ElevatedButton(
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: MyColors.colorPrimary,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(8),
+              Container(
+                margin: EdgeInsets.symmetric(horizontal: 0),
+                child: SizedBox(
+                  width: double.infinity,
+                  height: 50,
+                  child: ElevatedButton(
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: MyColors.colorPrimary,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                    ),
+                    onPressed: () {
+                      Navigator.pop(context);
+                    },
+                    child: const Text(
+                      "Salvar",
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 14,
+                        fontFamily: 'Montserrat',
+                        fontWeight: FontWeight.w600,
+                        height: 1.29,
+                      ),
                     ),
                   ),
-                  onPressed: () {
-                    Navigator.pop(context);
-                  },
-                  child: const Text("Salvar",textAlign: TextAlign.center,
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontSize: 14,
-                      fontFamily: 'Montserrat',
-                      fontWeight: FontWeight.w600,
-                      height: 1.29,
-                    ),),
                 ),
               ),
-            ),
-            const SizedBox(height: 32),
-          ],),
+              const SizedBox(height: 32),
+            ],
+          ),
         ),
       ),
     );

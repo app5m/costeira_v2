@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 
 import '../../../../../../../theme/colors.dart';
 
-
 class DetailExecucao extends StatefulWidget {
   const DetailExecucao({super.key});
 
@@ -11,7 +10,6 @@ class DetailExecucao extends StatefulWidget {
 }
 
 class _DetailExecucaoState extends State<DetailExecucao> {
-
   Widget buildTextField(String label, String hint) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -60,6 +58,7 @@ class _DetailExecucaoState extends State<DetailExecucao> {
       ],
     );
   }
+
   Widget buildTextField5Line(String label, String hint) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -111,7 +110,6 @@ class _DetailExecucaoState extends State<DetailExecucao> {
     );
   }
 
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -119,9 +117,11 @@ class _DetailExecucaoState extends State<DetailExecucao> {
       appBar: AppBar(
         backgroundColor: MyColors.colorPrimary,
         leading: GestureDetector(
-            onTap: (){
-              Navigator.pop(context);
-            },child: Icon(Icons.arrow_back_ios, color: Colors.white,)),
+          onTap: () {
+            Navigator.pop(context);
+          },
+          child: Icon(Icons.arrow_back_ios, color: Colors.white),
+        ),
         title: Text(
           'Detalhes da morte',
           style: TextStyle(
@@ -135,22 +135,26 @@ class _DetailExecucaoState extends State<DetailExecucao> {
       body: SingleChildScrollView(
         child: Container(
           margin: EdgeInsets.symmetric(horizontal: 20),
-          child: Column(children: [
-            SizedBox(height: 16,),
-            buildTextField("Tipo de manejo",  'Vermífugo',),
-            buildTextField("Produto utilizado", "Albendazol 10%"),
-            buildTextField("Data planejada", '03/05/2025',),
-            buildTextField("Data realizada", '05/05/2025',),
-            buildTextField("Categoria", 'Vacas secas',),
+          child: Column(
+            children: [
+              SizedBox(height: 16),
+              buildTextField("Tipo de manejo", 'Vermífugo'),
+              buildTextField("Produto utilizado", "Albendazol 10%"),
+              buildTextField("Data planejada", '03/05/2025'),
+              buildTextField("Data realizada", '05/05/2025'),
+              buildTextField("Categoria", 'Vacas secas'),
 
-            buildTextField("Lote envolvido", "Lote 7"),
-            buildTextField("Dose por animal", "2 mL / animal"),
-            buildTextField("Responsável", "Carlos Alberto"),
-            buildTextField5Line("Observações",   'Lote apresentou alta infestação, reforçar manejo.',),
+              buildTextField("Lote envolvido", "Lote 7"),
+              buildTextField("Dose por animal", "2 mL / animal"),
+              buildTextField("Responsável", "Carlos Alberto"),
+              buildTextField5Line(
+                "Observações",
+                'Lote apresentou alta infestação, reforçar manejo.',
+              ),
 
-
-            const SizedBox(height: 32),
-          ],),
+              const SizedBox(height: 32),
+            ],
+          ),
         ),
       ),
     );

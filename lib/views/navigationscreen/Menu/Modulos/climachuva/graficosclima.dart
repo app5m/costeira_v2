@@ -18,11 +18,7 @@ class _GraficosChuvaState extends State<GraficosChuva> {
               children: [
                 Container(
                   width: 91,
-                  margin: EdgeInsets.only(
-                    left: 20,
-                    bottom: 16,
-                    top: 16,
-                  ),
+                  margin: EdgeInsets.only(left: 20, bottom: 16, top: 16),
                   padding: const EdgeInsets.symmetric(
                     horizontal: 16,
                     vertical: 4,
@@ -64,10 +60,7 @@ class _GraficosChuvaState extends State<GraficosChuva> {
               decoration: ShapeDecoration(
                 color: Colors.white,
                 shape: RoundedRectangleBorder(
-                  side: BorderSide(
-                    width: 1,
-                    color: const Color(0xFFEBEBEB),
-                  ),
+                  side: BorderSide(width: 1, color: const Color(0xFFEBEBEB)),
                   borderRadius: BorderRadius.circular(12),
                 ),
                 shadows: [
@@ -114,8 +107,7 @@ class _GraficosChuvaState extends State<GraficosChuva> {
                         Column(
                           mainAxisSize: MainAxisSize.min,
                           mainAxisAlignment: MainAxisAlignment.start,
-                          crossAxisAlignment:
-                              CrossAxisAlignment.start,
+                          crossAxisAlignment: CrossAxisAlignment.start,
                           spacing: 8,
                           children: [
                             Text(
@@ -149,8 +141,7 @@ class _GraficosChuvaState extends State<GraficosChuva> {
                             shape: RoundedRectangleBorder(
                               side: BorderSide(
                                 width: 1,
-                                strokeAlign:
-                                    BorderSide.strokeAlignCenter,
+                                strokeAlign: BorderSide.strokeAlignCenter,
                                 color: const Color(0xFFEBEBEB),
                               ),
                             ),
@@ -159,8 +150,7 @@ class _GraficosChuvaState extends State<GraficosChuva> {
                         Column(
                           mainAxisSize: MainAxisSize.min,
                           mainAxisAlignment: MainAxisAlignment.start,
-                          crossAxisAlignment:
-                              CrossAxisAlignment.start,
+                          crossAxisAlignment: CrossAxisAlignment.start,
                           spacing: 8,
                           children: [
                             Text(
@@ -198,10 +188,7 @@ class _GraficosChuvaState extends State<GraficosChuva> {
               decoration: ShapeDecoration(
                 color: Colors.white,
                 shape: RoundedRectangleBorder(
-                  side: BorderSide(
-                    width: 1,
-                    color: const Color(0xFFEBEBEB),
-                  ),
+                  side: BorderSide(width: 1, color: const Color(0xFFEBEBEB)),
                   borderRadius: BorderRadius.circular(12),
                 ),
                 shadows: [
@@ -280,8 +267,7 @@ class _GraficosChuvaState extends State<GraficosChuva> {
                           shape: RoundedRectangleBorder(
                             side: BorderSide(
                               width: 1,
-                              strokeAlign:
-                                  BorderSide.strokeAlignCenter,
+                              strokeAlign: BorderSide.strokeAlignCenter,
                               color: const Color(0xFFEBEBEB),
                             ),
                           ),

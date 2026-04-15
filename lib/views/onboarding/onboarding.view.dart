@@ -15,9 +15,7 @@ class OnboardingScreen extends StatefulWidget {
 }
 
 class _OnboardingScreenState extends State<OnboardingScreen> {
-  final PageController _pageController = PageController(
-    initialPage: 0,
-  );
+  final PageController _pageController = PageController(initialPage: 0);
   final NotificationPermissionService _notificationPermissionService =
       NotificationPermissionService();
   final LocationService _locationService = LocationService();
@@ -141,15 +139,10 @@ class _OnboardingPage extends StatelessWidget {
             child: Container(
               width: 360,
               height: 437,
-              padding: EdgeInsets.symmetric(
-                horizontal: 24,
-                vertical: 0,
-              ),
+              padding: EdgeInsets.symmetric(horizontal: 24, vertical: 0),
               decoration: BoxDecoration(
                 color: Colors.white,
-                borderRadius: BorderRadius.vertical(
-                  top: Radius.circular(32),
-                ),
+                borderRadius: BorderRadius.vertical(top: Radius.circular(32)),
               ),
               child: Column(
                 mainAxisSize: MainAxisSize.min,
@@ -162,28 +155,22 @@ class _OnboardingPage extends StatelessWidget {
                             vertical: 2,
                           ),
                           decoration: ShapeDecoration(
-                            color: const Color(
-                              0x1900823A,
-                            ) /* pink-100 */,
+                            color: const Color(0x1900823A) /* pink-100 */,
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(6),
                             ),
                           ),
                           child: Row(
                             mainAxisSize: MainAxisSize.min,
-                            mainAxisAlignment:
-                                MainAxisAlignment.center,
-                            crossAxisAlignment:
-                                CrossAxisAlignment.center,
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            crossAxisAlignment: CrossAxisAlignment.center,
                             spacing: 4,
                             children: [
                               Text(
                                 data.tag,
                                 textAlign: TextAlign.center,
                                 style: TextStyle(
-                                  color: const Color(
-                                    0xFF00823A,
-                                  ) /* pink-800 */,
+                                  color: const Color(0xFF00823A) /* pink-800 */,
                                   fontSize: 12,
                                   fontFamily: 'Montserrat',
                                   fontWeight: FontWeight.w500,
@@ -199,19 +186,15 @@ class _OnboardingPage extends StatelessWidget {
                             vertical: 2,
                           ),
                           decoration: ShapeDecoration(
-                            color: const Color(
-                              0x1900823A,
-                            ) /* pink-100 */,
+                            color: const Color(0x1900823A) /* pink-100 */,
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(6),
                             ),
                           ),
                           child: Row(
                             mainAxisSize: MainAxisSize.min,
-                            mainAxisAlignment:
-                                MainAxisAlignment.center,
-                            crossAxisAlignment:
-                                CrossAxisAlignment.center,
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            crossAxisAlignment: CrossAxisAlignment.center,
                             spacing: 4,
                             children: [
                               SvgPicture.asset(data.iconTitle!),

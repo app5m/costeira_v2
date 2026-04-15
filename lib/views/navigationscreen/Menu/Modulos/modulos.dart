@@ -165,8 +165,7 @@ class _modulosState extends State<modulos> {
                       ),
                       SizedBox(width: 8),
                       TextButton(
-                        onPressed: () =>
-                            Navigator.of(context).pop(false),
+                        onPressed: () => Navigator.of(context).pop(false),
                         child: Text(
                           "Cancelar",
                           style: TextStyle(
@@ -219,8 +218,7 @@ class _modulosState extends State<modulos> {
                           shape: RoundedRectangleBorder(
                             side: BorderSide(
                               width: 2,
-                              strokeAlign:
-                                  BorderSide.strokeAlignCenter,
+                              strokeAlign: BorderSide.strokeAlignCenter,
                               color: Color(0xFFE2E2E2),
                             ),
                           ),
@@ -275,8 +273,7 @@ class _modulosState extends State<modulos> {
                     Column(
                       children: [
                         SizedBox(
-                          width:
-                              MediaQuery.of(context).size.width - 40,
+                          width: MediaQuery.of(context).size.width - 40,
                           height: 50,
                           child: ElevatedButton(
                             onPressed: () async {
@@ -285,8 +282,7 @@ class _modulosState extends State<modulos> {
                               Navigator.pushAndRemoveUntil(
                                 context,
                                 MaterialPageRoute(
-                                  builder: (context) =>
-                                      Teladeinicio(),
+                                  builder: (context) => Teladeinicio(),
                                 ),
                                 (Route<dynamic> route) =>
                                     false, // Remove todas as telas anteriores
@@ -305,16 +301,14 @@ class _modulosState extends State<modulos> {
                         ),
                         SizedBox(width: 8),
                         TextButton(
-                          onPressed: () =>
-                              Navigator.of(context).pop(false),
+                          onPressed: () => Navigator.of(context).pop(false),
                           child: Text(
                             "Cancelar",
                             style: TextStyle(
                               fontSize: 16,
                               color: MyColors.colorOnPrimary,
                               decoration: TextDecoration.underline,
-                              decorationColor:
-                                  MyColors.colorOnPrimary,
+                              decorationColor: MyColors.colorOnPrimary,
                             ),
                           ),
                         ),
@@ -435,8 +429,7 @@ class _modulosState extends State<modulos> {
                         ],
                       ),
                       child: Row(
-                        mainAxisAlignment:
-                            MainAxisAlignment.spaceBetween,
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
                           Row(
                             children: [
@@ -467,9 +460,7 @@ class _modulosState extends State<modulos> {
                     onTap: () {
                       Navigator.push(
                         context,
-                        MaterialPageRoute(
-                          builder: (context) => Sanitarios(),
-                        ),
+                        MaterialPageRoute(builder: (context) => Sanitarios()),
                       );
                     },
                     child: Container(
@@ -493,8 +484,7 @@ class _modulosState extends State<modulos> {
                         ],
                       ),
                       child: Row(
-                        mainAxisAlignment:
-                            MainAxisAlignment.spaceBetween,
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
                           Row(
                             children: [
@@ -551,8 +541,7 @@ class _modulosState extends State<modulos> {
                         ],
                       ),
                       child: Row(
-                        mainAxisAlignment:
-                            MainAxisAlignment.spaceBetween,
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
                           Row(
                             children: [
@@ -583,9 +572,7 @@ class _modulosState extends State<modulos> {
                     onTap: () {
                       Navigator.push(
                         context,
-                        MaterialPageRoute(
-                          builder: (context) => Clima(),
-                        ),
+                        MaterialPageRoute(builder: (context) => Clima()),
                       );
                     },
                     child: Container(
@@ -609,8 +596,7 @@ class _modulosState extends State<modulos> {
                         ],
                       ),
                       child: Row(
-                        mainAxisAlignment:
-                            MainAxisAlignment.spaceBetween,
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
                           Row(
                             children: [
@@ -643,9 +629,7 @@ class _modulosState extends State<modulos> {
                     onTap: () {
                       Navigator.push(
                         context,
-                        MaterialPageRoute(
-                          builder: (context) => Tarefas(),
-                        ),
+                        MaterialPageRoute(builder: (context) => Tarefas()),
                       );
                     },
                     child: Container(
@@ -669,8 +653,7 @@ class _modulosState extends State<modulos> {
                         ],
                       ),
                       child: Row(
-                        mainAxisAlignment:
-                            MainAxisAlignment.spaceBetween,
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
                           Row(
                             children: [
@@ -702,9 +685,7 @@ class _modulosState extends State<modulos> {
                     onTap: () {
                       Navigator.push(
                         context,
-                        MaterialPageRoute(
-                          builder: (context) => Insumos(),
-                        ),
+                        MaterialPageRoute(builder: (context) => Insumos()),
                       );
                     },
                     child: Container(
@@ -728,8 +709,7 @@ class _modulosState extends State<modulos> {
                         ],
                       ),
                       child: Row(
-                        mainAxisAlignment:
-                            MainAxisAlignment.spaceBetween,
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
                           Row(
                             children: [
@@ -787,8 +767,7 @@ class _modulosState extends State<modulos> {
                       Navigator.push(
                         context,
                         MaterialPageRoute(
-                          builder: (context) =>
-                              PastagensNutricaoSuplemento(),
+                          builder: (context) => PastagensNutricaoSuplemento(),
                         ),
                       );
                     },
@@ -813,8 +792,7 @@ class _modulosState extends State<modulos> {
                         ],
                       ),
                       child: Row(
-                        mainAxisAlignment:
-                            MainAxisAlignment.spaceBetween,
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
                           Row(
                             children: [

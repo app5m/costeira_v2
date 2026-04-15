@@ -15,17 +15,11 @@ class Potreiros extends StatelessWidget {
           backgroundColor: green,
           elevation: 0,
           leading: const BackButton(color: Colors.white),
-          title: const Text(
-            'Potreiros',
-            style: TextStyle(color: Colors.white),
-          ),
+          title: const Text('Potreiros', style: TextStyle(color: Colors.white)),
           actions: const [
             Padding(
               padding: EdgeInsets.only(right: 12),
-              child: Icon(
-                Icons.notifications_none,
-                color: Colors.white,
-              ),
+              child: Icon(Icons.notifications_none, color: Colors.white),
             ),
           ],
           bottom: const TabBar(
@@ -86,10 +80,7 @@ class _MonthSelector extends StatelessWidget {
         decoration: ShapeDecoration(
           color: Colors.white,
           shape: RoundedRectangleBorder(
-            side: BorderSide(
-              width: 1,
-              color: const Color(0xFFEBEBEB),
-            ),
+            side: BorderSide(width: 1, color: const Color(0xFFEBEBEB)),
             borderRadius: BorderRadius.circular(8),
           ),
           shadows: [
@@ -212,10 +203,7 @@ class _InfoTable extends StatelessWidget {
         decoration: ShapeDecoration(
           color: Colors.white,
           shape: RoundedRectangleBorder(
-            side: BorderSide(
-              width: 1,
-              color: const Color(0xFFEBEBEB),
-            ),
+            side: BorderSide(width: 1, color: const Color(0xFFEBEBEB)),
             borderRadius: BorderRadius.circular(16),
           ),
           shadows: [
@@ -235,9 +223,7 @@ class _InfoTable extends StatelessWidget {
               child: Container(
                 width: 316.69,
                 height: 1.13,
-                decoration: BoxDecoration(
-                  color: const Color(0xFFF1F1F5),
-                ),
+                decoration: BoxDecoration(color: const Color(0xFFF1F1F5)),
               ),
             ),
             Positioned(
@@ -246,9 +232,7 @@ class _InfoTable extends StatelessWidget {
               child: Container(
                 width: 316.69,
                 height: 1.13,
-                decoration: BoxDecoration(
-                  color: const Color(0xFFF1F1F5),
-                ),
+                decoration: BoxDecoration(color: const Color(0xFFF1F1F5)),
               ),
             ),
             Positioned(
@@ -257,9 +241,7 @@ class _InfoTable extends StatelessWidget {
               child: Container(
                 width: 1.13,
                 height: 86.06,
-                decoration: BoxDecoration(
-                  color: const Color(0xFFF1F1F5),
-                ),
+                decoration: BoxDecoration(color: const Color(0xFFF1F1F5)),
               ),
             ),
             Positioned(
@@ -268,9 +250,7 @@ class _InfoTable extends StatelessWidget {
               child: Container(
                 width: 1.13,
                 height: 86.06,
-                decoration: BoxDecoration(
-                  color: const Color(0xFFF1F1F5),
-                ),
+                decoration: BoxDecoration(color: const Color(0xFFF1F1F5)),
               ),
             ),
             Positioned(
@@ -527,8 +507,7 @@ class _QualityCard extends StatelessWidget {
                         Row(
                           mainAxisSize: MainAxisSize.min,
                           mainAxisAlignment: MainAxisAlignment.start,
-                          crossAxisAlignment:
-                              CrossAxisAlignment.center,
+                          crossAxisAlignment: CrossAxisAlignment.center,
                           spacing: 4,
                           children: [
                             Text(
@@ -546,8 +525,7 @@ class _QualityCard extends StatelessWidget {
                         Row(
                           mainAxisSize: MainAxisSize.min,
                           mainAxisAlignment: MainAxisAlignment.start,
-                          crossAxisAlignment:
-                              CrossAxisAlignment.center,
+                          crossAxisAlignment: CrossAxisAlignment.center,
                           spacing: 16,
                           children: [
                             Text(

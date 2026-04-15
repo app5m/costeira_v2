@@ -10,7 +10,6 @@ class EditTroca extends StatefulWidget {
 }
 
 class _EditTrocaState extends State<EditTroca> {
-
   Widget buildTextField(String label, String hint) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -67,9 +66,11 @@ class _EditTrocaState extends State<EditTroca> {
       appBar: AppBar(
         backgroundColor: MyColors.colorPrimary,
         leading: GestureDetector(
-            onTap: (){
-              Navigator.pop(context);
-            },child: Icon(Icons.arrow_back_ios, color: Colors.white,)),
+          onTap: () {
+            Navigator.pop(context);
+          },
+          child: Icon(Icons.arrow_back_ios, color: Colors.white),
+        ),
         title: Text(
           'Editar troca',
           style: TextStyle(
@@ -83,44 +84,52 @@ class _EditTrocaState extends State<EditTroca> {
       body: SingleChildScrollView(
         child: Container(
           margin: EdgeInsets.symmetric(horizontal: 20),
-          child: Column(children: [
-            SizedBox(height: 16,),
-            buildTextField("Data",  '12/03/2025',),
-            buildTextField("Categoria de origem", "Vacas prenhes"),
-            buildTextField("Categoria de destino", 'Vacas paridas',),
+          child: Column(
+            children: [
+              SizedBox(height: 16),
+              buildTextField("Data", '12/03/2025'),
+              buildTextField("Categoria de origem", "Vacas prenhes"),
+              buildTextField("Categoria de destino", 'Vacas paridas'),
 
-            buildTextField("Selecione os animais (brincos)", "2034, 2035, 2036, 2037, 2038"),
+              buildTextField(
+                "Selecione os animais (brincos)",
+                "2034, 2035, 2036, 2037, 2038",
+              ),
 
-            const SizedBox(height: 16),
+              const SizedBox(height: 16),
 
-            Container(
-              margin: EdgeInsets.symmetric(horizontal: 0),
-              child: SizedBox(
-                width: double.infinity,
-                height: 50,
-                child: ElevatedButton(
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: MyColors.colorPrimary,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(8),
+              Container(
+                margin: EdgeInsets.symmetric(horizontal: 0),
+                child: SizedBox(
+                  width: double.infinity,
+                  height: 50,
+                  child: ElevatedButton(
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: MyColors.colorPrimary,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                    ),
+                    onPressed: () {
+                      Navigator.pop(context);
+                    },
+                    child: const Text(
+                      "Salvar",
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 14,
+                        fontFamily: 'Montserrat',
+                        fontWeight: FontWeight.w600,
+                        height: 1.29,
+                      ),
                     ),
                   ),
-                  onPressed: () {
-                    Navigator.pop(context);
-                  },
-                  child: const Text("Salvar",textAlign: TextAlign.center,
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontSize: 14,
-                      fontFamily: 'Montserrat',
-                      fontWeight: FontWeight.w600,
-                      height: 1.29,
-                    ),),
                 ),
               ),
-            ),
-            const SizedBox(height: 32),
-          ],),
+              const SizedBox(height: 32),
+            ],
+          ),
         ),
       ),
     );

@@ -2,8 +2,6 @@ import 'package:flutter/material.dart';
 
 import '../../../../../../theme/colors.dart';
 
-
-
 class DetailTarefa extends StatefulWidget {
   const DetailTarefa({super.key});
 
@@ -12,7 +10,6 @@ class DetailTarefa extends StatefulWidget {
 }
 
 class _DetailTarefaState extends State<DetailTarefa> {
-
   Widget buildTextField(String label, String hint) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -61,6 +58,7 @@ class _DetailTarefaState extends State<DetailTarefa> {
       ],
     );
   }
+
   Widget buildTextField5Line(String label, String hint) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -111,6 +109,7 @@ class _DetailTarefaState extends State<DetailTarefa> {
       ],
     );
   }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -118,9 +117,11 @@ class _DetailTarefaState extends State<DetailTarefa> {
       appBar: AppBar(
         backgroundColor: MyColors.colorPrimary,
         leading: GestureDetector(
-            onTap: (){
-              Navigator.pop(context);
-            },child: Icon(Icons.arrow_back_ios, color: Colors.white,)),
+          onTap: () {
+            Navigator.pop(context);
+          },
+          child: Icon(Icons.arrow_back_ios, color: Colors.white),
+        ),
         title: Text(
           'Detalhes da tarefa',
           style: TextStyle(
@@ -134,18 +135,20 @@ class _DetailTarefaState extends State<DetailTarefa> {
       body: SingleChildScrollView(
         child: Container(
           margin: EdgeInsets.symmetric(horizontal: 20),
-          child: Column(children: [
-            SizedBox(height: 16,),
-            buildTextField("O que fazer", "Ex: Revisar cerca do P..."),
-            buildTextField("Responsável", "Selecionar"),
-            buildTextField("Equipe", "Selecione"),
-            buildTextField("Mês planejado", "Selecione"),
-            buildTextField("Urgência", "Selecione"),
-            buildTextField("Status", "Selecione"),
-            buildTextField("Observações", "Ex: Equipe iniciou a tr..."),
+          child: Column(
+            children: [
+              SizedBox(height: 16),
+              buildTextField("O que fazer", "Ex: Revisar cerca do P..."),
+              buildTextField("Responsável", "Selecionar"),
+              buildTextField("Equipe", "Selecione"),
+              buildTextField("Mês planejado", "Selecione"),
+              buildTextField("Urgência", "Selecione"),
+              buildTextField("Status", "Selecione"),
+              buildTextField("Observações", "Ex: Equipe iniciou a tr..."),
 
-            const SizedBox(height: 32),
-          ],),
+              const SizedBox(height: 32),
+            ],
+          ),
         ),
       ),
     );

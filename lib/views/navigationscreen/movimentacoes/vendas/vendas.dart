@@ -14,8 +14,7 @@ class Vendas extends StatefulWidget {
   State<Vendas> createState() => _VendasState();
 }
 
-class _VendasState extends State<Vendas>
-    with SingleTickerProviderStateMixin {
+class _VendasState extends State<Vendas> with SingleTickerProviderStateMixin {
   late TabController _tabController;
 
   @override
@@ -99,9 +98,7 @@ class _VendasState extends State<Vendas>
       floatingActionButton: index == 0
           ? FloatingActionButton(
               shape: RoundedRectangleBorder(
-                borderRadius: BorderRadiusGeometry.all(
-                  Radius.circular(64),
-                ),
+                borderRadius: BorderRadiusGeometry.all(Radius.circular(64)),
               ),
 
               onPressed: () {
@@ -187,19 +184,13 @@ class _VendasState extends State<Vendas>
                     onTap: () {
                       Navigator.push(
                         context,
-                        MaterialPageRoute(
-                          builder: (_) => const DetailVenda(),
-                        ),
+                        MaterialPageRoute(builder: (_) => const DetailVenda()),
                       );
                     },
                     child: Container(
                       width: MediaQuery.of(context).size.width - 40,
                       padding: const EdgeInsets.all(16),
-                      margin: EdgeInsets.only(
-                        bottom: 8,
-                        left: 20,
-                        right: 20,
-                      ),
+                      margin: EdgeInsets.only(bottom: 8, left: 20, right: 20),
                       decoration: ShapeDecoration(
                         color: Colors.white,
                         shape: RoundedRectangleBorder(
@@ -219,17 +210,14 @@ class _VendasState extends State<Vendas>
                         ],
                       ),
                       child: Row(
-                        mainAxisAlignment:
-                            MainAxisAlignment.spaceBetween,
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         crossAxisAlignment: CrossAxisAlignment.start,
                         spacing: 8,
                         children: [
                           Row(
                             mainAxisSize: MainAxisSize.min,
-                            mainAxisAlignment:
-                                MainAxisAlignment.start,
-                            crossAxisAlignment:
-                                CrossAxisAlignment.center,
+                            mainAxisAlignment: MainAxisAlignment.start,
+                            crossAxisAlignment: CrossAxisAlignment.center,
                             spacing: 16,
                             children: [
                               Container(
@@ -238,16 +226,13 @@ class _VendasState extends State<Vendas>
                                 decoration: ShapeDecoration(
                                   color: const Color(0x198C8C8C),
                                   shape: RoundedRectangleBorder(
-                                    borderRadius:
-                                        BorderRadius.circular(42.67),
+                                    borderRadius: BorderRadius.circular(42.67),
                                   ),
                                 ),
                                 child: Row(
                                   mainAxisSize: MainAxisSize.min,
-                                  mainAxisAlignment:
-                                      MainAxisAlignment.start,
-                                  crossAxisAlignment:
-                                      CrossAxisAlignment.center,
+                                  mainAxisAlignment: MainAxisAlignment.start,
+                                  crossAxisAlignment: CrossAxisAlignment.center,
                                   spacing: 5.33,
                                   children: [
                                     Container(
@@ -266,10 +251,8 @@ class _VendasState extends State<Vendas>
                               ),
                               Column(
                                 mainAxisSize: MainAxisSize.min,
-                                mainAxisAlignment:
-                                    MainAxisAlignment.start,
-                                crossAxisAlignment:
-                                    CrossAxisAlignment.start,
+                                mainAxisAlignment: MainAxisAlignment.start,
+                                crossAxisAlignment: CrossAxisAlignment.start,
                                 spacing: 8,
                                 children: [
                                   Text(
@@ -284,8 +267,7 @@ class _VendasState extends State<Vendas>
                                   ),
                                   Row(
                                     mainAxisSize: MainAxisSize.min,
-                                    mainAxisAlignment:
-                                        MainAxisAlignment.start,
+                                    mainAxisAlignment: MainAxisAlignment.start,
                                     crossAxisAlignment:
                                         CrossAxisAlignment.center,
                                     spacing: 8,
@@ -294,9 +276,7 @@ class _VendasState extends State<Vendas>
                                         'R\$ 58.240,00',
                                         textAlign: TextAlign.center,
                                         style: TextStyle(
-                                          color: const Color(
-                                            0xFF313131,
-                                          ),
+                                          color: const Color(0xFF313131),
                                           fontSize: 14,
                                           fontFamily: 'Montserrat',
                                           fontWeight: FontWeight.w500,
@@ -306,8 +286,7 @@ class _VendasState extends State<Vendas>
                                   ),
                                   Row(
                                     mainAxisSize: MainAxisSize.min,
-                                    mainAxisAlignment:
-                                        MainAxisAlignment.start,
+                                    mainAxisAlignment: MainAxisAlignment.start,
                                     crossAxisAlignment:
                                         CrossAxisAlignment.center,
                                     spacing: 8,
@@ -316,9 +295,7 @@ class _VendasState extends State<Vendas>
                                         'Fazenda Santa Helena – Ub...',
                                         textAlign: TextAlign.center,
                                         style: TextStyle(
-                                          color: const Color(
-                                            0xFF8C8C8C,
-                                          ),
+                                          color: const Color(0xFF8C8C8C),
                                           fontSize: 12,
                                           fontFamily: 'Montserrat',
                                           fontWeight: FontWeight.w500,
@@ -328,8 +305,7 @@ class _VendasState extends State<Vendas>
                                   ),
                                   Row(
                                     mainAxisSize: MainAxisSize.min,
-                                    mainAxisAlignment:
-                                        MainAxisAlignment.start,
+                                    mainAxisAlignment: MainAxisAlignment.start,
                                     crossAxisAlignment:
                                         CrossAxisAlignment.center,
                                     spacing: 8,
@@ -338,9 +314,7 @@ class _VendasState extends State<Vendas>
                                         '12/03/2025 ',
                                         textAlign: TextAlign.center,
                                         style: TextStyle(
-                                          color: const Color(
-                                            0xFF8C8C8C,
-                                          ),
+                                          color: const Color(0xFF8C8C8C),
                                           fontSize: 12,
                                           fontFamily: 'Montserrat',
                                           fontWeight: FontWeight.w500,
@@ -353,26 +327,19 @@ class _VendasState extends State<Vendas>
                             ],
                           ),
                           Column(
-                            mainAxisAlignment:
-                                MainAxisAlignment.center,
+                            mainAxisAlignment: MainAxisAlignment.center,
                             children: [
                               Column(
                                 // mainAxisSize: MainAxisSize.min,
-                                mainAxisAlignment:
-                                    MainAxisAlignment.center,
-                                crossAxisAlignment:
-                                    CrossAxisAlignment.start,
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                crossAxisAlignment: CrossAxisAlignment.start,
                                 spacing: 8,
                                 children: [
                                   GestureDetector(
                                     onTap: () {
-                                      _showModalBottomSheetExcluir(
-                                        context,
-                                      );
+                                      _showModalBottomSheetExcluir(context);
                                     },
-                                    child: SvgPicture.asset(
-                                      'icon/trash.svg',
-                                    ),
+                                    child: SvgPicture.asset('icon/trash.svg'),
                                   ),
                                   SizedBox(height: 4),
                                   GestureDetector(
@@ -380,8 +347,7 @@ class _VendasState extends State<Vendas>
                                       Navigator.push(
                                         context,
                                         MaterialPageRoute(
-                                          builder: (_) =>
-                                              const EditVenda(),
+                                          builder: (_) => const EditVenda(),
                                         ),
                                       );
                                     },
@@ -497,8 +463,7 @@ class _VendasState extends State<Vendas>
                           },
                           style: ElevatedButton.styleFrom(
                             shape: RoundedRectangleBorder(
-                              borderRadius:
-                                  BorderRadiusGeometry.circular(8),
+                              borderRadius: BorderRadiusGeometry.circular(8),
                             ),
                             side: BorderSide(color: Colors.red),
                             elevation: 0,
@@ -512,8 +477,7 @@ class _VendasState extends State<Vendas>
                       ),
                       SizedBox(width: 8),
                       TextButton(
-                        onPressed: () =>
-                            Navigator.of(context).pop(false),
+                        onPressed: () => Navigator.of(context).pop(false),
                         child: Text(
                           "Cancelar",
                           style: TextStyle(

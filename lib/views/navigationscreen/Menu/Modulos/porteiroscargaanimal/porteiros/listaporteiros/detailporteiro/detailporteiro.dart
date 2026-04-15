@@ -2,8 +2,6 @@ import 'package:flutter/material.dart';
 
 import '../../../../../../../../theme/colors.dart';
 
-
-
 class DetailPorteiro extends StatefulWidget {
   const DetailPorteiro({super.key});
 
@@ -12,7 +10,6 @@ class DetailPorteiro extends StatefulWidget {
 }
 
 class _DetailPorteiroState extends State<DetailPorteiro> {
-
   Widget buildTextField(String label, String hint) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -61,6 +58,7 @@ class _DetailPorteiroState extends State<DetailPorteiro> {
       ],
     );
   }
+
   Widget buildTextField5Line(String label, String hint) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -111,6 +109,7 @@ class _DetailPorteiroState extends State<DetailPorteiro> {
       ],
     );
   }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -118,9 +117,11 @@ class _DetailPorteiroState extends State<DetailPorteiro> {
       appBar: AppBar(
         backgroundColor: MyColors.colorPrimary,
         leading: GestureDetector(
-            onTap: (){
-              Navigator.pop(context);
-            },child: Icon(Icons.arrow_back_ios, color: Colors.white,)),
+          onTap: () {
+            Navigator.pop(context);
+          },
+          child: Icon(Icons.arrow_back_ios, color: Colors.white),
+        ),
         title: Text(
           'Detalhes do potreiro',
           style: TextStyle(
@@ -134,20 +135,25 @@ class _DetailPorteiroState extends State<DetailPorteiro> {
       body: SingleChildScrollView(
         child: Container(
           margin: EdgeInsets.symmetric(horizontal: 20),
-          child: Column(children: [
-            SizedBox(height: 16,),
-            buildTextField("Nome", "Nome do potreiro"),
-            buildTextField("Categoria", "Selecionar"),
-            buildTextField("Área total", "00 ha"),
-            buildTextField("Área utilizável", "00 ha"),
-            buildTextField("Presença de aguada", "Selecione"),
-            buildTextField5Line("Qualidade da água", "Selecione"),
-            buildTextField5Line("Qualidade da água", "Selecione"),
-            buildTextField5Line("Sombra", "Selecione"),
-            buildTextField5Line("Observações", "Ex: Área com pastagem bem form..."),
+          child: Column(
+            children: [
+              SizedBox(height: 16),
+              buildTextField("Nome", "Nome do potreiro"),
+              buildTextField("Categoria", "Selecionar"),
+              buildTextField("Área total", "00 ha"),
+              buildTextField("Área utilizável", "00 ha"),
+              buildTextField("Presença de aguada", "Selecione"),
+              buildTextField5Line("Qualidade da água", "Selecione"),
+              buildTextField5Line("Qualidade da água", "Selecione"),
+              buildTextField5Line("Sombra", "Selecione"),
+              buildTextField5Line(
+                "Observações",
+                "Ex: Área com pastagem bem form...",
+              ),
 
-            const SizedBox(height: 32),
-          ],),
+              const SizedBox(height: 32),
+            ],
+          ),
         ),
       ),
     );

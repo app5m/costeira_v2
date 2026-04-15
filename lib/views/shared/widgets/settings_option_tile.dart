@@ -46,11 +46,7 @@ class SettingsOptionTile extends StatelessWidget {
                 letterSpacing: 0.1,
               ),
             ),
-            SvgPicture.asset(
-              'icon/Arrow.svg',
-              width: 24,
-              height: 24,
-            ),
+            SvgPicture.asset('icon/Arrow.svg', width: 24, height: 24),
           ],
         ),
       ),

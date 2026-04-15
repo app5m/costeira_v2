@@ -7,19 +7,19 @@ class PrimarySectionAppBar extends AppBar {
     required BuildContext context,
     required String title,
   }) : super(
-          backgroundColor: MyColors.colorPrimary,
-          foregroundColor: Colors.white,
-          title: Text(
-            title,
-            style: const TextStyle(
-              color: Colors.white,
-              fontSize: 16,
-              fontWeight: FontWeight.w600,
-            ),
-          ),
-          leading: IconButton(
-            icon: const Icon(Icons.arrow_back_ios),
-            onPressed: () => Navigator.of(context).pop(),
-          ),
-        );
+         backgroundColor: MyColors.colorPrimary,
+         foregroundColor: Colors.white,
+         title: Text(
+           title,
+           style: const TextStyle(
+             color: Colors.white,
+             fontSize: 16,
+             fontWeight: FontWeight.w600,
+           ),
+         ),
+         leading: IconButton(
+           icon: const Icon(Icons.arrow_back_ios),
+           onPressed: () => Navigator.of(context).pop(),
+         ),
+       );
 }

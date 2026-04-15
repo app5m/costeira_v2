@@ -14,8 +14,7 @@ class Insumos extends StatefulWidget {
   State<Insumos> createState() => _InsumosState();
 }
 
-class _InsumosState extends State<Insumos>
-    with SingleTickerProviderStateMixin {
+class _InsumosState extends State<Insumos> with SingleTickerProviderStateMixin {
   late TabController _tabController;
 
   @override
@@ -48,10 +47,7 @@ class _InsumosState extends State<Insumos>
               children: [
                 SpeedDialChild(
                   shape: CircleBorder(),
-                  child: Icon(
-                    Icons.add_rounded,
-                    color: MyColors.colorPrimary2,
-                  ),
+                  child: Icon(Icons.add_rounded, color: MyColors.colorPrimary2),
                   label: 'Registro de compra',
                   labelStyle: TextStyle(
                     color: MyColors.colorPrimary2,
@@ -75,10 +71,7 @@ class _InsumosState extends State<Insumos>
                 //     {'svg': 'icon/pedidos.svg', 'label': 'Novo pedido'},
                 SpeedDialChild(
                   shape: CircleBorder(),
-                  child: Icon(
-                    Icons.add_rounded,
-                    color: MyColors.colorPrimary2,
-                  ),
+                  child: Icon(Icons.add_rounded, color: MyColors.colorPrimary2),
                   label: 'Registro de utilização',
                   labelStyle: TextStyle(
                     color: MyColors.colorPrimary2,
@@ -90,9 +83,7 @@ class _InsumosState extends State<Insumos>
                   onTap: () {
                     Navigator.push(
                       context,
-                      MaterialPageRoute(
-                        builder: (_) => const AddInsumo(),
-                      ),
+                      MaterialPageRoute(builder: (_) => const AddInsumo()),
                     );
                   },
                 ),
@@ -106,10 +97,7 @@ class _InsumosState extends State<Insumos>
                 // ),
               ],
               // Para usar seu ícone customizado:
-              buttonSize: const Size(
-                180,
-                48,
-              ), // Tamanho do botão estendido
+              buttonSize: const Size(180, 48), // Tamanho do botão estendido
             )
           : null,
       appBar: AppBar(
@@ -174,19 +162,13 @@ class _InsumosState extends State<Insumos>
                     onTap: () {
                       Navigator.push(
                         context,
-                        MaterialPageRoute(
-                          builder: (_) => const DetailInsumo(),
-                        ),
+                        MaterialPageRoute(builder: (_) => const DetailInsumo()),
                       );
                     },
                     child: Container(
                       width: MediaQuery.of(context).size.width - 40,
                       padding: const EdgeInsets.all(16),
-                      margin: EdgeInsets.only(
-                        bottom: 8,
-                        left: 20,
-                        right: 20,
-                      ),
+                      margin: EdgeInsets.only(bottom: 8, left: 20, right: 20),
                       decoration: ShapeDecoration(
                         color: Colors.white,
                         shape: RoundedRectangleBorder(
@@ -206,17 +188,14 @@ class _InsumosState extends State<Insumos>
                         ],
                       ),
                       child: Row(
-                        mainAxisAlignment:
-                            MainAxisAlignment.spaceBetween,
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         crossAxisAlignment: CrossAxisAlignment.center,
                         spacing: 8,
                         children: [
                           Row(
                             mainAxisSize: MainAxisSize.min,
-                            mainAxisAlignment:
-                                MainAxisAlignment.start,
-                            crossAxisAlignment:
-                                CrossAxisAlignment.center,
+                            mainAxisAlignment: MainAxisAlignment.start,
+                            crossAxisAlignment: CrossAxisAlignment.center,
                             spacing: 16,
                             children: [
                               Container(
@@ -225,16 +204,13 @@ class _InsumosState extends State<Insumos>
                                 decoration: ShapeDecoration(
                                   color: const Color(0x198C8C8C),
                                   shape: RoundedRectangleBorder(
-                                    borderRadius:
-                                        BorderRadius.circular(42.67),
+                                    borderRadius: BorderRadius.circular(42.67),
                                   ),
                                 ),
                                 child: Row(
                                   mainAxisSize: MainAxisSize.min,
-                                  mainAxisAlignment:
-                                      MainAxisAlignment.start,
-                                  crossAxisAlignment:
-                                      CrossAxisAlignment.center,
+                                  mainAxisAlignment: MainAxisAlignment.start,
+                                  crossAxisAlignment: CrossAxisAlignment.center,
                                   spacing: 5.33,
                                   children: [
                                     Container(
@@ -257,10 +233,8 @@ class _InsumosState extends State<Insumos>
                               ),
                               Column(
                                 mainAxisSize: MainAxisSize.min,
-                                mainAxisAlignment:
-                                    MainAxisAlignment.start,
-                                crossAxisAlignment:
-                                    CrossAxisAlignment.start,
+                                mainAxisAlignment: MainAxisAlignment.start,
+                                crossAxisAlignment: CrossAxisAlignment.start,
                                 spacing: 8,
                                 children: [
                                   Text(
@@ -318,26 +292,19 @@ class _InsumosState extends State<Insumos>
                             ],
                           ),
                           Column(
-                            mainAxisAlignment:
-                                MainAxisAlignment.center,
+                            mainAxisAlignment: MainAxisAlignment.center,
                             children: [
                               Column(
                                 // mainAxisSize: MainAxisSize.min,
-                                mainAxisAlignment:
-                                    MainAxisAlignment.center,
-                                crossAxisAlignment:
-                                    CrossAxisAlignment.start,
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                crossAxisAlignment: CrossAxisAlignment.start,
                                 spacing: 8,
                                 children: [
                                   GestureDetector(
                                     onTap: () {
-                                      _showModalBottomSheetExcluir(
-                                        context,
-                                      );
+                                      _showModalBottomSheetExcluir(context);
                                     },
-                                    child: SvgPicture.asset(
-                                      'icon/trash.svg',
-                                    ),
+                                    child: SvgPicture.asset('icon/trash.svg'),
                                   ),
                                   SizedBox(height: 4),
                                   GestureDetector(
@@ -460,8 +427,7 @@ class _InsumosState extends State<Insumos>
                           },
                           style: ElevatedButton.styleFrom(
                             shape: RoundedRectangleBorder(
-                              borderRadius:
-                                  BorderRadiusGeometry.circular(8),
+                              borderRadius: BorderRadiusGeometry.circular(8),
                             ),
                             side: BorderSide(color: Colors.red),
                             elevation: 0,
@@ -475,8 +441,7 @@ class _InsumosState extends State<Insumos>
                       ),
                       SizedBox(width: 8),
                       TextButton(
-                        onPressed: () =>
-                            Navigator.of(context).pop(false),
+                        onPressed: () => Navigator.of(context).pop(false),
                         child: Text(
                           "Cancelar",
                           style: TextStyle(

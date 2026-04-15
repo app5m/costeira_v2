@@ -9,10 +9,7 @@ import 'package:flutter/services.dart';
 import 'cadastro_three.dart';
 
 class Cadastrotwo extends StatefulWidget {
-  const Cadastrotwo({
-    super.key,
-    required this.draft,
-  });
+  const Cadastrotwo({super.key, required this.draft});
 
   final RegisterDraft draft;
 

@@ -9,10 +9,7 @@ class UtilsRepository {
   Future<Map<String, dynamic>> fetchLista({required int sexo}) async {
     final response = await _client.post(
       WSConstantes.utilLista,
-      data: {
-        'sexo': sexo,
-        'token': WSConstantes.token,
-      },
+      data: {'sexo': sexo, 'token': WSConstantes.token},
     );
 
     if (response is Map<String, dynamic>) {

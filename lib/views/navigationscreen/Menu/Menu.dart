@@ -181,8 +181,7 @@ class _MenuState extends State<Menu> {
                       ),
                       SizedBox(width: 8),
                       TextButton(
-                        onPressed: () =>
-                            Navigator.of(context).pop(false),
+                        onPressed: () => Navigator.of(context).pop(false),
                         child: Text(
                           "Cancelar",
                           style: TextStyle(
@@ -331,8 +330,8 @@ class _MenuState extends State<Menu> {
                     _profile?.name.isNotEmpty == true
                         ? _profile!.name
                         : _user?.name.isNotEmpty == true
-                            ? _user!.name
-                            : 'Usuário',
+                        ? _user!.name
+                        : 'Usuário',
                     style: TextStyle(
                       color: const Color(0xFF313131),
                       fontSize: 24,
@@ -370,9 +369,7 @@ class _MenuState extends State<Menu> {
                           },
                           child: Container(
                             // Mova o Container para cá diretamente
-                            width:
-                                MediaQuery.of(context).size.width -
-                                60,
+                            width: MediaQuery.of(context).size.width - 60,
                             padding: const EdgeInsets.all(16),
                             decoration: ShapeDecoration(
                               color: Colors.white,
@@ -381,9 +378,7 @@ class _MenuState extends State<Menu> {
                                   width: 1,
                                   color: Color(0xFFEBEBEB),
                                 ),
-                                borderRadius: BorderRadius.circular(
-                                  12,
-                                ),
+                                borderRadius: BorderRadius.circular(12),
                               ),
                               shadows: const [
                                 BoxShadow(
@@ -394,8 +389,7 @@ class _MenuState extends State<Menu> {
                               ],
                             ),
                             child: Row(
-                              mainAxisAlignment:
-                                  MainAxisAlignment.spaceBetween,
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
                               children: [
                                 Row(
                                   children: [
@@ -403,11 +397,10 @@ class _MenuState extends State<Menu> {
                                       'icon/minhaconta.svg',
                                       width: 24,
                                       height: 24,
-                                      colorFilter:
-                                          const ColorFilter.mode(
-                                            Color(0xFF00823A),
-                                            BlendMode.srcIn,
-                                          ),
+                                      colorFilter: const ColorFilter.mode(
+                                        Color(0xFF00823A),
+                                        BlendMode.srcIn,
+                                      ),
                                     ),
                                     const SizedBox(width: 8),
                                     const Text(
@@ -442,9 +435,7 @@ class _MenuState extends State<Menu> {
                             );
                           },
                           child: Container(
-                            width:
-                                MediaQuery.of(context).size.width -
-                                60,
+                            width: MediaQuery.of(context).size.width - 60,
                             padding: const EdgeInsets.all(16),
                             decoration: ShapeDecoration(
                               color: Colors.white,
@@ -453,9 +444,7 @@ class _MenuState extends State<Menu> {
                                   width: 1,
                                   color: Color(0xFFEBEBEB),
                                 ),
-                                borderRadius: BorderRadius.circular(
-                                  12,
-                                ),
+                                borderRadius: BorderRadius.circular(12),
                               ),
                               shadows: const [
                                 BoxShadow(
@@ -466,8 +455,7 @@ class _MenuState extends State<Menu> {
                               ],
                             ),
                             child: Row(
-                              mainAxisAlignment:
-                                  MainAxisAlignment.spaceBetween,
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
                               children: [
                                 Row(
                                   children: [
@@ -475,19 +463,16 @@ class _MenuState extends State<Menu> {
                                       'icon/modulos.svg',
                                       width: 24,
                                       height: 24,
-                                      colorFilter:
-                                          const ColorFilter.mode(
-                                            Color(0xFF00823A),
-                                            BlendMode.srcIn,
-                                          ),
+                                      colorFilter: const ColorFilter.mode(
+                                        Color(0xFF00823A),
+                                        BlendMode.srcIn,
+                                      ),
                                     ),
                                     const SizedBox(width: 8),
                                     const Text(
                                       'Módulos',
                                       style: TextStyle(
-                                        color: Color(
-                                          0xFF313131,
-                                        ),
+                                        color: Color(0xFF313131),
                                         fontSize: 14,
                                         fontFamily: 'Montserrat',
                                         fontWeight: FontWeight.w500,
@@ -510,15 +495,11 @@ class _MenuState extends State<Menu> {
                           onTap: () {
                             Navigator.push(
                               context,
-                              MaterialPageRoute(
-                                builder: (context) => Extras(),
-                              ),
+                              MaterialPageRoute(builder: (context) => Extras()),
                             );
                           },
                           child: Container(
-                            width:
-                                MediaQuery.of(context).size.width -
-                                60,
+                            width: MediaQuery.of(context).size.width - 60,
                             padding: const EdgeInsets.all(16),
                             decoration: ShapeDecoration(
                               color: Colors.white,
@@ -527,9 +508,7 @@ class _MenuState extends State<Menu> {
                                   width: 1,
                                   color: Color(0xFFEBEBEB),
                                 ),
-                                borderRadius: BorderRadius.circular(
-                                  12,
-                                ),
+                                borderRadius: BorderRadius.circular(12),
                               ),
                               shadows: const [
                                 BoxShadow(
@@ -540,8 +519,7 @@ class _MenuState extends State<Menu> {
                               ],
                             ),
                             child: Row(
-                              mainAxisAlignment:
-                                  MainAxisAlignment.spaceBetween,
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
                               children: [
                                 Row(
                                   children: [
@@ -549,19 +527,16 @@ class _MenuState extends State<Menu> {
                                       'icon/extras.svg',
                                       width: 24,
                                       height: 24,
-                                      colorFilter:
-                                          const ColorFilter.mode(
-                                            Color(0xFF00823A),
-                                            BlendMode.srcIn,
-                                          ),
+                                      colorFilter: const ColorFilter.mode(
+                                        Color(0xFF00823A),
+                                        BlendMode.srcIn,
+                                      ),
                                     ),
                                     const SizedBox(width: 8),
                                     const Text(
                                       'Extras',
                                       style: TextStyle(
-                                        color: Color(
-                                          0xFF313131,
-                                        ),
+                                        color: Color(0xFF313131),
                                         fontSize: 14,
                                         fontFamily: 'Montserrat',
                                         fontWeight: FontWeight.w500,
@@ -694,11 +669,7 @@ class _MenuState extends State<Menu> {
     return Container(
       color: const Color(0xFFEBEBEB),
       alignment: Alignment.center,
-      child: const Icon(
-        Icons.person,
-        color: Colors.grey,
-        size: 36,
-      ),
+      child: const Icon(Icons.person, color: Colors.grey, size: 36),
     );
   }
 }

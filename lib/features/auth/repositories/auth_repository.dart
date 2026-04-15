@@ -15,10 +15,7 @@ class AuthRepository {
   Future<ApiMessage> validateCnpj(String cnpj) async {
     final response = await _client.post(
       WSConstantes.listCnpj,
-      data: {
-        'cnpj': cnpj,
-        'token': WSConstantes.token,
-      },
+      data: {'cnpj': cnpj, 'token': WSConstantes.token},
     );
 
     return ApiMessage.fromResponse(response);
@@ -97,10 +94,7 @@ class AuthRepository {
   Future<ApiMessage> recoverPassword(String email) async {
     final response = await _client.post(
       WSConstantes.recuperarSenha,
-      data: {
-        'email': email,
-        'token': WSConstantes.token,
-      },
+      data: {'email': email, 'token': WSConstantes.token},
     );
 
     return ApiMessage.fromResponse(response);

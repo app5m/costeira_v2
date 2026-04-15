@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 
 import '../../../../../../../../theme/colors.dart';
 
-
 class EditPorteiro extends StatefulWidget {
   const EditPorteiro({super.key});
 
@@ -11,7 +10,6 @@ class EditPorteiro extends StatefulWidget {
 }
 
 class _EditPorteiroState extends State<EditPorteiro> {
-
   Widget buildTextField(String label, String hint) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -60,6 +58,7 @@ class _EditPorteiroState extends State<EditPorteiro> {
       ],
     );
   }
+
   Widget buildTextField5Line(String label, String hint) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -118,9 +117,11 @@ class _EditPorteiroState extends State<EditPorteiro> {
       appBar: AppBar(
         backgroundColor: MyColors.colorPrimary,
         leading: GestureDetector(
-            onTap: (){
-              Navigator.pop(context);
-            },child: Icon(Icons.arrow_back_ios, color: Colors.white,)),
+          onTap: () {
+            Navigator.pop(context);
+          },
+          child: Icon(Icons.arrow_back_ios, color: Colors.white),
+        ),
         title: Text(
           'Editar porteiro',
           style: TextStyle(
@@ -134,47 +135,55 @@ class _EditPorteiroState extends State<EditPorteiro> {
       body: SingleChildScrollView(
         child: Container(
           margin: EdgeInsets.symmetric(horizontal: 20),
-          child: Column(children: [
-            SizedBox(height: 16,),
-            buildTextField("Nome", "Nome do potreiro"),
-            buildTextField("Categoria", "Selecionar"),
-            buildTextField("Área total", "00 ha"),
-            buildTextField("Área utilizável", "00 ha"),
-            buildTextField("Presença de aguada", "Selecione"),
-            buildTextField5Line("Qualidade da água", "Selecione"),
-            buildTextField5Line("Qualidade da água", "Selecione"),
-            buildTextField5Line("Sombra", "Selecione"),
-            buildTextField5Line("Observações", "Ex: Área com pastagem bem form..."),
-            const SizedBox(height: 16),
+          child: Column(
+            children: [
+              SizedBox(height: 16),
+              buildTextField("Nome", "Nome do potreiro"),
+              buildTextField("Categoria", "Selecionar"),
+              buildTextField("Área total", "00 ha"),
+              buildTextField("Área utilizável", "00 ha"),
+              buildTextField("Presença de aguada", "Selecione"),
+              buildTextField5Line("Qualidade da água", "Selecione"),
+              buildTextField5Line("Qualidade da água", "Selecione"),
+              buildTextField5Line("Sombra", "Selecione"),
+              buildTextField5Line(
+                "Observações",
+                "Ex: Área com pastagem bem form...",
+              ),
+              const SizedBox(height: 16),
 
-            Container(
-              margin: EdgeInsets.symmetric(horizontal: 0),
-              child: SizedBox(
-                width: double.infinity,
-                height: 50,
-                child: ElevatedButton(
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: MyColors.colorPrimary,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(8),
+              Container(
+                margin: EdgeInsets.symmetric(horizontal: 0),
+                child: SizedBox(
+                  width: double.infinity,
+                  height: 50,
+                  child: ElevatedButton(
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: MyColors.colorPrimary,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                    ),
+                    onPressed: () {
+                      Navigator.pop(context);
+                    },
+                    child: const Text(
+                      "Salvar",
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 14,
+                        fontFamily: 'Montserrat',
+                        fontWeight: FontWeight.w600,
+                        height: 1.29,
+                      ),
                     ),
                   ),
-                  onPressed: () {
-                    Navigator.pop(context);
-                  },
-                  child: const Text("Salvar",textAlign: TextAlign.center,
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontSize: 14,
-                      fontFamily: 'Montserrat',
-                      fontWeight: FontWeight.w600,
-                      height: 1.29,
-                    ),),
                 ),
               ),
-            ),
-            const SizedBox(height: 32),
-          ],),
+              const SizedBox(height: 32),
+            ],
+          ),
         ),
       ),
     );

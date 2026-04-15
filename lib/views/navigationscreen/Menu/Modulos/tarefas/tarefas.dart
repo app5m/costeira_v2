@@ -7,7 +7,6 @@ import 'package:flutter_svg/flutter_svg.dart';
 
 import 'graficostarefa.dart';
 
-
 class Tarefas extends StatefulWidget {
   const Tarefas({super.key});
 
@@ -15,7 +14,7 @@ class Tarefas extends StatefulWidget {
   State<Tarefas> createState() => _TarefasState();
 }
 
-class _TarefasState extends State<Tarefas>  with SingleTickerProviderStateMixin {
+class _TarefasState extends State<Tarefas> with SingleTickerProviderStateMixin {
   late TabController _tabController;
 
   @override
@@ -96,38 +95,43 @@ class _TarefasState extends State<Tarefas>  with SingleTickerProviderStateMixin 
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.white,
-      floatingActionButton: index == 0 ? FloatingActionButton(
-        shape: RoundedRectangleBorder(
-            borderRadius: BorderRadiusGeometry.all(Radius.circular(64))
-        ),
+      floatingActionButton: index == 0
+          ? FloatingActionButton(
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadiusGeometry.all(Radius.circular(64)),
+              ),
 
-        onPressed: (){
-          // final index = DefaultTabController.of(tabContext).index; // 0,1,2
-          //
-          // if (index == 0) {
-            Navigator.push(context,
-                MaterialPageRoute(builder: (_) => const AddTarefa()));
+              onPressed: () {
+                // final index = DefaultTabController.of(tabContext).index; // 0,1,2
+                //
+                // if (index == 0) {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (_) => const AddTarefa()),
+                );
 
-          // } else if (index == 1) {
-          //   Navigator.push(context,
-          //       MaterialPageRoute(builder: (_) => const Addservice()));
-          // } else if (index == 2) {
-          //   Navigator.push(context,
-          //       MaterialPageRoute(builder: (_) => const AddCategoria()));
-          // }
-
-
-        }, child: Padding(
-        padding: const EdgeInsets.all(12.0),
-        child: Icon(Icons.add, color: Colors.white,),
-      ), ) : null,
+                // } else if (index == 1) {
+                //   Navigator.push(context,
+                //       MaterialPageRoute(builder: (_) => const Addservice()));
+                // } else if (index == 2) {
+                //   Navigator.push(context,
+                //       MaterialPageRoute(builder: (_) => const AddCategoria()));
+                // }
+              },
+              child: Padding(
+                padding: const EdgeInsets.all(12.0),
+                child: Icon(Icons.add, color: Colors.white),
+              ),
+            )
+          : null,
       appBar: AppBar(
-    backgroundColor: MyColors.colorPrimary,
+        backgroundColor: MyColors.colorPrimary,
         leading: GestureDetector(
-          onTap: (){
+          onTap: () {
             Navigator.pop(context);
           },
-            child: Icon(Icons.arrow_back_ios, color: Colors.white,)),
+          child: Icon(Icons.arrow_back_ios, color: Colors.white),
+        ),
         title: Text(
           'Tarefas',
           style: TextStyle(
@@ -138,352 +142,368 @@ class _TarefasState extends State<Tarefas>  with SingleTickerProviderStateMixin 
           ),
         ),
       ),
-      body: Column(children: [
-        const SizedBox(height: 16),
-        TabBar(
-          controller: _tabController,
-          tabs: const [
-            Tab(text: "Lista"),
-            Tab(text: "Gráficos"),
-          ],
-          onTap: (int inde) {
-            setState(() {
-              index = inde;
-            });
-          },
-          automaticIndicatorColorAdjustment: false,
-          indicatorSize: TabBarIndicatorSize.tab,
-          unselectedLabelColor: Colors.grey,
-          labelStyle: const TextStyle(
-            //   color: Colors.black,
-            fontSize: 12,
-            fontFamily: 'Montserrat',
-            fontWeight: FontWeight.w600,
+      body: Column(
+        children: [
+          const SizedBox(height: 16),
+          TabBar(
+            controller: _tabController,
+            tabs: const [
+              Tab(text: "Lista"),
+              Tab(text: "Gráficos"),
+            ],
+            onTap: (int inde) {
+              setState(() {
+                index = inde;
+              });
+            },
+            automaticIndicatorColorAdjustment: false,
+            indicatorSize: TabBarIndicatorSize.tab,
+            unselectedLabelColor: Colors.grey,
+            labelStyle: const TextStyle(
+              //   color: Colors.black,
+              fontSize: 12,
+              fontFamily: 'Montserrat',
+              fontWeight: FontWeight.w600,
+            ),
+            unselectedLabelStyle: const TextStyle(
+              // color: Colors.green,
+              fontSize: 12,
+              fontFamily: 'Montserrat',
+              fontWeight: FontWeight.w700,
+            ),
+            dividerColor: Colors.grey,
+            labelColor: Colors.black,
+            indicatorColor: MyColors.colorPrimary2,
           ),
-          unselectedLabelStyle: const TextStyle(
-            // color: Colors.green,
-            fontSize: 12,
-            fontFamily: 'Montserrat',
-            fontWeight: FontWeight.w700,
-          ),
-          dividerColor: Colors.grey,
-          labelColor: Colors.black,
-          indicatorColor: MyColors.colorPrimary2,
-        ),
-        const SizedBox(height: 16),
-        if(index == 0)
-          _MonthSelector(),
-        if(index == 0)
-          Container(
-            margin: EdgeInsets.symmetric(horizontal: 20, vertical: 16),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-              Container(
-                width: MediaQuery.of(context).size.width / 2 - 40 ,
-                padding: const EdgeInsets.all(16),
-                decoration: ShapeDecoration(
-                  color: Colors.white,
-                  shape: RoundedRectangleBorder(
-                    side: BorderSide(
-                      width: 1,
-                      color: const Color(0xFFEBEBEB),
-                    ),
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  shadows: [
-                    BoxShadow(
-                      color: Color(0x0A000000),
-                      blurRadius: 24,
-                      offset: Offset(0, 0),
-                      spreadRadius: 0,
-                    )
-                  ],
-                ),
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  mainAxisAlignment: MainAxisAlignment.start,
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  spacing: 16,
-                  children: [
-                    Row(
-                      mainAxisSize: MainAxisSize.min,
-                      mainAxisAlignment: MainAxisAlignment.start,
-                      crossAxisAlignment: CrossAxisAlignment.center,
-                      spacing: 4,
-                      children: [
-                        Text(
-                          'Tarefas pendentes',
-                          textAlign: TextAlign.center,
-                          style: TextStyle(
-                            color: const Color(0xFF8C8C8C),
-                            fontSize: 12,
-                            fontFamily: 'Montserrat',
-                            fontWeight: FontWeight.w500,
-                          ),
+          const SizedBox(height: 16),
+          if (index == 0) _MonthSelector(),
+          if (index == 0)
+            Container(
+              margin: EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Container(
+                    width: MediaQuery.of(context).size.width / 2 - 40,
+                    padding: const EdgeInsets.all(16),
+                    decoration: ShapeDecoration(
+                      color: Colors.white,
+                      shape: RoundedRectangleBorder(
+                        side: BorderSide(
+                          width: 1,
+                          color: const Color(0xFFEBEBEB),
+                        ),
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      shadows: [
+                        BoxShadow(
+                          color: Color(0x0A000000),
+                          blurRadius: 24,
+                          offset: Offset(0, 0),
+                          spreadRadius: 0,
                         ),
                       ],
                     ),
-                    Text(
-                      '10',
-                      textAlign: TextAlign.center,
-                      style: TextStyle(
-                        color: const Color(0xFF313131),
-                        fontSize: 14,
-                        fontFamily: 'Montserrat',
-                        fontWeight: FontWeight.w500,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              Container(
-                width: MediaQuery.of(context).size.width / 2 - 40 ,
-                padding: const EdgeInsets.all(16),
-                decoration: ShapeDecoration(
-                  color: Colors.white,
-                  shape: RoundedRectangleBorder(
-                    side: BorderSide(
-                      width: 1,
-                      color: const Color(0xFFEBEBEB),
-                    ),
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  shadows: [
-                    BoxShadow(
-                      color: Color(0x0A000000),
-                      blurRadius: 24,
-                      offset: Offset(0, 0),
-                      spreadRadius: 0,
-                    )
-                  ],
-                ),
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  mainAxisAlignment: MainAxisAlignment.start,
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  spacing: 16,
-                  children: [
-                    Row(
+                    child: Column(
                       mainAxisSize: MainAxisSize.min,
                       mainAxisAlignment: MainAxisAlignment.start,
-                      crossAxisAlignment: CrossAxisAlignment.center,
-                      spacing: 4,
-                      children: [
-                        Text(
-                          'Execução',
-                          textAlign: TextAlign.center,
-                          style: TextStyle(
-                            color: const Color(0xFF8C8C8C),
-                            fontSize: 12,
-                            fontFamily: 'Montserrat',
-                            fontWeight: FontWeight.w500,
-                          ),
-                        ),
-                      ],
-                    ),
-                    Text(
-                      '50%',
-                      textAlign: TextAlign.center,
-                      style: TextStyle(
-                        color: const Color(0xFF313131),
-                        fontSize: 14,
-                        fontFamily: 'Montserrat',
-                        fontWeight: FontWeight.w500,
-                      ),
-                    ),
-                  ],
-                ),
-              )
-            ],),
-          ),
-        if(index == 0)
-          Expanded(child: ListView.builder(
-            itemCount: 3,
-              itemBuilder: (context, index){
-            return GestureDetector(
-              onTap: (){
-                Navigator.push(context,
-                    MaterialPageRoute(builder: (_) => const DetailTarefa()));
-              },
-              child: Container(
-                width: MediaQuery.of(context).size.width - 40,
-                padding: const EdgeInsets.all(16),
-                margin: EdgeInsets.only(bottom: 8, left: 20, right: 20),
-                decoration: ShapeDecoration(
-                  color: Colors.white,
-                  shape: RoundedRectangleBorder(
-                    side: BorderSide(
-                      width: 1,
-                      color: const Color(0xFFEBEBEB),
-                    ),
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  shadows: [
-                    BoxShadow(
-                      color: Color(0x0A000000),
-                      blurRadius: 24,
-                      offset: Offset(0, 0),
-                      spreadRadius: 0,
-                    )
-                  ],
-                ),
-                child: Row(
-
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  crossAxisAlignment: CrossAxisAlignment.center,
-                  spacing: 8,
-                  children: [
-                    Row(
-                      mainAxisSize: MainAxisSize.min,
-                      mainAxisAlignment: MainAxisAlignment.start,
-                      crossAxisAlignment: CrossAxisAlignment.center,
+                      crossAxisAlignment: CrossAxisAlignment.start,
                       spacing: 16,
                       children: [
-                        Container(
-                          padding: const EdgeInsets.all(8),
-                          clipBehavior: Clip.antiAlias,
-                          decoration: ShapeDecoration(
-                            color: const Color(0x198C8C8C),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(42.67),
+                        Row(
+                          mainAxisSize: MainAxisSize.min,
+                          mainAxisAlignment: MainAxisAlignment.start,
+                          crossAxisAlignment: CrossAxisAlignment.center,
+                          spacing: 4,
+                          children: [
+                            Text(
+                              'Tarefas pendentes',
+                              textAlign: TextAlign.center,
+                              style: TextStyle(
+                                color: const Color(0xFF8C8C8C),
+                                fontSize: 12,
+                                fontFamily: 'Montserrat',
+                                fontWeight: FontWeight.w500,
+                              ),
                             ),
+                          ],
+                        ),
+                        Text(
+                          '10',
+                          textAlign: TextAlign.center,
+                          style: TextStyle(
+                            color: const Color(0xFF313131),
+                            fontSize: 14,
+                            fontFamily: 'Montserrat',
+                            fontWeight: FontWeight.w500,
                           ),
-                          child: Row(
+                        ),
+                      ],
+                    ),
+                  ),
+                  Container(
+                    width: MediaQuery.of(context).size.width / 2 - 40,
+                    padding: const EdgeInsets.all(16),
+                    decoration: ShapeDecoration(
+                      color: Colors.white,
+                      shape: RoundedRectangleBorder(
+                        side: BorderSide(
+                          width: 1,
+                          color: const Color(0xFFEBEBEB),
+                        ),
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      shadows: [
+                        BoxShadow(
+                          color: Color(0x0A000000),
+                          blurRadius: 24,
+                          offset: Offset(0, 0),
+                          spreadRadius: 0,
+                        ),
+                      ],
+                    ),
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      mainAxisAlignment: MainAxisAlignment.start,
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      spacing: 16,
+                      children: [
+                        Row(
+                          mainAxisSize: MainAxisSize.min,
+                          mainAxisAlignment: MainAxisAlignment.start,
+                          crossAxisAlignment: CrossAxisAlignment.center,
+                          spacing: 4,
+                          children: [
+                            Text(
+                              'Execução',
+                              textAlign: TextAlign.center,
+                              style: TextStyle(
+                                color: const Color(0xFF8C8C8C),
+                                fontSize: 12,
+                                fontFamily: 'Montserrat',
+                                fontWeight: FontWeight.w500,
+                              ),
+                            ),
+                          ],
+                        ),
+                        Text(
+                          '50%',
+                          textAlign: TextAlign.center,
+                          style: TextStyle(
+                            color: const Color(0xFF313131),
+                            fontSize: 14,
+                            fontFamily: 'Montserrat',
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          if (index == 0)
+            Expanded(
+              child: ListView.builder(
+                itemCount: 3,
+                itemBuilder: (context, index) {
+                  return GestureDetector(
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (_) => const DetailTarefa()),
+                      );
+                    },
+                    child: Container(
+                      width: MediaQuery.of(context).size.width - 40,
+                      padding: const EdgeInsets.all(16),
+                      margin: EdgeInsets.only(bottom: 8, left: 20, right: 20),
+                      decoration: ShapeDecoration(
+                        color: Colors.white,
+                        shape: RoundedRectangleBorder(
+                          side: BorderSide(
+                            width: 1,
+                            color: const Color(0xFFEBEBEB),
+                          ),
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        shadows: [
+                          BoxShadow(
+                            color: Color(0x0A000000),
+                            blurRadius: 24,
+                            offset: Offset(0, 0),
+                            spreadRadius: 0,
+                          ),
+                        ],
+                      ),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        crossAxisAlignment: CrossAxisAlignment.center,
+                        spacing: 8,
+                        children: [
+                          Row(
                             mainAxisSize: MainAxisSize.min,
                             mainAxisAlignment: MainAxisAlignment.start,
                             crossAxisAlignment: CrossAxisAlignment.center,
-                            spacing: 5.33,
+                            spacing: 16,
                             children: [
                               Container(
-                                width: 16,
-                                height: 16,
+                                padding: const EdgeInsets.all(8),
                                 clipBehavior: Clip.antiAlias,
-                                decoration: BoxDecoration(),
-                                child: SvgPicture.asset(
-                                  'icon/book-check.svg',
-                                  width: 16,
-                                  height: 16,
-                                  colorFilter: const ColorFilter.mode(
-                                    Color(0xFF8C8C8C),
-                                    BlendMode.srcIn,
+                                decoration: ShapeDecoration(
+                                  color: const Color(0x198C8C8C),
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(42.67),
                                   ),
                                 ),
-                              ),
-                            ],
-                          ),
-                        ),
-                        Column(
-                          mainAxisSize: MainAxisSize.min,
-                          mainAxisAlignment: MainAxisAlignment.start,
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          spacing: 8,
-                          children: [
-                            Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-                              decoration: ShapeDecoration(
-                                color: const Color(0xFFFFACAC),
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(64),
+                                child: Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  mainAxisAlignment: MainAxisAlignment.start,
+                                  crossAxisAlignment: CrossAxisAlignment.center,
+                                  spacing: 5.33,
+                                  children: [
+                                    Container(
+                                      width: 16,
+                                      height: 16,
+                                      clipBehavior: Clip.antiAlias,
+                                      decoration: BoxDecoration(),
+                                      child: SvgPicture.asset(
+                                        'icon/book-check.svg',
+                                        width: 16,
+                                        height: 16,
+                                        colorFilter: const ColorFilter.mode(
+                                          Color(0xFF8C8C8C),
+                                          BlendMode.srcIn,
+                                        ),
+                                      ),
+                                    ),
+                                  ],
                                 ),
                               ),
-                              child: Row(
+                              Column(
                                 mainAxisSize: MainAxisSize.min,
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                crossAxisAlignment: CrossAxisAlignment.center,
+                                mainAxisAlignment: MainAxisAlignment.start,
+                                crossAxisAlignment: CrossAxisAlignment.start,
                                 spacing: 8,
                                 children: [
+                                  Container(
+                                    padding: const EdgeInsets.symmetric(
+                                      horizontal: 8,
+                                      vertical: 2,
+                                    ),
+                                    decoration: ShapeDecoration(
+                                      color: const Color(0xFFFFACAC),
+                                      shape: RoundedRectangleBorder(
+                                        borderRadius: BorderRadius.circular(64),
+                                      ),
+                                    ),
+                                    child: Row(
+                                      mainAxisSize: MainAxisSize.min,
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.center,
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.center,
+                                      spacing: 8,
+                                      children: [
+                                        Text(
+                                          'Não realizado',
+                                          style: TextStyle(
+                                            color: const Color(0xFF802222),
+                                            fontSize: 10,
+                                            fontFamily: 'Montserrat',
+                                            fontWeight: FontWeight.w500,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
                                   Text(
-                                    'Não realizado',
+                                    'Revisar cerca do centro',
+                                    textAlign: TextAlign.center,
                                     style: TextStyle(
-                                      color: const Color(0xFF802222),
-                                      fontSize: 10,
+                                      color: const Color(0xFF313131),
+                                      fontSize: 14,
+                                      fontFamily: 'Montserrat',
+                                      fontWeight: FontWeight.w500,
+                                    ),
+                                  ),
+                                  Text(
+                                    'Urgência alta',
+                                    textAlign: TextAlign.center,
+                                    style: TextStyle(
+                                      color: const Color(0xFF313131),
+                                      fontSize: 12,
+                                      fontFamily: 'Montserrat',
+                                      fontWeight: FontWeight.w500,
+                                    ),
+                                  ),
+                                  Text(
+                                    'João Mendes • Equipe A',
+                                    textAlign: TextAlign.center,
+                                    style: TextStyle(
+                                      color: const Color(0xFF8C8C8C),
+                                      fontSize: 12,
+                                      fontFamily: 'Montserrat',
+                                      fontWeight: FontWeight.w500,
+                                    ),
+                                  ),
+                                  Text(
+                                    'Planejado para abril',
+                                    textAlign: TextAlign.center,
+                                    style: TextStyle(
+                                      color: const Color(0xFF8C8C8C),
+                                      fontSize: 12,
                                       fontFamily: 'Montserrat',
                                       fontWeight: FontWeight.w500,
                                     ),
                                   ),
                                 ],
                               ),
-                            ),
-                            Text(
-                              'Revisar cerca do centro',
-                              textAlign: TextAlign.center,
-                              style: TextStyle(
-                                color: const Color(0xFF313131),
-                                fontSize: 14,
-                                fontFamily: 'Montserrat',
-                                fontWeight: FontWeight.w500,
+                            ],
+                          ),
+                          Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Column(
+                                // mainAxisSize: MainAxisSize.min,
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                spacing: 8,
+                                children: [
+                                  GestureDetector(
+                                    onTap: () {
+                                      _showModalBottomSheetExcluir(context);
+                                    },
+                                    child: SvgPicture.asset('icon/trash.svg'),
+                                  ),
+                                  SizedBox(height: 4),
+                                  GestureDetector(
+                                    onTap: () {
+                                      Navigator.push(
+                                        context,
+                                        MaterialPageRoute(
+                                          builder: (_) => const EditTarefa(),
+                                        ),
+                                      );
+                                    },
+                                    child: SvgPicture.asset(
+                                      'icon/square-pen.svg',
+                                    ),
+                                  ),
+                                ],
                               ),
-                            ),
-                            Text(
-                              'Urgência alta',
-                              textAlign: TextAlign.center,
-                              style: TextStyle(
-                                color: const Color(0xFF313131),
-                                fontSize: 12,
-                                fontFamily: 'Montserrat',
-                                fontWeight: FontWeight.w500,
-                              ),
-                            ),
-                            Text(
-                              'João Mendes • Equipe A',
-                              textAlign: TextAlign.center,
-                              style: TextStyle(
-                                color: const Color(0xFF8C8C8C),
-                                fontSize: 12,
-                                fontFamily: 'Montserrat',
-                                fontWeight: FontWeight.w500,
-                              ),
-                            ),
-                            Text(
-                              'Planejado para abril',
-                              textAlign: TextAlign.center,
-                              style: TextStyle(
-                                color: const Color(0xFF8C8C8C),
-                                fontSize: 12,
-                                fontFamily: 'Montserrat',
-                                fontWeight: FontWeight.w500,
-                              ),
-                            )
-                          ],
-                        ),
-                      ],
+                            ],
+                          ),
+                        ],
+                      ),
                     ),
-                    Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Column(
-                          // mainAxisSize: MainAxisSize.min,
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          spacing: 8,
-                          children: [
-                            GestureDetector(
-                              onTap: (){
-                                _showModalBottomSheetExcluir(context);
-                              },
-                                child: SvgPicture.asset('icon/trash.svg')),
-                            SizedBox(height: 4,),
-                            GestureDetector(
-                              onTap: () {
-                                Navigator.push(context,
-                                    MaterialPageRoute(builder: (_) => const EditTarefa()));
-                              },
-                                child: SvgPicture.asset('icon/square-pen.svg')),
-                          ],
-                        )
-                      ],)
-                  ],
-                ),
+                  );
+                },
               ),
-            );
-          })),
-        if(index == 1)
-          GraficosMorte()
-
-
-
-      ],),
+            ),
+          if (index == 1) GraficosMorte(),
+        ],
+      ),
     );
   }
 
@@ -492,10 +512,11 @@ class _TarefasState extends State<Tarefas>  with SingleTickerProviderStateMixin 
       backgroundColor: Colors.white,
       context: context,
       shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.only(
-            topLeft: Radius.circular(16),
-            topRight: Radius.circular(16),
-          )),
+        borderRadius: BorderRadius.only(
+          topLeft: Radius.circular(16),
+          topRight: Radius.circular(16),
+        ),
+      ),
       builder: (BuildContext bc) {
         return Column(
           mainAxisSize: MainAxisSize.min,
@@ -526,11 +547,7 @@ class _TarefasState extends State<Tarefas>  with SingleTickerProviderStateMixin 
                     margin: EdgeInsets.symmetric(horizontal: 20),
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.end,
-                      children: [
-                        Icon(
-                          Icons.close,
-                        ),
-                      ],
+                      children: [Icon(Icons.close)],
                     ),
                   ),
                   SizedBox(height: 16),
@@ -550,10 +567,11 @@ class _TarefasState extends State<Tarefas>  with SingleTickerProviderStateMixin 
                       Text(
                         "Excluir tarefa",
                         style: TextStyle(
-                            fontFamily: 'Montserrat',
-                            fontWeight: FontWeight.w600,
-                            fontSize: 16,
-                            color: Color(0xff000000)),
+                          fontFamily: 'Montserrat',
+                          fontWeight: FontWeight.w600,
+                          fontSize: 16,
+                          color: Color(0xff000000),
+                        ),
                       ),
                     ],
                   ),
@@ -582,7 +600,9 @@ class _TarefasState extends State<Tarefas>  with SingleTickerProviderStateMixin 
                             //  desativeAccount(context);
                           },
                           style: ElevatedButton.styleFrom(
-                            shape: RoundedRectangleBorder(borderRadius: BorderRadiusGeometry.circular(8)),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadiusGeometry.circular(8),
+                            ),
                             side: BorderSide(color: Colors.red),
                             elevation: 0,
                             backgroundColor: Colors.transparent,
@@ -609,7 +629,7 @@ class _TarefasState extends State<Tarefas>  with SingleTickerProviderStateMixin 
                       SizedBox(width: 8),
                     ],
                   ),
-                  SizedBox(height: 16)
+                  SizedBox(height: 16),
                 ],
               ),
             ),
@@ -619,6 +639,7 @@ class _TarefasState extends State<Tarefas>  with SingleTickerProviderStateMixin 
     );
   }
 }
+
 class _MonthSelector extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
@@ -629,10 +650,7 @@ class _MonthSelector extends StatelessWidget {
       decoration: ShapeDecoration(
         color: Colors.white,
         shape: RoundedRectangleBorder(
-          side: BorderSide(
-            width: 1,
-            color: const Color(0xFFEBEBEB),
-          ),
+          side: BorderSide(width: 1, color: const Color(0xFFEBEBEB)),
           borderRadius: BorderRadius.circular(8),
         ),
         shadows: [
@@ -641,7 +659,7 @@ class _MonthSelector extends StatelessWidget {
             blurRadius: 24,
             offset: Offset(0, 0),
             spreadRadius: 0,
-          )
+          ),
         ],
       ),
       child: Row(
@@ -660,7 +678,8 @@ class _MonthSelector extends StatelessWidget {
             ),
           ),
           Icon(Icons.arrow_forward_rounded),
-        ],),
+        ],
+      ),
     );
   }
 }

@@ -20,9 +20,7 @@ class NavigationScreen extends StatefulWidget {
 
 class _NavigationScreenState extends State<NavigationScreen> {
   int _selectedIndex = 0;
-  final PageController _pageController = PageController(
-    initialPage: 0,
-  );
+  final PageController _pageController = PageController(initialPage: 0);
   UserSession? _user;
 
   @override
@@ -103,9 +101,7 @@ class _NavigationScreenState extends State<NavigationScreen> {
                     text: _user?.name.isNotEmpty == true
                         ? _user!.name
                         : 'Usuário',
-                    style: const TextStyle(
-                      fontWeight: FontWeight.w700,
-                    ),
+                    style: const TextStyle(fontWeight: FontWeight.w700),
                   ),
                 ],
               ),
@@ -131,9 +127,7 @@ class _NavigationScreenState extends State<NavigationScreen> {
             ),
             onPressed: () {
               Navigator.of(context).push(
-                MaterialPageRoute(
-                  builder: (_) => const NotificacoesScreen(),
-                ),
+                MaterialPageRoute(builder: (_) => const NotificacoesScreen()),
               );
             },
           ),
@@ -164,16 +158,11 @@ class _NavigationScreenState extends State<NavigationScreen> {
         IconButton(
           icon: SvgPicture.asset(
             'icon/noti.svg',
-            colorFilter: const ColorFilter.mode(
-              Colors.white,
-              BlendMode.srcIn,
-            ),
+            colorFilter: const ColorFilter.mode(Colors.white, BlendMode.srcIn),
           ),
           onPressed: () {
             Navigator.of(context).push(
-              MaterialPageRoute(
-                builder: (_) => const NotificacoesScreen(),
-              ),
+              MaterialPageRoute(builder: (_) => const NotificacoesScreen()),
             );
           },
         ),
@@ -183,9 +172,7 @@ class _NavigationScreenState extends State<NavigationScreen> {
 
     return Scaffold(
       backgroundColor: Colors.white,
-      appBar: _selectedIndex == 0
-          ? _customAppBar(context)
-          : defaultAppBar,
+      appBar: _selectedIndex == 0 ? _customAppBar(context) : defaultAppBar,
       body: PageView(
         controller: _pageController,
         physics: const NeverScrollableScrollPhysics(),
@@ -237,9 +224,7 @@ class _NavigationScreenState extends State<NavigationScreen> {
         child: SvgPicture.asset(
           icon,
           colorFilter: ColorFilter.mode(
-            _selectedIndex == index
-                ? MyColors.colorPrimary
-                : Colors.grey,
+            _selectedIndex == index ? MyColors.colorPrimary : Colors.grey,
             BlendMode.srcIn,
           ),
         ),

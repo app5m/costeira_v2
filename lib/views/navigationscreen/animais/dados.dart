@@ -20,10 +20,7 @@ class _DadosAnimaisState extends State<DadosAnimais> {
             decoration: ShapeDecoration(
               color: Colors.white,
               shape: RoundedRectangleBorder(
-                side: BorderSide(
-                  width: 1,
-                  color: const Color(0xFFEBEBEB),
-                ),
+                side: BorderSide(width: 1, color: const Color(0xFFEBEBEB)),
                 borderRadius: BorderRadius.circular(12),
               ),
               shadows: [
@@ -81,8 +78,7 @@ class _DadosAnimaisState extends State<DadosAnimais> {
                         child: Row(
                           mainAxisSize: MainAxisSize.min,
                           mainAxisAlignment: MainAxisAlignment.center,
-                          crossAxisAlignment:
-                              CrossAxisAlignment.center,
+                          crossAxisAlignment: CrossAxisAlignment.center,
                           spacing: 8,
                           children: [
                             Text(
@@ -138,10 +134,7 @@ class _DadosAnimaisState extends State<DadosAnimais> {
             decoration: ShapeDecoration(
               color: Colors.white,
               shape: RoundedRectangleBorder(
-                side: BorderSide(
-                  width: 1,
-                  color: const Color(0xFFEBEBEB),
-                ),
+                side: BorderSide(width: 1, color: const Color(0xFFEBEBEB)),
                 borderRadius: BorderRadius.circular(12),
               ),
               shadows: [
@@ -199,8 +192,7 @@ class _DadosAnimaisState extends State<DadosAnimais> {
                         child: Row(
                           mainAxisSize: MainAxisSize.min,
                           mainAxisAlignment: MainAxisAlignment.center,
-                          crossAxisAlignment:
-                              CrossAxisAlignment.center,
+                          crossAxisAlignment: CrossAxisAlignment.center,
                           spacing: 8,
                           children: [
                             Text(

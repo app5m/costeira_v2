@@ -42,10 +42,7 @@ class _GraficosExcucaoState extends State<GraficosExcucao> {
               decoration: ShapeDecoration(
                 color: Colors.white,
                 shape: RoundedRectangleBorder(
-                  side: BorderSide(
-                    width: 1,
-                    color: const Color(0xFFEBEBEB),
-                  ),
+                  side: BorderSide(width: 1, color: const Color(0xFFEBEBEB)),
                   borderRadius: BorderRadius.circular(16),
                 ),
                 shadows: [
@@ -65,9 +62,7 @@ class _GraficosExcucaoState extends State<GraficosExcucao> {
                     child: Container(
                       width: 316.69,
                       height: 1.13,
-                      decoration: BoxDecoration(
-                        color: const Color(0xFFF1F1F5),
-                      ),
+                      decoration: BoxDecoration(color: const Color(0xFFF1F1F5)),
                     ),
                   ),
                   Positioned(
@@ -76,9 +71,7 @@ class _GraficosExcucaoState extends State<GraficosExcucao> {
                     child: Container(
                       width: 316.69,
                       height: 1.13,
-                      decoration: BoxDecoration(
-                        color: const Color(0xFFF1F1F5),
-                      ),
+                      decoration: BoxDecoration(color: const Color(0xFFF1F1F5)),
                     ),
                   ),
                   Positioned(
@@ -87,9 +80,7 @@ class _GraficosExcucaoState extends State<GraficosExcucao> {
                     child: Container(
                       width: 1.13,
                       height: 86.06,
-                      decoration: BoxDecoration(
-                        color: const Color(0xFFF1F1F5),
-                      ),
+                      decoration: BoxDecoration(color: const Color(0xFFF1F1F5)),
                     ),
                   ),
                   Positioned(
@@ -98,9 +89,7 @@ class _GraficosExcucaoState extends State<GraficosExcucao> {
                     child: Container(
                       width: 1.13,
                       height: 86.06,
-                      decoration: BoxDecoration(
-                        color: const Color(0xFFF1F1F5),
-                      ),
+                      decoration: BoxDecoration(color: const Color(0xFFF1F1F5)),
                     ),
                   ),
                   Positioned(

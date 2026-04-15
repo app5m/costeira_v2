@@ -172,11 +172,8 @@ class _CadastroState extends State<Cadastro> {
                     ),
                   )
                 : _isCnpjApproved
-                    ? const Icon(
-                        Icons.check_circle,
-                        color: Colors.green,
-                      )
-                    : null,
+                ? const Icon(Icons.check_circle, color: Colors.green)
+                : null,
           ),
         ),
         if (_cnpjMessage != null) ...[
@@ -213,7 +210,10 @@ class _CadastroState extends State<Cadastro> {
     }
   }
 
-  Future<void> _validateCnpjRemotely(String formattedValue, String cleanValue) async {
+  Future<void> _validateCnpjRemotely(
+    String formattedValue,
+    String cleanValue,
+  ) async {
     final requestId = ++_cnpjValidationRequestId;
 
     setState(() {
@@ -224,7 +224,9 @@ class _CadastroState extends State<Cadastro> {
     });
 
     try {
-      final response = await _authRepository.validateCnpj(formattedValue.trim());
+      final response = await _authRepository.validateCnpj(
+        formattedValue.trim(),
+      );
       if (!mounted || requestId != _cnpjValidationRequestId) {
         return;
       }
@@ -233,7 +235,9 @@ class _CadastroState extends State<Cadastro> {
         _lastValidatedCnpj = cleanValue;
         _isValidatingCnpj = false;
         _isCnpjApproved = response.isSuccess;
-        _cnpjMessage = response.isSuccess ? 'CNPJ validado com sucesso.' : 'CNPJ inválido.';
+        _cnpjMessage = response.isSuccess
+            ? 'CNPJ validado com sucesso.'
+            : 'CNPJ inválido.';
         _cnpjMessageIsError = !response.isSuccess;
       });
     } on ApiException {

@@ -10,7 +10,6 @@ class AddAbortos extends StatefulWidget {
 }
 
 class _AddAbortosState extends State<AddAbortos> {
-
   Widget buildTextField(String label, String hint) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -67,9 +66,11 @@ class _AddAbortosState extends State<AddAbortos> {
       appBar: AppBar(
         backgroundColor: MyColors.colorPrimary,
         leading: GestureDetector(
-            onTap: (){
-              Navigator.pop(context);
-            },child: Icon(Icons.arrow_back_ios, color: Colors.white,)),
+          onTap: () {
+            Navigator.pop(context);
+          },
+          child: Icon(Icons.arrow_back_ios, color: Colors.white),
+        ),
         title: Text(
           'Adicionar abigeato e abortos',
           style: TextStyle(
@@ -83,46 +84,53 @@ class _AddAbortosState extends State<AddAbortos> {
       body: SingleChildScrollView(
         child: Container(
           margin: EdgeInsets.symmetric(horizontal: 20),
-          child: Column(children: [
-            SizedBox(height: 16,),
-            buildTextField("Brinco", "Ex: 2034"),
-            buildTextField("Data", "00/00/0000"),
-            buildTextField("Categoria", "Selecionar"),
-            buildTextField("Causa", "Selecionar"),
+          child: Column(
+            children: [
+              SizedBox(height: 16),
+              buildTextField("Brinco", "Ex: 2034"),
+              buildTextField("Data", "00/00/0000"),
+              buildTextField("Categoria", "Selecionar"),
+              buildTextField("Causa", "Selecionar"),
 
-            buildTextField("Observações", "Ex: Aborto espontâneo no 6º mê..."),
+              buildTextField(
+                "Observações",
+                "Ex: Aborto espontâneo no 6º mê...",
+              ),
 
+              const SizedBox(height: 16),
 
-            const SizedBox(height: 16),
-
-            Container(
-              margin: EdgeInsets.symmetric(horizontal: 0),
-              child: SizedBox(
-                width: double.infinity,
-                height: 50,
-                child: ElevatedButton(
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: MyColors.colorPrimary,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(8),
+              Container(
+                margin: EdgeInsets.symmetric(horizontal: 0),
+                child: SizedBox(
+                  width: double.infinity,
+                  height: 50,
+                  child: ElevatedButton(
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: MyColors.colorPrimary,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                    ),
+                    onPressed: () {
+                      Navigator.pop(context);
+                    },
+                    child: const Text(
+                      "Adicionar",
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 14,
+                        fontFamily: 'Montserrat',
+                        fontWeight: FontWeight.w600,
+                        height: 1.29,
+                      ),
                     ),
                   ),
-                  onPressed: () {
-                    Navigator.pop(context);
-                  },
-                  child: const Text("Adicionar",textAlign: TextAlign.center,
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontSize: 14,
-                      fontFamily: 'Montserrat',
-                      fontWeight: FontWeight.w600,
-                      height: 1.29,
-                    ),),
                 ),
               ),
-            ),
-            const SizedBox(height: 32),
-          ],),
+              const SizedBox(height: 32),
+            ],
+          ),
         ),
       ),
     );

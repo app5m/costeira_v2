@@ -69,10 +69,7 @@ class _ValidationCodeState extends State<ValidationCode> {
       body: Stack(
         children: [
           Positioned.fill(
-            child: Image.asset(
-              'images/costeira_tela.png',
-              fit: BoxFit.cover,
-            ),
+            child: Image.asset('images/costeira_tela.png', fit: BoxFit.cover),
           ),
           SafeArea(
             top: false,
@@ -110,7 +107,8 @@ class _ValidationCodeState extends State<ValidationCode> {
                                 children: [
                                   const SizedBox(height: 32),
                                   IconButton(
-                                    onPressed: () => Navigator.of(context).pop(),
+                                    onPressed: () =>
+                                        Navigator.of(context).pop(),
                                     icon: const Icon(
                                       Icons.arrow_back_ios,
                                       color: Colors.black,
@@ -168,26 +166,29 @@ class _ValidationCodeState extends State<ValidationCode> {
                                           },
                                           hapticFeedbackType:
                                               HapticFeedbackType.lightImpact,
-                                          focusedPinTheme:
-                                              defaultPinTheme.copyWith(
-                                            decoration: defaultPinTheme
-                                                .decoration!
-                                                .copyWith(
-                                              border: Border.all(
-                                                color: MyColors.colorPrimary,
+                                          focusedPinTheme: defaultPinTheme
+                                              .copyWith(
+                                                decoration: defaultPinTheme
+                                                    .decoration!
+                                                    .copyWith(
+                                                      border: Border.all(
+                                                        color: MyColors
+                                                            .colorPrimary,
+                                                      ),
+                                                    ),
                                               ),
-                                            ),
-                                          ),
-                                          submittedPinTheme:
-                                              defaultPinTheme.copyWith(
-                                            decoration: defaultPinTheme
-                                                .decoration!
-                                                .copyWith(
-                                              border: Border.all(
-                                                color: const Color(0xFFD9D9D9),
+                                          submittedPinTheme: defaultPinTheme
+                                              .copyWith(
+                                                decoration: defaultPinTheme
+                                                    .decoration!
+                                                    .copyWith(
+                                                      border: Border.all(
+                                                        color: const Color(
+                                                          0xFFD9D9D9,
+                                                        ),
+                                                      ),
+                                                    ),
                                               ),
-                                            ),
-                                          ),
                                         ),
                                       ),
                                     ],
@@ -210,16 +211,17 @@ class _ValidationCodeState extends State<ValidationCode> {
                                         fontWeight: FontWeight.w500,
                                         color: MyColors.colorPrimary,
                                         decoration: TextDecoration.underline,
-                                        decorationColor:
-                                            MyColors.colorPrimary,
+                                        decorationColor: MyColors.colorPrimary,
                                       ),
                                     ),
                                   ),
                                 ],
                               ),
                               Padding(
-                                padding:
-                                    const EdgeInsets.only(top: 24, bottom: 32),
+                                padding: const EdgeInsets.only(
+                                  top: 24,
+                                  bottom: 32,
+                                ),
                                 child: PrimaryButton(
                                   label: 'Avançar',
                                   isLoading: _isLoading,
@@ -352,9 +354,9 @@ class _ValidationCodeState extends State<ValidationCode> {
     if (!mounted) {
       return;
     }
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text(message)),
-    );
+    ScaffoldMessenger.of(
+      context,
+    ).showSnackBar(SnackBar(content: Text(message)));
   }
 
   bool get _canSubmit => _pinController.text.trim().length == 4;

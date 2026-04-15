@@ -10,7 +10,6 @@ class DetailMorte extends StatefulWidget {
 }
 
 class _DetailMorteState extends State<DetailMorte> {
-
   Widget buildTextField(String label, String hint) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -59,6 +58,7 @@ class _DetailMorteState extends State<DetailMorte> {
       ],
     );
   }
+
   Widget buildTextField5Line(String label, String hint) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -109,6 +109,7 @@ class _DetailMorteState extends State<DetailMorte> {
       ],
     );
   }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -116,9 +117,11 @@ class _DetailMorteState extends State<DetailMorte> {
       appBar: AppBar(
         backgroundColor: MyColors.colorPrimary,
         leading: GestureDetector(
-            onTap: (){
-              Navigator.pop(context);
-            },child: Icon(Icons.arrow_back_ios, color: Colors.white,)),
+          onTap: () {
+            Navigator.pop(context);
+          },
+          child: Icon(Icons.arrow_back_ios, color: Colors.white),
+        ),
         title: Text(
           'Detalhes da morte',
           style: TextStyle(
@@ -132,18 +135,22 @@ class _DetailMorteState extends State<DetailMorte> {
       body: SingleChildScrollView(
         child: Container(
           margin: EdgeInsets.symmetric(horizontal: 20),
-          child: Column(children: [
-            SizedBox(height: 16,),
-            buildTextField("Data",  '12/03/2025',),
-            buildTextField("Categoria", "Novilha"),
-            buildTextField("Potreiro", 'P1',),
+          child: Column(
+            children: [
+              SizedBox(height: 16),
+              buildTextField("Data", '12/03/2025'),
+              buildTextField("Categoria", "Novilha"),
+              buildTextField("Potreiro", 'P1'),
 
-            buildTextField("Causa", "Verminose severa"),
-            buildTextField5Line("Observações",   'Animal apresentava diarreia intensa há 3 dias. Tratamento iniciado mas sem resposta.',),
+              buildTextField("Causa", "Verminose severa"),
+              buildTextField5Line(
+                "Observações",
+                'Animal apresentava diarreia intensa há 3 dias. Tratamento iniciado mas sem resposta.',
+              ),
 
-
-            const SizedBox(height: 32),
-          ],),
+              const SizedBox(height: 32),
+            ],
+          ),
         ),
       ),
     );

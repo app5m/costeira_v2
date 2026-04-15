@@ -5,18 +5,18 @@ import 'package:dio/dio.dart';
 
 class ApiClient {
   ApiClient._internal()
-      : _dio = Dio(
-          BaseOptions(
-            baseUrl: WSConstantes.urlBase,
-            connectTimeout: const Duration(seconds: 20),
-            receiveTimeout: const Duration(seconds: 20),
-            sendTimeout: const Duration(seconds: 20),
-            headers: const {
-              'Accept': 'application/json',
-              'Content-Type': 'application/json',
-            },
-          ),
-        );
+    : _dio = Dio(
+        BaseOptions(
+          baseUrl: WSConstantes.urlBase,
+          connectTimeout: const Duration(seconds: 20),
+          receiveTimeout: const Duration(seconds: 20),
+          sendTimeout: const Duration(seconds: 20),
+          headers: const {
+            'Accept': 'application/json',
+            'Content-Type': 'application/json',
+          },
+        ),
+      );
 
   static final ApiClient instance = ApiClient._internal();
 

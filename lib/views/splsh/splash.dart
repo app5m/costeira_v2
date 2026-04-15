@@ -7,13 +7,6 @@ import '../navigationscreen/navigationscreen.dart';
 import '../onboarding/onboarding.view.dart';
 import '../teladeinicio/teladeinicio.dart';
 
-
-
-
-
-
-
-
 class Splash extends StatefulWidget {
   const Splash({super.key});
 
@@ -64,12 +57,7 @@ class _SplashState extends State<Splash> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Image.asset(
-              'images/logosplash.png',
-              height: 220,
-              width: 312,
-
-            ),
+            Image.asset('images/logosplash.png', height: 220, width: 312),
             const SizedBox(height: 20),
           ],
         ),

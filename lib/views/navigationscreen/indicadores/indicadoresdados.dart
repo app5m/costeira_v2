@@ -13,7 +13,7 @@ class _indicadoresDadosState extends State<indicadoresDados> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.white,
-      body:  SingleChildScrollView(
+      body: SingleChildScrollView(
         child: Column(
           children: [
             SizedBox(height: 16),
@@ -66,10 +66,7 @@ class _indicadoresDadosState extends State<indicadoresDados> {
               decoration: ShapeDecoration(
                 color: Colors.white,
                 shape: RoundedRectangleBorder(
-                  side: BorderSide(
-                    width: 1,
-                    color: const Color(0xFFEBEBEB),
-                  ),
+                  side: BorderSide(width: 1, color: const Color(0xFFEBEBEB)),
                   borderRadius: BorderRadius.circular(12),
                 ),
                 shadows: [
@@ -78,7 +75,7 @@ class _indicadoresDadosState extends State<indicadoresDados> {
                     blurRadius: 24,
                     offset: Offset(0, 0),
                     spreadRadius: 0,
-                  )
+                  ),
                 ],
               ),
               child: Row(
@@ -102,7 +99,11 @@ class _indicadoresDadosState extends State<indicadoresDados> {
                       crossAxisAlignment: CrossAxisAlignment.center,
                       spacing: 5.33,
                       children: [
-                        SvgPicture.asset('icon/cow-light.svg', width: 16, height: 16,)
+                        SvgPicture.asset(
+                          'icon/cow-light.svg',
+                          width: 16,
+                          height: 16,
+                        ),
                       ],
                     ),
                   ),
@@ -153,30 +154,34 @@ class _indicadoresDadosState extends State<indicadoresDados> {
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                    BuildContainer('Quilos produzidos ', '35.000 kg'),
-                    BuildContainer('Quilos por hectare', '140 kg/ha'),
-                  ],),
+                      BuildContainer('Quilos produzidos ', '35.000 kg'),
+                      BuildContainer('Quilos por hectare', '140 kg/ha'),
+                    ],
+                  ),
                   SizedBox(height: 16),
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      BuildContainer('Estoque de rebanho ', 'R\$1.725.000,00 ',),
+                      BuildContainer('Estoque de rebanho ', 'R\$1.725.000,00 '),
                       BuildContainer('Eficiên. reprodutiva', '83%'),
-                    ],),
+                    ],
+                  ),
                   SizedBox(height: 16),
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      BuildContainer('Carga média', '600 kg/ha',),
+                      BuildContainer('Carga média', '600 kg/ha'),
                       BuildContainer('Média da fazenda', '1,33 UA/ha'),
-                    ],),
+                    ],
+                  ),
                   SizedBox(height: 16),
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      BuildContainer('Mortalidade', '1,0%',),
+                      BuildContainer('Mortalidade', '1,0%'),
                       BuildContainer('GMD Global', '0,65 kg/dia'),
-                    ],),
+                    ],
+                  ),
                 ],
               ),
             ),
@@ -186,17 +191,14 @@ class _indicadoresDadosState extends State<indicadoresDados> {
     );
   }
 
-  Widget BuildContainer(String title, String value){
+  Widget BuildContainer(String title, String value) {
     return Container(
       width: MediaQuery.of(context).size.width / 2 - 30,
       padding: const EdgeInsets.all(16),
       decoration: ShapeDecoration(
         color: Colors.white,
         shape: RoundedRectangleBorder(
-          side: BorderSide(
-            width: 1,
-            color: const Color(0xFFEBEBEB),
-          ),
+          side: BorderSide(width: 1, color: const Color(0xFFEBEBEB)),
           borderRadius: BorderRadius.circular(12),
         ),
         shadows: [
@@ -205,7 +207,7 @@ class _indicadoresDadosState extends State<indicadoresDados> {
             blurRadius: 24,
             offset: Offset(0, 0),
             spreadRadius: 0,
-          )
+          ),
         ],
       ),
       child: Column(

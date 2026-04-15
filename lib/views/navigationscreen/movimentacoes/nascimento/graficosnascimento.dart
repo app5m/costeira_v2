@@ -4,8 +4,7 @@ class GraficosNascimento extends StatefulWidget {
   const GraficosNascimento({super.key});
 
   @override
-  State<GraficosNascimento> createState() =>
-      _GraficosNascimentoState();
+  State<GraficosNascimento> createState() => _GraficosNascimentoState();
 }
 
 class _GraficosNascimentoState extends State<GraficosNascimento> {
@@ -20,10 +19,7 @@ class _GraficosNascimentoState extends State<GraficosNascimento> {
             decoration: ShapeDecoration(
               color: Colors.white,
               shape: RoundedRectangleBorder(
-                side: BorderSide(
-                  width: 1,
-                  color: const Color(0xFFEBEBEB),
-                ),
+                side: BorderSide(width: 1, color: const Color(0xFFEBEBEB)),
                 borderRadius: BorderRadius.circular(12),
               ),
               shadows: [
@@ -81,8 +77,7 @@ class _GraficosNascimentoState extends State<GraficosNascimento> {
                         child: Row(
                           mainAxisSize: MainAxisSize.min,
                           mainAxisAlignment: MainAxisAlignment.center,
-                          crossAxisAlignment:
-                              CrossAxisAlignment.center,
+                          crossAxisAlignment: CrossAxisAlignment.center,
                           spacing: 8,
                           children: [
                             Text(

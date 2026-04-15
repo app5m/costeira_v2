@@ -60,11 +60,7 @@ class _LotesState extends State<Lotes> {
               itemBuilder: (context, index) {
                 return Container(
                   width: MediaQuery.of(context).size.width - 40,
-                  margin: EdgeInsets.only(
-                    bottom: 8,
-                    left: 20,
-                    right: 20,
-                  ),
+                  margin: EdgeInsets.only(bottom: 8, left: 20, right: 20),
                   padding: const EdgeInsets.all(16),
                   decoration: ShapeDecoration(
                     color: Colors.white,
@@ -121,21 +117,15 @@ class _LotesState extends State<Lotes> {
                         children: [
                           Row(
                             mainAxisSize: MainAxisSize.min,
-                            mainAxisAlignment:
-                                MainAxisAlignment.start,
-                            crossAxisAlignment:
-                                CrossAxisAlignment.start,
+                            mainAxisAlignment: MainAxisAlignment.start,
+                            crossAxisAlignment: CrossAxisAlignment.start,
                             spacing: 16,
                             children: [
                               GestureDetector(
                                 onTap: () {
-                                  _showModalBottomSheetExcluir(
-                                    context,
-                                  );
+                                  _showModalBottomSheetExcluir(context);
                                 },
-                                child: SvgPicture.asset(
-                                  'icon/trash.svg',
-                                ),
+                                child: SvgPicture.asset('icon/trash.svg'),
                               ),
 
                               GestureDetector(
@@ -143,14 +133,11 @@ class _LotesState extends State<Lotes> {
                                   Navigator.push(
                                     context,
                                     MaterialPageRoute(
-                                      builder: (_) =>
-                                          const EditLote(),
+                                      builder: (_) => const EditLote(),
                                     ),
                                   );
                                 },
-                                child: SvgPicture.asset(
-                                  'icon/square-pen.svg',
-                                ),
+                                child: SvgPicture.asset('icon/square-pen.svg'),
                               ),
                             ],
                           ),
@@ -197,8 +184,7 @@ class _LotesState extends State<Lotes> {
                           shape: RoundedRectangleBorder(
                             side: BorderSide(
                               width: 2,
-                              strokeAlign:
-                                  BorderSide.strokeAlignCenter,
+                              strokeAlign: BorderSide.strokeAlignCenter,
                               color: Color(0xFFE2E2E2),
                             ),
                           ),
@@ -253,8 +239,7 @@ class _LotesState extends State<Lotes> {
                     Column(
                       children: [
                         SizedBox(
-                          width:
-                              MediaQuery.of(context).size.width - 40,
+                          width: MediaQuery.of(context).size.width - 40,
                           height: 50,
                           child: ElevatedButton(
                             onPressed: () async {
@@ -262,8 +247,7 @@ class _LotesState extends State<Lotes> {
                             },
                             style: ElevatedButton.styleFrom(
                               shape: RoundedRectangleBorder(
-                                borderRadius:
-                                    BorderRadiusGeometry.circular(8),
+                                borderRadius: BorderRadiusGeometry.circular(8),
                               ),
                               side: BorderSide(color: Colors.red),
                               elevation: 0,
@@ -277,16 +261,14 @@ class _LotesState extends State<Lotes> {
                         ),
                         SizedBox(width: 8),
                         TextButton(
-                          onPressed: () =>
-                              Navigator.of(context).pop(false),
+                          onPressed: () => Navigator.of(context).pop(false),
                           child: Text(
                             "Cancelar",
                             style: TextStyle(
                               fontSize: 16,
                               color: MyColors.colorOnPrimary,
                               decoration: TextDecoration.underline,
-                              decorationColor:
-                                  MyColors.colorOnPrimary,
+                              decorationColor: MyColors.colorOnPrimary,
                             ),
                           ),
                         ),

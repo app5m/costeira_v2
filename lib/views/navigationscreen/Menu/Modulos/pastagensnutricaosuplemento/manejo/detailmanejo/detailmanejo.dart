@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 
 import '../../../../../../../theme/colors.dart';
 
-
 class DetailManejo extends StatefulWidget {
   const DetailManejo({super.key});
 
@@ -11,7 +10,6 @@ class DetailManejo extends StatefulWidget {
 }
 
 class _DetailManejoState extends State<DetailManejo> {
-
   Widget buildTextField(String label, String hint) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -60,6 +58,7 @@ class _DetailManejoState extends State<DetailManejo> {
       ],
     );
   }
+
   Widget buildTextField5Line(String label, String hint) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -110,6 +109,7 @@ class _DetailManejoState extends State<DetailManejo> {
       ],
     );
   }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -117,9 +117,11 @@ class _DetailManejoState extends State<DetailManejo> {
       appBar: AppBar(
         backgroundColor: MyColors.colorPrimary,
         leading: GestureDetector(
-            onTap: (){
-              Navigator.pop(context);
-            },child: Icon(Icons.arrow_back_ios, color: Colors.white,)),
+          onTap: () {
+            Navigator.pop(context);
+          },
+          child: Icon(Icons.arrow_back_ios, color: Colors.white),
+        ),
         title: Text(
           'Detalhes do manejo',
           style: TextStyle(
@@ -133,18 +135,20 @@ class _DetailManejoState extends State<DetailManejo> {
       body: SingleChildScrollView(
         child: Container(
           margin: EdgeInsets.symmetric(horizontal: 20),
-          child: Column(children: [
-            SizedBox(height: 16,),
-            buildTextField("Potreiro", "Selecionar"),
-            buildTextField("Data de", "Selecionar"),
-            buildTextField("Data até", "Selecione"),
-            buildTextField("Lote", "Selecione"),
-            buildTextField("Tipo de manejo", "Selecione"),
-            buildTextField("Quantidade usada", "00 kg"),
-            buildTextField("Observações", "Ex: Roçada realizada p..."),
+          child: Column(
+            children: [
+              SizedBox(height: 16),
+              buildTextField("Potreiro", "Selecionar"),
+              buildTextField("Data de", "Selecionar"),
+              buildTextField("Data até", "Selecione"),
+              buildTextField("Lote", "Selecione"),
+              buildTextField("Tipo de manejo", "Selecione"),
+              buildTextField("Quantidade usada", "00 kg"),
+              buildTextField("Observações", "Ex: Roçada realizada p..."),
 
-            const SizedBox(height: 32),
-          ],),
+              const SizedBox(height: 32),
+            ],
+          ),
         ),
       ),
     );

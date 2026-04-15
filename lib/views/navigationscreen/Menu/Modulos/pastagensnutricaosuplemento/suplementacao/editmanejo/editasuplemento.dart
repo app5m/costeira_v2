@@ -2,8 +2,6 @@ import 'package:flutter/material.dart';
 
 import '../../../../../../../theme/colors.dart';
 
-
-
 class EditSuplemento extends StatefulWidget {
   const EditSuplemento({super.key});
 
@@ -12,7 +10,6 @@ class EditSuplemento extends StatefulWidget {
 }
 
 class _EditSuplementoState extends State<EditSuplemento> {
-
   Widget buildTextField(String label, String hint) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -61,6 +58,7 @@ class _EditSuplementoState extends State<EditSuplemento> {
       ],
     );
   }
+
   Widget buildTextField5Line(String label, String hint) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -119,9 +117,11 @@ class _EditSuplementoState extends State<EditSuplemento> {
       appBar: AppBar(
         backgroundColor: MyColors.colorPrimary,
         leading: GestureDetector(
-            onTap: (){
-              Navigator.pop(context);
-            },child: Icon(Icons.arrow_back_ios, color: Colors.white,)),
+          onTap: () {
+            Navigator.pop(context);
+          },
+          child: Icon(Icons.arrow_back_ios, color: Colors.white),
+        ),
         title: Text(
           'Editar Supl. e Consumo',
           style: TextStyle(
@@ -135,52 +135,57 @@ class _EditSuplementoState extends State<EditSuplemento> {
       body: SingleChildScrollView(
         child: Container(
           margin: EdgeInsets.symmetric(horizontal: 20),
-          child: Column(children: [
-            SizedBox(height: 16,),
-            buildTextField("Potreiro", "Selecionar"),
-            buildTextField("Data de", "Selecionar"),
-            buildTextField("Data até", "Selecione"),
-            buildTextField("Lote", "Selecione"),
-            buildTextField("Piquete", "Selecione"),
-            buildTextField("Produto utilizado", "Insira aqui"),
-            buildTextField("Quantidade ", "00 kg"),
-            buildTextField("Peso médio do lote", "00 kg"),
-            buildTextField("Consumo estimado", "00 kg"),
-            buildTextField("Consumo estimado", "0,0 kg/animal/dia"),
-            buildTextField("Período entre abastecimentos", "0 dias"),
-            buildTextField("Consumo real", "0 kg/animal/dia"),
-            buildTextField("Observações", "Ex: Consumo dentro do espe..."),
+          child: Column(
+            children: [
+              SizedBox(height: 16),
+              buildTextField("Potreiro", "Selecionar"),
+              buildTextField("Data de", "Selecionar"),
+              buildTextField("Data até", "Selecione"),
+              buildTextField("Lote", "Selecione"),
+              buildTextField("Piquete", "Selecione"),
+              buildTextField("Produto utilizado", "Insira aqui"),
+              buildTextField("Quantidade ", "00 kg"),
+              buildTextField("Peso médio do lote", "00 kg"),
+              buildTextField("Consumo estimado", "00 kg"),
+              buildTextField("Consumo estimado", "0,0 kg/animal/dia"),
+              buildTextField("Período entre abastecimentos", "0 dias"),
+              buildTextField("Consumo real", "0 kg/animal/dia"),
+              buildTextField("Observações", "Ex: Consumo dentro do espe..."),
 
-            const SizedBox(height: 16),
+              const SizedBox(height: 16),
 
-            Container(
-              margin: EdgeInsets.symmetric(horizontal: 0),
-              child: SizedBox(
-                width: double.infinity,
-                height: 50,
-                child: ElevatedButton(
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: MyColors.colorPrimary,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(8),
+              Container(
+                margin: EdgeInsets.symmetric(horizontal: 0),
+                child: SizedBox(
+                  width: double.infinity,
+                  height: 50,
+                  child: ElevatedButton(
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: MyColors.colorPrimary,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                    ),
+                    onPressed: () {
+                      Navigator.pop(context);
+                    },
+                    child: const Text(
+                      "Salvar",
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 14,
+                        fontFamily: 'Montserrat',
+                        fontWeight: FontWeight.w600,
+                        height: 1.29,
+                      ),
                     ),
                   ),
-                  onPressed: () {
-                    Navigator.pop(context);
-                  },
-                  child: const Text("Salvar",textAlign: TextAlign.center,
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontSize: 14,
-                      fontFamily: 'Montserrat',
-                      fontWeight: FontWeight.w600,
-                      height: 1.29,
-                    ),),
                 ),
               ),
-            ),
-            const SizedBox(height: 32),
-          ],),
+              const SizedBox(height: 32),
+            ],
+          ),
         ),
       ),
     );

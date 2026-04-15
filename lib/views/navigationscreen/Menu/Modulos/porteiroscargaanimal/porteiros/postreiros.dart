@@ -15,7 +15,8 @@ class Potreiros extends StatefulWidget {
   State<Potreiros> createState() => _PotreirosState();
 }
 
-class _PotreirosState extends State<Potreiros> with SingleTickerProviderStateMixin {
+class _PotreirosState extends State<Potreiros>
+    with SingleTickerProviderStateMixin {
   late TabController _tabController;
 
   @override
@@ -33,45 +34,45 @@ class _PotreirosState extends State<Potreiros> with SingleTickerProviderStateMix
   int index = 0;
   @override
   Widget build(BuildContext context) {
-
     return Scaffold(
-        backgroundColor: Colors.white,
-        floatingActionButton: index == 1 ? FloatingActionButton(
-          shape: RoundedRectangleBorder(
-              borderRadius: BorderRadiusGeometry.all(Radius.circular(64))
-          ),
+      backgroundColor: Colors.white,
+      floatingActionButton: index == 1
+          ? FloatingActionButton(
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadiusGeometry.all(Radius.circular(64)),
+              ),
 
-          onPressed: (){
-            // final index = DefaultTabController.of(tabContext).index; // 0,1,2
-            //
-            // if (index == 0) {
-            Navigator.push(context,
-                MaterialPageRoute(builder: (_) => const AddPorteiro()));
+              onPressed: () {
+                // final index = DefaultTabController.of(tabContext).index; // 0,1,2
+                //
+                // if (index == 0) {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (_) => const AddPorteiro()),
+                );
 
-            // } else if (index == 1) {
-            //   Navigator.push(context,
-            //       MaterialPageRoute(builder: (_) => const Addservice()));
-            // } else if (index == 2) {
-            //   Navigator.push(context,
-            //       MaterialPageRoute(builder: (_) => const AddCategoria()));
-            // }
-
-
-          }, child: Padding(
-          padding: const EdgeInsets.all(12.0),
-          child: Icon(Icons.add, color: Colors.white,),
-        ), ) : null,
-        appBar: AppBar(
-          backgroundColor: Potreiros.green,
-          elevation: 0,
-          leading: const BackButton(color: Colors.white),
-          title: const Text(
-            'Potreiros',
-            style: TextStyle(color: Colors.white),
-          ),
-
-        ),
-        body: Column(children: [
+                // } else if (index == 1) {
+                //   Navigator.push(context,
+                //       MaterialPageRoute(builder: (_) => const Addservice()));
+                // } else if (index == 2) {
+                //   Navigator.push(context,
+                //       MaterialPageRoute(builder: (_) => const AddCategoria()));
+                // }
+              },
+              child: Padding(
+                padding: const EdgeInsets.all(12.0),
+                child: Icon(Icons.add, color: Colors.white),
+              ),
+            )
+          : null,
+      appBar: AppBar(
+        backgroundColor: Potreiros.green,
+        elevation: 0,
+        leading: const BackButton(color: Colors.white),
+        title: const Text('Potreiros', style: TextStyle(color: Colors.white)),
+      ),
+      body: Column(
+        children: [
           TabBar(
             controller: _tabController,
             tabs: const [
@@ -103,49 +104,61 @@ class _PotreirosState extends State<Potreiros> with SingleTickerProviderStateMix
             indicatorColor: MyColors.colorPrimary2,
           ),
           const SizedBox(height: 16),
-          if(index == 0)
-            Expanded(child: _DadosTab()),
-          if(index == 1)
+          if (index == 0) Expanded(child: _DadosTab()),
+          if (index == 1)
             Row(
               children: [
                 Container(
                   width: 92,
-                    margin: EdgeInsets.only(left: 20, bottom: 16),
-                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
-                    decoration: ShapeDecoration(
-                      shape: RoundedRectangleBorder(
-                        side: BorderSide(
-                          width: 1,
-                          color: const Color(0xFFE6E6E6),
+                  margin: EdgeInsets.only(left: 20, bottom: 16),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 16,
+                    vertical: 4,
+                  ),
+                  decoration: ShapeDecoration(
+                    shape: RoundedRectangleBorder(
+                      side: BorderSide(
+                        width: 1,
+                        color: const Color(0xFFE6E6E6),
+                      ),
+                      borderRadius: BorderRadius.circular(64),
+                    ),
+                  ),
+                  child: Row(
+                    children: [
+                      Text(
+                        'Filtro',
+                        textAlign: TextAlign.center,
+                        style: TextStyle(
+                          color: const Color(0xFF8C8C8C),
+                          fontSize: 12,
+                          fontFamily: 'Montserrat',
+                          fontWeight: FontWeight.w500,
+                          height: 1.50,
                         ),
-                        borderRadius: BorderRadius.circular(64),
                       ),
-                    ),
-                  child: Row(children: [
-                    Text(
-                      'Filtro',
-                      textAlign: TextAlign.center,
-                      style: TextStyle(
-                        color: const Color(0xFF8C8C8C),
-                        fontSize: 12,
-                        fontFamily: 'Montserrat',
-                        fontWeight: FontWeight.w500,
-                        height: 1.50,
+                      Icon(
+                        Icons.keyboard_arrow_down_rounded,
+                        color: Color(0xFF8C8C8C),
                       ),
-                    ),
-                    Icon(Icons.keyboard_arrow_down_rounded, color: Color(0xFF8C8C8C),)
-                  ],),
+                    ],
+                  ),
                 ),
               ],
             ),
-          if(index == 1)
-            Expanded(child: ListView.builder(
+          if (index == 1)
+            Expanded(
+              child: ListView.builder(
                 itemCount: 3,
-                itemBuilder: (context, index){
+                itemBuilder: (context, index) {
                   return GestureDetector(
-                    onTap: (){
-                      Navigator.push(context,
-                          MaterialPageRoute(builder: (_) => const DetailPorteiro()));
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (_) => const DetailPorteiro(),
+                        ),
+                      );
                     },
                     child: Container(
                       width: MediaQuery.of(context).size.width - 40,
@@ -166,11 +179,10 @@ class _PotreirosState extends State<Potreiros> with SingleTickerProviderStateMix
                             blurRadius: 24,
                             offset: Offset(0, 0),
                             spreadRadius: 0,
-                          )
+                          ),
                         ],
                       ),
                       child: Row(
-
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         crossAxisAlignment: CrossAxisAlignment.start,
                         spacing: 8,
@@ -201,7 +213,12 @@ class _PotreirosState extends State<Potreiros> with SingleTickerProviderStateMix
                                       height: 16,
                                       clipBehavior: Clip.antiAlias,
                                       decoration: BoxDecoration(),
-                                      child: SvgPicture.asset('icon/warehouse.svg', width: 16, height: 16, color: Color(0xFF8C8C8C),),
+                                      child: SvgPicture.asset(
+                                        'icon/warehouse.svg',
+                                        width: 16,
+                                        height: 16,
+                                        color: Color(0xFF8C8C8C),
+                                      ),
                                     ),
                                   ],
                                 ),
@@ -225,7 +242,8 @@ class _PotreirosState extends State<Potreiros> with SingleTickerProviderStateMix
                                   Row(
                                     mainAxisSize: MainAxisSize.min,
                                     mainAxisAlignment: MainAxisAlignment.start,
-                                    crossAxisAlignment: CrossAxisAlignment.center,
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.center,
                                     spacing: 8,
                                     children: [
                                       Text(
@@ -253,7 +271,8 @@ class _PotreirosState extends State<Potreiros> with SingleTickerProviderStateMix
                                   Row(
                                     mainAxisSize: MainAxisSize.min,
                                     mainAxisAlignment: MainAxisAlignment.start,
-                                    crossAxisAlignment: CrossAxisAlignment.center,
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.center,
                                     spacing: 8,
                                     children: [
                                       Text(
@@ -277,7 +296,7 @@ class _PotreirosState extends State<Potreiros> with SingleTickerProviderStateMix
                                         ),
                                       ),
                                     ],
-                                  )
+                                  ),
                                 ],
                               ),
                             ],
@@ -292,38 +311,51 @@ class _PotreirosState extends State<Potreiros> with SingleTickerProviderStateMix
                                 spacing: 8,
                                 children: [
                                   GestureDetector(
-                                      onTap: (){
-                                        _showModalBottomSheetExcluir(context);
-                                      },
-                                      child: SvgPicture.asset('icon/trash.svg')),
-                                  SizedBox(height: 4,),
+                                    onTap: () {
+                                      _showModalBottomSheetExcluir(context);
+                                    },
+                                    child: SvgPicture.asset('icon/trash.svg'),
+                                  ),
+                                  SizedBox(height: 4),
                                   GestureDetector(
-                                      onTap: () {
-                                        Navigator.push(context,
-                                            MaterialPageRoute(builder: (_) => const EditPorteiro()));
-                                      },
-                                      child: SvgPicture.asset('icon/square-pen.svg')),
+                                    onTap: () {
+                                      Navigator.push(
+                                        context,
+                                        MaterialPageRoute(
+                                          builder: (_) => const EditPorteiro(),
+                                        ),
+                                      );
+                                    },
+                                    child: SvgPicture.asset(
+                                      'icon/square-pen.svg',
+                                    ),
+                                  ),
                                 ],
-                              )
-                            ],)
+                              ),
+                            ],
+                          ),
                         ],
                       ),
                     ),
                   );
-                })),
-
-        ],)
+                },
+              ),
+            ),
+        ],
+      ),
     );
   }
+
   void _showModalBottomSheetExcluir(BuildContext context) {
     showModalBottomSheet(
       backgroundColor: Colors.white,
       context: context,
       shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.only(
-            topLeft: Radius.circular(16),
-            topRight: Radius.circular(16),
-          )),
+        borderRadius: BorderRadius.only(
+          topLeft: Radius.circular(16),
+          topRight: Radius.circular(16),
+        ),
+      ),
       builder: (BuildContext bc) {
         return Container(
           child: Column(
@@ -355,11 +387,7 @@ class _PotreirosState extends State<Potreiros> with SingleTickerProviderStateMix
                       margin: EdgeInsets.symmetric(horizontal: 20),
                       child: Row(
                         mainAxisAlignment: MainAxisAlignment.end,
-                        children: [
-                          Icon(
-                            Icons.close,
-                          ),
-                        ],
+                        children: [Icon(Icons.close)],
                       ),
                     ),
                     SizedBox(height: 16),
@@ -376,10 +404,11 @@ class _PotreirosState extends State<Potreiros> with SingleTickerProviderStateMix
                         Text(
                           "Excluir potreiro",
                           style: TextStyle(
-                              fontFamily: 'Montserrat',
-                              fontWeight: FontWeight.w600,
-                              fontSize: 16,
-                              color: Color(0xff000000)),
+                            fontFamily: 'Montserrat',
+                            fontWeight: FontWeight.w600,
+                            fontSize: 16,
+                            color: Color(0xff000000),
+                          ),
                         ),
                       ],
                     ),
@@ -412,16 +441,16 @@ class _PotreirosState extends State<Potreiros> with SingleTickerProviderStateMix
                               style: TextStyle(color: Colors.red),
                             ),
                             style: ElevatedButton.styleFrom(
-                              shape: RoundedRectangleBorder(borderRadius: BorderRadiusGeometry.circular(8)),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadiusGeometry.circular(8),
+                              ),
                               side: BorderSide(color: Colors.red),
                               elevation: 0,
                               backgroundColor: Colors.transparent,
                             ),
                           ),
                         ),
-                        SizedBox(
-                          width: 8,
-                        ),
+                        SizedBox(width: 8),
                         TextButton(
                           onPressed: () => Navigator.of(context).pop(false),
                           child: Text(
@@ -434,12 +463,10 @@ class _PotreirosState extends State<Potreiros> with SingleTickerProviderStateMix
                             ),
                           ),
                         ),
-                        SizedBox(
-                          width: 8,
-                        ),
+                        SizedBox(width: 8),
                       ],
                     ),
-                    SizedBox(height: 16)
+                    SizedBox(height: 16),
                   ],
                 ),
               ),
@@ -450,6 +477,7 @@ class _PotreirosState extends State<Potreiros> with SingleTickerProviderStateMix
     );
   }
 }
+
 class _DadosTab extends StatelessWidget {
   const _DadosTab();
 
@@ -462,19 +490,25 @@ class _DadosTab extends StatelessWidget {
           _MonthSelector(),
           const SizedBox(height: 16),
           Container(
-              width: MediaQuery.of(context).size.width - 40,
-              child: _MapCard()),
+            width: MediaQuery.of(context).size.width - 40,
+            child: _MapCard(),
+          ),
           const SizedBox(height: 16),
           _InfoTable(),
           const SizedBox(height: 16),
           _QualityCard(),
           const SizedBox(height: 16),
-          Image.asset('icon/disponibiliadadeagua.png', width: MediaQuery.of(context).size.width, fit: BoxFit.contain,),
+          Image.asset(
+            'icon/disponibiliadadeagua.png',
+            width: MediaQuery.of(context).size.width,
+            fit: BoxFit.contain,
+          ),
         ],
       ),
     );
   }
 }
+
 class _MonthSelector extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
@@ -485,10 +519,7 @@ class _MonthSelector extends StatelessWidget {
       decoration: ShapeDecoration(
         color: Colors.white,
         shape: RoundedRectangleBorder(
-          side: BorderSide(
-            width: 1,
-            color: const Color(0xFFEBEBEB),
-          ),
+          side: BorderSide(width: 1, color: const Color(0xFFEBEBEB)),
           borderRadius: BorderRadius.circular(8),
         ),
         shadows: [
@@ -497,35 +528,35 @@ class _MonthSelector extends StatelessWidget {
             blurRadius: 24,
             offset: Offset(0, 0),
             spreadRadius: 0,
-          )
+          ),
         ],
       ),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-        Icon(Icons.arrow_back_rounded),
-        Text(
-          'Junho 2025',
-          textAlign: TextAlign.center,
-          style: TextStyle(
-            color: const Color(0xFF8C8C8C),
-            fontSize: 14,
-            fontFamily: 'Montserrat',
-            fontWeight: FontWeight.w500,
-            height: 1.50,
+          Icon(Icons.arrow_back_rounded),
+          Text(
+            'Junho 2025',
+            textAlign: TextAlign.center,
+            style: TextStyle(
+              color: const Color(0xFF8C8C8C),
+              fontSize: 14,
+              fontFamily: 'Montserrat',
+              fontWeight: FontWeight.w500,
+              height: 1.50,
+            ),
           ),
-        ),
-        Icon(Icons.arrow_forward_rounded),
-      ],),
+          Icon(Icons.arrow_forward_rounded),
+        ],
+      ),
     );
   }
 }
+
 class _MapCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    return
-      Card(
-
+    return Card(
       color: Colors.white,
       elevation: 0,
       shape: RoundedRectangleBorder(
@@ -537,10 +568,8 @@ class _MapCard extends StatelessWidget {
         padding: const EdgeInsets.all(16),
 
         child: Column(
-
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-
             const Text(
               'Mapa geral dos potreiros',
               style: TextStyle(
@@ -564,6 +593,7 @@ class _MapCard extends StatelessWidget {
     );
   }
 }
+
 class _InfoTable extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
@@ -580,10 +610,7 @@ class _InfoTable extends StatelessWidget {
         decoration: ShapeDecoration(
           color: Colors.white,
           shape: RoundedRectangleBorder(
-            side: BorderSide(
-              width: 1,
-              color: const Color(0xFFEBEBEB),
-            ),
+            side: BorderSide(width: 1, color: const Color(0xFFEBEBEB)),
             borderRadius: BorderRadius.circular(16),
           ),
           shadows: [
@@ -592,7 +619,7 @@ class _InfoTable extends StatelessWidget {
               blurRadius: 24,
               offset: Offset(0, 0),
               spreadRadius: 0,
-            )
+            ),
           ],
         ),
         child: Stack(
@@ -826,15 +853,12 @@ class _DataRow extends StatelessWidget {
       padding: const EdgeInsets.symmetric(vertical: 6),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          Text(a),
-          Text(b),
-          Text(c),
-        ],
+        children: [Text(a), Text(b), Text(c)],
       ),
     );
   }
 }
+
 class _QualityCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
@@ -844,10 +868,7 @@ class _QualityCard extends StatelessWidget {
       decoration: ShapeDecoration(
         color: Colors.white,
         shape: RoundedRectangleBorder(
-          side: BorderSide(
-            width: 1,
-            color: const Color(0xFFEBEBEB),
-          ),
+          side: BorderSide(width: 1, color: const Color(0xFFEBEBEB)),
           borderRadius: BorderRadius.circular(12),
         ),
         shadows: [
@@ -856,37 +877,40 @@ class _QualityCard extends StatelessWidget {
             blurRadius: 24,
             offset: Offset(0, 0),
             spreadRadius: 0,
-          )
+          ),
         ],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-        Text(
-          'Relatório de qualidade das aguadas',
-          textAlign: TextAlign.center,
-          style: TextStyle(
-            color: const Color(0xFF8C8C8C),
-            fontSize: 12,
-            fontFamily: 'Montserrat',
-            fontWeight: FontWeight.w500,
-          ),
-        ),
-        Row(children: [
           Text(
-            'Boa',
+            'Relatório de qualidade das aguadas',
             textAlign: TextAlign.center,
             style: TextStyle(
-              color: const Color(0xFF313131),
-              fontSize: 14,
+              color: const Color(0xFF8C8C8C),
+              fontSize: 12,
               fontFamily: 'Montserrat',
               fontWeight: FontWeight.w500,
             ),
           ),
-          SizedBox(width: 8,),
-          SvgPicture.asset('icon/download.svg')
-        ],)
-      ],),
+          Row(
+            children: [
+              Text(
+                'Boa',
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  color: const Color(0xFF313131),
+                  fontSize: 14,
+                  fontFamily: 'Montserrat',
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+              SizedBox(width: 8),
+              SvgPicture.asset('icon/download.svg'),
+            ],
+          ),
+        ],
+      ),
     );
   }
 }

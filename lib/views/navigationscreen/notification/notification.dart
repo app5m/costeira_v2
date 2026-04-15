@@ -45,8 +45,9 @@ class _NotificacoesScreenState extends State<NotificacoesScreen> {
         return;
       }
 
-      final notifications =
-          await _notificationsRepository.fetchNotifications(_user!.id);
+      final notifications = await _notificationsRepository.fetchNotifications(
+        _user!.id,
+      );
 
       if (!mounted) {
         return;
@@ -75,10 +76,7 @@ class _NotificacoesScreenState extends State<NotificacoesScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.white,
-      appBar: PrimarySectionAppBar(
-        context: context,
-        title: 'Notificações',
-      ),
+      appBar: PrimarySectionAppBar(context: context, title: 'Notificações'),
       body: _buildBody(),
     );
   }
@@ -95,10 +93,7 @@ class _NotificacoesScreenState extends State<NotificacoesScreen> {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Text(
-                _errorMessage!,
-                textAlign: TextAlign.center,
-              ),
+              Text(_errorMessage!, textAlign: TextAlign.center),
               const SizedBox(height: 16),
               ElevatedButton(
                 onPressed: _loadNotifications,
@@ -111,9 +106,7 @@ class _NotificacoesScreenState extends State<NotificacoesScreen> {
     }
 
     if (_notifications.isEmpty) {
-      return const Center(
-        child: Text('Nenhuma notificação encontrada.'),
-      );
+      return const Center(child: Text('Nenhuma notificação encontrada.'));
     }
 
     return RefreshIndicator(

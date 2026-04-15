@@ -47,10 +47,7 @@ class _EditLoteState extends State<EditLote> {
             ),
             filled: true,
             fillColor: Color(0xFFEBEBEB),
-            contentPadding: EdgeInsets.symmetric(
-              horizontal: 15,
-              vertical: 16,
-            ),
+            contentPadding: EdgeInsets.symmetric(horizontal: 15, vertical: 16),
             border: OutlineInputBorder(
               borderRadius: BorderRadius.circular(8),
               borderSide: BorderSide.none,

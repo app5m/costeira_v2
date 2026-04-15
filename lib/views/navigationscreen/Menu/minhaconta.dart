@@ -43,10 +43,7 @@ class _MinhacontaState extends State<Minhaconta> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.white,
-      appBar: PrimarySectionAppBar(
-        context: context,
-        title: 'Minha conta',
-      ),
+      appBar: PrimarySectionAppBar(context: context, title: 'Minha conta'),
       body: ListView(
         padding: const EdgeInsets.all(20),
         children: [
@@ -85,9 +82,9 @@ class _MinhacontaState extends State<Minhaconta> {
           SettingsOptionTile(
             title: 'Editar dados',
             onTap: () {
-              Navigator.of(context).push(
-                MaterialPageRoute(builder: (_) => const MeusDados()),
-              );
+              Navigator.of(
+                context,
+              ).push(MaterialPageRoute(builder: (_) => const MeusDados()));
             },
           ),
           const SizedBox(height: 16),
@@ -103,9 +100,9 @@ class _MinhacontaState extends State<Minhaconta> {
           SettingsOptionTile(
             title: 'Alterar senha',
             onTap: () {
-              Navigator.of(context).push(
-                MaterialPageRoute(builder: (_) => const UpdatePassword()),
-              );
+              Navigator.of(
+                context,
+              ).push(MaterialPageRoute(builder: (_) => const UpdatePassword()));
             },
           ),
           const SizedBox(height: 16),
@@ -215,10 +212,7 @@ class _MinhacontaState extends State<Minhaconta> {
                 Navigator.of(dialogContext).pop();
                 await onConfirm();
               },
-              child: Text(
-                actionLabel,
-                style: TextStyle(color: actionColor),
-              ),
+              child: Text(actionLabel, style: TextStyle(color: actionColor)),
             ),
           ],
         );
@@ -230,8 +224,8 @@ class _MinhacontaState extends State<Minhaconta> {
     if (!mounted) {
       return;
     }
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text(message)),
-    );
+    ScaffoldMessenger.of(
+      context,
+    ).showSnackBar(SnackBar(content: Text(message)));
   }
 }

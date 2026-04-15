@@ -10,7 +10,6 @@ class DetailAbortos extends StatefulWidget {
 }
 
 class _DetailAbortosState extends State<DetailAbortos> {
-
   Widget buildTextField(String label, String hint) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -67,9 +66,11 @@ class _DetailAbortosState extends State<DetailAbortos> {
       appBar: AppBar(
         backgroundColor: MyColors.colorPrimary,
         leading: GestureDetector(
-            onTap: (){
-              Navigator.pop(context);
-            },child: Icon(Icons.arrow_back_ios, color: Colors.white,)),
+          onTap: () {
+            Navigator.pop(context);
+          },
+          child: Icon(Icons.arrow_back_ios, color: Colors.white),
+        ),
         title: Text(
           'Detalhes da troca',
           style: TextStyle(
@@ -83,18 +84,19 @@ class _DetailAbortosState extends State<DetailAbortos> {
       body: SingleChildScrollView(
         child: Container(
           margin: EdgeInsets.symmetric(horizontal: 20),
-          child: Column(children: [
-            SizedBox(height: 16,),
-            buildTextField("Brinco",  '2034',),
-            buildTextField("Data", "02/04/2025"),
-            buildTextField("Categoria", 'Vaca prenhe',),
-            buildTextField("Causa", 'Brucelose',),
+          child: Column(
+            children: [
+              SizedBox(height: 16),
+              buildTextField("Brinco", '2034'),
+              buildTextField("Data", "02/04/2025"),
+              buildTextField("Categoria", 'Vaca prenhe'),
+              buildTextField("Causa", 'Brucelose'),
 
-            buildTextField("Observação", "Aborto espontâneo no 6º mê..."),
+              buildTextField("Observação", "Aborto espontâneo no 6º mê..."),
 
-
-            const SizedBox(height: 32),
-          ],),
+              const SizedBox(height: 32),
+            ],
+          ),
         ),
       ),
     );

@@ -162,8 +162,7 @@ class _PastagensNutricaoSuplementoState
                       ),
                       SizedBox(width: 8),
                       TextButton(
-                        onPressed: () =>
-                            Navigator.of(context).pop(false),
+                        onPressed: () => Navigator.of(context).pop(false),
                         child: Text(
                           "Cancelar",
                           style: TextStyle(
@@ -298,8 +297,7 @@ class _PastagensNutricaoSuplementoState
                       ),
                       SizedBox(width: 8),
                       TextButton(
-                        onPressed: () =>
-                            Navigator.of(context).pop(false),
+                        onPressed: () => Navigator.of(context).pop(false),
                         child: Text(
                           "Cancelar",
                           style: TextStyle(
@@ -530,9 +528,7 @@ class _PastagensNutricaoSuplementoState
                     onTap: () {
                       Navigator.push(
                         context,
-                        MaterialPageRoute(
-                          builder: (context) => Suplementos(),
-                        ),
+                        MaterialPageRoute(builder: (context) => Suplementos()),
                       );
                     },
                     child: Container(
@@ -556,8 +552,7 @@ class _PastagensNutricaoSuplementoState
                         ],
                       ),
                       child: Row(
-                        mainAxisAlignment:
-                            MainAxisAlignment.spaceBetween,
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
                           Row(
                             children: [
@@ -666,9 +661,7 @@ class _PastagensNutricaoSuplementoState
                     onTap: () {
                       Navigator.push(
                         context,
-                        MaterialPageRoute(
-                          builder: (context) => Manejos(),
-                        ),
+                        MaterialPageRoute(builder: (context) => Manejos()),
                       );
                     },
                     child: Container(
@@ -692,8 +685,7 @@ class _PastagensNutricaoSuplementoState
                         ],
                       ),
                       child: Row(
-                        mainAxisAlignment:
-                            MainAxisAlignment.spaceBetween,
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
                           Row(
                             children: [

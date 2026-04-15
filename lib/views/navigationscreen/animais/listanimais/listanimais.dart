@@ -29,10 +29,7 @@ class _ListAnimaisState extends State<ListAnimais> {
                 ),
                 decoration: ShapeDecoration(
                   shape: RoundedRectangleBorder(
-                    side: BorderSide(
-                      width: 1,
-                      color: const Color(0xFFE6E6E6),
-                    ),
+                    side: BorderSide(width: 1, color: const Color(0xFFE6E6E6)),
                     borderRadius: BorderRadius.circular(64),
                   ),
                 ),
@@ -54,11 +51,7 @@ class _ListAnimaisState extends State<ListAnimais> {
                       ),
                     ),
                     SizedBox(width: 8),
-                    SvgPicture.asset(
-                      'icon/header.svg',
-                      width: 16,
-                      height: 16,
-                    ),
+                    SvgPicture.asset('icon/header.svg', width: 16, height: 16),
                   ],
                 ),
               ),
@@ -73,18 +66,12 @@ class _ListAnimaisState extends State<ListAnimais> {
                   onTap: () {
                     Navigator.push(
                       context,
-                      MaterialPageRoute(
-                        builder: (_) => const DetailAnimal(),
-                      ),
+                      MaterialPageRoute(builder: (_) => const DetailAnimal()),
                     );
                   },
                   child: Container(
                     width: MediaQuery.of(context).size.width - 40,
-                    margin: EdgeInsets.only(
-                      bottom: 8,
-                      left: 20,
-                      right: 20,
-                    ),
+                    margin: EdgeInsets.only(bottom: 8, left: 20, right: 20),
                     padding: const EdgeInsets.all(16),
                     decoration: ShapeDecoration(
                       color: Colors.white,
@@ -106,8 +93,7 @@ class _ListAnimaisState extends State<ListAnimais> {
                     ),
                     child: Row(
                       crossAxisAlignment: CrossAxisAlignment.start,
-                      mainAxisAlignment:
-                          MainAxisAlignment.spaceBetween,
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
                         Row(
                           children: [
@@ -117,17 +103,13 @@ class _ListAnimaisState extends State<ListAnimais> {
                               decoration: ShapeDecoration(
                                 color: const Color(0x198C8C8C),
                                 shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(
-                                    42.67,
-                                  ),
+                                  borderRadius: BorderRadius.circular(42.67),
                                 ),
                               ),
                               child: Row(
                                 mainAxisSize: MainAxisSize.min,
-                                mainAxisAlignment:
-                                    MainAxisAlignment.start,
-                                crossAxisAlignment:
-                                    CrossAxisAlignment.center,
+                                mainAxisAlignment: MainAxisAlignment.start,
+                                crossAxisAlignment: CrossAxisAlignment.center,
                                 spacing: 5.33,
                                 children: [
                                   SvgPicture.asset(
@@ -141,27 +123,21 @@ class _ListAnimaisState extends State<ListAnimais> {
                             SizedBox(width: 16),
                             Column(
                               mainAxisSize: MainAxisSize.min,
-                              mainAxisAlignment:
-                                  MainAxisAlignment.start,
-                              crossAxisAlignment:
-                                  CrossAxisAlignment.start,
+                              mainAxisAlignment: MainAxisAlignment.start,
+                              crossAxisAlignment: CrossAxisAlignment.start,
                               spacing: 8,
                               children: [
                                 Row(
                                   mainAxisSize: MainAxisSize.min,
-                                  mainAxisAlignment:
-                                      MainAxisAlignment.start,
-                                  crossAxisAlignment:
-                                      CrossAxisAlignment.center,
+                                  mainAxisAlignment: MainAxisAlignment.start,
+                                  crossAxisAlignment: CrossAxisAlignment.center,
                                   spacing: 8,
                                   children: [
                                     Text(
                                       '2035',
                                       textAlign: TextAlign.center,
                                       style: TextStyle(
-                                        color: const Color(
-                                          0xFF313131,
-                                        ),
+                                        color: const Color(0xFF313131),
                                         fontSize: 16,
                                         fontFamily: 'Montserrat',
                                         fontWeight: FontWeight.w600,
@@ -171,19 +147,15 @@ class _ListAnimaisState extends State<ListAnimais> {
                                 ),
                                 Row(
                                   mainAxisSize: MainAxisSize.min,
-                                  mainAxisAlignment:
-                                      MainAxisAlignment.start,
-                                  crossAxisAlignment:
-                                      CrossAxisAlignment.center,
+                                  mainAxisAlignment: MainAxisAlignment.start,
+                                  crossAxisAlignment: CrossAxisAlignment.center,
                                   spacing: 8,
                                   children: [
                                     Text(
                                       'Novilha • 345 kg',
                                       textAlign: TextAlign.center,
                                       style: TextStyle(
-                                        color: const Color(
-                                          0xFF313131,
-                                        ),
+                                        color: const Color(0xFF313131),
                                         fontSize: 14,
                                         fontFamily: 'Montserrat',
                                         fontWeight: FontWeight.w500,
@@ -193,10 +165,8 @@ class _ListAnimaisState extends State<ListAnimais> {
                                 ),
                                 Row(
                                   mainAxisSize: MainAxisSize.min,
-                                  mainAxisAlignment:
-                                      MainAxisAlignment.start,
-                                  crossAxisAlignment:
-                                      CrossAxisAlignment.start,
+                                  mainAxisAlignment: MainAxisAlignment.start,
+                                  crossAxisAlignment: CrossAxisAlignment.start,
                                   spacing: 16,
                                   children: [
                                     Row(
@@ -211,26 +181,20 @@ class _ListAnimaisState extends State<ListAnimais> {
                                           'Lote',
                                           textAlign: TextAlign.center,
                                           style: TextStyle(
-                                            color: const Color(
-                                              0xFF8C8C8C,
-                                            ),
+                                            color: const Color(0xFF8C8C8C),
                                             fontSize: 12,
                                             fontFamily: 'Montserrat',
-                                            fontWeight:
-                                                FontWeight.w500,
+                                            fontWeight: FontWeight.w500,
                                           ),
                                         ),
                                         Text(
                                           'A',
                                           textAlign: TextAlign.center,
                                           style: TextStyle(
-                                            color: const Color(
-                                              0xFF8C8C8C,
-                                            ),
+                                            color: const Color(0xFF8C8C8C),
                                             fontSize: 12,
                                             fontFamily: 'Montserrat',
-                                            fontWeight:
-                                                FontWeight.w500,
+                                            fontWeight: FontWeight.w500,
                                           ),
                                         ),
                                       ],
@@ -247,26 +211,20 @@ class _ListAnimaisState extends State<ListAnimais> {
                                           'Potreiro',
                                           textAlign: TextAlign.center,
                                           style: TextStyle(
-                                            color: const Color(
-                                              0xFF8C8C8C,
-                                            ),
+                                            color: const Color(0xFF8C8C8C),
                                             fontSize: 12,
                                             fontFamily: 'Montserrat',
-                                            fontWeight:
-                                                FontWeight.w500,
+                                            fontWeight: FontWeight.w500,
                                           ),
                                         ),
                                         Text(
                                           'P1',
                                           textAlign: TextAlign.center,
                                           style: TextStyle(
-                                            color: const Color(
-                                              0xFF8C8C8C,
-                                            ),
+                                            color: const Color(0xFF8C8C8C),
                                             fontSize: 12,
                                             fontFamily: 'Montserrat',
-                                            fontWeight:
-                                                FontWeight.w500,
+                                            fontWeight: FontWeight.w500,
                                           ),
                                         ),
                                       ],
@@ -282,21 +240,15 @@ class _ListAnimaisState extends State<ListAnimais> {
                           children: [
                             Row(
                               mainAxisSize: MainAxisSize.min,
-                              mainAxisAlignment:
-                                  MainAxisAlignment.start,
-                              crossAxisAlignment:
-                                  CrossAxisAlignment.start,
+                              mainAxisAlignment: MainAxisAlignment.start,
+                              crossAxisAlignment: CrossAxisAlignment.start,
                               spacing: 16,
                               children: [
                                 GestureDetector(
                                   onTap: () {
-                                    _showModalBottomSheetExcluir(
-                                      context,
-                                    );
+                                    _showModalBottomSheetExcluir(context);
                                   },
-                                  child: SvgPicture.asset(
-                                    'icon/trash.svg',
-                                  ),
+                                  child: SvgPicture.asset('icon/trash.svg'),
                                 ),
 
                                 GestureDetector(
@@ -304,8 +256,7 @@ class _ListAnimaisState extends State<ListAnimais> {
                                     Navigator.push(
                                       context,
                                       MaterialPageRoute(
-                                        builder: (_) =>
-                                            const EditAnimal(),
+                                        builder: (_) => const EditAnimal(),
                                       ),
                                     );
                                   },
@@ -420,8 +371,7 @@ class _ListAnimaisState extends State<ListAnimais> {
                           },
                           style: ElevatedButton.styleFrom(
                             shape: RoundedRectangleBorder(
-                              borderRadius:
-                                  BorderRadiusGeometry.circular(8),
+                              borderRadius: BorderRadiusGeometry.circular(8),
                             ),
                             side: BorderSide(color: Colors.red),
                             elevation: 0,
@@ -435,8 +385,7 @@ class _ListAnimaisState extends State<ListAnimais> {
                       ),
                       SizedBox(width: 8),
                       TextButton(
-                        onPressed: () =>
-                            Navigator.of(context).pop(false),
+                        onPressed: () => Navigator.of(context).pop(false),
                         child: Text(
                           "Cancelar",
                           style: TextStyle(

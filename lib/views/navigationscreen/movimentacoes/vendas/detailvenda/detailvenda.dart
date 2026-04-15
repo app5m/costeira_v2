@@ -10,7 +10,6 @@ class DetailVenda extends StatefulWidget {
 }
 
 class _DetailVendaState extends State<DetailVenda> {
-
   Widget buildTextField(String label, String hint) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -67,9 +66,11 @@ class _DetailVendaState extends State<DetailVenda> {
       appBar: AppBar(
         backgroundColor: MyColors.colorPrimary,
         leading: GestureDetector(
-            onTap: (){
-              Navigator.pop(context);
-            },child: Icon(Icons.arrow_back_ios, color: Colors.white,)),
+          onTap: () {
+            Navigator.pop(context);
+          },
+          child: Icon(Icons.arrow_back_ios, color: Colors.white),
+        ),
         title: Text(
           'Detalhes da venda',
           style: TextStyle(
@@ -83,20 +84,25 @@ class _DetailVendaState extends State<DetailVenda> {
       body: SingleChildScrollView(
         child: Container(
           margin: EdgeInsets.symmetric(horizontal: 20),
-          child: Column(children: [
-            SizedBox(height: 16,),
-            buildTextField("Data",  '12/03/2025',),
-            buildTextField("Categoria", "Novilha"),
-            buildTextField("Quantidade", '12 animais',),
+          child: Column(
+            children: [
+              SizedBox(height: 16),
+              buildTextField("Data", '12/03/2025'),
+              buildTextField("Categoria", "Novilha"),
+              buildTextField("Quantidade", '12 animais'),
 
-            buildTextField("Peso médio", "322 kg"),
-            buildTextField("Preço / KG",   'R\$ 15,20/kg',),
-            buildTextField("Valor total",  'R\$ 58.240,00',),
-            buildTextField("Destino", 'Fazenda Santa Helena – Uberaba/MG',),
-            buildTextField("Observações", "Lote com boa condição corporal, vacinado, transportado via caminhão boiadeiro."),
+              buildTextField("Peso médio", "322 kg"),
+              buildTextField("Preço / KG", 'R\$ 15,20/kg'),
+              buildTextField("Valor total", 'R\$ 58.240,00'),
+              buildTextField("Destino", 'Fazenda Santa Helena – Uberaba/MG'),
+              buildTextField(
+                "Observações",
+                "Lote com boa condição corporal, vacinado, transportado via caminhão boiadeiro.",
+              ),
 
-            const SizedBox(height: 32),
-          ],),
+              const SizedBox(height: 32),
+            ],
+          ),
         ),
       ),
     );

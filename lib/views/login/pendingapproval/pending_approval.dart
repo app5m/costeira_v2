@@ -4,11 +4,7 @@ import 'package:costeira/views/teladeinicio/teladeinicio.dart';
 import 'package:flutter/material.dart';
 
 class PendingApprovalPage extends StatelessWidget {
-  const PendingApprovalPage({
-    super.key,
-    this.message,
-    this.email,
-  });
+  const PendingApprovalPage({super.key, this.message, this.email});
 
   final String? message;
   final String? email;

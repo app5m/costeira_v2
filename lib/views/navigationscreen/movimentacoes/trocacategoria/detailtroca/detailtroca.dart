@@ -10,7 +10,6 @@ class DetailTroca extends StatefulWidget {
 }
 
 class _DetailTrocaState extends State<DetailTroca> {
-
   Widget buildTextField(String label, String hint) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -67,9 +66,11 @@ class _DetailTrocaState extends State<DetailTroca> {
       appBar: AppBar(
         backgroundColor: MyColors.colorPrimary,
         leading: GestureDetector(
-            onTap: (){
-              Navigator.pop(context);
-            },child: Icon(Icons.arrow_back_ios, color: Colors.white,)),
+          onTap: () {
+            Navigator.pop(context);
+          },
+          child: Icon(Icons.arrow_back_ios, color: Colors.white),
+        ),
         title: Text(
           'Detalhes da troca',
           style: TextStyle(
@@ -83,17 +84,21 @@ class _DetailTrocaState extends State<DetailTroca> {
       body: SingleChildScrollView(
         child: Container(
           margin: EdgeInsets.symmetric(horizontal: 20),
-          child: Column(children: [
-            SizedBox(height: 16,),
-            buildTextField("Data",  '12/03/2025',),
-            buildTextField("Categoria de origem", "Vacas prenhes"),
-            buildTextField("Categoria de destino", 'Vacas paridas',),
+          child: Column(
+            children: [
+              SizedBox(height: 16),
+              buildTextField("Data", '12/03/2025'),
+              buildTextField("Categoria de origem", "Vacas prenhes"),
+              buildTextField("Categoria de destino", 'Vacas paridas'),
 
-            buildTextField("Selecione os animais (brincos)", "2034, 2035, 2036, 2037, 2038"),
+              buildTextField(
+                "Selecione os animais (brincos)",
+                "2034, 2035, 2036, 2037, 2038",
+              ),
 
-
-            const SizedBox(height: 32),
-          ],),
+              const SizedBox(height: 32),
+            ],
+          ),
         ),
       ),
     );

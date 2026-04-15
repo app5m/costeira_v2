@@ -16,10 +16,7 @@ class Teladeinicio extends StatelessWidget {
         children: [
           // Fundo ocupando a tela toda
           Positioned.fill(
-            child: Image.asset(
-              "images/costeira_tela.png",
-              fit: BoxFit.cover,
-            ),
+            child: Image.asset("images/costeira_tela.png", fit: BoxFit.cover),
           ),
           Center(
             child: Column(
@@ -35,9 +32,7 @@ class Teladeinicio extends StatelessWidget {
             bottom: 0,
             left: 0,
             right: 0,
-            child:
-
-            SizedBox(
+            child: SizedBox(
               height: MediaQuery.of(context).size.height * 0.45,
               child: Stack(
                 children: [
@@ -45,20 +40,21 @@ class Teladeinicio extends StatelessWidget {
                     bottom: 0,
                     left: 1,
                     right: 1,
-                    child:
-                    Container(
+                    child: Container(
                       width: MediaQuery.of(context).size.width - 40,
                       height: 280,
-                      padding: const EdgeInsets.symmetric(vertical: 32, horizontal: 16),
+                      padding: const EdgeInsets.symmetric(
+                        vertical: 32,
+                        horizontal: 16,
+                      ),
                       decoration: BoxDecoration(
                         color: Colors.white,
-                        borderRadius: BorderRadius.only( topLeft: Radius.circular(16),
-                          topRight: Radius.circular(16),),
+                        borderRadius: BorderRadius.only(
+                          topLeft: Radius.circular(16),
+                          topRight: Radius.circular(16),
+                        ),
                         boxShadow: [
-                          BoxShadow(
-                            color: Colors.black12,
-                            blurRadius: 10,
-                          ),
+                          BoxShadow(color: Colors.black12, blurRadius: 10),
                         ],
                       ),
                       child: Column(
@@ -104,15 +100,22 @@ class Teladeinicio extends StatelessWidget {
                             onTap: () {
                               Navigator.push(
                                 context,
-                                MaterialPageRoute(builder: (context) => const Cadastro()),
+                                MaterialPageRoute(
+                                  builder: (context) => const Cadastro(),
+                                ),
                               );
                             },
                             child: Container(
                               width: double.infinity,
                               height: 48,
-                              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 20,
+                                vertical: 12,
+                              ),
                               decoration: ShapeDecoration(
-                                color: const Color(0xFF00823A), // fundo teal visível
+                                color: const Color(
+                                  0xFF00823A,
+                                ), // fundo teal visível
                                 shape: RoundedRectangleBorder(
                                   borderRadius: BorderRadius.circular(8),
                                 ),
@@ -137,21 +140,24 @@ class Teladeinicio extends StatelessWidget {
                             ),
                           ),
 
-
                           SizedBox(height: 24),
 
                           GestureDetector(
                             onTap: () {
                               Navigator.push(
                                 context,
-                                MaterialPageRoute(builder: (context) => const Login()),
+                                MaterialPageRoute(
+                                  builder: (context) => const Login(),
+                                ),
                               );
                             },
-                            child:
-                            Container(
+                            child: Container(
                               width: double.infinity,
                               height: 48,
-                              padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 13),
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 4,
+                                vertical: 13,
+                              ),
                               decoration: ShapeDecoration(
                                 shape: RoundedRectangleBorder(
                                   side: BorderSide(
@@ -180,9 +186,8 @@ class Teladeinicio extends StatelessWidget {
                                   ),
                                 ],
                               ),
-                            )
+                            ),
                           ),
-
 
                           SizedBox(height: 25),
 
@@ -200,10 +205,10 @@ class Teladeinicio extends StatelessWidget {
                                 height: 1.50,
                               ),
                             ),
-                          ),                        ],
+                          ),
+                        ],
                       ),
                     ),
-
                   ),
                   SizedBox(height: 10),
                 ],

@@ -60,9 +60,7 @@ class _MovimentacoesState extends State<Movimentacoes> {
               onTap: () {
                 Navigator.push(
                   context,
-                  MaterialPageRoute(
-                    builder: (context) => Nascimentos(),
-                  ),
+                  MaterialPageRoute(builder: (context) => Nascimentos()),
                 );
               },
               child: ButtonMotivetion('Nascimentos'),
@@ -72,9 +70,7 @@ class _MovimentacoesState extends State<Movimentacoes> {
               onTap: () {
                 Navigator.push(
                   context,
-                  MaterialPageRoute(
-                    builder: (context) => TrocaCategoria(),
-                  ),
+                  MaterialPageRoute(builder: (context) => TrocaCategoria()),
                 );
               },
               child: ButtonMotivetion('Trocas de categoria'),

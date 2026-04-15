@@ -57,10 +57,7 @@ class _UpdatePasswordState extends State<UpdatePassword> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.white,
-      appBar: PrimarySectionAppBar(
-        context: context,
-        title: 'Alterar senha',
-      ),
+      appBar: PrimarySectionAppBar(context: context, title: 'Alterar senha'),
       body: SafeArea(
         child: Form(
           key: _formKey,
@@ -251,17 +248,14 @@ class _UpdatePasswordState extends State<UpdatePassword> {
     if (!mounted) {
       return;
     }
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text(message)),
-    );
+    ScaffoldMessenger.of(
+      context,
+    ).showSnackBar(SnackBar(content: Text(message)));
   }
 }
 
 class _PasswordRule extends StatelessWidget {
-  const _PasswordRule({
-    required this.label,
-    required this.isValid,
-  });
+  const _PasswordRule({required this.label, required this.isValid});
 
   final String label;
   final bool isValid;
@@ -276,10 +270,7 @@ class _PasswordRule extends StatelessWidget {
           size: 18,
         ),
         const SizedBox(width: 8),
-        Text(
-          label,
-          style: const TextStyle(color: MyColors.colorPrimary2),
-        ),
+        Text(label, style: const TextStyle(color: MyColors.colorPrimary2)),
       ],
     );
   }

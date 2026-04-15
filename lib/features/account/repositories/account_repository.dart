@@ -8,17 +8,15 @@ import 'package:costeira/features/account/models/account_profile.dart';
 import 'package:dio/dio.dart';
 
 class AccountRepository {
-  AccountRepository({ApiClient? client}) : _client = client ?? ApiClient.instance;
+  AccountRepository({ApiClient? client})
+    : _client = client ?? ApiClient.instance;
 
   final ApiClient _client;
 
   Future<AccountProfile> fetchProfile({required int userId}) async {
     final response = await _client.post(
       WSConstantes.perfil,
-      data: {
-        'id_user': userId,
-        'token': WSConstantes.token,
-      },
+      data: {'id_user': userId, 'token': WSConstantes.token},
     );
     return AccountProfile.fromJson(responseAsMap(response));
   }
@@ -26,10 +24,7 @@ class AccountRepository {
   Future<ApiMessage> deactivateAccount(int id) async {
     final response = await _client.post(
       WSConstantes.desativarConta,
-      data: {
-        'id': id,
-        'token': WSConstantes.token,
-      },
+      data: {'id': id, 'token': WSConstantes.token},
     );
     return ApiMessage.fromResponse(response);
   }
@@ -40,11 +35,7 @@ class AccountRepository {
   }) async {
     final response = await _client.post(
       WSConstantes.updatePassword,
-      data: {
-        'id': id,
-        'password': password,
-        'token': WSConstantes.token,
-      },
+      data: {'id': id, 'password': password, 'token': WSConstantes.token},
     );
     return ApiMessage.fromResponse(response);
   }

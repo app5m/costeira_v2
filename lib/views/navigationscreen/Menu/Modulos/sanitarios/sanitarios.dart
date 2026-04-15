@@ -160,8 +160,7 @@ class _SanitariosState extends State<Sanitarios> {
                       ),
                       SizedBox(width: 8),
                       TextButton(
-                        onPressed: () =>
-                            Navigator.of(context).pop(false),
+                        onPressed: () => Navigator.of(context).pop(false),
                         child: Text(
                           "Cancelar",
                           style: TextStyle(
@@ -296,8 +295,7 @@ class _SanitariosState extends State<Sanitarios> {
                       ),
                       SizedBox(width: 8),
                       TextButton(
-                        onPressed: () =>
-                            Navigator.of(context).pop(false),
+                        onPressed: () => Navigator.of(context).pop(false),
                         child: Text(
                           "Cancelar",
                           style: TextStyle(
@@ -528,9 +526,7 @@ class _SanitariosState extends State<Sanitarios> {
                     onTap: () {
                       Navigator.push(
                         context,
-                        MaterialPageRoute(
-                          builder: (context) => Planejamento(),
-                        ),
+                        MaterialPageRoute(builder: (context) => Planejamento()),
                       );
                     },
                     child: Container(
@@ -554,8 +550,7 @@ class _SanitariosState extends State<Sanitarios> {
                         ],
                       ),
                       child: Row(
-                        mainAxisAlignment:
-                            MainAxisAlignment.spaceBetween,
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
                           Row(
                             children: [
@@ -664,9 +659,7 @@ class _SanitariosState extends State<Sanitarios> {
                     onTap: () {
                       Navigator.push(
                         context,
-                        MaterialPageRoute(
-                          builder: (context) => Execucoes(),
-                        ),
+                        MaterialPageRoute(builder: (context) => Execucoes()),
                       );
                     },
                     child: Container(
@@ -690,8 +683,7 @@ class _SanitariosState extends State<Sanitarios> {
                         ],
                       ),
                       child: Row(
-                        mainAxisAlignment:
-                            MainAxisAlignment.spaceBetween,
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
                           Row(
                             children: [

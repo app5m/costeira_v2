@@ -49,7 +49,10 @@ class SessionStorage {
 
   static Future<void> saveLastCoordinates(UserCoordinates coordinates) async {
     final prefs = await SharedPreferences.getInstance();
-    await prefs.setString(_lastCoordinatesKey, jsonEncode(coordinates.toJson()));
+    await prefs.setString(
+      _lastCoordinatesKey,
+      jsonEncode(coordinates.toJson()),
+    );
   }
 
   static Future<UserCoordinates?> getLastCoordinates() async {

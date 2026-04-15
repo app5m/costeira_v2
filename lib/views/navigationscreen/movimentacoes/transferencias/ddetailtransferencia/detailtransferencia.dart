@@ -10,7 +10,6 @@ class DetailTransferencia extends StatefulWidget {
 }
 
 class _DetailTransferenciaState extends State<DetailTransferencia> {
-
   Widget buildTextField(String label, String hint) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -67,9 +66,11 @@ class _DetailTransferenciaState extends State<DetailTransferencia> {
       appBar: AppBar(
         backgroundColor: MyColors.colorPrimary,
         leading: GestureDetector(
-            onTap: (){
-              Navigator.pop(context);
-            },child: Icon(Icons.arrow_back_ios, color: Colors.white,)),
+          onTap: () {
+            Navigator.pop(context);
+          },
+          child: Icon(Icons.arrow_back_ios, color: Colors.white),
+        ),
         title: Text(
           'Detalhes da Transferências de campo',
           style: TextStyle(
@@ -83,18 +84,20 @@ class _DetailTransferenciaState extends State<DetailTransferencia> {
       body: SingleChildScrollView(
         child: Container(
           margin: EdgeInsets.symmetric(horizontal: 20),
-          child: Column(children: [
-            SizedBox(height: 16,),
-            buildTextField("Data", "02/04/2025"),
-            buildTextField("Categoria", "Novilho"),
-            buildTextField("Quantidade", "18 animais"),
+          child: Column(
+            children: [
+              SizedBox(height: 16),
+              buildTextField("Data", "02/04/2025"),
+              buildTextField("Categoria", "Novilho"),
+              buildTextField("Quantidade", "18 animais"),
 
-            buildTextField("Potreiro origem", "Potreiro 3"),
-            buildTextField("Potreiro destino", "Potreiro 7"),
-            buildTextField("Peso médio", "322 kg"),
+              buildTextField("Potreiro origem", "Potreiro 3"),
+              buildTextField("Potreiro destino", "Potreiro 7"),
+              buildTextField("Peso médio", "322 kg"),
 
-            const SizedBox(height: 32),
-          ],),
+              const SizedBox(height: 32),
+            ],
+          ),
         ),
       ),
     );

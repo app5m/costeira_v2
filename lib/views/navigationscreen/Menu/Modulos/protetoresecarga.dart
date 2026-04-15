@@ -87,8 +87,7 @@ class _protetoresecargaState extends State<protetoresecarga> {
                           shape: RoundedRectangleBorder(
                             side: BorderSide(
                               width: 2,
-                              strokeAlign:
-                                  BorderSide.strokeAlignCenter,
+                              strokeAlign: BorderSide.strokeAlignCenter,
                               color: Color(0xFFE2E2E2),
                             ),
                           ),
@@ -143,8 +142,7 @@ class _protetoresecargaState extends State<protetoresecarga> {
                     Column(
                       children: [
                         SizedBox(
-                          width:
-                              MediaQuery.of(context).size.width - 40,
+                          width: MediaQuery.of(context).size.width - 40,
                           height: 50,
                           child: ElevatedButton(
                             onPressed: () async {
@@ -163,16 +161,14 @@ class _protetoresecargaState extends State<protetoresecarga> {
                         ),
                         SizedBox(width: 8),
                         TextButton(
-                          onPressed: () =>
-                              Navigator.of(context).pop(false),
+                          onPressed: () => Navigator.of(context).pop(false),
                           child: Text(
                             "Cancelar",
                             style: TextStyle(
                               fontSize: 16,
                               color: MyColors.colorOnPrimary,
                               decoration: TextDecoration.underline,
-                              decorationColor:
-                                  MyColors.colorOnPrimary,
+                              decorationColor: MyColors.colorOnPrimary,
                             ),
                           ),
                         ),
@@ -301,8 +297,7 @@ class _protetoresecargaState extends State<protetoresecarga> {
                       ),
                       SizedBox(width: 8),
                       TextButton(
-                        onPressed: () =>
-                            Navigator.of(context).pop(false),
+                        onPressed: () => Navigator.of(context).pop(false),
                         child: Text(
                           "Cancelar",
                           style: TextStyle(
@@ -515,9 +510,7 @@ class _protetoresecargaState extends State<protetoresecarga> {
                     onTap: () {
                       Navigator.push(
                         context,
-                        MaterialPageRoute(
-                          builder: (context) => Potreiros(),
-                        ),
+                        MaterialPageRoute(builder: (context) => Potreiros()),
                       );
                     },
                     child: Row(
@@ -544,8 +537,7 @@ class _protetoresecargaState extends State<protetoresecarga> {
                             ],
                           ),
                           child: Row(
-                            mainAxisAlignment:
-                                MainAxisAlignment.spaceBetween,
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
                               Row(
                                 children: [
@@ -685,8 +677,7 @@ class _protetoresecargaState extends State<protetoresecarga> {
                             ],
                           ),
                           child: Row(
-                            mainAxisAlignment:
-                                MainAxisAlignment.spaceBetween,
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
                               Row(
                                 children: [

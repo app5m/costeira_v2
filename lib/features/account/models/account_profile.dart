@@ -105,10 +105,7 @@ class ProfileFarm {
 }
 
 class ProfileNamedItem {
-  const ProfileNamedItem({
-    required this.id,
-    required this.name,
-  });
+  const ProfileNamedItem({required this.id, required this.name});
 
   final int id;
   final String name;

@@ -37,19 +37,21 @@ class _AnimaisState extends State<Animais> with SingleTickerProviderStateMixin {
       backgroundColor: Colors.white,
       floatingActionButton: index == 1 || index == 2
           ? FloatingActionButton(
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadiusGeometry.circular(63)
-        ),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadiusGeometry.circular(63),
+              ),
               onPressed: () {
-          if(index == 1 ){
-            Navigator.push(context,
-                MaterialPageRoute(builder: (_) => const AddAnimal()));
-          }else{
-            Navigator.push(context,
-                MaterialPageRoute(builder: (_) => const AddLote()));
-          }
-
-
+                if (index == 1) {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (_) => const AddAnimal()),
+                  );
+                } else {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (_) => const AddLote()),
+                  );
+                }
               },
               child: Icon(Icons.add_rounded, color: Colors.white),
             )

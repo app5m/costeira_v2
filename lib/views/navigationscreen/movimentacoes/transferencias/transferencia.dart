@@ -98,9 +98,7 @@ class _TransferenciaState extends State<Transferencia>
       floatingActionButton: index == 0
           ? FloatingActionButton(
               shape: RoundedRectangleBorder(
-                borderRadius: BorderRadiusGeometry.all(
-                  Radius.circular(64),
-                ),
+                borderRadius: BorderRadiusGeometry.all(Radius.circular(64)),
               ),
 
               onPressed: () {
@@ -109,9 +107,7 @@ class _TransferenciaState extends State<Transferencia>
                 // if (index == 0) {
                 Navigator.push(
                   context,
-                  MaterialPageRoute(
-                    builder: (_) => const AddTransferencia(),
-                  ),
+                  MaterialPageRoute(builder: (_) => const AddTransferencia()),
                 );
 
                 // } else if (index == 1) {
@@ -166,11 +162,7 @@ class _TransferenciaState extends State<Transferencia>
                     child: Container(
                       width: MediaQuery.of(context).size.width - 40,
                       padding: const EdgeInsets.all(16),
-                      margin: EdgeInsets.only(
-                        bottom: 8,
-                        left: 20,
-                        right: 20,
-                      ),
+                      margin: EdgeInsets.only(bottom: 8, left: 20, right: 20),
                       decoration: ShapeDecoration(
                         color: Colors.white,
                         shape: RoundedRectangleBorder(
@@ -190,17 +182,14 @@ class _TransferenciaState extends State<Transferencia>
                         ],
                       ),
                       child: Row(
-                        mainAxisAlignment:
-                            MainAxisAlignment.spaceBetween,
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         crossAxisAlignment: CrossAxisAlignment.start,
                         spacing: 8,
                         children: [
                           Row(
                             mainAxisSize: MainAxisSize.min,
-                            mainAxisAlignment:
-                                MainAxisAlignment.start,
-                            crossAxisAlignment:
-                                CrossAxisAlignment.center,
+                            mainAxisAlignment: MainAxisAlignment.start,
+                            crossAxisAlignment: CrossAxisAlignment.center,
                             spacing: 16,
                             children: [
                               Container(
@@ -209,16 +198,13 @@ class _TransferenciaState extends State<Transferencia>
                                 decoration: ShapeDecoration(
                                   color: const Color(0x198C8C8C),
                                   shape: RoundedRectangleBorder(
-                                    borderRadius:
-                                        BorderRadius.circular(42.67),
+                                    borderRadius: BorderRadius.circular(42.67),
                                   ),
                                 ),
                                 child: Row(
                                   mainAxisSize: MainAxisSize.min,
-                                  mainAxisAlignment:
-                                      MainAxisAlignment.start,
-                                  crossAxisAlignment:
-                                      CrossAxisAlignment.center,
+                                  mainAxisAlignment: MainAxisAlignment.start,
+                                  crossAxisAlignment: CrossAxisAlignment.center,
                                   spacing: 5.33,
                                   children: [
                                     Container(
@@ -237,10 +223,8 @@ class _TransferenciaState extends State<Transferencia>
                               ),
                               Column(
                                 mainAxisSize: MainAxisSize.min,
-                                mainAxisAlignment:
-                                    MainAxisAlignment.start,
-                                crossAxisAlignment:
-                                    CrossAxisAlignment.start,
+                                mainAxisAlignment: MainAxisAlignment.start,
+                                crossAxisAlignment: CrossAxisAlignment.start,
                                 spacing: 8,
                                 children: [
                                   Text(
@@ -255,8 +239,7 @@ class _TransferenciaState extends State<Transferencia>
                                   ),
                                   Row(
                                     mainAxisSize: MainAxisSize.min,
-                                    mainAxisAlignment:
-                                        MainAxisAlignment.start,
+                                    mainAxisAlignment: MainAxisAlignment.start,
                                     crossAxisAlignment:
                                         CrossAxisAlignment.center,
                                     spacing: 8,
@@ -265,9 +248,7 @@ class _TransferenciaState extends State<Transferencia>
                                         'Potreiro 3 > Potreiro 7 ',
                                         textAlign: TextAlign.center,
                                         style: TextStyle(
-                                          color: const Color(
-                                            0xFF8C8C8C,
-                                          ),
+                                          color: const Color(0xFF8C8C8C),
                                           fontSize: 12,
                                           fontFamily: 'Montserrat',
                                           fontWeight: FontWeight.w500,
@@ -277,8 +258,7 @@ class _TransferenciaState extends State<Transferencia>
                                   ),
                                   Row(
                                     mainAxisSize: MainAxisSize.min,
-                                    mainAxisAlignment:
-                                        MainAxisAlignment.start,
+                                    mainAxisAlignment: MainAxisAlignment.start,
                                     crossAxisAlignment:
                                         CrossAxisAlignment.center,
                                     spacing: 8,
@@ -287,9 +267,7 @@ class _TransferenciaState extends State<Transferencia>
                                         'Peso médio: 276 kg',
                                         textAlign: TextAlign.center,
                                         style: TextStyle(
-                                          color: const Color(
-                                            0xFF8C8C8C,
-                                          ),
+                                          color: const Color(0xFF8C8C8C),
                                           fontSize: 12,
                                           fontFamily: 'Montserrat',
                                           fontWeight: FontWeight.w500,
@@ -299,8 +277,7 @@ class _TransferenciaState extends State<Transferencia>
                                   ),
                                   Row(
                                     mainAxisSize: MainAxisSize.min,
-                                    mainAxisAlignment:
-                                        MainAxisAlignment.start,
+                                    mainAxisAlignment: MainAxisAlignment.start,
                                     crossAxisAlignment:
                                         CrossAxisAlignment.center,
                                     spacing: 8,
@@ -309,9 +286,7 @@ class _TransferenciaState extends State<Transferencia>
                                         '12/03/2025 ',
                                         textAlign: TextAlign.center,
                                         style: TextStyle(
-                                          color: const Color(
-                                            0xFF8C8C8C,
-                                          ),
+                                          color: const Color(0xFF8C8C8C),
                                           fontSize: 12,
                                           fontFamily: 'Montserrat',
                                           fontWeight: FontWeight.w500,
@@ -324,26 +299,19 @@ class _TransferenciaState extends State<Transferencia>
                             ],
                           ),
                           Column(
-                            mainAxisAlignment:
-                                MainAxisAlignment.center,
+                            mainAxisAlignment: MainAxisAlignment.center,
                             children: [
                               Column(
                                 // mainAxisSize: MainAxisSize.min,
-                                mainAxisAlignment:
-                                    MainAxisAlignment.center,
-                                crossAxisAlignment:
-                                    CrossAxisAlignment.start,
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                crossAxisAlignment: CrossAxisAlignment.start,
                                 spacing: 8,
                                 children: [
                                   GestureDetector(
                                     onTap: () {
-                                      _showModalBottomSheetExcluir(
-                                        context,
-                                      );
+                                      _showModalBottomSheetExcluir(context);
                                     },
-                                    child: SvgPicture.asset(
-                                      'icon/trash.svg',
-                                    ),
+                                    child: SvgPicture.asset('icon/trash.svg'),
                                   ),
                                   SizedBox(height: 4),
                                   GestureDetector(
@@ -468,8 +436,7 @@ class _TransferenciaState extends State<Transferencia>
                           },
                           style: ElevatedButton.styleFrom(
                             shape: RoundedRectangleBorder(
-                              borderRadius:
-                                  BorderRadiusGeometry.circular(8),
+                              borderRadius: BorderRadiusGeometry.circular(8),
                             ),
                             side: BorderSide(color: Colors.red),
                             elevation: 0,
@@ -483,8 +450,7 @@ class _TransferenciaState extends State<Transferencia>
                       ),
                       SizedBox(width: 8),
                       TextButton(
-                        onPressed: () =>
-                            Navigator.of(context).pop(false),
+                        onPressed: () => Navigator.of(context).pop(false),
                         child: Text(
                           "Cancelar",
                           style: TextStyle(

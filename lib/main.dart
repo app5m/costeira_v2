@@ -62,13 +62,12 @@ class MyApp extends StatelessWidget {
           filled: true,
           fillColor: const Color(0xFFEBEBEB),
 
-          contentPadding:
-          const EdgeInsets.symmetric(horizontal: 12, vertical: 14),
-
-          hintStyle: const TextStyle(
-            color: Color(0xFF313131),
-            fontSize: 14,
+          contentPadding: const EdgeInsets.symmetric(
+            horizontal: 12,
+            vertical: 14,
           ),
+
+          hintStyle: const TextStyle(color: Color(0xFF313131), fontSize: 14),
 
           enabledBorder: OutlineInputBorder(
             borderRadius: BorderRadius.circular(8),

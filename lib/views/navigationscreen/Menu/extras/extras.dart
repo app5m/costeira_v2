@@ -88,8 +88,7 @@ class _ExtrasState extends State<Extras> {
                           shape: RoundedRectangleBorder(
                             side: BorderSide(
                               width: 2,
-                              strokeAlign:
-                                  BorderSide.strokeAlignCenter,
+                              strokeAlign: BorderSide.strokeAlignCenter,
                               color: Color(0xFFE2E2E2),
                             ),
                           ),
@@ -144,8 +143,7 @@ class _ExtrasState extends State<Extras> {
                     Column(
                       children: [
                         SizedBox(
-                          width:
-                              MediaQuery.of(context).size.width - 40,
+                          width: MediaQuery.of(context).size.width - 40,
                           height: 50,
                           child: ElevatedButton(
                             onPressed: () async {
@@ -164,16 +162,14 @@ class _ExtrasState extends State<Extras> {
                         ),
                         SizedBox(width: 8),
                         TextButton(
-                          onPressed: () =>
-                              Navigator.of(context).pop(false),
+                          onPressed: () => Navigator.of(context).pop(false),
                           child: Text(
                             "Cancelar",
                             style: TextStyle(
                               fontSize: 16,
                               color: MyColors.colorOnPrimary,
                               decoration: TextDecoration.underline,
-                              decorationColor:
-                                  MyColors.colorOnPrimary,
+                              decorationColor: MyColors.colorOnPrimary,
                             ),
                           ),
                         ),
@@ -302,8 +298,7 @@ class _ExtrasState extends State<Extras> {
                       ),
                       SizedBox(width: 8),
                       TextButton(
-                        onPressed: () =>
-                            Navigator.of(context).pop(false),
+                        onPressed: () => Navigator.of(context).pop(false),
                         child: Text(
                           "Cancelar",
                           style: TextStyle(
@@ -431,8 +426,7 @@ class _ExtrasState extends State<Extras> {
                         ],
                       ),
                       child: Row(
-                        mainAxisAlignment:
-                            MainAxisAlignment.spaceBetween,
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
                           Row(
                             children: [
@@ -463,9 +457,7 @@ class _ExtrasState extends State<Extras> {
                     onTap: () {
                       Navigator.push(
                         context,
-                        MaterialPageRoute(
-                          builder: (context) => modulos(),
-                        ),
+                        MaterialPageRoute(builder: (context) => modulos()),
                       );
                     },
                     child: Container(
@@ -489,8 +481,7 @@ class _ExtrasState extends State<Extras> {
                         ],
                       ),
                       child: Row(
-                        mainAxisAlignment:
-                            MainAxisAlignment.spaceBetween,
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
                           Row(
                             children: [
@@ -542,8 +533,7 @@ class _ExtrasState extends State<Extras> {
                         ],
                       ),
                       child: Row(
-                        mainAxisAlignment:
-                            MainAxisAlignment.spaceBetween,
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
                           Row(
                             children: [

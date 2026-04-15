@@ -6,10 +6,18 @@ class Dashboard extends StatelessWidget {
 
   static const _metrics = [
     _DashboardMetric('icon/weight.svg', 'Quilos produzidos', '35.000 kg'),
-    _DashboardMetric('icon/hand-coins.svg', 'Receita estimada', 'R\$ 1.725.000,00'),
+    _DashboardMetric(
+      'icon/hand-coins.svg',
+      'Receita estimada',
+      'R\$ 1.725.000,00',
+    ),
     _DashboardMetric('icon/cow-light.svg', 'Total de animais', '3 cabeças'),
     _DashboardMetric('icon/workflow.svg', 'Média da fazenda', '600 kg/ha'),
-    _DashboardMetric('icon/chart-area.svg', 'Ganho médio diário', '0,65 kg/dia'),
+    _DashboardMetric(
+      'icon/chart-area.svg',
+      'Ganho médio diário',
+      '0,65 kg/dia',
+    ),
     _DashboardMetric('icon/book-check.svg', 'Tarefas do mês', '3 pendentes'),
   ];
 

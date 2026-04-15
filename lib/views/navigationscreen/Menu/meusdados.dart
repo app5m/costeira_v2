@@ -112,17 +112,11 @@ class _MeusDadosState extends State<MeusDados>
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.white,
-      appBar: PrimarySectionAppBar(
-        context: context,
-        title: 'Meus dados',
-      ),
+      appBar: PrimarySectionAppBar(context: context, title: 'Meus dados'),
       body: Column(
         children: [
           if (_loadError != null && !_isLoading)
-            _ProfileErrorBanner(
-              message: _loadError!,
-              onRetry: _loadProfile,
-            ),
+            _ProfileErrorBanner(message: _loadError!, onRetry: _loadProfile),
           TabBar(
             controller: _tabController,
             tabs: const [
@@ -208,7 +202,8 @@ class _ResponsibleDataTabState extends State<_ResponsibleDataTab> {
   @override
   void didUpdateWidget(covariant _ResponsibleDataTab oldWidget) {
     super.didUpdateWidget(oldWidget);
-    if (oldWidget.profile != widget.profile || oldWidget.session != widget.session) {
+    if (oldWidget.profile != widget.profile ||
+        oldWidget.session != widget.session) {
       _applyProfile();
     }
   }
@@ -255,8 +250,9 @@ class _ResponsibleDataTabState extends State<_ResponsibleDataTab> {
                   CircleAvatar(
                     radius: 40,
                     backgroundColor: const Color(0xFFEBEBEB),
-                    backgroundImage:
-                        _selectedImage != null ? FileImage(_selectedImage!) : null,
+                    backgroundImage: _selectedImage != null
+                        ? FileImage(_selectedImage!)
+                        : null,
                     child: _selectedImage == null
                         ? SvgPicture.asset(
                             'icon/user-round.svg',
@@ -288,7 +284,9 @@ class _ResponsibleDataTabState extends State<_ResponsibleDataTab> {
                         child: _isUploadingImage
                             ? const Padding(
                                 padding: EdgeInsets.all(6),
-                                child: CircularProgressIndicator(strokeWidth: 2),
+                                child: CircularProgressIndicator(
+                                  strokeWidth: 2,
+                                ),
                               )
                             : const Icon(
                                 Icons.image_outlined,
@@ -451,9 +449,9 @@ class _ResponsibleDataTabState extends State<_ResponsibleDataTab> {
       return;
     }
 
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text(message)),
-    );
+    ScaffoldMessenger.of(
+      context,
+    ).showSnackBar(SnackBar(content: Text(message)));
   }
 }
 
@@ -482,14 +480,8 @@ class _FarmDataTab extends StatelessWidget {
       padding: const EdgeInsets.all(16),
       child: Column(
         children: [
-          _ReadonlyInfoCard(
-            title: 'Nome da Fazenda',
-            value: farm.name,
-          ),
-          _ReadonlyInfoCard(
-            title: 'Endereço completo',
-            value: farm.address,
-          ),
+          _ReadonlyInfoCard(title: 'Nome da Fazenda', value: farm.name),
+          _ReadonlyInfoCard(title: 'Endereço completo', value: farm.address),
           _ReadonlyInfoCard(
             title: 'Área total',
             value: _formatArea(farm.totalArea),
@@ -523,7 +515,10 @@ class _FarmDataTab extends StatelessWidget {
     if (items.isEmpty) {
       return 'Não informado';
     }
-    return items.map((item) => item.name).where((name) => name.isNotEmpty).join(' • ');
+    return items
+        .map((item) => item.name)
+        .where((name) => name.isNotEmpty)
+        .join(' • ');
   }
 
   String _formatArea(String value) {
@@ -535,10 +530,7 @@ class _FarmDataTab extends StatelessWidget {
 }
 
 class _ReadonlyInfoCard extends StatelessWidget {
-  const _ReadonlyInfoCard({
-    required this.title,
-    required this.value,
-  });
+  const _ReadonlyInfoCard({required this.title, required this.value});
 
   final String title;
   final String value;
@@ -589,10 +581,7 @@ class _ReadonlyInfoCard extends StatelessWidget {
 }
 
 class _ProfileErrorBanner extends StatelessWidget {
-  const _ProfileErrorBanner({
-    required this.message,
-    required this.onRetry,
-  });
+  const _ProfileErrorBanner({required this.message, required this.onRetry});
 
   final String message;
   final VoidCallback onRetry;
@@ -622,10 +611,7 @@ class _ProfileErrorBanner extends StatelessWidget {
               ),
             ),
           ),
-          TextButton(
-            onPressed: onRetry,
-            child: const Text('Tentar novamente'),
-          ),
+          TextButton(onPressed: onRetry, child: const Text('Tentar novamente')),
         ],
       ),
     );

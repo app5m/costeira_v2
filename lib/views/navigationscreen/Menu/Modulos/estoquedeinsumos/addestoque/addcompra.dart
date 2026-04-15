@@ -2,8 +2,6 @@ import 'package:flutter/material.dart';
 
 import '../../../../../../theme/colors.dart';
 
-
-
 class AddCompraInsumo extends StatefulWidget {
   const AddCompraInsumo({super.key});
 
@@ -12,7 +10,6 @@ class AddCompraInsumo extends StatefulWidget {
 }
 
 class _AddCompraInsumoState extends State<AddCompraInsumo> {
-
   Widget buildTextField(String label, String hint) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -61,6 +58,7 @@ class _AddCompraInsumoState extends State<AddCompraInsumo> {
       ],
     );
   }
+
   Widget buildTextField5Line(String label, String hint) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -119,9 +117,11 @@ class _AddCompraInsumoState extends State<AddCompraInsumo> {
       appBar: AppBar(
         backgroundColor: MyColors.colorPrimary,
         leading: GestureDetector(
-            onTap: (){
-              Navigator.pop(context);
-            },child: Icon(Icons.arrow_back_ios, color: Colors.white,)),
+          onTap: () {
+            Navigator.pop(context);
+          },
+          child: Icon(Icons.arrow_back_ios, color: Colors.white),
+        ),
         title: Text(
           'Registro de compra',
           style: TextStyle(
@@ -135,46 +135,51 @@ class _AddCompraInsumoState extends State<AddCompraInsumo> {
       body: SingleChildScrollView(
         child: Container(
           margin: EdgeInsets.symmetric(horizontal: 20),
-          child: Column(children: [
-            SizedBox(height: 16,),
-            buildTextField("Nome comercial", "Selecione"),
-            buildTextField("Data", "00/00/0000"),
-            buildTextField("Responsável", "Insira aqui"),
-            buildTextField("Quantidade usada", "00 kg"),
-            buildTextField("Tipo de uso", "Ex: Suplementação no potre..."),
-            // buildTextField("Status", "Selecione"),
-            // buildTextField("Observações", "Ex: Equipe iniciou a tr..."),
+          child: Column(
+            children: [
+              SizedBox(height: 16),
+              buildTextField("Nome comercial", "Selecione"),
+              buildTextField("Data", "00/00/0000"),
+              buildTextField("Responsável", "Insira aqui"),
+              buildTextField("Quantidade usada", "00 kg"),
+              buildTextField("Tipo de uso", "Ex: Suplementação no potre..."),
 
-            const SizedBox(height: 16),
+              // buildTextField("Status", "Selecione"),
+              // buildTextField("Observações", "Ex: Equipe iniciou a tr..."),
+              const SizedBox(height: 16),
 
-            Container(
-              margin: EdgeInsets.symmetric(horizontal: 0),
-              child: SizedBox(
-                width: double.infinity,
-                height: 50,
-                child: ElevatedButton(
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: MyColors.colorPrimary,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(8),
+              Container(
+                margin: EdgeInsets.symmetric(horizontal: 0),
+                child: SizedBox(
+                  width: double.infinity,
+                  height: 50,
+                  child: ElevatedButton(
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: MyColors.colorPrimary,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                    ),
+                    onPressed: () {
+                      Navigator.pop(context);
+                    },
+                    child: const Text(
+                      "Adicionar",
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 14,
+                        fontFamily: 'Montserrat',
+                        fontWeight: FontWeight.w600,
+                        height: 1.29,
+                      ),
                     ),
                   ),
-                  onPressed: () {
-                    Navigator.pop(context);
-                  },
-                  child: const Text("Adicionar",textAlign: TextAlign.center,
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontSize: 14,
-                      fontFamily: 'Montserrat',
-                      fontWeight: FontWeight.w600,
-                      height: 1.29,
-                    ),),
                 ),
               ),
-            ),
-            const SizedBox(height: 32),
-          ],),
+              const SizedBox(height: 32),
+            ],
+          ),
         ),
       ),
     );

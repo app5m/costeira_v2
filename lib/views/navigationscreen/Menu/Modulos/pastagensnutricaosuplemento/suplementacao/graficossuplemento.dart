@@ -4,8 +4,7 @@ class GraficosSuplemento extends StatefulWidget {
   const GraficosSuplemento({super.key});
 
   @override
-  State<GraficosSuplemento> createState() =>
-      _GraficosSuplementoState();
+  State<GraficosSuplemento> createState() => _GraficosSuplementoState();
 }
 
 class _GraficosSuplementoState extends State<GraficosSuplemento> {

@@ -87,8 +87,7 @@ class _protetoresecargaState extends State<protetoresecarga> {
                           shape: RoundedRectangleBorder(
                             side: BorderSide(
                               width: 2,
-                              strokeAlign:
-                                  BorderSide.strokeAlignCenter,
+                              strokeAlign: BorderSide.strokeAlignCenter,
                               color: Color(0xFFE2E2E2),
                             ),
                           ),
@@ -143,8 +142,7 @@ class _protetoresecargaState extends State<protetoresecarga> {
                     Column(
                       children: [
                         Container(
-                          width:
-                              MediaQuery.of(context).size.width - 40,
+                          width: MediaQuery.of(context).size.width - 40,
                           height: 50,
                           child: ElevatedButton(
                             onPressed: () async {
@@ -163,16 +161,14 @@ class _protetoresecargaState extends State<protetoresecarga> {
                         ),
                         SizedBox(width: 8),
                         TextButton(
-                          onPressed: () =>
-                              Navigator.of(context).pop(false),
+                          onPressed: () => Navigator.of(context).pop(false),
                           child: Text(
                             "Cancelar",
                             style: TextStyle(
                               fontSize: 16,
                               color: MyColors.colorOnPrimary,
                               decoration: TextDecoration.underline,
-                              decorationColor:
-                                  MyColors.colorOnPrimary,
+                              decorationColor: MyColors.colorOnPrimary,
                             ),
                           ),
                         ),
@@ -219,8 +215,7 @@ class _protetoresecargaState extends State<protetoresecarga> {
                           shape: RoundedRectangleBorder(
                             side: BorderSide(
                               width: 2,
-                              strokeAlign:
-                                  BorderSide.strokeAlignCenter,
+                              strokeAlign: BorderSide.strokeAlignCenter,
                               color: Color(0xFFE2E2E2),
                             ),
                           ),
@@ -276,8 +271,7 @@ class _protetoresecargaState extends State<protetoresecarga> {
                       children: [
                         // ignore: sized_box_for_whitespace
                         Container(
-                          width:
-                              MediaQuery.of(context).size.width - 40,
+                          width: MediaQuery.of(context).size.width - 40,
                           height: 50,
                           child: ElevatedButton(
                             onPressed: () async {
@@ -286,8 +280,7 @@ class _protetoresecargaState extends State<protetoresecarga> {
                               Navigator.pushAndRemoveUntil(
                                 context,
                                 MaterialPageRoute(
-                                  builder: (context) =>
-                                      Teladeinicio(),
+                                  builder: (context) => Teladeinicio(),
                                 ),
                                 (Route<dynamic> route) =>
                                     false, // Remove todas as telas anteriores
@@ -306,16 +299,14 @@ class _protetoresecargaState extends State<protetoresecarga> {
                         ),
                         SizedBox(width: 8),
                         TextButton(
-                          onPressed: () =>
-                              Navigator.of(context).pop(false),
+                          onPressed: () => Navigator.of(context).pop(false),
                           child: Text(
                             "Cancelar",
                             style: TextStyle(
                               fontSize: 16,
                               color: MyColors.colorOnPrimary,
                               decoration: TextDecoration.underline,
-                              decorationColor:
-                                  MyColors.colorOnPrimary,
+                              decorationColor: MyColors.colorOnPrimary,
                             ),
                           ),
                         ),
@@ -540,9 +531,7 @@ class _protetoresecargaState extends State<protetoresecarga> {
                     onTap: () {
                       Navigator.push(
                         context,
-                        MaterialPageRoute(
-                          builder: (context) => Potreiros(),
-                        ),
+                        MaterialPageRoute(builder: (context) => Potreiros()),
                       );
                     },
                     child: Container(
@@ -566,8 +555,7 @@ class _protetoresecargaState extends State<protetoresecarga> {
                         ],
                       ),
                       child: Row(
-                        mainAxisAlignment:
-                            MainAxisAlignment.spaceBetween,
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
                           Row(
                             children: [
@@ -676,9 +664,7 @@ class _protetoresecargaState extends State<protetoresecarga> {
                     onTap: () {
                       Navigator.push(
                         context,
-                        MaterialPageRoute(
-                          builder: (context) => CargaAnimal(),
-                        ),
+                        MaterialPageRoute(builder: (context) => CargaAnimal()),
                       );
                     },
                     child: Container(
@@ -702,8 +688,7 @@ class _protetoresecargaState extends State<protetoresecarga> {
                         ],
                       ),
                       child: Row(
-                        mainAxisAlignment:
-                            MainAxisAlignment.spaceBetween,
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
                           Row(
                             children: [
