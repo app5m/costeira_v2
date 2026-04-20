@@ -1,6 +1,6 @@
 import 'dart:io';
 
-import 'package:costeira/config/ws_constantes.dart';
+import 'package:costeira/core/config/ws_constantes.dart';
 import 'package:costeira/core/api/api_client.dart';
 import 'package:costeira/core/models/api_message.dart';
 import 'package:costeira/core/api/api_response_utils.dart';
@@ -8,8 +8,7 @@ import 'package:costeira/features/account/models/account_profile.dart';
 import 'package:dio/dio.dart';
 
 class AccountRepository {
-  AccountRepository({ApiClient? client})
-    : _client = client ?? ApiClient.instance;
+  AccountRepository({ApiClient? client}) : _client = client ?? ApiClient.instance;
 
   final ApiClient _client;
 
@@ -29,10 +28,7 @@ class AccountRepository {
     return ApiMessage.fromResponse(response);
   }
 
-  Future<ApiMessage> updatePassword({
-    required int id,
-    required String password,
-  }) async {
+  Future<ApiMessage> updatePassword({required int id, required String password}) async {
     final response = await _client.post(
       WSConstantes.updatePassword,
       data: {'id': id, 'password': password, 'token': WSConstantes.token},
@@ -40,20 +36,14 @@ class AccountRepository {
     return ApiMessage.fromResponse(response);
   }
 
-  Future<ApiMessage> updateAvatar({
-    required int userId,
-    required File imageFile,
-  }) async {
+  Future<ApiMessage> updateAvatar({required int userId, required File imageFile}) async {
     final formData = FormData.fromMap({
       'id_user': userId.toString(),
       'url': await MultipartFile.fromFile(imageFile.path),
       'token': WSConstantes.token,
     });
 
-    final response = await _client.post(
-      WSConstantes.updateAvatar,
-      formData: formData,
-    );
+    final response = await _client.post(WSConstantes.updateAvatar, formData: formData);
     return ApiMessage.fromResponse(response);
   }
 

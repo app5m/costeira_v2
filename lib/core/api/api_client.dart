@@ -1,6 +1,7 @@
-import 'package:costeira/config/ws_constantes.dart';
 import 'package:costeira/core/api/api_exception.dart';
 import 'package:costeira/core/api/api_response_utils.dart';
+import 'package:costeira/core/config/ws_constantes.dart';
+import 'package:costeira/core/utils/app_logger.dart';
 import 'package:dio/dio.dart';
 
 class ApiClient {
@@ -28,20 +29,34 @@ class ApiClient {
     FormData? formData,
   }) async {
     try {
+      AppLogger.info('API CLIENT: INICIANDO POST PATH=$path');
+      AppLogger.debug('API CLIENT: PAYLOAD=$data');
+
       final response = await _dio.post<dynamic>(
         path,
         data: formData ?? data,
-        options: formData != null
-            ? Options(headers: const {'Content-Type': 'multipart/form-data'})
-            : null,
+        options: Options(
+          responseType: ResponseType.plain,
+          headers: formData != null
+              ? const {'Content-Type': 'multipart/form-data'}
+              : null,
+        ),
       );
+
+      AppLogger.success('API CLIENT: RESPOSTA BRUTA PATH=$path');
+      AppLogger.success('API CLIENT RAW RESPONSE: ${response.data}');
+
       return response.data;
     } on DioException catch (error) {
+      AppLogger.error(
+        'API CLIENT: ERRO PATH=$path STATUS=${error.response?.statusCode} RAW=${error.response?.data}',
+      );
       throw ApiException(
         _resolveMessage(error),
         statusCode: error.response?.statusCode,
       );
-    } catch (_) {
+    } catch (error) {
+      AppLogger.error('API CLIENT: ERRO INESPERADO PATH=$path ERROR=$error');
       throw ApiException('Ocorreu um erro inesperado.');
     }
   }

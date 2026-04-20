@@ -1,4 +1,4 @@
-import 'package:costeira/config/ws_constantes.dart';
+import 'package:costeira/core/config/ws_constantes.dart';
 import 'package:costeira/core/api/api_client.dart';
 import 'package:costeira/core/api/api_response_utils.dart';
 import 'package:costeira/core/models/api_message.dart';
@@ -48,19 +48,12 @@ class AuthRepository {
   }) async {
     final response = await _client.post(
       WSConstantes.login,
-      data: {
-        'email': email,
-        'password': password,
-        'codigo': code,
-        'token': WSConstantes.token,
-      },
+      data: {'email': email, 'password': password, 'codigo': code, 'token': WSConstantes.token},
     );
 
     final message = ApiMessage.fromResponse(response);
     final map = responseAsMap(response);
-    final user = message.isSuccess
-        ? UserSession.fromLoginResponse(map, tipo)
-        : null;
+    final user = message.isSuccess ? UserSession.fromLoginResponse(map, tipo) : null;
 
     return AuthResult(message: message, user: user);
   }

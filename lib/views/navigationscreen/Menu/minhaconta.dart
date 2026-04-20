@@ -1,31 +1,30 @@
+import 'package:costeira/app/app_routes.dart';
 import 'package:costeira/core/api/api_exception.dart';
 import 'package:costeira/core/storage/session_storage.dart';
 import 'package:costeira/features/account/repositories/account_repository.dart';
 import 'package:costeira/features/auth/models/user_session.dart';
-import 'package:costeira/views/navigationscreen/Menu/meusdados.dart';
-import 'package:costeira/views/navigationscreen/Menu/updatepassword.dart';
-import 'package:costeira/views/navigationscreen/notification/notification.dart';
-import 'package:costeira/views/shared/widgets/primary_app_bar.dart';
-import 'package:costeira/views/shared/widgets/settings_option_tile.dart';
-import 'package:costeira/views/teladeinicio/teladeinicio.dart';
+import 'package:costeira/core/components/primary_app_bar.dart';
+import 'package:costeira/core/components/settings_option_tile.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_modular/flutter_modular.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 
-class Minhaconta extends StatefulWidget {
-  const Minhaconta({super.key});
+class MyAccountPage extends StatefulWidget {
+  const MyAccountPage({super.key});
 
   @override
-  State<Minhaconta> createState() => _MinhacontaState();
+  State<MyAccountPage> createState() => _MyAccountPageState();
 }
 
-class _MinhacontaState extends State<Minhaconta> {
-  final AccountRepository _accountRepository = AccountRepository();
+class _MyAccountPageState extends State<MyAccountPage> {
+  late final AccountRepository _accountRepository;
   UserSession? _user;
   bool _isLoading = false;
 
   @override
   void initState() {
     super.initState();
+    _accountRepository = Modular.get<AccountRepository>();
     _loadUser();
   }
 
@@ -52,11 +51,7 @@ class _MinhacontaState extends State<Minhaconta> {
               CircleAvatar(
                 radius: 36,
                 backgroundColor: const Color(0xFFEBEBEB),
-                child: SvgPicture.asset(
-                  'icon/user-round.svg',
-                  width: 36,
-                  height: 36,
-                ),
+                child: SvgPicture.asset('icon/user-round.svg', width: 36, height: 36),
               ),
               const SizedBox(height: 12),
               Text(
@@ -81,29 +76,17 @@ class _MinhacontaState extends State<Minhaconta> {
           const SizedBox(height: 24),
           SettingsOptionTile(
             title: 'Editar dados',
-            onTap: () {
-              Navigator.of(
-                context,
-              ).push(MaterialPageRoute(builder: (_) => const MeusDados()));
-            },
+            onTap: () => Modular.to.pushNamed(AppRoutes.profile),
           ),
           const SizedBox(height: 16),
           SettingsOptionTile(
             title: 'Notificações',
-            onTap: () {
-              Navigator.of(context).push(
-                MaterialPageRoute(builder: (_) => const NotificacoesScreen()),
-              );
-            },
+            onTap: () => Modular.to.pushNamed(AppRoutes.notifications),
           ),
           const SizedBox(height: 16),
           SettingsOptionTile(
             title: 'Alterar senha',
-            onTap: () {
-              Navigator.of(
-                context,
-              ).push(MaterialPageRoute(builder: (_) => const UpdatePassword()));
-            },
+            onTap: () => Modular.to.pushNamed(AppRoutes.updatePassword),
           ),
           const SizedBox(height: 16),
           SettingsOptionTile(
@@ -158,10 +141,7 @@ class _MinhacontaState extends State<Minhaconta> {
         if (!mounted) {
           return;
         }
-        Navigator.of(context).pushAndRemoveUntil(
-          MaterialPageRoute(builder: (_) => const Teladeinicio()),
-          (route) => false,
-        );
+        Modular.to.navigate(AppRoutes.welcome);
       }
     } on ApiException catch (error) {
       _showMessage(error.message);
@@ -179,10 +159,7 @@ class _MinhacontaState extends State<Minhaconta> {
     if (!mounted) {
       return;
     }
-    Navigator.of(context).pushAndRemoveUntil(
-      MaterialPageRoute(builder: (_) => const Teladeinicio()),
-      (route) => false,
-    );
+    Modular.to.navigate(AppRoutes.welcome);
   }
 
   Future<void> _showConfirmationDialog({
@@ -197,9 +174,7 @@ class _MinhacontaState extends State<Minhaconta> {
       context: context,
       builder: (dialogContext) {
         return AlertDialog(
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(16),
-          ),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
           title: Text(title),
           content: Text(description),
           actions: [
@@ -224,8 +199,8 @@ class _MinhacontaState extends State<Minhaconta> {
     if (!mounted) {
       return;
     }
-    ScaffoldMessenger.of(
-      context,
-    ).showSnackBar(SnackBar(content: Text(message)));
+    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(message)));
   }
 }
+
+typedef Minhaconta = MyAccountPage;

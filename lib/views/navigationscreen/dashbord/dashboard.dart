@@ -6,18 +6,10 @@ class Dashboard extends StatelessWidget {
 
   static const _metrics = [
     _DashboardMetric('icon/weight.svg', 'Quilos produzidos', '35.000 kg'),
-    _DashboardMetric(
-      'icon/hand-coins.svg',
-      'Receita estimada',
-      'R\$ 1.725.000,00',
-    ),
+    _DashboardMetric('icon/hand-coins.svg', 'Receita estimada', 'R\$ 1.725.000,00'),
     _DashboardMetric('icon/cow-light.svg', 'Total de animais', '3 cabeças'),
     _DashboardMetric('icon/workflow.svg', 'Média da fazenda', '600 kg/ha'),
-    _DashboardMetric(
-      'icon/chart-area.svg',
-      'Ganho médio diário',
-      '0,65 kg/dia',
-    ),
+    _DashboardMetric('icon/chart-area.svg', 'Ganho médio diário', '0,65 kg/dia'),
     _DashboardMetric('icon/book-check.svg', 'Tarefas do mês', '3 pendentes'),
   ];
 
@@ -45,11 +37,7 @@ class Dashboard extends StatelessWidget {
                 border: Border.all(color: const Color(0xFFEBEBEB)),
                 borderRadius: BorderRadius.circular(12),
                 boxShadow: const [
-                  BoxShadow(
-                    color: Color(0x0A000000),
-                    blurRadius: 24,
-                    offset: Offset(0, 0),
-                  ),
+                  BoxShadow(color: Color(0x0A000000), blurRadius: 24, offset: Offset(0, 0)),
                 ],
               ),
               child: Row(
@@ -120,11 +108,7 @@ class _MetricCard extends StatelessWidget {
         border: Border.all(color: const Color(0xFFEBEBEB)),
         borderRadius: BorderRadius.circular(12),
         boxShadow: const [
-          BoxShadow(
-            color: Color(0x0A000000),
-            blurRadius: 24,
-            offset: Offset(0, 0),
-          ),
+          BoxShadow(color: Color(0x0A000000), blurRadius: 24, offset: Offset(0, 0)),
         ],
       ),
       child: Column(
@@ -133,19 +117,14 @@ class _MetricCard extends StatelessWidget {
           Container(
             padding: const EdgeInsets.all(8),
             decoration: BoxDecoration(
-              gradient: const LinearGradient(
-                colors: [Color(0xFF00823A), Color(0xFF00B752)],
-              ),
+              gradient: const LinearGradient(colors: [Color(0xFF00823A), Color(0xFF00B752)]),
               borderRadius: BorderRadius.circular(42.67),
             ),
             child: SvgPicture.asset(
               metric.icon,
               width: 16,
               height: 16,
-              colorFilter: const ColorFilter.mode(
-                Colors.white,
-                BlendMode.srcIn,
-              ),
+              colorFilter: const ColorFilter.mode(Colors.white, BlendMode.srcIn),
             ),
           ),
           const SizedBox(height: 8),

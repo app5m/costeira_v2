@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 
 import '../../../../theme/colors.dart';
-import '../../../teladeinicio/teladeinicio.dart';
+import '../../../../features/auth/presentation/pages/welcome_page.dart';
 import '../meusdados.dart';
 
 class protetoresecarga extends StatefulWidget {
@@ -153,10 +153,7 @@ class _protetoresecargaState extends State<protetoresecarga> {
                               elevation: 0,
                               backgroundColor: Colors.transparent,
                             ),
-                            child: Text(
-                              "Sair",
-                              style: TextStyle(color: Colors.black),
-                            ),
+                            child: Text("Sair", style: TextStyle(color: Colors.black)),
                           ),
                         ),
                         SizedBox(width: 8),
@@ -230,12 +227,7 @@ class _protetoresecargaState extends State<protetoresecarga> {
                     ),
                   ),
                   SizedBox(height: 16),
-                  SvgPicture.asset(
-                    'icon/Logout.svg',
-                    width: 80,
-                    height: 80,
-                    color: Colors.red,
-                  ),
+                  SvgPicture.asset('icon/Logout.svg', width: 80, height: 80, color: Colors.red),
                   SizedBox(height: 16),
                   Row(
                     mainAxisAlignment: MainAxisAlignment.center,
@@ -277,11 +269,8 @@ class _protetoresecargaState extends State<protetoresecarga> {
                             // Preferences.clearUserData();
                             Navigator.pushAndRemoveUntil(
                               context,
-                              MaterialPageRoute(
-                                builder: (context) => Teladeinicio(),
-                              ),
-                              (Route<dynamic> route) =>
-                                  false, // Remove todas as telas anteriores
+                              MaterialPageRoute(builder: (context) => Teladeinicio()),
+                              (Route<dynamic> route) => false, // Remove todas as telas anteriores
                             );
                           },
                           style: ElevatedButton.styleFrom(
@@ -289,10 +278,7 @@ class _protetoresecargaState extends State<protetoresecarga> {
                             elevation: 0,
                             backgroundColor: Colors.transparent,
                           ),
-                          child: Text(
-                            "Sair",
-                            style: TextStyle(color: Colors.black),
-                          ),
+                          child: Text("Sair", style: TextStyle(color: Colors.black)),
                         ),
                       ),
                       SizedBox(width: 8),
@@ -508,10 +494,7 @@ class _protetoresecargaState extends State<protetoresecarga> {
                   SizedBox(height: 24),
                   GestureDetector(
                     onTap: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(builder: (context) => Potreiros()),
-                      );
+                      Navigator.push(context, MaterialPageRoute(builder: (context) => Potreiros()));
                     },
                     child: Row(
                       children: [
@@ -522,10 +505,7 @@ class _protetoresecargaState extends State<protetoresecarga> {
                           decoration: ShapeDecoration(
                             color: Colors.white,
                             shape: RoundedRectangleBorder(
-                              side: const BorderSide(
-                                width: 1,
-                                color: Color(0xFFEBEBEB),
-                              ),
+                              side: const BorderSide(width: 1, color: Color(0xFFEBEBEB)),
                               borderRadius: BorderRadius.circular(12),
                             ),
                             shadows: const [
@@ -554,11 +534,7 @@ class _protetoresecargaState extends State<protetoresecarga> {
                                   ),
                                 ],
                               ),
-                              SvgPicture.asset(
-                                'icon/Arrow.svg',
-                                width: 24,
-                                height: 24,
-                              ),
+                              SvgPicture.asset('icon/Arrow.svg', width: 24, height: 24),
                             ],
                           ),
                         ),
@@ -662,10 +638,7 @@ class _protetoresecargaState extends State<protetoresecarga> {
                           decoration: ShapeDecoration(
                             color: Colors.white,
                             shape: RoundedRectangleBorder(
-                              side: const BorderSide(
-                                width: 1,
-                                color: Color(0xFFEBEBEB),
-                              ),
+                              side: const BorderSide(width: 1, color: Color(0xFFEBEBEB)),
                               borderRadius: BorderRadius.circular(12),
                             ),
                             shadows: const [
@@ -694,11 +667,7 @@ class _protetoresecargaState extends State<protetoresecarga> {
                                   ),
                                 ],
                               ),
-                              SvgPicture.asset(
-                                'icon/Arrow.svg',
-                                width: 24,
-                                height: 24,
-                              ),
+                              SvgPicture.asset('icon/Arrow.svg', width: 24, height: 24),
                             ],
                           ),
                         ),

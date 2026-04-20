@@ -1,0 +1,17 @@
+class AnimalLotEntity {
+  const AnimalLotEntity({
+    required this.id,
+    required this.appUsersId,
+    required this.nome,
+    this.createAt,
+    this.updateAt,
+    this.animalsCount = 0,
+  });
+
+  final int id;
+  final int appUsersId;
+  final String nome;
+  final String? createAt;
+  final String? updateAt;
+  final int animalsCount;
+}

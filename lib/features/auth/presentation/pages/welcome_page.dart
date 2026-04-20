@@ -1,0 +1,183 @@
+import 'package:costeira/app/app_routes.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter_modular/flutter_modular.dart';
+
+class WelcomePage extends StatelessWidget {
+  const WelcomePage({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    final colors = Theme.of(context).colorScheme;
+
+    return Scaffold(
+      backgroundColor: colors.surface,
+      body: Stack(
+        children: [
+          Positioned.fill(
+            child: Image.asset('images/costeira_tela.png', fit: BoxFit.cover),
+          ),
+          Center(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Image.asset('images/logopelocanva.png', height: 220),
+                const SizedBox(height: 12),
+              ],
+            ),
+          ),
+          Positioned(
+            bottom: 0,
+            left: 0,
+            right: 0,
+            child: SizedBox(
+              height: MediaQuery.of(context).size.height * 0.45,
+              child: Stack(
+                children: [
+                  Positioned(
+                    bottom: 0,
+                    left: 1,
+                    right: 1,
+                    child: Container(
+                      width: MediaQuery.of(context).size.width - 40,
+                      height: 280,
+                      padding: const EdgeInsets.symmetric(
+                        vertical: 32,
+                        horizontal: 16,
+                      ),
+                      decoration: const BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.only(
+                          topLeft: Radius.circular(16),
+                          topRight: Radius.circular(16),
+                        ),
+                        boxShadow: [
+                          BoxShadow(color: Colors.black12, blurRadius: 10),
+                        ],
+                      ),
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        crossAxisAlignment: CrossAxisAlignment.center,
+                        children: [
+                          Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 10,
+                              vertical: 2,
+                            ),
+                            decoration: ShapeDecoration(
+                              color: const Color(0x1900823A),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(6),
+                              ),
+                            ),
+                            child: const Text(
+                              'Desenvolvimento Pecuário',
+                              textAlign: TextAlign.center,
+                              style: TextStyle(
+                                color: Color(0xFF00823A),
+                                fontSize: 12,
+                                fontFamily: 'Montserrat',
+                                fontWeight: FontWeight.w500,
+                                height: 1.50,
+                              ),
+                            ),
+                          ),
+                          const SizedBox(height: 24),
+                          GestureDetector(
+                            onTap: () {
+                              Modular.to.pushNamed(AppRoutes.registerCompany);
+                            },
+                            child: Container(
+                              width: double.infinity,
+                              height: 48,
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 20,
+                                vertical: 12,
+                              ),
+                              decoration: ShapeDecoration(
+                                color: const Color(0xFF00823A),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(8),
+                                ),
+                              ),
+                              child: const Center(
+                                child: Text(
+                                  'Cadastrar',
+                                  textAlign: TextAlign.center,
+                                  style: TextStyle(
+                                    color: Colors.white,
+                                    fontSize: 12,
+                                    fontFamily: 'Montserrat',
+                                    fontWeight: FontWeight.w600,
+                                    height: 1.50,
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ),
+                          const SizedBox(height: 24),
+                          GestureDetector(
+                            onTap: () {
+                              Modular.to.pushNamed(AppRoutes.login);
+                            },
+                            child: Container(
+                              width: double.infinity,
+                              height: 48,
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 4,
+                                vertical: 13,
+                              ),
+                              decoration: ShapeDecoration(
+                                shape: RoundedRectangleBorder(
+                                  side: const BorderSide(
+                                    width: 1,
+                                    color: Color(0xFF00823A),
+                                  ),
+                                  borderRadius: BorderRadius.circular(8),
+                                ),
+                              ),
+                              child: const Center(
+                                child: Text(
+                                  'Entrar',
+                                  textAlign: TextAlign.center,
+                                  style: TextStyle(
+                                    color: Color(0xFF00823A),
+                                    fontSize: 12,
+                                    fontFamily: 'Montserrat',
+                                    fontWeight: FontWeight.w600,
+                                    height: 1.50,
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ),
+                          const SizedBox(height: 25),
+                          const SizedBox(
+                            width: 328,
+                            child: Text(
+                              'Termos de Uso e Políticas de Privacidade',
+                              textAlign: TextAlign.center,
+                              style: TextStyle(
+                                color: Color(0xFF8C8C8C),
+                                fontSize: 12,
+                                fontFamily: 'Montserrat',
+                                fontWeight: FontWeight.w400,
+                                height: 1.50,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 10),
+                ],
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+typedef Teladeinicio = WelcomePage;

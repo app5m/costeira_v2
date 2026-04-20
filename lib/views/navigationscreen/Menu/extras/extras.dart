@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 
 import '../../../../theme/colors.dart';
-import '../../../teladeinicio/teladeinicio.dart';
+import '../../../../features/auth/presentation/pages/welcome_page.dart';
 import '../Modulos/modulos.dart';
 import '../minhaconta.dart';
 
@@ -154,10 +154,7 @@ class _ExtrasState extends State<Extras> {
                               elevation: 0,
                               backgroundColor: Colors.transparent,
                             ),
-                            child: Text(
-                              "Sair",
-                              style: TextStyle(color: Colors.black),
-                            ),
+                            child: Text("Sair", style: TextStyle(color: Colors.black)),
                           ),
                         ),
                         SizedBox(width: 8),
@@ -231,12 +228,7 @@ class _ExtrasState extends State<Extras> {
                     ),
                   ),
                   SizedBox(height: 16),
-                  SvgPicture.asset(
-                    'icon/Logout.svg',
-                    width: 80,
-                    height: 80,
-                    color: Colors.red,
-                  ),
+                  SvgPicture.asset('icon/Logout.svg', width: 80, height: 80, color: Colors.red),
                   SizedBox(height: 16),
                   Row(
                     mainAxisAlignment: MainAxisAlignment.center,
@@ -278,11 +270,8 @@ class _ExtrasState extends State<Extras> {
                             // Preferences.clearUserData();
                             Navigator.pushAndRemoveUntil(
                               context,
-                              MaterialPageRoute(
-                                builder: (context) => Teladeinicio(),
-                              ),
-                              (Route<dynamic> route) =>
-                                  false, // Remove todas as telas anteriores
+                              MaterialPageRoute(builder: (context) => Teladeinicio()),
+                              (Route<dynamic> route) => false, // Remove todas as telas anteriores
                             );
                           },
                           style: ElevatedButton.styleFrom(
@@ -290,10 +279,7 @@ class _ExtrasState extends State<Extras> {
                             elevation: 0,
                             backgroundColor: Colors.transparent,
                           ),
-                          child: Text(
-                            "Sair",
-                            style: TextStyle(color: Colors.black),
-                          ),
+                          child: Text("Sair", style: TextStyle(color: Colors.black)),
                         ),
                       ),
                       SizedBox(width: 8),
@@ -411,18 +397,11 @@ class _ExtrasState extends State<Extras> {
                       decoration: ShapeDecoration(
                         color: Colors.white,
                         shape: RoundedRectangleBorder(
-                          side: const BorderSide(
-                            width: 1,
-                            color: Color(0xFFEBEBEB),
-                          ),
+                          side: const BorderSide(width: 1, color: Color(0xFFEBEBEB)),
                           borderRadius: BorderRadius.circular(12),
                         ),
                         shadows: const [
-                          BoxShadow(
-                            color: Color(0x0A000000),
-                            blurRadius: 24,
-                            offset: Offset(0, 0),
-                          ),
+                          BoxShadow(color: Color(0x0A000000), blurRadius: 24, offset: Offset(0, 0)),
                         ],
                       ),
                       child: Row(
@@ -443,11 +422,7 @@ class _ExtrasState extends State<Extras> {
                               ),
                             ],
                           ),
-                          SvgPicture.asset(
-                            'icon/Arrow.svg',
-                            width: 24,
-                            height: 24,
-                          ),
+                          SvgPicture.asset('icon/Arrow.svg', width: 24, height: 24),
                         ],
                       ),
                     ),
@@ -457,7 +432,7 @@ class _ExtrasState extends State<Extras> {
                     onTap: () {
                       Navigator.push(
                         context,
-                        MaterialPageRoute(builder: (context) => modulos()),
+                        MaterialPageRoute(builder: (context) => const ModulesPage()),
                       );
                     },
                     child: Container(
@@ -466,18 +441,11 @@ class _ExtrasState extends State<Extras> {
                       decoration: ShapeDecoration(
                         color: Colors.white,
                         shape: RoundedRectangleBorder(
-                          side: const BorderSide(
-                            width: 1,
-                            color: Color(0xFFEBEBEB),
-                          ),
+                          side: const BorderSide(width: 1, color: Color(0xFFEBEBEB)),
                           borderRadius: BorderRadius.circular(12),
                         ),
                         shadows: const [
-                          BoxShadow(
-                            color: Color(0x0A000000),
-                            blurRadius: 24,
-                            offset: Offset(0, 0),
-                          ),
+                          BoxShadow(color: Color(0x0A000000), blurRadius: 24, offset: Offset(0, 0)),
                         ],
                       ),
                       child: Row(
@@ -498,11 +466,7 @@ class _ExtrasState extends State<Extras> {
                               ),
                             ],
                           ),
-                          SvgPicture.asset(
-                            'icon/Arrow.svg',
-                            width: 24,
-                            height: 24,
-                          ),
+                          SvgPicture.asset('icon/Arrow.svg', width: 24, height: 24),
                         ],
                       ),
                     ),
@@ -518,18 +482,11 @@ class _ExtrasState extends State<Extras> {
                       decoration: ShapeDecoration(
                         color: Colors.white,
                         shape: RoundedRectangleBorder(
-                          side: const BorderSide(
-                            width: 1,
-                            color: Color(0xFFEBEBEB),
-                          ),
+                          side: const BorderSide(width: 1, color: Color(0xFFEBEBEB)),
                           borderRadius: BorderRadius.circular(12),
                         ),
                         shadows: const [
-                          BoxShadow(
-                            color: Color(0x0A000000),
-                            blurRadius: 24,
-                            offset: Offset(0, 0),
-                          ),
+                          BoxShadow(color: Color(0x0A000000), blurRadius: 24, offset: Offset(0, 0)),
                         ],
                       ),
                       child: Row(
@@ -550,11 +507,7 @@ class _ExtrasState extends State<Extras> {
                               ),
                             ],
                           ),
-                          SvgPicture.asset(
-                            'icon/Arrow.svg',
-                            width: 24,
-                            height: 24,
-                          ),
+                          SvgPicture.asset('icon/Arrow.svg', width: 24, height: 24),
                         ],
                       ),
                     ),

@@ -3,24 +3,25 @@ import 'package:costeira/core/storage/session_storage.dart';
 import 'package:costeira/features/account/repositories/account_repository.dart';
 import 'package:costeira/features/auth/models/user_session.dart';
 import 'package:costeira/theme/colors.dart';
-import 'package:costeira/views/shared/widgets/app_buttons.dart';
-import 'package:costeira/views/shared/widgets/app_form_field.dart';
-import 'package:costeira/views/shared/widgets/primary_app_bar.dart';
+import 'package:costeira/core/components/app_buttons.dart';
+import 'package:costeira/core/components/app_form_field.dart';
+import 'package:costeira/core/components/primary_app_bar.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_modular/flutter_modular.dart';
 
-class UpdatePassword extends StatefulWidget {
-  const UpdatePassword({super.key});
+class UpdatePasswordPage extends StatefulWidget {
+  const UpdatePasswordPage({super.key});
 
   @override
-  State<UpdatePassword> createState() => _UpdatePasswordState();
+  State<UpdatePasswordPage> createState() => _UpdatePasswordPageState();
 }
 
-class _UpdatePasswordState extends State<UpdatePassword> {
+class _UpdatePasswordPageState extends State<UpdatePasswordPage> {
   final _formKey = GlobalKey<FormState>();
   final _currentPasswordController = TextEditingController();
   final _newPasswordController = TextEditingController();
   final _confirmPasswordController = TextEditingController();
-  final AccountRepository _accountRepository = AccountRepository();
+  late final AccountRepository _accountRepository;
 
   UserSession? _user;
   bool _showCurrentPassword = false;
@@ -31,6 +32,7 @@ class _UpdatePasswordState extends State<UpdatePassword> {
   @override
   void initState() {
     super.initState();
+    _accountRepository = Modular.get<AccountRepository>();
     _loadUser();
   }
 
@@ -47,8 +49,7 @@ class _UpdatePasswordState extends State<UpdatePassword> {
   }
 
   bool get _hasMinLength => _newPasswordController.text.length >= 8;
-  bool get _hasUppercase =>
-      _newPasswordController.text.contains(RegExp(r'[A-Z]'));
+  bool get _hasUppercase => _newPasswordController.text.contains(RegExp(r'[A-Z]'));
   bool get _passwordsMatch =>
       _confirmPasswordController.text.isNotEmpty &&
       _newPasswordController.text == _confirmPasswordController.text;
@@ -122,15 +123,9 @@ class _UpdatePasswordState extends State<UpdatePassword> {
                       validator: _validateNewPassword,
                     ),
                     const SizedBox(height: 12),
-                    _PasswordRule(
-                      label: 'Deve ter no mínimo 8 caracteres',
-                      isValid: _hasMinLength,
-                    ),
+                    _PasswordRule(label: 'Deve ter no mínimo 8 caracteres', isValid: _hasMinLength),
                     const SizedBox(height: 8),
-                    _PasswordRule(
-                      label: 'Deve ter uma letra maiúscula',
-                      isValid: _hasUppercase,
-                    ),
+                    _PasswordRule(label: 'Deve ter uma letra maiúscula', isValid: _hasUppercase),
                     const SizedBox(height: 16),
                     AppFormField(
                       label: 'Repita a nova senha',
@@ -248,9 +243,7 @@ class _UpdatePasswordState extends State<UpdatePassword> {
     if (!mounted) {
       return;
     }
-    ScaffoldMessenger.of(
-      context,
-    ).showSnackBar(SnackBar(content: Text(message)));
+    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(message)));
   }
 }
 
@@ -264,14 +257,12 @@ class _PasswordRule extends StatelessWidget {
   Widget build(BuildContext context) {
     return Row(
       children: [
-        Icon(
-          Icons.check_circle,
-          color: isValid ? Colors.green : Colors.grey,
-          size: 18,
-        ),
+        Icon(Icons.check_circle, color: isValid ? Colors.green : Colors.grey, size: 18),
         const SizedBox(width: 8),
         Text(label, style: const TextStyle(color: MyColors.colorPrimary2)),
       ],
     );
   }
 }
+
+typedef UpdatePassword = UpdatePasswordPage;

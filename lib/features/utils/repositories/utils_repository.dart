@@ -1,4 +1,4 @@
-import 'package:costeira/config/ws_constantes.dart';
+import 'package:costeira/core/config/ws_constantes.dart';
 import 'package:costeira/core/api/api_client.dart';
 
 class UtilsRepository {

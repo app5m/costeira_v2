@@ -11,8 +11,7 @@ class Indicadores extends StatefulWidget {
   State<Indicadores> createState() => _IndicadoresState();
 }
 
-class _IndicadoresState extends State<Indicadores>
-    with SingleTickerProviderStateMixin {
+class _IndicadoresState extends State<Indicadores> with SingleTickerProviderStateMixin {
   late TabController _tabController;
 
   @override

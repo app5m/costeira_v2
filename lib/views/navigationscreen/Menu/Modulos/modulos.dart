@@ -6,19 +6,18 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 
 import '../../../../theme/colors.dart';
-import '../../../teladeinicio/teladeinicio.dart';
-import '../meusdados.dart';
+import '../../../../features/auth/presentation/pages/welcome_page.dart';
 import 'climachuva/clima.dart';
 import 'estoquedeinsumos/estoqueinsumos.dart';
 
-class modulos extends StatefulWidget {
-  const modulos({super.key});
+class ModulesPage extends StatefulWidget {
+  const ModulesPage({super.key});
 
   @override
-  State<modulos> createState() => _modulosState();
+  State<ModulesPage> createState() => _ModulesPageState();
 }
 
-class _modulosState extends State<modulos> {
+class _ModulesPageState extends State<ModulesPage> {
   //  final requestsWebServices = RequestsWebServices(WSConstantes.URLBASE);
 
   // Future<String?> desativeAccount(BuildContext context) async {
@@ -157,10 +156,7 @@ class _modulosState extends State<modulos> {
                             elevation: 0,
                             backgroundColor: Colors.transparent,
                           ),
-                          child: Text(
-                            "Sair",
-                            style: TextStyle(color: Colors.black),
-                          ),
+                          child: Text("Sair", style: TextStyle(color: Colors.black)),
                         ),
                       ),
                       SizedBox(width: 8),
@@ -234,12 +230,7 @@ class _modulosState extends State<modulos> {
                       ),
                     ),
                     SizedBox(height: 16),
-                    SvgPicture.asset(
-                      'icon/Logout.svg',
-                      width: 80,
-                      height: 80,
-                      color: Colors.red,
-                    ),
+                    SvgPicture.asset('icon/Logout.svg', width: 80, height: 80, color: Colors.red),
                     SizedBox(height: 16),
                     Row(
                       mainAxisAlignment: MainAxisAlignment.center,
@@ -281,11 +272,8 @@ class _modulosState extends State<modulos> {
                               // Preferences.clearUserData();
                               Navigator.pushAndRemoveUntil(
                                 context,
-                                MaterialPageRoute(
-                                  builder: (context) => Teladeinicio(),
-                                ),
-                                (Route<dynamic> route) =>
-                                    false, // Remove todas as telas anteriores
+                                MaterialPageRoute(builder: (context) => Teladeinicio()),
+                                (Route<dynamic> route) => false, // Remove todas as telas anteriores
                               );
                             },
                             style: ElevatedButton.styleFrom(
@@ -293,10 +281,7 @@ class _modulosState extends State<modulos> {
                               elevation: 0,
                               backgroundColor: Colors.transparent,
                             ),
-                            child: Text(
-                              "Sair",
-                              style: TextStyle(color: Colors.black),
-                            ),
+                            child: Text("Sair", style: TextStyle(color: Colors.black)),
                           ),
                         ),
                         SizedBox(width: 8),
@@ -403,9 +388,7 @@ class _modulosState extends State<modulos> {
                     onTap: () {
                       Navigator.push(
                         context,
-                        MaterialPageRoute(
-                          builder: (context) => protetoresecarga(),
-                        ),
+                        MaterialPageRoute(builder: (context) => protetoresecarga()),
                       );
                     },
                     child: Container(
@@ -414,18 +397,11 @@ class _modulosState extends State<modulos> {
                       decoration: ShapeDecoration(
                         color: Colors.white,
                         shape: RoundedRectangleBorder(
-                          side: const BorderSide(
-                            width: 1,
-                            color: Color(0xFFEBEBEB),
-                          ),
+                          side: const BorderSide(width: 1, color: Color(0xFFEBEBEB)),
                           borderRadius: BorderRadius.circular(12),
                         ),
                         shadows: const [
-                          BoxShadow(
-                            color: Color(0x0A000000),
-                            blurRadius: 24,
-                            offset: Offset(0, 0),
-                          ),
+                          BoxShadow(color: Color(0x0A000000), blurRadius: 24, offset: Offset(0, 0)),
                         ],
                       ),
                       child: Row(
@@ -446,11 +422,7 @@ class _modulosState extends State<modulos> {
                               ),
                             ],
                           ),
-                          SvgPicture.asset(
-                            'icon/Arrow.svg',
-                            width: 24,
-                            height: 24,
-                          ),
+                          SvgPicture.asset('icon/Arrow.svg', width: 24, height: 24),
                         ],
                       ),
                     ),
@@ -469,18 +441,11 @@ class _modulosState extends State<modulos> {
                       decoration: ShapeDecoration(
                         color: Colors.white,
                         shape: RoundedRectangleBorder(
-                          side: const BorderSide(
-                            width: 1,
-                            color: Color(0xFFEBEBEB),
-                          ),
+                          side: const BorderSide(width: 1, color: Color(0xFFEBEBEB)),
                           borderRadius: BorderRadius.circular(12),
                         ),
                         shadows: const [
-                          BoxShadow(
-                            color: Color(0x0A000000),
-                            blurRadius: 24,
-                            offset: Offset(0, 0),
-                          ),
+                          BoxShadow(color: Color(0x0A000000), blurRadius: 24, offset: Offset(0, 0)),
                         ],
                       ),
                       child: Row(
@@ -501,11 +466,7 @@ class _modulosState extends State<modulos> {
                               ),
                             ],
                           ),
-                          SvgPicture.asset(
-                            'icon/Arrow.svg',
-                            width: 24,
-                            height: 24,
-                          ),
+                          SvgPicture.asset('icon/Arrow.svg', width: 24, height: 24),
                         ],
                       ),
                     ),
@@ -526,18 +487,11 @@ class _modulosState extends State<modulos> {
                       decoration: ShapeDecoration(
                         color: Colors.white,
                         shape: RoundedRectangleBorder(
-                          side: const BorderSide(
-                            width: 1,
-                            color: Color(0xFFEBEBEB),
-                          ),
+                          side: const BorderSide(width: 1, color: Color(0xFFEBEBEB)),
                           borderRadius: BorderRadius.circular(12),
                         ),
                         shadows: const [
-                          BoxShadow(
-                            color: Color(0x0A000000),
-                            blurRadius: 24,
-                            offset: Offset(0, 0),
-                          ),
+                          BoxShadow(color: Color(0x0A000000), blurRadius: 24, offset: Offset(0, 0)),
                         ],
                       ),
                       child: Row(
@@ -558,11 +512,7 @@ class _modulosState extends State<modulos> {
                               ),
                             ],
                           ),
-                          SvgPicture.asset(
-                            'icon/Arrow.svg',
-                            width: 24,
-                            height: 24,
-                          ),
+                          SvgPicture.asset('icon/Arrow.svg', width: 24, height: 24),
                         ],
                       ),
                     ),
@@ -570,10 +520,7 @@ class _modulosState extends State<modulos> {
                   SizedBox(height: 16),
                   GestureDetector(
                     onTap: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(builder: (context) => Clima()),
-                      );
+                      Navigator.push(context, MaterialPageRoute(builder: (context) => Clima()));
                     },
                     child: Container(
                       width: MediaQuery.of(context).size.width - 60,
@@ -581,18 +528,11 @@ class _modulosState extends State<modulos> {
                       decoration: ShapeDecoration(
                         color: Colors.white,
                         shape: RoundedRectangleBorder(
-                          side: const BorderSide(
-                            width: 1,
-                            color: Color(0xFFEBEBEB),
-                          ),
+                          side: const BorderSide(width: 1, color: Color(0xFFEBEBEB)),
                           borderRadius: BorderRadius.circular(12),
                         ),
                         shadows: const [
-                          BoxShadow(
-                            color: Color(0x0A000000),
-                            blurRadius: 24,
-                            offset: Offset(0, 0),
-                          ),
+                          BoxShadow(color: Color(0x0A000000), blurRadius: 24, offset: Offset(0, 0)),
                         ],
                       ),
                       child: Row(
@@ -613,11 +553,7 @@ class _modulosState extends State<modulos> {
                               ),
                             ],
                           ),
-                          SvgPicture.asset(
-                            'icon/Arrow.svg',
-                            width: 24,
-                            height: 24,
-                          ),
+                          SvgPicture.asset('icon/Arrow.svg', width: 24, height: 24),
                         ],
                       ),
                     ),
@@ -627,10 +563,7 @@ class _modulosState extends State<modulos> {
 
                   GestureDetector(
                     onTap: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(builder: (context) => Tarefas()),
-                      );
+                      Navigator.push(context, MaterialPageRoute(builder: (context) => Tarefas()));
                     },
                     child: Container(
                       width: MediaQuery.of(context).size.width - 60,
@@ -638,18 +571,11 @@ class _modulosState extends State<modulos> {
                       decoration: ShapeDecoration(
                         color: Colors.white,
                         shape: RoundedRectangleBorder(
-                          side: const BorderSide(
-                            width: 1,
-                            color: Color(0xFFEBEBEB),
-                          ),
+                          side: const BorderSide(width: 1, color: Color(0xFFEBEBEB)),
                           borderRadius: BorderRadius.circular(12),
                         ),
                         shadows: const [
-                          BoxShadow(
-                            color: Color(0x0A000000),
-                            blurRadius: 24,
-                            offset: Offset(0, 0),
-                          ),
+                          BoxShadow(color: Color(0x0A000000), blurRadius: 24, offset: Offset(0, 0)),
                         ],
                       ),
                       child: Row(
@@ -670,11 +596,7 @@ class _modulosState extends State<modulos> {
                               ),
                             ],
                           ),
-                          SvgPicture.asset(
-                            'icon/Arrow.svg',
-                            width: 24,
-                            height: 24,
-                          ),
+                          SvgPicture.asset('icon/Arrow.svg', width: 24, height: 24),
                         ],
                       ),
                     ),
@@ -683,10 +605,7 @@ class _modulosState extends State<modulos> {
                   SizedBox(height: 16),
                   GestureDetector(
                     onTap: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(builder: (context) => Insumos()),
-                      );
+                      Navigator.push(context, MaterialPageRoute(builder: (context) => Insumos()));
                     },
                     child: Container(
                       width: MediaQuery.of(context).size.width - 60,
@@ -694,18 +613,11 @@ class _modulosState extends State<modulos> {
                       decoration: ShapeDecoration(
                         color: Colors.white,
                         shape: RoundedRectangleBorder(
-                          side: const BorderSide(
-                            width: 1,
-                            color: Color(0xFFEBEBEB),
-                          ),
+                          side: const BorderSide(width: 1, color: Color(0xFFEBEBEB)),
                           borderRadius: BorderRadius.circular(12),
                         ),
                         shadows: const [
-                          BoxShadow(
-                            color: Color(0x0A000000),
-                            blurRadius: 24,
-                            offset: Offset(0, 0),
-                          ),
+                          BoxShadow(color: Color(0x0A000000), blurRadius: 24, offset: Offset(0, 0)),
                         ],
                       ),
                       child: Row(
@@ -726,11 +638,7 @@ class _modulosState extends State<modulos> {
                               ),
                             ],
                           ),
-                          SvgPicture.asset(
-                            'icon/Arrow.svg',
-                            width: 24,
-                            height: 24,
-                          ),
+                          SvgPicture.asset('icon/Arrow.svg', width: 24, height: 24),
                         ],
                       ),
                     ),
@@ -766,9 +674,7 @@ class _modulosState extends State<modulos> {
                     onTap: () {
                       Navigator.push(
                         context,
-                        MaterialPageRoute(
-                          builder: (context) => PastagensNutricaoSuplemento(),
-                        ),
+                        MaterialPageRoute(builder: (context) => PastagensNutricaoSuplemento()),
                       );
                     },
                     child: Container(
@@ -777,18 +683,11 @@ class _modulosState extends State<modulos> {
                       decoration: ShapeDecoration(
                         color: Colors.white,
                         shape: RoundedRectangleBorder(
-                          side: const BorderSide(
-                            width: 1,
-                            color: Color(0xFFEBEBEB),
-                          ),
+                          side: const BorderSide(width: 1, color: Color(0xFFEBEBEB)),
                           borderRadius: BorderRadius.circular(12),
                         ),
                         shadows: const [
-                          BoxShadow(
-                            color: Color(0x0A000000),
-                            blurRadius: 24,
-                            offset: Offset(0, 0),
-                          ),
+                          BoxShadow(color: Color(0x0A000000), blurRadius: 24, offset: Offset(0, 0)),
                         ],
                       ),
                       child: Row(
@@ -809,11 +708,7 @@ class _modulosState extends State<modulos> {
                               ),
                             ],
                           ),
-                          SvgPicture.asset(
-                            'icon/Arrow.svg',
-                            width: 24,
-                            height: 24,
-                          ),
+                          SvgPicture.asset('icon/Arrow.svg', width: 24, height: 24),
                         ],
                       ),
                     ),

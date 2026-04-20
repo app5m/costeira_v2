@@ -1,7 +1,7 @@
 import 'dart:async';
 import 'dart:io';
 
-import 'package:costeira/config/ws_constantes.dart';
+import 'package:costeira/core/config/ws_constantes.dart';
 import 'package:costeira/core/storage/session_storage.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 

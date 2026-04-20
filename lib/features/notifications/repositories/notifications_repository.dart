@@ -1,11 +1,10 @@
-import 'package:costeira/config/ws_constantes.dart';
+import 'package:costeira/core/config/ws_constantes.dart';
 import 'package:costeira/core/api/api_client.dart';
 import 'package:costeira/core/api/api_response_utils.dart';
 import 'package:costeira/features/notifications/models/app_notification.dart';
 
 class NotificationsRepository {
-  NotificationsRepository({ApiClient? client})
-    : _client = client ?? ApiClient.instance;
+  NotificationsRepository({ApiClient? client}) : _client = client ?? ApiClient.instance;
 
   final ApiClient _client;
 
