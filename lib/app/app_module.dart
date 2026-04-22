@@ -6,12 +6,26 @@ import 'package:costeira/core/services/image_picker_service.dart';
 import 'package:costeira/core/services/location_service.dart';
 import 'package:costeira/core/services/notification_permission_service.dart';
 import 'package:costeira/core/services/push_token_service.dart';
+import 'package:costeira/features/climate_and_rain/climate_and_rain_binds.dart';
+import 'package:costeira/features/climate_and_rain/domain/entities/climate_entity.dart';
+import 'package:costeira/features/climate_and_rain/presentation/pages/climate_add.dart';
+import 'package:costeira/features/climate_and_rain/presentation/pages/climate_edit.dart';
+import 'package:costeira/features/climate_and_rain/presentation/pages/climate_page.dart';
 import 'package:costeira/features/account/repositories/account_repository.dart';
 import 'package:costeira/features/animals/animals_binds.dart';
+import 'package:costeira/features/animals/domain/entities/animal_entity.dart';
+import 'package:costeira/features/animals/domain/entities/animal_lot_entity.dart';
 import 'package:costeira/features/auth/models/register_draft.dart';
 import 'package:costeira/features/auth/repositories/auth_repository.dart';
 import 'package:costeira/features/notifications/repositories/notifications_repository.dart';
 import 'package:costeira/features/utils/repositories/utils_repository.dart';
+import 'package:costeira/features/animals/presentation/pages/animals/add_animal.dart';
+import 'package:costeira/features/animals/presentation/pages/animals/animal_detail.dart';
+import 'package:costeira/features/animals/presentation/pages/animals/animal_edit.dart';
+import 'package:costeira/features/animals/presentation/pages/animals_page.dart';
+import 'package:costeira/features/animals/presentation/pages/lotes/add_lote.dart';
+import 'package:costeira/features/animals/presentation/pages/lotes/edit_lote.dart';
+import 'package:costeira/features/animals/presentation/pages/lotes/lotes_page.dart';
 import 'package:costeira/features/auth/presentation/pages/register_credentials_page.dart';
 import 'package:costeira/features/auth/presentation/pages/register_company_page.dart';
 import 'package:costeira/features/auth/presentation/pages/register_responsible_page.dart';
@@ -26,6 +40,14 @@ import 'package:costeira/views/navigationscreen/Menu/minhaconta.dart';
 import 'package:costeira/views/navigationscreen/Menu/updatepassword.dart';
 import 'package:costeira/features/base/pages/main_navigation_page.dart';
 import 'package:costeira/features/notifications/presentation/pages/notification_page.dart';
+import 'package:costeira/features/potreiros/presentation/pages/carga_animal/cargaanimal.dart';
+import 'package:costeira/features/potreiros/domain/entities/potreiro_entity.dart';
+import 'package:costeira/features/potreiros/potreiros_binds.dart';
+import 'package:costeira/features/potreiros/presentation/pages/potreiros/protreiro_add.dart';
+import 'package:costeira/features/potreiros/presentation/pages/potreiros/protreiro_detail.dart';
+import 'package:costeira/features/potreiros/presentation/pages/potreiros/potreiro_edit.dart';
+import 'package:costeira/features/potreiros/presentation/pages/potreiros/potreiros_page.dart';
+import 'package:costeira/features/potreiros/presentation/pages/potreiros_e_carga_animal.dart';
 import 'package:costeira/features/auth/presentation/pages/onboarding.view.dart';
 import 'package:costeira/features/auth/presentation/pages/splash.dart';
 import 'package:costeira/features/auth/presentation/pages/welcome_page.dart';
@@ -57,6 +79,8 @@ class AppModule extends Module {
       () => UtilsRepository(client: Modular.get<ApiClient>()),
     );
     GetListBinds.register(i);
+    ClimateAndRainBinds.register(i);
+    PotreirosBinds.register(i);
     AnimalsBinds.register(i);
   }
 
@@ -116,6 +140,61 @@ class AppModule extends Module {
     r.child(AppRoutes.updatePassword, child: (_) => const UpdatePasswordPage());
     r.child(AppRoutes.modules, child: (_) => const ModulesPage());
     r.child(AppRoutes.extras, child: (_) => const Extras());
+    r.child(AppRoutes.climateRain, child: (_) => const ClimatePage());
+    r.child(AppRoutes.climateRainAdd, child: (_) => const ClimateAdd());
+    r.child(
+      AppRoutes.climateRainEdit,
+      child: (_) {
+        final climate = _requireArgs<ClimateEntity>(r.args.data);
+        return ClimateEdit(climate: climate);
+      },
+    );
+    r.child(AppRoutes.animals, child: (_) => const AnimalsPage());
+    r.child(AppRoutes.animalsAdd, child: (_) => const AnimalAdd());
+    r.child(
+      AppRoutes.animalsEdit,
+      child: (_) {
+        final animal = _requireArgs<AnimalEntity>(r.args.data);
+        return EditAnimal(animal: animal);
+      },
+    );
+    r.child(
+      AppRoutes.animalsDetail,
+      child: (_) {
+        final animal = _requireArgs<AnimalEntity>(r.args.data);
+        return DetailAnimal(animal: animal);
+      },
+    );
+    r.child(AppRoutes.animalLots, child: (_) => const LotesPage());
+    r.child(AppRoutes.animalLotsAdd, child: (_) => const AddLote());
+    r.child(
+      AppRoutes.animalLotsEdit,
+      child: (_) {
+        final lot = _requireArgs<AnimalLotEntity>(r.args.data);
+        return EditLote(lot: lot);
+      },
+    );
+    r.child(
+      AppRoutes.potreirosHub,
+      child: (_) => const PotreirosECargaAnimal(),
+    );
+    r.child(AppRoutes.potreiros, child: (_) => const Potreiros());
+    r.child(AppRoutes.potreirosAdd, child: (_) => const PotreiroAdd());
+    r.child(
+      AppRoutes.potreirosEdit,
+      child: (_) {
+        final potreiro = _requireArgs<PotreiroEntity>(r.args.data);
+        return PotreiroEdit(potreiro: potreiro);
+      },
+    );
+    r.child(
+      AppRoutes.potreirosDetail,
+      child: (_) {
+        final potreiro = _requireArgs<PotreiroEntity>(r.args.data);
+        return PoteiroDetail(potreiro: potreiro);
+      },
+    );
+    r.child(AppRoutes.cargaAnimal, child: (_) => const CargaAnimal());
   }
 
   T _requireArgs<T>(Object? data) {

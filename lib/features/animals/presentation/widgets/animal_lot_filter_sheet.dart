@@ -2,12 +2,12 @@ import 'package:costeira/core/components/custom_button.dart';
 import 'package:costeira/core/utils/app_logger.dart';
 import 'package:costeira/theme/colors.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_modular/flutter_modular.dart';
 
 class AnimalLotFilterSheetResult {
   const AnimalLotFilterSheetResult._({this.shouldClear = false, this.nome});
 
-  const AnimalLotFilterSheetResult.apply({String? nome})
-    : this._(nome: nome);
+  const AnimalLotFilterSheetResult.apply({String? nome}) : this._(nome: nome);
 
   const AnimalLotFilterSheetResult.clear() : this._(shouldClear: true);
 
@@ -47,14 +47,14 @@ class _AnimalLotFilterSheetState extends State<AnimalLotFilterSheet> {
   void _applyFilters() {
     final nome = _nameController.text.trim();
     AppLogger.info('LOTES FILTER SHEET: APLICANDO FILTRO POR NOME');
-    Navigator.of(context).pop(
+    Modular.to.pop(
       AnimalLotFilterSheetResult.apply(nome: nome.isEmpty ? null : nome),
     );
   }
 
   void _clearFilters() {
     AppLogger.warning('LOTES FILTER SHEET: LIMPANDO FILTROS');
-    Navigator.of(context).pop(const AnimalLotFilterSheetResult.clear());
+    Modular.to.pop(const AnimalLotFilterSheetResult.clear());
   }
 
   void _handleFilterChanged() {
@@ -87,7 +87,7 @@ class _AnimalLotFilterSheetState extends State<AnimalLotFilterSheet> {
                   IconButton(
                     onPressed: () {
                       AppLogger.info('LOTES FILTER SHEET: FECHANDO MODAL');
-                      Navigator.of(context).pop();
+                      Modular.to.pop();
                     },
                     icon: const Icon(
                       Icons.arrow_back_ios_new,

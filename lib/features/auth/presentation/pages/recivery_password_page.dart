@@ -77,10 +77,12 @@ class _RecoverPasswordPageState extends State<RecoverPasswordPage> {
     });
 
     try {
-      final response = await _authRepository.recoverPassword(_emailController.text.trim());
+      final response = await _authRepository.recoverPassword(
+        _emailController.text.trim(),
+      );
       _showMessage(response.message);
       if (response.isSuccess && mounted) {
-        Navigator.of(context).pop();
+        Modular.to.pop();
       }
     } on ApiException catch (error) {
       _showMessage(error.message);
@@ -97,7 +99,9 @@ class _RecoverPasswordPageState extends State<RecoverPasswordPage> {
     if (!mounted) {
       return;
     }
-    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(message)));
+    ScaffoldMessenger.of(
+      context,
+    ).showSnackBar(SnackBar(content: Text(message)));
   }
 
   bool get _canSubmit {

@@ -1,7 +1,5 @@
 import 'package:costeira/core/components/app_snack.dart';
-import 'package:costeira/core/utils/app_logger.dart';
-import 'package:costeira/features/animals/domain/entities/animal_lot_upsert_entity.dart';
-import 'package:costeira/features/animals/presentation/controllers/add_animal_lot_controller.dart';
+import 'package:costeira/features/animals/presentation/page_controllers/add_lote_page_controller.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_modular/flutter_modular.dart';
 
@@ -15,55 +13,94 @@ class AddLote extends StatefulWidget {
 }
 
 class _AddLoteState extends State<AddLote> {
-  final AddAnimalLotController _controller = Modular.get<AddAnimalLotController>();
-
-  final TextEditingController _nomeController = TextEditingController();
-
-  @override
-  void initState() {
-    super.initState();
-    AppLogger.info('LOTES ADD PAGE: INIT STATE');
-  }
+  final AddLotePageController _pageController =
+      Modular.get<AddLotePageController>();
 
   @override
   void dispose() {
-    AppLogger.info('LOTES ADD PAGE: DISPOSE');
-    _nomeController.dispose();
+    _pageController.dispose();
     super.dispose();
   }
 
   Future<void> _submit() async {
-    AppLogger.info('LOTES ADD PAGE: VALIDANDO FORMULARIO PARA SALVAR');
-    final nome = _nomeController.text.trim();
-    if (nome.isEmpty) {
-      _showMessage('Informe o nome do lote.');
+    final result = await _pageController.submit();
+    if (!mounted) {
       return;
     }
 
-    try {
-      AppLogger.info('LOTES ADD PAGE: ENVIANDO DADOS DO LOTE');
-      final result = await _controller.submit(AnimalLotUpsertEntity(nome: nome));
-
-      if (!mounted || result == null) {
-        return;
-      }
-
-      if (result.isSuccess) {
-        AppLogger.success('LOTES ADD PAGE: LOTE SALVO COM SUCESSO MSG=${result.message}');
-        Navigator.of(context).pop({'success': true, 'message': result.message});
-        return;
-      }
-
-      _showMessage(result.message);
-    } catch (_) {
-      AppLogger.error('LOTES ADD PAGE: ERRO AO SALVAR LOTE');
-      _showMessage(_controller.errorMessage ?? 'Não foi possível salvar o lote.');
+    if (result.isSuccess) {
+      Modular.to.pop({'success': true, 'message': result.message});
+      return;
     }
+
+    AppSnackBar.show(context: context, message: result.message, isError: true);
   }
 
-  void _showMessage(String message, {bool isError = true}) {
-    AppLogger.warning('LOTES ADD PAGE: EXIBINDO MENSAGEM $message');
-    AppSnackBar.show(context: context, message: message, isError: isError);
+  @override
+  Widget build(BuildContext context) {
+    return AnimatedBuilder(
+      animation: _pageController,
+      builder: (context, _) {
+        return Scaffold(
+          backgroundColor: Colors.white,
+          appBar: AppBar(
+            backgroundColor: MyColors.colorPrimary,
+            leading: GestureDetector(
+              onTap: () => Modular.to.pop(),
+              child: const Icon(Icons.arrow_back_ios, color: Colors.white),
+            ),
+            title: const Text(
+              'Adicionar lote',
+              style: TextStyle(
+                color: Colors.white,
+                fontSize: 16,
+                fontFamily: 'Montserrat',
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ),
+          body: SingleChildScrollView(
+            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                _buildTextField(
+                  controller: _pageController.nomeController,
+                  label: 'Nome do lote',
+                  hint: 'Ex: A',
+                ),
+                const SizedBox(height: 30),
+                SizedBox(
+                  width: double.infinity,
+                  height: 50,
+                  child: ElevatedButton(
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: MyColors.colorPrimary,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                    ),
+                    onPressed: _pageController.isLoading ? null : _submit,
+                    child: Text(
+                      _pageController.isLoading ? 'Salvando...' : 'Adicionar',
+                      textAlign: TextAlign.center,
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 14,
+                        fontFamily: 'Montserrat',
+                        fontWeight: FontWeight.w600,
+                        height: 1.29,
+                      ),
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 32),
+              ],
+            ),
+          ),
+        );
+      },
+    );
   }
 
   Widget _buildTextField({
@@ -108,7 +145,10 @@ class _AddLoteState extends State<AddLote> {
             ),
             filled: true,
             fillColor: const Color(0xFFEBEBEB),
-            contentPadding: const EdgeInsets.symmetric(horizontal: 15, vertical: 16),
+            contentPadding: const EdgeInsets.symmetric(
+              horizontal: 15,
+              vertical: 16,
+            ),
             border: OutlineInputBorder(
               borderRadius: BorderRadius.circular(8),
               borderSide: BorderSide.none,
@@ -117,69 +157,6 @@ class _AddLoteState extends State<AddLote> {
         ),
         const SizedBox(height: 18),
       ],
-    );
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return AnimatedBuilder(
-      animation: _controller,
-      builder: (context, _) {
-        final isLoading = _controller.isLoading;
-
-        return Scaffold(
-          backgroundColor: Colors.white,
-          appBar: AppBar(
-            backgroundColor: MyColors.colorPrimary,
-            leading: GestureDetector(
-              onTap: () => Navigator.pop(context),
-              child: const Icon(Icons.arrow_back_ios, color: Colors.white),
-            ),
-            title: const Text(
-              'Adicionar lote',
-              style: TextStyle(
-                color: Colors.white,
-                fontSize: 16,
-                fontFamily: 'Montserrat',
-                fontWeight: FontWeight.w600,
-              ),
-            ),
-          ),
-          body: SingleChildScrollView(
-            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                _buildTextField(controller: _nomeController, label: 'Nome do lote', hint: 'Ex: A'),
-                const SizedBox(height: 30),
-                SizedBox(
-                  width: double.infinity,
-                  height: 50,
-                  child: ElevatedButton(
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: MyColors.colorPrimary,
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-                    ),
-                    onPressed: isLoading ? null : _submit,
-                    child: Text(
-                      isLoading ? 'Salvando...' : 'Adicionar',
-                      textAlign: TextAlign.center,
-                      style: const TextStyle(
-                        color: Colors.white,
-                        fontSize: 14,
-                        fontFamily: 'Montserrat',
-                        fontWeight: FontWeight.w600,
-                        height: 1.29,
-                      ),
-                    ),
-                  ),
-                ),
-                const SizedBox(height: 32),
-              ],
-            ),
-          ),
-        );
-      },
     );
   }
 }

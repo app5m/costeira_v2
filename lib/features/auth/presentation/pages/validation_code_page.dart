@@ -76,7 +76,9 @@ class _ValidationCodePageState extends State<ValidationCodePage> {
       backgroundColor: Colors.white,
       body: Stack(
         children: [
-          Positioned.fill(child: Image.asset('images/costeira_tela.png', fit: BoxFit.cover)),
+          Positioned.fill(
+            child: Image.asset('images/costeira_tela.png', fit: BoxFit.cover),
+          ),
           SafeArea(
             top: false,
             bottom: false,
@@ -90,7 +92,9 @@ class _ValidationCodePageState extends State<ValidationCodePage> {
                     children: [
                       Container(
                         width: double.infinity,
-                        constraints: BoxConstraints(maxHeight: screenHeight * 0.93),
+                        constraints: BoxConstraints(
+                          maxHeight: screenHeight * 0.93,
+                        ),
                         padding: const EdgeInsets.symmetric(horizontal: 20),
                         decoration: const BoxDecoration(
                           color: Colors.white,
@@ -111,7 +115,7 @@ class _ValidationCodePageState extends State<ValidationCodePage> {
                                 children: [
                                   const SizedBox(height: 32),
                                   IconButton(
-                                    onPressed: () => Navigator.of(context).pop(),
+                                    onPressed: () => Modular.to.pop(),
                                     icon: const Icon(
                                       Icons.arrow_back_ios,
                                       color: Colors.black,
@@ -154,26 +158,44 @@ class _ValidationCodePageState extends State<ValidationCodePage> {
                                           focusNode: _focusNode,
                                           length: 4,
                                           defaultPinTheme: defaultPinTheme,
-                                          separatorBuilder: (_) => const SizedBox(width: 8),
+                                          separatorBuilder: (_) =>
+                                              const SizedBox(width: 8),
                                           keyboardType: TextInputType.number,
-                                          inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+                                          inputFormatters: [
+                                            FilteringTextInputFormatter
+                                                .digitsOnly,
+                                          ],
                                           validator: (value) {
                                             if ((value ?? '').length != 4) {
                                               return 'Informe o código completo';
                                             }
                                             return null;
                                           },
-                                          hapticFeedbackType: HapticFeedbackType.lightImpact,
-                                          focusedPinTheme: defaultPinTheme.copyWith(
-                                            decoration: defaultPinTheme.decoration!.copyWith(
-                                              border: Border.all(color: MyColors.colorPrimary),
-                                            ),
-                                          ),
-                                          submittedPinTheme: defaultPinTheme.copyWith(
-                                            decoration: defaultPinTheme.decoration!.copyWith(
-                                              border: Border.all(color: const Color(0xFFD9D9D9)),
-                                            ),
-                                          ),
+                                          hapticFeedbackType:
+                                              HapticFeedbackType.lightImpact,
+                                          focusedPinTheme: defaultPinTheme
+                                              .copyWith(
+                                                decoration: defaultPinTheme
+                                                    .decoration!
+                                                    .copyWith(
+                                                      border: Border.all(
+                                                        color: MyColors
+                                                            .colorPrimary,
+                                                      ),
+                                                    ),
+                                              ),
+                                          submittedPinTheme: defaultPinTheme
+                                              .copyWith(
+                                                decoration: defaultPinTheme
+                                                    .decoration!
+                                                    .copyWith(
+                                                      border: Border.all(
+                                                        color: const Color(
+                                                          0xFFD9D9D9,
+                                                        ),
+                                                      ),
+                                                    ),
+                                              ),
                                         ),
                                       ),
                                     ],
@@ -203,7 +225,10 @@ class _ValidationCodePageState extends State<ValidationCodePage> {
                                 ],
                               ),
                               Padding(
-                                padding: const EdgeInsets.only(top: 24, bottom: 32),
+                                padding: const EdgeInsets.only(
+                                  top: 24,
+                                  bottom: 32,
+                                ),
                                 child: PrimaryButton(
                                   label: 'Avançar',
                                   isLoading: _isLoading,
@@ -252,7 +277,10 @@ class _ValidationCodePageState extends State<ValidationCodePage> {
       if (result.message.status == '02') {
         Modular.to.navigate(
           AppRoutes.pendingApproval,
-          arguments: PendingApprovalRouteData(message: result.message.message, email: widget.email),
+          arguments: PendingApprovalRouteData(
+            message: result.message.message,
+            email: widget.email,
+          ),
         );
         return;
       }
@@ -289,7 +317,10 @@ class _ValidationCodePageState extends State<ValidationCodePage> {
       final response = await _authRepository.sendTwoFactor(
         email: widget.email,
         password: widget.password,
-        coordinates: UserCoordinates(latitude: widget.lat, longitude: widget.long),
+        coordinates: UserCoordinates(
+          latitude: widget.lat,
+          longitude: widget.long,
+        ),
       );
       _showMessage(response.message);
     } on ApiException catch (error) {
@@ -311,7 +342,11 @@ class _ValidationCodePageState extends State<ValidationCodePage> {
     }
 
     try {
-      await _authRepository.saveFcm(userId: userId, type: platformType, registrationId: pushToken);
+      await _authRepository.saveFcm(
+        userId: userId,
+        type: platformType,
+        registrationId: pushToken,
+      );
     } on ApiException {
       // O login não deve falhar por causa do FCM.
     }
@@ -321,7 +356,9 @@ class _ValidationCodePageState extends State<ValidationCodePage> {
     if (!mounted) {
       return;
     }
-    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(message)));
+    ScaffoldMessenger.of(
+      context,
+    ).showSnackBar(SnackBar(content: Text(message)));
   }
 
   bool get _canSubmit => _pinController.text.trim().length == 4;

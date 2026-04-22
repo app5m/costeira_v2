@@ -1,5 +1,6 @@
 import 'package:costeira/theme/colors.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_modular/flutter_modular.dart';
 
 class PrimarySectionAppBar extends AppBar {
   PrimarySectionAppBar({
@@ -19,7 +20,7 @@ class PrimarySectionAppBar extends AppBar {
          ),
          leading: IconButton(
            icon: const Icon(Icons.arrow_back_ios),
-           onPressed: () => Navigator.of(context).pop(),
+           onPressed: () => Modular.to.pop(),
          ),
        );
 }

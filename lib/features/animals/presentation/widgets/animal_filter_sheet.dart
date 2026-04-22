@@ -4,6 +4,7 @@ import 'package:costeira/core/common/get_list/domain/entities/list_category_enti
 import 'package:costeira/core/common/get_list/domain/entities/list_item_entity.dart';
 import 'package:costeira/core/common/get_list/domain/entities/list_subcategory_entity.dart';
 import 'package:costeira/core/common/get_list/domain/usecases/get_list_usecase.dart';
+import 'package:costeira/core/components/app_select_overlay.dart';
 import 'package:costeira/core/components/custom_button.dart';
 import 'package:costeira/core/utils/app_logger.dart';
 import 'package:costeira/theme/colors.dart';
@@ -174,7 +175,7 @@ class _AnimalFilterSheetState extends State<AnimalFilterSheet> {
 
   void _applyFilters() {
     AppLogger.info('ANIMAIS FILTER SHEET: APLICANDO FILTROS');
-    Navigator.of(context).pop(
+    Modular.to.pop(
       AnimalFilterSheetResult.apply(
         brinco: _emptyToNull(_nameController.text),
         appAnimaisCategoriasId: _selectedCategoryId,
@@ -186,7 +187,7 @@ class _AnimalFilterSheetState extends State<AnimalFilterSheet> {
 
   void _clearFilters() {
     AppLogger.warning('ANIMAIS FILTER SHEET: LIMPANDO FILTROS');
-    Navigator.of(context).pop(const AnimalFilterSheetResult.clear());
+    Modular.to.pop(const AnimalFilterSheetResult.clear());
   }
 
   String? _emptyToNull(String value) {
@@ -237,7 +238,7 @@ class _AnimalFilterSheetState extends State<AnimalFilterSheet> {
         IconButton(
           onPressed: () {
             AppLogger.info('ANIMAIS FILTER SHEET: FECHANDO MODAL');
-            Navigator.of(context).pop();
+            Modular.to.pop();
           },
           icon: const Icon(Icons.arrow_back_ios_new, color: Color(0xFF313131)),
         ),
@@ -446,31 +447,19 @@ class _AnimalFilterSheetState extends State<AnimalFilterSheet> {
           ),
         ),
         const SizedBox(height: 6),
-        DropdownButtonFormField<int>(
+        AppSelectOverlay<int>(
           value: effectiveValue,
-          isExpanded: true,
-          decoration: InputDecoration(
-            filled: true,
-            fillColor: const Color(0xFFEBEBEB),
-            contentPadding: const EdgeInsets.symmetric(
-              horizontal: 15,
-              vertical: 16,
-            ),
-            border: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(8),
-              borderSide: BorderSide.none,
-            ),
-          ),
-          hint: const Text('Selecionar'),
-          items: items
+          placeholder: 'Selecionar',
+          options: items
               .map(
-                (item) => DropdownMenuItem<int>(
+                (item) => AppSelectOption<int>(
                   value: item.id,
-                  child: Text(itemLabel(item)),
+                  label: itemLabel(item),
                 ),
               )
               .toList(growable: false),
-          onChanged: items.isEmpty ? null : onChanged,
+          enabled: items.isNotEmpty,
+          onChanged: onChanged,
         ),
         const SizedBox(height: 24),
       ],

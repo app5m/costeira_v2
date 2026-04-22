@@ -19,4 +19,20 @@ class AppRoutes {
   static const String updatePassword = '/update-password';
   static const String modules = '/modules';
   static const String extras = '/extras';
+  static const String animals = '/animals';
+  static const String animalsAdd = '/animals/add';
+  static const String animalsEdit = '/animals/edit';
+  static const String animalsDetail = '/animals/detail';
+  static const String animalLots = '/animals/lots';
+  static const String animalLotsAdd = '/animals/lots/add';
+  static const String animalLotsEdit = '/animals/lots/edit';
+  static const String potreirosHub = '/potreiros-e-carga-animal';
+  static const String potreiros = '/potreiros';
+  static const String potreirosAdd = '/potreiros/add';
+  static const String potreirosEdit = '/potreiros/edit';
+  static const String potreirosDetail = '/potreiros/detail';
+  static const String cargaAnimal = '/potreiros/carga-animal';
+  static const String climateRain = '/climate-and-rain';
+  static const String climateRainAdd = '/climate-and-rain/add';
+  static const String climateRainEdit = '/climate-and-rain/edit';
 }

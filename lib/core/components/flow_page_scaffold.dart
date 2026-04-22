@@ -1,5 +1,6 @@
 import 'package:costeira/theme/colors.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_modular/flutter_modular.dart';
 
 class FlowPageScaffold extends StatelessWidget {
   const FlowPageScaffold({
@@ -43,7 +44,7 @@ class FlowPageScaffold extends StatelessWidget {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             IconButton(
-                              onPressed: () => Navigator.of(context).pop(),
+                              onPressed: () => Modular.to.pop(),
                               icon: const Icon(Icons.arrow_back_ios, size: 20),
                               padding: EdgeInsets.zero,
                               constraints: const BoxConstraints(),

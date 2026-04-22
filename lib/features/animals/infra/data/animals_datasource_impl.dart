@@ -40,7 +40,10 @@ class AnimalsDatasourceImpl implements AnimalsDatasource {
     final payload = AnimalUpsertRequestModel.create(animal).data;
     AppLogger.info('ANIMAIS DATASOURCE: CREATE PAYLOAD=$payload');
 
-    final response = await _apiClient.post(WSConstantes.animaisAdd, data: payload);
+    final response = await _apiClient.post(
+      WSConstantes.animaisAdd,
+      data: payload,
+    );
 
     AppLogger.success('ANIMAIS DATASOURCE: CREATE RAW RESPONSE=$response');
     return _parseMutationResponse(
@@ -62,7 +65,10 @@ class AnimalsDatasourceImpl implements AnimalsDatasource {
     final payload = AnimalUpsertRequestModel.update(animal).data;
     AppLogger.info('ANIMAIS DATASOURCE: UPDATE PAYLOAD=$payload');
 
-    final response = await _apiClient.post(WSConstantes.animaisEdit, data: payload);
+    final response = await _apiClient.post(
+      WSConstantes.animaisEdit,
+      data: payload,
+    );
 
     AppLogger.success('ANIMAIS DATASOURCE: UPDATE RAW RESPONSE=$response');
     return _parseMutationResponse(
@@ -77,7 +83,10 @@ class AnimalsDatasourceImpl implements AnimalsDatasource {
     final payload = AnimalsFilterRequestModel.fromEntity(filter).data;
     AppLogger.info('ANIMAIS DATASOURCE: LIST PAYLOAD=$payload');
 
-    final response = await _apiClient.post(WSConstantes.animaisListar, data: payload);
+    final response = await _apiClient.post(
+      WSConstantes.animaisListar,
+      data: payload,
+    );
 
     AppLogger.success('ANIMAIS DATASOURCE: LIST RAW RESPONSE=$response');
     return AnimalsListResponseModel.fromJson(responseAsMap(response));
@@ -88,7 +97,10 @@ class AnimalsDatasourceImpl implements AnimalsDatasource {
     final payload = DeleteAnimalRequestModel.fromEntity(animal).data;
     AppLogger.info('ANIMAIS DATASOURCE: DELETE PAYLOAD=$payload');
 
-    final response = await _apiClient.post(WSConstantes.animaisExcluir, data: payload);
+    final response = await _apiClient.post(
+      WSConstantes.animaisExcluir,
+      data: payload,
+    );
 
     AppLogger.success('ANIMAIS DATASOURCE: DELETE RAW RESPONSE=$response');
     return _parseMutationResponse(
@@ -107,7 +119,10 @@ class AnimalsDatasourceImpl implements AnimalsDatasource {
     final payload = AnimalLotUpsertRequestModel.create(lot).data;
     AppLogger.info('ANIMAIS DATASOURCE: CREATE LOT PAYLOAD=$payload');
 
-    final response = await _apiClient.post(WSConstantes.animaisAdicionarLote, data: payload);
+    final response = await _apiClient.post(
+      WSConstantes.animaisAdicionarLote,
+      data: payload,
+    );
 
     AppLogger.success('ANIMAIS DATASOURCE: CREATE LOT RAW RESPONSE=$response');
     return _parseMutationResponse(
@@ -129,7 +144,10 @@ class AnimalsDatasourceImpl implements AnimalsDatasource {
     final payload = AnimalLotUpsertRequestModel.update(lot).data;
     AppLogger.info('ANIMAIS DATASOURCE: UPDATE LOT PAYLOAD=$payload');
 
-    final response = await _apiClient.post(WSConstantes.animaisAdicionarLote, data: payload);
+    final response = await _apiClient.post(
+      WSConstantes.animaisAdicionarLote,
+      data: payload,
+    );
 
     AppLogger.success('ANIMAIS DATASOURCE: UPDATE LOT RAW RESPONSE=$response');
     return _parseMutationResponse(
@@ -140,11 +158,16 @@ class AnimalsDatasourceImpl implements AnimalsDatasource {
   }
 
   @override
-  Future<AnimalLotsListEntity> getAnimalLots(AnimalLotsFilterEntity filter) async {
+  Future<AnimalLotsListEntity> getAnimalLots(
+    AnimalLotsFilterEntity filter,
+  ) async {
     final payload = AnimalLotsFilterRequestModel.fromEntity(filter).data;
     AppLogger.info('ANIMAIS DATASOURCE: LIST LOTS PAYLOAD=$payload');
 
-    final response = await _apiClient.post(WSConstantes.animaisListarLotes, data: payload);
+    final response = await _apiClient.post(
+      WSConstantes.animaisListarLotes,
+      data: payload,
+    );
 
     AppLogger.success('ANIMAIS DATASOURCE: LIST LOTS RAW RESPONSE=$response');
     return AnimalLotsListResponseModel.fromJson(responseAsMap(response));
@@ -155,7 +178,10 @@ class AnimalsDatasourceImpl implements AnimalsDatasource {
     final payload = DeleteAnimalLotRequestModel.fromEntity(lot).data;
     AppLogger.info('ANIMAIS DATASOURCE: DELETE LOT PAYLOAD=$payload');
 
-    final response = await _apiClient.post(WSConstantes.animaisExcluirLote, data: payload);
+    final response = await _apiClient.post(
+      WSConstantes.animaisExcluirLote,
+      data: payload,
+    );
 
     AppLogger.success('ANIMAIS DATASOURCE: DELETE LOT RAW RESPONSE=$response');
     return _parseMutationResponse(
@@ -166,11 +192,16 @@ class AnimalsDatasourceImpl implements AnimalsDatasource {
   }
 
   @override
-  Future<AnimalChartsEntity> getAnimalCharts(AnimalChartsFilterEntity filter) async {
+  Future<AnimalChartsEntity> getAnimalCharts(
+    AnimalChartsFilterEntity filter,
+  ) async {
     final payload = AnimalChartsFilterRequestModel.fromEntity(filter).data;
     AppLogger.info('ANIMAIS DATASOURCE: CHARTS PAYLOAD=$payload');
 
-    final response = await _apiClient.post(WSConstantes.animaisGraficos, data: payload);
+    final response = await _apiClient.post(
+      WSConstantes.animaisGraficos,
+      data: payload,
+    );
 
     AppLogger.success('ANIMAIS DATASOURCE: CHARTS RAW RESPONSE=$response');
 
@@ -179,7 +210,9 @@ class AnimalsDatasourceImpl implements AnimalsDatasource {
     final first = dataList.whereType<Map>().cast<Map>().firstOrNull;
 
     if (first == null) {
-      AppLogger.warning('ANIMAIS DATASOURCE: CHARTS SEM DADOS, RETORNANDO VAZIO');
+      AppLogger.warning(
+        'ANIMAIS DATASOURCE: CHARTS SEM DADOS, RETORNANDO VAZIO',
+      );
       return const AnimalChartsEntity(
         pesoTotalRebanho: 0,
         pesoMedioFazenda: 0,
@@ -201,7 +234,8 @@ class AnimalsDatasourceImpl implements AnimalsDatasource {
     required String expectedSuccessMessage,
   }) {
     final map = responseAsMap(response);
-    final hasMutationContract = map.containsKey('status') || map.containsKey('msg');
+    final hasMutationContract =
+        map.containsKey('status') || map.containsKey('msg');
 
     if (!hasMutationContract) {
       AppLogger.error(
@@ -223,7 +257,10 @@ class AnimalsDatasourceImpl implements AnimalsDatasource {
     }
 
     if (message.message.trim().isEmpty) {
-      return ApiMessage(status: message.status, message: expectedSuccessMessage);
+      return ApiMessage(
+        status: message.status,
+        message: expectedSuccessMessage,
+      );
     }
 
     return message;

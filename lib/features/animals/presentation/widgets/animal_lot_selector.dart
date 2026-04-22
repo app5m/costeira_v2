@@ -1,5 +1,6 @@
 import 'package:costeira/features/animals/domain/entities/animal_lot_entity.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_modular/flutter_modular.dart';
 
 class AnimalLotSelectionResult {
   const AnimalLotSelectionResult._({
@@ -202,9 +203,9 @@ class _AnimalLotSelectionSheetState extends State<AnimalLotSelectionSheet> {
                 width: double.infinity,
                 child: ElevatedButton(
                   onPressed: () {
-                    Navigator.of(
-                      context,
-                    ).pop(AnimalLotSelectionResult.selected(_selectedLotId));
+                    Modular.to.pop(
+                      AnimalLotSelectionResult.selected(_selectedLotId),
+                    );
                   },
                   style: ElevatedButton.styleFrom(
                     backgroundColor: const Color(0xFF128977),
@@ -310,6 +311,6 @@ class _AnimalLotSelectionSheetState extends State<AnimalLotSelectionSheet> {
   }
 
   void _openAddLotPage() {
-    Navigator.of(context).pop(const AnimalLotSelectionResult.addLot());
+    Modular.to.pop(const AnimalLotSelectionResult.addLot());
   }
 }

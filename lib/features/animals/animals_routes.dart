@@ -2,8 +2,8 @@ import 'package:costeira/features/animals/domain/entities/animal_lot_entity.dart
 import 'package:costeira/features/animals/domain/entities/animal_entity.dart';
 import 'package:costeira/features/animals/presentation/pages/animals_page.dart';
 import 'package:costeira/features/animals/presentation/pages/animals/add_animal.dart';
-import 'package:costeira/features/animals/presentation/pages/animals/detail_animal.dart';
-import 'package:costeira/features/animals/presentation/pages/animals/edit_animal.dart';
+import 'package:costeira/features/animals/presentation/pages/animals/animal_detail.dart';
+import 'package:costeira/features/animals/presentation/pages/animals/animal_edit.dart';
 import 'package:costeira/features/animals/presentation/pages/lotes/add_lote.dart';
 import 'package:costeira/features/animals/presentation/pages/lotes/edit_lote.dart';
 import 'package:costeira/features/animals/presentation/pages/lotes/lotes_page.dart';
@@ -12,7 +12,7 @@ import 'package:flutter_modular/flutter_modular.dart';
 class AnimalsRoutes {
   static void register(RouteManager r) {
     r.child('/', child: (_) => const AnimalsPage());
-    r.child('/add-animal-page', child: (_) => const AddAnimal());
+    r.child('/add-animal-page', child: (_) => const AnimalAdd());
     r.child(
       '/edit-animal-page',
       child: (_) {

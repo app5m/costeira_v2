@@ -1,10 +1,7 @@
+import 'package:costeira/app/app_routes.dart';
 import 'package:costeira/core/components/app_snack.dart';
-import 'package:costeira/core/utils/app_logger.dart';
 import 'package:costeira/features/animals/domain/entities/animal_lot_entity.dart';
-import 'package:costeira/features/animals/domain/entities/animal_lots_filter_entity.dart';
-import 'package:costeira/features/animals/presentation/controllers/delete_animal_lot_controller.dart';
-import 'package:costeira/features/animals/presentation/controllers/list_animal_lots_controller.dart';
-import 'package:costeira/features/animals/presentation/pages/lotes/edit_lote.dart';
+import 'package:costeira/features/animals/presentation/page_controllers/lotes_page_controller.dart';
 import 'package:costeira/features/animals/presentation/widgets/animal_lot_filter_sheet.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_modular/flutter_modular.dart';
@@ -20,104 +17,67 @@ class LotesPage extends StatefulWidget {
 }
 
 class _LotesPageState extends State<LotesPage> {
-  final ListAnimalLotsController _listController = Modular.get<ListAnimalLotsController>();
-  final DeleteAnimalLotController _deleteController = Modular.get<DeleteAnimalLotController>();
+  final LotesPageController _pageController =
+      Modular.get<LotesPageController>();
 
   @override
   void initState() {
     super.initState();
-    AppLogger.info('LOTES LIST PAGE: INIT STATE');
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      _loadLots();
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      final result = await _pageController.loadInitialData();
+      if (!mounted || result == null) {
+        return;
+      }
+      _showMessage(result.message, isError: !result.isSuccess);
     });
   }
 
-  Future<void> _loadLots() async {
-    AppLogger.info('LOTES LIST PAGE: CARREGANDO LOTES');
-    try {
-      if (_listController.currentFilter == null) {
-        await _listController.load();
-      } else {
-        await _listController.reload();
-      }
-      AppLogger.success('LOTES LIST PAGE: LOTES CARREGADOS');
-    } catch (_) {
-      if (!mounted) {
-        return;
-      }
-      AppLogger.error('LOTES LIST PAGE: ERRO AO CARREGAR LOTES');
-      _showMessage(_listController.errorMessage ?? 'Não foi possível carregar os lotes.');
-    }
+  @override
+  void dispose() {
+    _pageController.dispose();
+    super.dispose();
   }
 
-  Future<void> _openFilters() async {
-    AppLogger.info('LOTES LIST PAGE: ABRINDO MODAL DE FILTROS');
-    final currentFilter = _listController.currentFilter;
+  Future<void> _showFilterSheet() async {
     final result = await showModalBottomSheet<AnimalLotFilterSheetResult>(
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
-      builder: (_) => AnimalLotFilterSheet(initialNome: currentFilter?.nome),
+      builder: (_) => AnimalLotFilterSheet(
+        initialNome: _pageController.currentFilter?.nome,
+      ),
     );
 
     if (!mounted || result == null) {
       return;
     }
 
-    if (result.shouldClear) {
-      AppLogger.warning('LOTES LIST PAGE: LIMPANDO FILTROS');
-      try {
-        await _listController.load();
-        if (!mounted) {
-          return;
-        }
-        _showMessage('Filtros removidos com sucesso.', isError: false);
-      } catch (_) {
-        if (!mounted) {
-          return;
-        }
-        _showMessage(_listController.errorMessage ?? 'Nao foi possivel limpar os filtros.');
-      }
+    final action = await _pageController.applyFilters(result);
+    if (!mounted) {
       return;
     }
-
-    AppLogger.info('LOTES LIST PAGE: APLICANDO FILTRO POR NOME');
-    try {
-      await _listController.load(nome: result.nome);
-      if (!mounted) {
-        return;
-      }
-      _showMessage('Filtros aplicados com sucesso.', isError: false);
-    } catch (_) {
-      if (!mounted) {
-        return;
-      }
-      _showMessage(_listController.errorMessage ?? 'Nao foi possivel aplicar os filtros.');
-    }
+    _showMessage(action.message, isError: !action.isSuccess);
   }
 
   Future<void> _openEdit(AnimalLotEntity lot) async {
-    AppLogger.info('LOTES LIST PAGE: ABRINDO EDICAO DO LOTE ID=${lot.id}');
-    final result = await Navigator.push<Map<String, dynamic>?>(
-      context,
-      MaterialPageRoute(builder: (_) => EditLote(lot: lot)),
+    final result = await Modular.to.pushNamed<Map<String, dynamic>?>(
+      AppRoutes.animalLotsEdit,
+      arguments: lot,
     );
 
-    if (result?['success'] == true) {
-      AppLogger.success('LOTES LIST PAGE: EDICAO CONCLUIDA, RECARREGANDO LISTA');
-      await _loadLots();
-      if (mounted) {
-        _showMessage(
-          result?['message']?.toString() ?? 'Lote atualizado com sucesso.',
-          isError: false,
-        );
-      }
+    if (!mounted) {
+      return;
     }
+
+    final action = await _pageController.handleEditResult(result);
+    if (!mounted || action == null) {
+      return;
+    }
+    _showMessage(action.message, isError: !action.isSuccess);
   }
 
   Future<void> _confirmDelete(AnimalLotEntity lot) async {
-    AppLogger.warning('LOTES LIST PAGE: SOLICITANDO CONFIRMACAO DE EXCLUSAO ID=${lot.id}');
-    showModalBottomSheet<void>(
+    await showModalBottomSheet<void>(
       backgroundColor: Colors.white,
       context: context,
       shape: const RoundedRectangleBorder(
@@ -126,9 +86,9 @@ class _LotesPageState extends State<LotesPage> {
           topRight: Radius.circular(16),
         ),
       ),
-      builder: (_) {
+      builder: (modalContext) {
         return AnimatedBuilder(
-          animation: _deleteController,
+          animation: _pageController,
           builder: (context, __) {
             return Column(
               mainAxisSize: MainAxisSize.min,
@@ -161,7 +121,7 @@ class _LotesPageState extends State<LotesPage> {
                           mainAxisAlignment: MainAxisAlignment.end,
                           children: [
                             GestureDetector(
-                              onTap: () => Navigator.of(context).pop(),
+                              onTap: () => Modular.to.pop(),
                               child: const Icon(Icons.close),
                             ),
                           ],
@@ -172,7 +132,10 @@ class _LotesPageState extends State<LotesPage> {
                         'icon/danger-linear.svg',
                         width: 80,
                         height: 80,
-                        colorFilter: const ColorFilter.mode(Colors.red, BlendMode.srcIn),
+                        colorFilter: const ColorFilter.mode(
+                          Colors.red,
+                          BlendMode.srcIn,
+                        ),
                       ),
                       const SizedBox(height: 16),
                       const Text(
@@ -200,25 +163,41 @@ class _LotesPageState extends State<LotesPage> {
                         width: MediaQuery.of(context).size.width - 40,
                         height: 50,
                         child: ElevatedButton(
-                          onPressed: _deleteController.isLoading
+                          onPressed: _pageController.isDeleting
                               ? null
-                              : () => _deleteLot(context, lot),
+                              : () async {
+                                  final action = await _pageController
+                                      .deleteLot(lot);
+                                  if (!mounted || !modalContext.mounted) {
+                                    return;
+                                  }
+
+                                  if (action.isSuccess) {
+                                    Modular.to.pop();
+                                  }
+                                  _showMessage(
+                                    action.message,
+                                    isError: !action.isSuccess,
+                                  );
+                                },
                           style: ElevatedButton.styleFrom(
                             shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadiusGeometry.circular(8),
+                              borderRadius: BorderRadius.circular(8),
                             ),
                             side: const BorderSide(color: Colors.red),
                             elevation: 0,
                             backgroundColor: Colors.transparent,
                           ),
                           child: Text(
-                            _deleteController.isLoading ? 'Excluindo...' : 'Excluir',
+                            _pageController.isDeleting
+                                ? 'Excluindo...'
+                                : 'Excluir',
                             style: const TextStyle(color: Colors.red),
                           ),
                         ),
                       ),
                       TextButton(
-                        onPressed: () => Navigator.of(context).pop(),
+                        onPressed: () => Modular.to.pop(),
                         child: Text(
                           'Cancelar',
                           style: TextStyle(
@@ -241,34 +220,16 @@ class _LotesPageState extends State<LotesPage> {
     );
   }
 
-  Future<void> _deleteLot(BuildContext modalContext, AnimalLotEntity lot) async {
-    AppLogger.warning('LOTES LIST PAGE: EXECUTANDO EXCLUSAO ID=${lot.id}');
-    try {
-      final result = await _deleteController.delete(lot.id);
-      if (!modalContext.mounted || !mounted || result == null) {
-        return;
-      }
-
-      Navigator.of(modalContext).pop();
-      _listController.removeLotById(lot.id);
-      _showMessage(result.message, isError: false);
-    } catch (_) {
-      AppLogger.error('LOTES LIST PAGE: ERRO AO EXCLUIR LOTE');
-      _showMessage(_deleteController.errorMessage ?? 'Não foi possível excluir o lote.');
-    }
-  }
-
   void _showMessage(String message, {bool isError = true}) {
-    AppLogger.warning('LOTES LIST PAGE: EXIBINDO MENSAGEM $message');
     AppSnackBar.show(context: context, message: message, isError: isError);
   }
 
   @override
   Widget build(BuildContext context) {
     return AnimatedBuilder(
-      animation: _listController,
+      animation: _pageController,
       builder: (context, _) {
-        final hasActiveFilters = _hasActiveFilters(_listController.currentFilter);
+        final hasActiveFilters = _pageController.hasActiveFilters();
 
         return Expanded(
           child: Column(
@@ -282,36 +243,52 @@ class _LotesPageState extends State<LotesPage> {
                     icon: Icon(
                       Icons.tune_rounded,
                       size: 16,
-                      color: hasActiveFilters ? MyColors.colorPrimary : const Color(0xFF8C8C8C),
+                      color: hasActiveFilters
+                          ? MyColors.colorPrimary
+                          : const Color(0xFF8C8C8C),
                     ),
-                    borderColor: hasActiveFilters ? MyColors.colorPrimary : const Color(0xFFE6E6E6),
+                    borderColor: hasActiveFilters
+                        ? MyColors.colorPrimary
+                        : const Color(0xFFE6E6E6),
                     backgroundColor: hasActiveFilters
                         ? const Color(0x14128977)
                         : Colors.transparent,
-                    textColor: hasActiveFilters ? MyColors.colorPrimary : const Color(0xFF8C8C8C),
-                    onTap: _openFilters,
+                    textColor: hasActiveFilters
+                        ? MyColors.colorPrimary
+                        : const Color(0xFF8C8C8C),
+                    onTap: _showFilterSheet,
                   ),
                 ],
               ),
               const SizedBox(height: 16),
               Expanded(
                 child: RefreshIndicator(
-                  onRefresh: _loadLots,
+                  onRefresh: () async {
+                    final result = await _pageController.loadInitialData();
+                    if (!mounted || result == null) {
+                      return;
+                    }
+                    _showMessage(result.message, isError: !result.isSuccess);
+                  },
                   child: Builder(
                     builder: (context) {
-                      if (_listController.isLoading && _listController.lots.isEmpty) {
+                      if (_pageController.isLoading &&
+                          _pageController.lots.isEmpty) {
                         return const Center(child: CircularProgressIndicator());
                       }
 
-                      if (_listController.errorMessage != null && _listController.lots.isEmpty) {
+                      if (_pageController.errorMessage != null &&
+                          _pageController.lots.isEmpty) {
                         return ListView(
                           children: [
                             const SizedBox(height: 120),
                             Center(
                               child: Padding(
-                                padding: const EdgeInsets.symmetric(horizontal: 24),
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 24,
+                                ),
                                 child: Text(
-                                  _listController.errorMessage!,
+                                  _pageController.errorMessage!,
                                   textAlign: TextAlign.center,
                                 ),
                               ),
@@ -320,19 +297,21 @@ class _LotesPageState extends State<LotesPage> {
                         );
                       }
 
-                      if (_listController.lots.isEmpty) {
+                      if (_pageController.lots.isEmpty) {
                         return ListView(
                           children: const [
                             SizedBox(height: 120),
-                            Center(child: Text('Nenhum lote cadastrado até agora.')),
+                            Center(
+                              child: Text('Nenhum lote cadastrado ate agora.'),
+                            ),
                           ],
                         );
                       }
 
                       return ListView.builder(
-                        itemCount: _listController.lots.length,
+                        itemCount: _pageController.lots.length,
                         itemBuilder: (context, index) {
-                          final lot = _listController.lots[index];
+                          final lot = _pageController.lots[index];
                           return _buildLotCard(lot);
                         },
                       );
@@ -345,14 +324,6 @@ class _LotesPageState extends State<LotesPage> {
         );
       },
     );
-  }
-
-  bool _hasActiveFilters(AnimalLotsFilterEntity? filter) {
-    if (filter == null) {
-      return false;
-    }
-
-    return filter.id != null || (filter.nome?.trim().isNotEmpty ?? false);
   }
 
   Widget _buildTopPill({
@@ -408,7 +379,13 @@ class _LotesPageState extends State<LotesPage> {
           side: const BorderSide(width: 1, color: Color(0xFFEBEBEB)),
           borderRadius: BorderRadius.circular(12),
         ),
-        shadows: const [BoxShadow(color: Color(0x0A000000), blurRadius: 24, offset: Offset(0, 0))],
+        shadows: const [
+          BoxShadow(
+            color: Color(0x0A000000),
+            blurRadius: 24,
+            offset: Offset(0, 0),
+          ),
+        ],
       ),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,

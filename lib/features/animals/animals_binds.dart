@@ -18,6 +18,13 @@ import 'package:costeira/features/animals/presentation/controllers/edit_animal_c
 import 'package:costeira/features/animals/presentation/controllers/get_animal_charts_controller.dart';
 import 'package:costeira/features/animals/presentation/controllers/list_animal_lots_controller.dart';
 import 'package:costeira/features/animals/presentation/controllers/list_animals_controller.dart';
+import 'package:costeira/features/animals/presentation/page_controllers/add_lote_page_controller.dart';
+import 'package:costeira/features/animals/presentation/page_controllers/animal_add_page_controller.dart';
+import 'package:costeira/features/animals/presentation/page_controllers/animal_edit_page_controller.dart';
+import 'package:costeira/features/animals/presentation/page_controllers/animal_list_page_controller.dart';
+import 'package:costeira/features/animals/presentation/page_controllers/animals_page_controller.dart';
+import 'package:costeira/features/animals/presentation/page_controllers/edit_lote_page_controller.dart';
+import 'package:costeira/features/animals/presentation/page_controllers/lotes_page_controller.dart';
 import 'package:flutter_modular/flutter_modular.dart';
 
 class AnimalsBinds {
@@ -41,5 +48,12 @@ class AnimalsBinds {
     i.add<ListAnimalLotsController>(ListAnimalLotsController.new);
     i.add<DeleteAnimalLotController>(DeleteAnimalLotController.new);
     i.add<GetAnimalChartsController>(GetAnimalChartsController.new);
+    i.add<AnimalsPageController>(AnimalsPageController.new);
+    i.add<AnimalListPageController>(AnimalListPageController.new);
+    i.add<AnimalAddPageController>(AnimalAddPageController.new);
+    i.add<AnimalEditPageController>(AnimalEditPageController.new);
+    i.add<LotesPageController>(LotesPageController.new);
+    i.add<AddLotePageController>(AddLotePageController.new);
+    i.add<EditLotePageController>(EditLotePageController.new);
   }
 }

@@ -1,13 +1,12 @@
 import 'package:costeira/views/navigationscreen/Menu/Modulos/pastagensnutricaosuplemento/pastagensnutricaosuplemento.dart';
-import 'package:costeira/views/navigationscreen/Menu/Modulos/porteiroscargaanimal/protetoresecarga.dart';
+import 'package:costeira/app/app_routes.dart';
 import 'package:costeira/views/navigationscreen/Menu/Modulos/sanitarios/sanitarios.dart';
 import 'package:costeira/views/navigationscreen/Menu/Modulos/tarefas/tarefas.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_modular/flutter_modular.dart';
 import 'package:flutter_svg/svg.dart';
 
 import '../../../../theme/colors.dart';
-import '../../../../features/auth/presentation/pages/welcome_page.dart';
-import 'climachuva/clima.dart';
 import 'estoquedeinsumos/estoqueinsumos.dart';
 
 class ModulesPage extends StatefulWidget {
@@ -62,255 +61,6 @@ class _ModulesPageState extends State<ModulesPage> {
   //   }
   // }
   //
-  void _showModalBottomSheetDesative(BuildContext context) {
-    showModalBottomSheet(
-      backgroundColor: Colors.white,
-      context: context,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.only(
-          topLeft: Radius.circular(16),
-          topRight: Radius.circular(16),
-        ),
-      ),
-      builder: (BuildContext bc) {
-        return Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Container(
-              padding: EdgeInsets.only(top: 8),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  SizedBox(height: 8),
-                  Opacity(
-                    opacity: 0.70,
-                    child: Container(
-                      width: 72,
-                      decoration: ShapeDecoration(
-                        shape: RoundedRectangleBorder(
-                          side: BorderSide(
-                            width: 2,
-                            strokeAlign: BorderSide.strokeAlignCenter,
-                            color: Color(0xFFE2E2E2),
-                          ),
-                        ),
-                      ),
-                    ),
-                  ),
-                  SizedBox(height: 8),
-                  Container(
-                    margin: EdgeInsets.symmetric(horizontal: 20),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.end,
-                      children: [Icon(Icons.close)],
-                    ),
-                  ),
-                  SizedBox(height: 16),
-                  SvgPicture.asset(
-                    'icon/desativarvermenho.svg',
-                    width: 80,
-                    height: 80,
-                    color: Colors.red,
-                  ),
-                  SizedBox(height: 16),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Text(
-                        "Desativar Conta?",
-                        style: TextStyle(
-                          fontFamily: 'Montserrat',
-                          fontWeight: FontWeight.w600,
-                          fontSize: 16,
-                          color: Color(0xff000000),
-                        ),
-                      ),
-                    ],
-                  ),
-                  SizedBox(height: 8),
-                  Padding(
-                    padding: const EdgeInsets.all(0.0),
-                    child: Text(
-                      "Tem certeza que deseja\ndesativar sua conta?",
-                      textAlign: TextAlign.center,
-                      style: TextStyle(
-                        fontFamily: 'Montserrat',
-                        fontWeight: FontWeight.w400,
-                        fontSize: 14,
-                        color: Color(0xFF8692A8),
-                      ),
-                    ),
-                  ),
-                  SizedBox(height: 16),
-                  Column(
-                    children: [
-                      SizedBox(
-                        width: MediaQuery.of(context).size.width - 40,
-                        height: 50,
-                        child: ElevatedButton(
-                          onPressed: () async {
-                            //  desativeAccount(context);
-                          },
-                          style: ElevatedButton.styleFrom(
-                            side: BorderSide(color: Colors.red),
-                            elevation: 0,
-                            backgroundColor: Colors.transparent,
-                          ),
-                          child: Text("Sair", style: TextStyle(color: Colors.black)),
-                        ),
-                      ),
-                      SizedBox(width: 8),
-                      TextButton(
-                        onPressed: () => Navigator.of(context).pop(false),
-                        child: Text(
-                          "Cancelar",
-                          style: TextStyle(
-                            fontSize: 16,
-                            color: MyColors.colorOnPrimary,
-                            decoration: TextDecoration.underline,
-                            decorationColor: MyColors.colorOnPrimary,
-                          ),
-                        ),
-                      ),
-                      SizedBox(width: 8),
-                    ],
-                  ),
-                  SizedBox(height: 16),
-                ],
-              ),
-            ),
-          ],
-        );
-      },
-    );
-  }
-
-  void _showModalBottomSheetExit(BuildContext context) {
-    showModalBottomSheet(
-      backgroundColor: Colors.white,
-      context: context,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.only(
-          topLeft: Radius.circular(16),
-          topRight: Radius.circular(16),
-        ),
-      ),
-      builder: (BuildContext bc) {
-        return Container(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Container(
-                padding: EdgeInsets.only(top: 8),
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    SizedBox(height: 8),
-                    Opacity(
-                      opacity: 0.70,
-                      child: Container(
-                        width: 72,
-                        decoration: ShapeDecoration(
-                          shape: RoundedRectangleBorder(
-                            side: BorderSide(
-                              width: 2,
-                              strokeAlign: BorderSide.strokeAlignCenter,
-                              color: Color(0xFFE2E2E2),
-                            ),
-                          ),
-                        ),
-                      ),
-                    ),
-                    SizedBox(height: 8),
-                    Container(
-                      margin: EdgeInsets.symmetric(horizontal: 20),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.end,
-                        children: [Icon(Icons.close)],
-                      ),
-                    ),
-                    SizedBox(height: 16),
-                    SvgPicture.asset('icon/Logout.svg', width: 80, height: 80, color: Colors.red),
-                    SizedBox(height: 16),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Text(
-                          "Sair do Aplicativo?",
-                          style: TextStyle(
-                            fontFamily: 'Montserrat',
-                            fontWeight: FontWeight.w600,
-                            fontSize: 16,
-                            color: Color(0xff000000),
-                          ),
-                        ),
-                      ],
-                    ),
-                    SizedBox(height: 8),
-                    Padding(
-                      padding: const EdgeInsets.all(0.0),
-                      child: Text(
-                        "Tem certeza que deseja \nsair da sua conta?",
-                        textAlign: TextAlign.center,
-                        style: TextStyle(
-                          fontFamily: 'Montserrat',
-                          fontWeight: FontWeight.w400,
-                          fontSize: 14,
-                          color: Color(0xFF8692A8),
-                        ),
-                      ),
-                    ),
-                    SizedBox(height: 16),
-                    Column(
-                      children: [
-                        SizedBox(
-                          width: MediaQuery.of(context).size.width - 40,
-                          height: 50,
-                          child: ElevatedButton(
-                            onPressed: () async {
-                              // await Preferences.init();
-                              // Preferences.clearUserData();
-                              Navigator.pushAndRemoveUntil(
-                                context,
-                                MaterialPageRoute(builder: (context) => Teladeinicio()),
-                                (Route<dynamic> route) => false, // Remove todas as telas anteriores
-                              );
-                            },
-                            style: ElevatedButton.styleFrom(
-                              side: BorderSide(color: Colors.red),
-                              elevation: 0,
-                              backgroundColor: Colors.transparent,
-                            ),
-                            child: Text("Sair", style: TextStyle(color: Colors.black)),
-                          ),
-                        ),
-                        SizedBox(width: 8),
-                        TextButton(
-                          onPressed: () => Navigator.of(context).pop(false),
-                          child: Text(
-                            "Cancelar",
-                            style: TextStyle(
-                              fontSize: 16,
-                              color: MyColors.colorOnPrimary,
-                              decoration: TextDecoration.underline,
-                              decorationColor: MyColors.colorOnPrimary,
-                            ),
-                          ),
-                        ),
-                        SizedBox(width: 8),
-                      ],
-                    ),
-                    SizedBox(height: 16),
-                  ],
-                ),
-              ),
-            ],
-          ),
-        );
-      },
-    );
-  }
-
   // UserPerfilCliente? userPerfilCliente;
   // bool not1 = false;
   // bool not2 = false;
@@ -386,10 +136,7 @@ class _ModulesPageState extends State<ModulesPage> {
                   SizedBox(height: 24),
                   GestureDetector(
                     onTap: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(builder: (context) => protetoresecarga()),
-                      );
+                      Modular.to.pushNamed(AppRoutes.potreirosHub);
                     },
                     child: Container(
                       width: MediaQuery.of(context).size.width - 60,
@@ -397,11 +144,18 @@ class _ModulesPageState extends State<ModulesPage> {
                       decoration: ShapeDecoration(
                         color: Colors.white,
                         shape: RoundedRectangleBorder(
-                          side: const BorderSide(width: 1, color: Color(0xFFEBEBEB)),
+                          side: const BorderSide(
+                            width: 1,
+                            color: Color(0xFFEBEBEB),
+                          ),
                           borderRadius: BorderRadius.circular(12),
                         ),
                         shadows: const [
-                          BoxShadow(color: Color(0x0A000000), blurRadius: 24, offset: Offset(0, 0)),
+                          BoxShadow(
+                            color: Color(0x0A000000),
+                            blurRadius: 24,
+                            offset: Offset(0, 0),
+                          ),
                         ],
                       ),
                       child: Row(
@@ -422,7 +176,11 @@ class _ModulesPageState extends State<ModulesPage> {
                               ),
                             ],
                           ),
-                          SvgPicture.asset('icon/Arrow.svg', width: 24, height: 24),
+                          SvgPicture.asset(
+                            'icon/Arrow.svg',
+                            width: 24,
+                            height: 24,
+                          ),
                         ],
                       ),
                     ),
@@ -441,11 +199,18 @@ class _ModulesPageState extends State<ModulesPage> {
                       decoration: ShapeDecoration(
                         color: Colors.white,
                         shape: RoundedRectangleBorder(
-                          side: const BorderSide(width: 1, color: Color(0xFFEBEBEB)),
+                          side: const BorderSide(
+                            width: 1,
+                            color: Color(0xFFEBEBEB),
+                          ),
                           borderRadius: BorderRadius.circular(12),
                         ),
                         shadows: const [
-                          BoxShadow(color: Color(0x0A000000), blurRadius: 24, offset: Offset(0, 0)),
+                          BoxShadow(
+                            color: Color(0x0A000000),
+                            blurRadius: 24,
+                            offset: Offset(0, 0),
+                          ),
                         ],
                       ),
                       child: Row(
@@ -466,7 +231,11 @@ class _ModulesPageState extends State<ModulesPage> {
                               ),
                             ],
                           ),
-                          SvgPicture.asset('icon/Arrow.svg', width: 24, height: 24),
+                          SvgPicture.asset(
+                            'icon/Arrow.svg',
+                            width: 24,
+                            height: 24,
+                          ),
                         ],
                       ),
                     ),
@@ -487,11 +256,18 @@ class _ModulesPageState extends State<ModulesPage> {
                       decoration: ShapeDecoration(
                         color: Colors.white,
                         shape: RoundedRectangleBorder(
-                          side: const BorderSide(width: 1, color: Color(0xFFEBEBEB)),
+                          side: const BorderSide(
+                            width: 1,
+                            color: Color(0xFFEBEBEB),
+                          ),
                           borderRadius: BorderRadius.circular(12),
                         ),
                         shadows: const [
-                          BoxShadow(color: Color(0x0A000000), blurRadius: 24, offset: Offset(0, 0)),
+                          BoxShadow(
+                            color: Color(0x0A000000),
+                            blurRadius: 24,
+                            offset: Offset(0, 0),
+                          ),
                         ],
                       ),
                       child: Row(
@@ -512,7 +288,11 @@ class _ModulesPageState extends State<ModulesPage> {
                               ),
                             ],
                           ),
-                          SvgPicture.asset('icon/Arrow.svg', width: 24, height: 24),
+                          SvgPicture.asset(
+                            'icon/Arrow.svg',
+                            width: 24,
+                            height: 24,
+                          ),
                         ],
                       ),
                     ),
@@ -520,7 +300,7 @@ class _ModulesPageState extends State<ModulesPage> {
                   SizedBox(height: 16),
                   GestureDetector(
                     onTap: () {
-                      Navigator.push(context, MaterialPageRoute(builder: (context) => Clima()));
+                      Modular.to.pushNamed(AppRoutes.climateRain);
                     },
                     child: Container(
                       width: MediaQuery.of(context).size.width - 60,
@@ -528,11 +308,18 @@ class _ModulesPageState extends State<ModulesPage> {
                       decoration: ShapeDecoration(
                         color: Colors.white,
                         shape: RoundedRectangleBorder(
-                          side: const BorderSide(width: 1, color: Color(0xFFEBEBEB)),
+                          side: const BorderSide(
+                            width: 1,
+                            color: Color(0xFFEBEBEB),
+                          ),
                           borderRadius: BorderRadius.circular(12),
                         ),
                         shadows: const [
-                          BoxShadow(color: Color(0x0A000000), blurRadius: 24, offset: Offset(0, 0)),
+                          BoxShadow(
+                            color: Color(0x0A000000),
+                            blurRadius: 24,
+                            offset: Offset(0, 0),
+                          ),
                         ],
                       ),
                       child: Row(
@@ -553,7 +340,11 @@ class _ModulesPageState extends State<ModulesPage> {
                               ),
                             ],
                           ),
-                          SvgPicture.asset('icon/Arrow.svg', width: 24, height: 24),
+                          SvgPicture.asset(
+                            'icon/Arrow.svg',
+                            width: 24,
+                            height: 24,
+                          ),
                         ],
                       ),
                     ),
@@ -563,7 +354,10 @@ class _ModulesPageState extends State<ModulesPage> {
 
                   GestureDetector(
                     onTap: () {
-                      Navigator.push(context, MaterialPageRoute(builder: (context) => Tarefas()));
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (context) => Tarefas()),
+                      );
                     },
                     child: Container(
                       width: MediaQuery.of(context).size.width - 60,
@@ -571,11 +365,18 @@ class _ModulesPageState extends State<ModulesPage> {
                       decoration: ShapeDecoration(
                         color: Colors.white,
                         shape: RoundedRectangleBorder(
-                          side: const BorderSide(width: 1, color: Color(0xFFEBEBEB)),
+                          side: const BorderSide(
+                            width: 1,
+                            color: Color(0xFFEBEBEB),
+                          ),
                           borderRadius: BorderRadius.circular(12),
                         ),
                         shadows: const [
-                          BoxShadow(color: Color(0x0A000000), blurRadius: 24, offset: Offset(0, 0)),
+                          BoxShadow(
+                            color: Color(0x0A000000),
+                            blurRadius: 24,
+                            offset: Offset(0, 0),
+                          ),
                         ],
                       ),
                       child: Row(
@@ -596,7 +397,11 @@ class _ModulesPageState extends State<ModulesPage> {
                               ),
                             ],
                           ),
-                          SvgPicture.asset('icon/Arrow.svg', width: 24, height: 24),
+                          SvgPicture.asset(
+                            'icon/Arrow.svg',
+                            width: 24,
+                            height: 24,
+                          ),
                         ],
                       ),
                     ),
@@ -605,7 +410,10 @@ class _ModulesPageState extends State<ModulesPage> {
                   SizedBox(height: 16),
                   GestureDetector(
                     onTap: () {
-                      Navigator.push(context, MaterialPageRoute(builder: (context) => Insumos()));
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (context) => Insumos()),
+                      );
                     },
                     child: Container(
                       width: MediaQuery.of(context).size.width - 60,
@@ -613,11 +421,18 @@ class _ModulesPageState extends State<ModulesPage> {
                       decoration: ShapeDecoration(
                         color: Colors.white,
                         shape: RoundedRectangleBorder(
-                          side: const BorderSide(width: 1, color: Color(0xFFEBEBEB)),
+                          side: const BorderSide(
+                            width: 1,
+                            color: Color(0xFFEBEBEB),
+                          ),
                           borderRadius: BorderRadius.circular(12),
                         ),
                         shadows: const [
-                          BoxShadow(color: Color(0x0A000000), blurRadius: 24, offset: Offset(0, 0)),
+                          BoxShadow(
+                            color: Color(0x0A000000),
+                            blurRadius: 24,
+                            offset: Offset(0, 0),
+                          ),
                         ],
                       ),
                       child: Row(
@@ -638,7 +453,11 @@ class _ModulesPageState extends State<ModulesPage> {
                               ),
                             ],
                           ),
-                          SvgPicture.asset('icon/Arrow.svg', width: 24, height: 24),
+                          SvgPicture.asset(
+                            'icon/Arrow.svg',
+                            width: 24,
+                            height: 24,
+                          ),
                         ],
                       ),
                     ),
@@ -674,7 +493,9 @@ class _ModulesPageState extends State<ModulesPage> {
                     onTap: () {
                       Navigator.push(
                         context,
-                        MaterialPageRoute(builder: (context) => PastagensNutricaoSuplemento()),
+                        MaterialPageRoute(
+                          builder: (context) => PastagensNutricaoSuplemento(),
+                        ),
                       );
                     },
                     child: Container(
@@ -683,11 +504,18 @@ class _ModulesPageState extends State<ModulesPage> {
                       decoration: ShapeDecoration(
                         color: Colors.white,
                         shape: RoundedRectangleBorder(
-                          side: const BorderSide(width: 1, color: Color(0xFFEBEBEB)),
+                          side: const BorderSide(
+                            width: 1,
+                            color: Color(0xFFEBEBEB),
+                          ),
                           borderRadius: BorderRadius.circular(12),
                         ),
                         shadows: const [
-                          BoxShadow(color: Color(0x0A000000), blurRadius: 24, offset: Offset(0, 0)),
+                          BoxShadow(
+                            color: Color(0x0A000000),
+                            blurRadius: 24,
+                            offset: Offset(0, 0),
+                          ),
                         ],
                       ),
                       child: Row(
@@ -708,7 +536,11 @@ class _ModulesPageState extends State<ModulesPage> {
                               ),
                             ],
                           ),
-                          SvgPicture.asset('icon/Arrow.svg', width: 24, height: 24),
+                          SvgPicture.asset(
+                            'icon/Arrow.svg',
+                            width: 24,
+                            height: 24,
+                          ),
                         ],
                       ),
                     ),

@@ -23,6 +23,16 @@ class WSConstantes {
   static const String animaisExcluirLote = '/animais/excluirLote';
   static const String animaisListarLotes = '/animais/listarLotes';
   static const String animaisGraficos = '/animais/graficos';
+  static const String potreirosListar = '/potreiros/listar';
+  static const String potreirosAdd = '/potreiros/adicionar';
+  static const String potreirosEdit = '/potreiros/adicionar';
+  static const String potreirosExcluir = '/potreiros/excluir';
+  static const String potreirosGraficos = '/potreiros/graficos';
+  static const String climasListar = '/climas/listar';
+  static const String climasAdd = '/climas/adicionar';
+  static const String climasEdit = '/climas/adicionar';
+  static const String climasExcluir = '/climas/excluir';
+  static const String climasGraficos = '/climas/graficos';
 
   static const int tipoPessoaFisica = 1;
   static const int tipoPessoaJuridica = 2;
