@@ -33,6 +33,13 @@ class WSConstantes {
   static const String climasEdit = '/climas/adicionar';
   static const String climasExcluir = '/climas/excluir';
   static const String climasGraficos = '/climas/graficos';
+  static const String tarefasListar = '/tarefas/listar';
+  static const String tarefasAdicionar = '/tarefas/adicionar';
+  static const String tarefasExcluir = '/tarefas/excluir';
+  static const String tarefasSetStatus = '/tarefas/setStatus';
+  static const String tarefasAdicionarResponsavel = '/tarefas/adicionarResponsavel';
+  static const String tarefasExcluirResponsavel = '/tarefas/excluirResponsavel';
+  static const String tarefasGraficos = '/tarefas/graficos';
 
   static const int tipoPessoaFisica = 1;
   static const int tipoPessoaJuridica = 2;

@@ -17,8 +17,7 @@ class AnimalList extends StatefulWidget {
 }
 
 class _AnimalListState extends State<AnimalList> {
-  final AnimalListPageController _pageController =
-      Modular.get<AnimalListPageController>();
+  final AnimalListPageController _pageController = Modular.get<AnimalListPageController>();
 
   @override
   void initState() {
@@ -136,10 +135,7 @@ class _AnimalListState extends State<AnimalList> {
                         'icon/danger-linear.svg',
                         width: 80,
                         height: 80,
-                        colorFilter: const ColorFilter.mode(
-                          Colors.red,
-                          BlendMode.srcIn,
-                        ),
+                        colorFilter: const ColorFilter.mode(Colors.red, BlendMode.srcIn),
                       ),
                       const SizedBox(height: 16),
                       const Text(
@@ -170,8 +166,7 @@ class _AnimalListState extends State<AnimalList> {
                           onPressed: _pageController.isDeleting
                               ? null
                               : () async {
-                                  final action = await _pageController
-                                      .deleteAnimal(animal);
+                                  final action = await _pageController.deleteAnimal(animal);
                                   if (!mounted || !modalContext.mounted) {
                                     return;
                                   }
@@ -179,23 +174,16 @@ class _AnimalListState extends State<AnimalList> {
                                   if (action.isSuccess) {
                                     Modular.to.pop();
                                   }
-                                  _showMessage(
-                                    action.message,
-                                    isError: !action.isSuccess,
-                                  );
+                                  _showMessage(action.message, isError: !action.isSuccess);
                                 },
                           style: ElevatedButton.styleFrom(
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(8),
-                            ),
+                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
                             side: const BorderSide(color: Colors.red),
                             elevation: 0,
                             backgroundColor: Colors.transparent,
                           ),
                           child: Text(
-                            _pageController.isDeleting
-                                ? 'Excluindo...'
-                                : 'Excluir',
+                            _pageController.isDeleting ? 'Excluindo...' : 'Excluir',
                             style: const TextStyle(color: Colors.red),
                           ),
                         ),
@@ -246,19 +234,11 @@ class _AnimalListState extends State<AnimalList> {
                   icon: Icon(
                     Icons.tune_rounded,
                     size: 16,
-                    color: hasActiveFilters
-                        ? MyColors.colorPrimary
-                        : const Color(0xFF8C8C8C),
+                    color: hasActiveFilters ? MyColors.colorPrimary : const Color(0xFF8C8C8C),
                   ),
-                  borderColor: hasActiveFilters
-                      ? MyColors.colorPrimary
-                      : const Color(0xFFE6E6E6),
-                  backgroundColor: hasActiveFilters
-                      ? const Color(0x14128977)
-                      : Colors.transparent,
-                  textColor: hasActiveFilters
-                      ? MyColors.colorPrimary
-                      : const Color(0xFF8C8C8C),
+                  borderColor: hasActiveFilters ? MyColors.colorPrimary : const Color(0xFFE6E6E6),
+                  backgroundColor: hasActiveFilters ? const Color(0x14128977) : Colors.transparent,
+                  textColor: hasActiveFilters ? MyColors.colorPrimary : const Color(0xFF8C8C8C),
                   onTap: _showFilterSheet,
                 ),
               ],
@@ -275,21 +255,17 @@ class _AnimalListState extends State<AnimalList> {
                 },
                 child: Builder(
                   builder: (context) {
-                    if (_pageController.isLoading &&
-                        _pageController.animals.isEmpty) {
+                    if (_pageController.isLoading && _pageController.animals.isEmpty) {
                       return const Center(child: CircularProgressIndicator());
                     }
 
-                    if (_pageController.errorMessage != null &&
-                        _pageController.animals.isEmpty) {
+                    if (_pageController.errorMessage != null && _pageController.animals.isEmpty) {
                       return ListView(
                         children: [
                           const SizedBox(height: 120),
                           Center(
                             child: Padding(
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 24,
-                              ),
+                              padding: const EdgeInsets.symmetric(horizontal: 24),
                               child: Text(
                                 _pageController.errorMessage!,
                                 textAlign: TextAlign.center,
@@ -304,9 +280,7 @@ class _AnimalListState extends State<AnimalList> {
                       return ListView(
                         children: const [
                           SizedBox(height: 120),
-                          Center(
-                            child: Text('Nenhum animal cadastrado ate agora.'),
-                          ),
+                          Center(child: Text('Nenhum animal cadastrado ate agora.')),
                         ],
                       );
                     }
@@ -317,26 +291,16 @@ class _AnimalListState extends State<AnimalList> {
                         final animal = _pageController.animals[index];
                         return GestureDetector(
                           onTap: () {
-                            Modular.to.pushNamed(
-                              AppRoutes.animalsDetail,
-                              arguments: animal,
-                            );
+                            Modular.to.pushNamed(AppRoutes.animalsDetail, arguments: animal);
                           },
                           child: Container(
                             width: MediaQuery.of(context).size.width - 40,
-                            margin: const EdgeInsets.only(
-                              bottom: 8,
-                              left: 20,
-                              right: 20,
-                            ),
+                            margin: const EdgeInsets.only(bottom: 8, left: 20, right: 20),
                             padding: const EdgeInsets.all(16),
                             decoration: ShapeDecoration(
                               color: Colors.white,
                               shape: RoundedRectangleBorder(
-                                side: const BorderSide(
-                                  width: 1,
-                                  color: Color(0xFFEBEBEB),
-                                ),
+                                side: const BorderSide(width: 1, color: Color(0xFFEBEBEB)),
                                 borderRadius: BorderRadius.circular(12),
                               ),
                               shadows: const [
@@ -360,9 +324,7 @@ class _AnimalListState extends State<AnimalList> {
                                         decoration: ShapeDecoration(
                                           color: const Color(0x198C8C8C),
                                           shape: RoundedRectangleBorder(
-                                            borderRadius: BorderRadius.circular(
-                                              42.67,
-                                            ),
+                                            borderRadius: BorderRadius.circular(42.67),
                                           ),
                                         ),
                                         child: SvgPicture.asset(
@@ -374,14 +336,10 @@ class _AnimalListState extends State<AnimalList> {
                                       const SizedBox(width: 16),
                                       Expanded(
                                         child: Column(
-                                          crossAxisAlignment:
-                                              CrossAxisAlignment.start,
+                                          crossAxisAlignment: CrossAxisAlignment.start,
                                           children: [
                                             Text(
-                                              animal.brinco
-                                                          ?.trim()
-                                                          .isNotEmpty ==
-                                                      true
+                                              animal.brinco?.trim().isNotEmpty == true
                                                   ? animal.brinco!.trim()
                                                   : 'Animal #${animal.id}',
                                               style: const TextStyle(
@@ -393,9 +351,7 @@ class _AnimalListState extends State<AnimalList> {
                                             ),
                                             const SizedBox(height: 8),
                                             Text(
-                                              _pageController.buildSummary(
-                                                animal,
-                                              ),
+                                              _pageController.buildSummary(animal),
                                               style: const TextStyle(
                                                 color: Color(0xFF313131),
                                                 fontSize: 14,
@@ -408,14 +364,8 @@ class _AnimalListState extends State<AnimalList> {
                                               spacing: 16,
                                               runSpacing: 6,
                                               children: [
-                                                _buildInfoChip(
-                                                  'Lote',
-                                                  animal.lote?.nome,
-                                                ),
-                                                _buildInfoChip(
-                                                  'Potreiro',
-                                                  animal.potreiro?.nome,
-                                                ),
+                                                _buildInfoChip('Lote', animal.lote?.nome),
+                                                _buildInfoChip('Potreiro', animal.potreiro?.nome),
                                               ],
                                             ),
                                           ],
@@ -434,9 +384,7 @@ class _AnimalListState extends State<AnimalList> {
                                     const SizedBox(width: 16),
                                     GestureDetector(
                                       onTap: () => _openEdit(animal),
-                                      child: SvgPicture.asset(
-                                        'icon/square-pen.svg',
-                                      ),
+                                      child: SvgPicture.asset('icon/square-pen.svg'),
                                     ),
                                   ],
                                 ),
@@ -507,16 +455,6 @@ class _AnimalListState extends State<AnimalList> {
     return Row(
       mainAxisSize: MainAxisSize.min,
       children: [
-        Text(
-          label,
-          style: const TextStyle(
-            color: Color(0xFF8C8C8C),
-            fontSize: 12,
-            fontFamily: 'Montserrat',
-            fontWeight: FontWeight.w500,
-          ),
-        ),
-        const SizedBox(width: 4),
         Text(
           displayValue,
           style: const TextStyle(
