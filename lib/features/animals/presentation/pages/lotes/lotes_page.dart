@@ -17,8 +17,7 @@ class LotesPage extends StatefulWidget {
 }
 
 class _LotesPageState extends State<LotesPage> {
-  final LotesPageController _pageController =
-      Modular.get<LotesPageController>();
+  final LotesPageController _pageController = Modular.get<LotesPageController>();
 
   @override
   void initState() {
@@ -43,9 +42,7 @@ class _LotesPageState extends State<LotesPage> {
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
-      builder: (_) => AnimalLotFilterSheet(
-        initialNome: _pageController.currentFilter?.nome,
-      ),
+      builder: (_) => AnimalLotFilterSheet(initialNome: _pageController.currentFilter?.nome),
     );
 
     if (!mounted || result == null) {
@@ -132,10 +129,7 @@ class _LotesPageState extends State<LotesPage> {
                         'icon/danger-linear.svg',
                         width: 80,
                         height: 80,
-                        colorFilter: const ColorFilter.mode(
-                          Colors.red,
-                          BlendMode.srcIn,
-                        ),
+                        colorFilter: const ColorFilter.mode(Colors.red, BlendMode.srcIn),
                       ),
                       const SizedBox(height: 16),
                       const Text(
@@ -166,8 +160,7 @@ class _LotesPageState extends State<LotesPage> {
                           onPressed: _pageController.isDeleting
                               ? null
                               : () async {
-                                  final action = await _pageController
-                                      .deleteLot(lot);
+                                  final action = await _pageController.deleteLot(lot);
                                   if (!mounted || !modalContext.mounted) {
                                     return;
                                   }
@@ -175,23 +168,16 @@ class _LotesPageState extends State<LotesPage> {
                                   if (action.isSuccess) {
                                     Modular.to.pop();
                                   }
-                                  _showMessage(
-                                    action.message,
-                                    isError: !action.isSuccess,
-                                  );
+                                  _showMessage(action.message, isError: !action.isSuccess);
                                 },
                           style: ElevatedButton.styleFrom(
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(8),
-                            ),
+                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
                             side: const BorderSide(color: Colors.red),
                             elevation: 0,
                             backgroundColor: Colors.transparent,
                           ),
                           child: Text(
-                            _pageController.isDeleting
-                                ? 'Excluindo...'
-                                : 'Excluir',
+                            _pageController.isDeleting ? 'Excluindo...' : 'Excluir',
                             style: const TextStyle(color: Colors.red),
                           ),
                         ),
@@ -243,19 +229,13 @@ class _LotesPageState extends State<LotesPage> {
                     icon: Icon(
                       Icons.tune_rounded,
                       size: 16,
-                      color: hasActiveFilters
-                          ? MyColors.colorPrimary
-                          : const Color(0xFF8C8C8C),
+                      color: hasActiveFilters ? MyColors.colorPrimary : const Color(0xFF8C8C8C),
                     ),
-                    borderColor: hasActiveFilters
-                        ? MyColors.colorPrimary
-                        : const Color(0xFFE6E6E6),
+                    borderColor: hasActiveFilters ? MyColors.colorPrimary : const Color(0xFFE6E6E6),
                     backgroundColor: hasActiveFilters
                         ? const Color(0x14128977)
                         : Colors.transparent,
-                    textColor: hasActiveFilters
-                        ? MyColors.colorPrimary
-                        : const Color(0xFF8C8C8C),
+                    textColor: hasActiveFilters ? MyColors.colorPrimary : const Color(0xFF8C8C8C),
                     onTap: _showFilterSheet,
                   ),
                 ],
@@ -272,21 +252,17 @@ class _LotesPageState extends State<LotesPage> {
                   },
                   child: Builder(
                     builder: (context) {
-                      if (_pageController.isLoading &&
-                          _pageController.lots.isEmpty) {
+                      if (_pageController.isLoading && _pageController.lots.isEmpty) {
                         return const Center(child: CircularProgressIndicator());
                       }
 
-                      if (_pageController.errorMessage != null &&
-                          _pageController.lots.isEmpty) {
+                      if (_pageController.errorMessage != null && _pageController.lots.isEmpty) {
                         return ListView(
                           children: [
                             const SizedBox(height: 120),
                             Center(
                               child: Padding(
-                                padding: const EdgeInsets.symmetric(
-                                  horizontal: 24,
-                                ),
+                                padding: const EdgeInsets.symmetric(horizontal: 24),
                                 child: Text(
                                   _pageController.errorMessage!,
                                   textAlign: TextAlign.center,
@@ -301,9 +277,7 @@ class _LotesPageState extends State<LotesPage> {
                         return ListView(
                           children: const [
                             SizedBox(height: 120),
-                            Center(
-                              child: Text('Nenhum lote cadastrado ate agora.'),
-                            ),
+                            Center(child: Text('Nenhum lote cadastrado até agora.')),
                           ],
                         );
                       }
@@ -379,13 +353,7 @@ class _LotesPageState extends State<LotesPage> {
           side: const BorderSide(width: 1, color: Color(0xFFEBEBEB)),
           borderRadius: BorderRadius.circular(12),
         ),
-        shadows: const [
-          BoxShadow(
-            color: Color(0x0A000000),
-            blurRadius: 24,
-            offset: Offset(0, 0),
-          ),
-        ],
+        shadows: const [BoxShadow(color: Color(0x0A000000), blurRadius: 24, offset: Offset(0, 0))],
       ),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,

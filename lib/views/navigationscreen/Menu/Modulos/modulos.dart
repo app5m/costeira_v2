@@ -7,7 +7,7 @@ import 'package:flutter_modular/flutter_modular.dart';
 import 'package:flutter_svg/svg.dart';
 
 import '../../../../theme/colors.dart';
-import 'estoquedeinsumos/estoqueinsumos.dart';
+import '../../../../features/insumos/presentation/pages/estoque_insumos.dart';
 
 class ModulesPage extends StatefulWidget {
   const ModulesPage({super.key});

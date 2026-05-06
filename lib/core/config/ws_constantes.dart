@@ -16,6 +16,13 @@ class WSConstantes {
   static const String updateAvatar = '/usuarios/updateavatar/';
   static const String utilLista = '/util/lista';
   static const String animaisListar = '/animais/listar';
+  static const String insumosListar = '/insumos/listar';
+  static const String insumosListarTipo = '/insumos/listarTipo';
+  static const String insumosAdicionar = '/insumos/adicionar';
+  static const String insumosAdicionarRegistro = '/insumos/adicionarRegistro';
+  static const String insumosExcluir = '/insumos/excluir';
+  static const String insumosExcluirRegistro = '/insumos/excluirRegistro';
+  static const String insumosGraficos = '/insumos/graficos';
   static const String animaisAdd = '/animais/adicionar';
   static const String animaisEdit = '/animais/adicionar';
   static const String animaisExcluir = '/animais/excluir';
@@ -37,7 +44,8 @@ class WSConstantes {
   static const String tarefasAdicionar = '/tarefas/adicionar';
   static const String tarefasExcluir = '/tarefas/excluir';
   static const String tarefasSetStatus = '/tarefas/setStatus';
-  static const String tarefasAdicionarResponsavel = '/tarefas/adicionarResponsavel';
+  static const String tarefasAdicionarResponsavel =
+      '/tarefas/adicionarResponsavel';
   static const String tarefasExcluirResponsavel = '/tarefas/excluirResponsavel';
   static const String tarefasGraficos = '/tarefas/graficos';
 

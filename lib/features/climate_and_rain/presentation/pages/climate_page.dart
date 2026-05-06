@@ -18,12 +18,9 @@ class ClimatePage extends StatefulWidget {
   State<ClimatePage> createState() => _ClimatePageState();
 }
 
-class _ClimatePageState extends State<ClimatePage>
-    with SingleTickerProviderStateMixin {
-  final ClimatePageController _pageController =
-      Modular.get<ClimatePageController>();
-  final ClimateListPageController _listPageController =
-      Modular.get<ClimateListPageController>();
+class _ClimatePageState extends State<ClimatePage> with SingleTickerProviderStateMixin {
+  final ClimatePageController _pageController = Modular.get<ClimatePageController>();
+  final ClimateListPageController _listPageController = Modular.get<ClimateListPageController>();
 
   @override
   void initState() {
@@ -46,9 +43,7 @@ class _ClimatePageState extends State<ClimatePage>
   }
 
   Future<void> _openAdd() async {
-    final result = await Modular.to.pushNamed<Map<String, dynamic>?>(
-      AppRoutes.climateRainAdd,
-    );
+    final result = await Modular.to.pushNamed<Map<String, dynamic>?>(AppRoutes.climateRainAdd);
 
     if (!mounted || result?['success'] != true) {
       return;
@@ -59,10 +54,7 @@ class _ClimatePageState extends State<ClimatePage>
       return;
     }
 
-    _showMessage(
-      result?['message']?.toString() ?? 'Clima salvo com sucesso.',
-      isError: false,
-    );
+    _showMessage(result?['message']?.toString() ?? 'Clima salvo com sucesso.', isError: false);
   }
 
   Future<void> _openEdit(ClimateEntity climate) async {
@@ -162,10 +154,7 @@ class _ClimatePageState extends State<ClimatePage>
                         'icon/danger-linear.svg',
                         width: 80,
                         height: 80,
-                        colorFilter: const ColorFilter.mode(
-                          Colors.red,
-                          BlendMode.srcIn,
-                        ),
+                        colorFilter: const ColorFilter.mode(Colors.red, BlendMode.srcIn),
                       ),
                       const SizedBox(height: 16),
                       const Text(
@@ -196,31 +185,23 @@ class _ClimatePageState extends State<ClimatePage>
                           onPressed: _listPageController.isDeleting
                               ? null
                               : () async {
-                                  final action = await _listPageController
-                                      .deleteClimate(climate);
+                                  final action = await _listPageController.deleteClimate(climate);
                                   if (!mounted || !modalContext.mounted) {
                                     return;
                                   }
                                   if (action.isSuccess) {
                                     Modular.to.pop();
                                   }
-                                  _showMessage(
-                                    action.message,
-                                    isError: !action.isSuccess,
-                                  );
+                                  _showMessage(action.message, isError: !action.isSuccess);
                                 },
                           style: ElevatedButton.styleFrom(
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(8),
-                            ),
+                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
                             side: const BorderSide(color: Colors.red),
                             elevation: 0,
                             backgroundColor: Colors.transparent,
                           ),
                           child: Text(
-                            _listPageController.isDeleting
-                                ? 'Excluindo...'
-                                : 'Excluir',
+                            _listPageController.isDeleting ? 'Excluindo...' : 'Excluir',
                             style: const TextStyle(color: Colors.red),
                           ),
                         ),
@@ -262,9 +243,7 @@ class _ClimatePageState extends State<ClimatePage>
           backgroundColor: Colors.white,
           floatingActionButton: _pageController.shouldShowFab
               ? FloatingActionButton(
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(64),
-                  ),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(64)),
                   onPressed: _openAdd,
                   child: const Padding(
                     padding: EdgeInsets.all(12.0),
@@ -278,10 +257,7 @@ class _ClimatePageState extends State<ClimatePage>
               onPressed: () => Modular.to.pop(),
               icon: const Icon(Icons.arrow_back_ios, color: Colors.white),
             ),
-            title: const Text(
-              'Clima e Chuvas',
-              style: TextStyle(color: Colors.white),
-            ),
+            title: const Text('Clima e Chuvas', style: TextStyle(color: Colors.white)),
           ),
           body: Column(
             children: [
@@ -315,9 +291,7 @@ class _ClimatePageState extends State<ClimatePage>
                   children: [
                     const SizedBox(width: 20),
                     _buildTopPill(
-                      label: _listPageController.hasActiveFilters()
-                          ? 'Filtros ativos'
-                          : 'Filtrar',
+                      label: _listPageController.hasActiveFilters() ? 'Filtros ativos' : 'Filtrar',
                       icon: Icon(
                         Icons.tune_rounded,
                         size: 16,
@@ -342,8 +316,7 @@ class _ClimatePageState extends State<ClimatePage>
                 Expanded(
                   child: RefreshIndicator(
                     onRefresh: () async {
-                      final result = await _listPageController
-                          .loadInitialData();
+                      final result = await _listPageController.loadInitialData();
                       if (!mounted || result == null) {
                         return;
                       }
@@ -351,11 +324,8 @@ class _ClimatePageState extends State<ClimatePage>
                     },
                     child: Builder(
                       builder: (context) {
-                        if (_listPageController.isLoading &&
-                            _listPageController.climates.isEmpty) {
-                          return const Center(
-                            child: CircularProgressIndicator(),
-                          );
+                        if (_listPageController.isLoading && _listPageController.climates.isEmpty) {
+                          return const Center(child: CircularProgressIndicator());
                         }
 
                         if (_listPageController.errorMessage != null &&
@@ -365,9 +335,7 @@ class _ClimatePageState extends State<ClimatePage>
                               const SizedBox(height: 120),
                               Center(
                                 child: Padding(
-                                  padding: const EdgeInsets.symmetric(
-                                    horizontal: 24,
-                                  ),
+                                  padding: const EdgeInsets.symmetric(horizontal: 24),
                                   child: Text(
                                     _listPageController.errorMessage!,
                                     textAlign: TextAlign.center,
@@ -382,11 +350,7 @@ class _ClimatePageState extends State<ClimatePage>
                           return ListView(
                             children: const [
                               SizedBox(height: 120),
-                              Center(
-                                child: Text(
-                                  'Nenhum registro de chuva cadastrado ate agora.',
-                                ),
-                              ),
+                              Center(child: Text('Nenhum registro de chuva cadastrado.')),
                             ],
                           );
                         }
@@ -398,18 +362,11 @@ class _ClimatePageState extends State<ClimatePage>
                             return Container(
                               width: MediaQuery.of(context).size.width - 40,
                               padding: const EdgeInsets.all(16),
-                              margin: const EdgeInsets.only(
-                                bottom: 8,
-                                left: 20,
-                                right: 20,
-                              ),
+                              margin: const EdgeInsets.only(bottom: 8, left: 20, right: 20),
                               decoration: ShapeDecoration(
                                 color: Colors.white,
                                 shape: RoundedRectangleBorder(
-                                  side: const BorderSide(
-                                    width: 1,
-                                    color: Color(0xFFEBEBEB),
-                                  ),
+                                  side: const BorderSide(width: 1, color: Color(0xFFEBEBEB)),
                                   borderRadius: BorderRadius.circular(12),
                                 ),
                                 shadows: const [
@@ -422,8 +379,7 @@ class _ClimatePageState extends State<ClimatePage>
                               ),
                               child: Row(
                                 crossAxisAlignment: CrossAxisAlignment.start,
-                                mainAxisAlignment:
-                                    MainAxisAlignment.spaceBetween,
+                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                 children: [
                                   Expanded(
                                     child: Row(
@@ -433,8 +389,7 @@ class _ClimatePageState extends State<ClimatePage>
                                           decoration: ShapeDecoration(
                                             color: const Color(0x198C8C8C),
                                             shape: RoundedRectangleBorder(
-                                              borderRadius:
-                                                  BorderRadius.circular(42.67),
+                                              borderRadius: BorderRadius.circular(42.67),
                                             ),
                                           ),
                                           child: SvgPicture.asset(
@@ -450,8 +405,7 @@ class _ClimatePageState extends State<ClimatePage>
                                         const SizedBox(width: 16),
                                         Expanded(
                                           child: Column(
-                                            crossAxisAlignment:
-                                                CrossAxisAlignment.start,
+                                            crossAxisAlignment: CrossAxisAlignment.start,
                                             children: [
                                               Text(
                                                 '${_formatDecimal(climate.quantidade)} mm',
@@ -463,10 +417,7 @@ class _ClimatePageState extends State<ClimatePage>
                                                 ),
                                               ),
                                               const SizedBox(height: 8),
-                                              _infoRow(
-                                                'Inicio',
-                                                climate.dataIn,
-                                              ),
+                                              _infoRow('Inicio', climate.dataIn),
                                               const SizedBox(height: 6),
                                               _infoRow('Fim', climate.dataOut),
                                             ],
@@ -480,16 +431,12 @@ class _ClimatePageState extends State<ClimatePage>
                                     children: [
                                       GestureDetector(
                                         onTap: () => _confirmDelete(climate),
-                                        child: SvgPicture.asset(
-                                          'icon/trash.svg',
-                                        ),
+                                        child: SvgPicture.asset('icon/trash.svg'),
                                       ),
                                       const SizedBox(width: 16),
                                       GestureDetector(
                                         onTap: () => _openEdit(climate),
-                                        child: SvgPicture.asset(
-                                          'icon/square-pen.svg',
-                                        ),
+                                        child: SvgPicture.asset('icon/square-pen.svg'),
                                       ),
                                     ],
                                   ),
@@ -503,8 +450,7 @@ class _ClimatePageState extends State<ClimatePage>
                   ),
                 ),
               ],
-              if (_pageController.tabIndex == 1)
-                const Expanded(child: GraficsClimatePage()),
+              if (_pageController.tabIndex == 1) const Expanded(child: GraficsClimatePage()),
             ],
           ),
         );

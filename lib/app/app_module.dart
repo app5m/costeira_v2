@@ -53,6 +53,7 @@ import 'package:costeira/features/auth/presentation/pages/onboarding.view.dart';
 import 'package:costeira/features/auth/presentation/pages/splash.dart';
 import 'package:costeira/features/auth/presentation/pages/welcome_page.dart';
 import 'package:costeira/features/auth/presentation/pages/validation_code_page.dart';
+import 'package:costeira/features/insumos/insumos_binds.dart';
 import 'package:flutter_modular/flutter_modular.dart';
 
 class AppModule extends Module {
@@ -83,6 +84,7 @@ class AppModule extends Module {
     ClimateAndRainBinds.register(i);
     PotreirosBinds.register(i);
     AnimalsBinds.register(i);
+    InsumosBinds.register(i);
     TasksBinds.register(i);
   }
 

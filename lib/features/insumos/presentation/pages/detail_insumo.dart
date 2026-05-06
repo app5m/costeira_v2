@@ -1,15 +1,15 @@
 import 'package:flutter/material.dart';
 
-import '../../../../../../theme/colors.dart';
+import '../../../../theme/colors.dart';
 
-class AddCompraInsumo extends StatefulWidget {
-  const AddCompraInsumo({super.key});
+class DetailInsumo extends StatefulWidget {
+  const DetailInsumo({super.key});
 
   @override
-  State<AddCompraInsumo> createState() => _AddCompraInsumoState();
+  State<DetailInsumo> createState() => _DetailInsumoState();
 }
 
-class _AddCompraInsumoState extends State<AddCompraInsumo> {
+class _DetailInsumoState extends State<DetailInsumo> {
   Widget buildTextField(String label, String hint) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -28,7 +28,7 @@ class _AddCompraInsumoState extends State<AddCompraInsumo> {
         const SizedBox(height: 6),
         TextField(
           style: TextStyle(
-            color: Color(0xFF8C8C8C),
+            color: Color(0xFF313131),
             fontSize: 14,
             fontFamily: 'Montserrat',
             fontWeight: FontWeight.w400,
@@ -38,7 +38,7 @@ class _AddCompraInsumoState extends State<AddCompraInsumo> {
           decoration: InputDecoration(
             hintText: hint,
             hintStyle: TextStyle(
-              color: Color(0xFF8C8C8C),
+              color: Color(0xFF313131),
               fontSize: 14,
               fontFamily: 'Montserrat',
               fontWeight: FontWeight.w400,
@@ -79,7 +79,7 @@ class _AddCompraInsumoState extends State<AddCompraInsumo> {
           minLines: 3,
           maxLines: 3,
           style: TextStyle(
-            color: Color(0xFF8C8C8C),
+            color: Color(0xFF313131),
             fontSize: 14,
             fontFamily: 'Montserrat',
             fontWeight: FontWeight.w400,
@@ -89,7 +89,7 @@ class _AddCompraInsumoState extends State<AddCompraInsumo> {
           decoration: InputDecoration(
             hintText: hint,
             hintStyle: TextStyle(
-              color: Color(0xFF8C8C8C),
+              color: Color(0xFF313131),
               fontSize: 14,
               fontFamily: 'Montserrat',
               fontWeight: FontWeight.w400,
@@ -123,7 +123,7 @@ class _AddCompraInsumoState extends State<AddCompraInsumo> {
           child: Icon(Icons.arrow_back_ios, color: Colors.white),
         ),
         title: Text(
-          'Registro de compra',
+          'Detalhes do insumo',
           style: TextStyle(
             color: Colors.white,
             fontSize: 16,
@@ -138,45 +138,15 @@ class _AddCompraInsumoState extends State<AddCompraInsumo> {
           child: Column(
             children: [
               SizedBox(height: 16),
-              buildTextField("Nome comercial", "Selecione"),
-              buildTextField("Data", "00/00/0000"),
-              buildTextField("Responsável", "Insira aqui"),
-              buildTextField("Quantidade usada", "00 kg"),
-              buildTextField("Tipo de uso", "Ex: Suplementação no potre..."),
+              buildTextField("Tipo de insumo", "Medicamento"),
+              buildTextField("Nome comercial", "Ivermectina 1%"),
+              buildTextField("Fornecedor", "VetFarma"),
+              buildTextField("Quantidade", "500 kg"),
+              buildTextField("Preço por kg", "R\$ 2,80/kg"),
+              buildTextField("Valor total", "R\$ 1.400,00"),
+              buildTextField("Validade", "12/11/2025"),
+              buildTextField("Observações", "ELote armazenado no galpão 2..."),
 
-              // buildTextField("Status", "Selecione"),
-              // buildTextField("Observações", "Ex: Equipe iniciou a tr..."),
-              const SizedBox(height: 16),
-
-              Container(
-                margin: EdgeInsets.symmetric(horizontal: 0),
-                child: SizedBox(
-                  width: double.infinity,
-                  height: 50,
-                  child: ElevatedButton(
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: MyColors.colorPrimary,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                    ),
-                    onPressed: () {
-                      Navigator.pop(context);
-                    },
-                    child: const Text(
-                      "Adicionar",
-                      textAlign: TextAlign.center,
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontSize: 14,
-                        fontFamily: 'Montserrat',
-                        fontWeight: FontWeight.w600,
-                        height: 1.29,
-                      ),
-                    ),
-                  ),
-                ),
-              ),
               const SizedBox(height: 32),
             ],
           ),
