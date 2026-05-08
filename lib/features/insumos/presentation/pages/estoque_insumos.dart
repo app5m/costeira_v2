@@ -21,10 +21,8 @@ class Insumos extends StatefulWidget {
 
 class _InsumosState extends State<Insumos> with SingleTickerProviderStateMixin {
   late TabController _tabController;
-  final ListInsumosController _listController =
-      Modular.get<ListInsumosController>();
-  final DeleteInsumoController _deleteController =
-      Modular.get<DeleteInsumoController>();
+  final ListInsumosController _listController = Modular.get<ListInsumosController>();
+  final DeleteInsumoController _deleteController = Modular.get<DeleteInsumoController>();
 
   int index = 0;
 
@@ -52,10 +50,7 @@ class _InsumosState extends State<Insumos> with SingleTickerProviderStateMixin {
       }
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text(
-            _listController.errorMessage ??
-                'Nao foi possivel carregar os insumos.',
-          ),
+          content: Text(_listController.errorMessage ?? 'Nao foi possivel carregar os insumos.'),
         ),
       );
     }
@@ -79,13 +74,7 @@ class _InsumosState extends State<Insumos> with SingleTickerProviderStateMixin {
               mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Center(
-                  child: Container(
-                    width: 72,
-                    height: 2,
-                    color: const Color(0xFFE2E2E2),
-                  ),
-                ),
+                Center(child: Container(width: 72, height: 2, color: const Color(0xFFE2E2E2))),
                 const SizedBox(height: 20),
                 const Text(
                   'Tipo de insumo',
@@ -104,9 +93,7 @@ class _InsumosState extends State<Insumos> with SingleTickerProviderStateMixin {
                 ..._listController.tipoInsumos.map(
                   (tipo) => _buildFilterOption(
                     label: tipo.nome,
-                    isSelected:
-                        _listController.currentFilter?.tipoInsumo ==
-                        tipo.id?.toString(),
+                    isSelected: _listController.currentFilter?.tipoInsumo == tipo.id?.toString(),
                     onTap: () => Navigator.of(context).pop(tipo.id?.toString()),
                   ),
                 ),
@@ -138,9 +125,7 @@ class _InsumosState extends State<Insumos> with SingleTickerProviderStateMixin {
           fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
         ),
       ),
-      trailing: isSelected
-          ? Icon(Icons.check_rounded, color: MyColors.colorPrimary)
-          : null,
+      trailing: isSelected ? Icon(Icons.check_rounded, color: MyColors.colorPrimary) : null,
       onTap: onTap,
     );
   }
@@ -194,9 +179,7 @@ class _InsumosState extends State<Insumos> with SingleTickerProviderStateMixin {
                   onTap: () async {
                     final result = await Navigator.push<Map<String, dynamic>?>(
                       context,
-                      MaterialPageRoute(
-                        builder: (_) => const AddCompraInsumo(tipo: 1),
-                      ),
+                      MaterialPageRoute(builder: (_) => const AddCompraInsumo(tipo: 1)),
                     );
                     if (!mounted || result?['success'] != true) {
                       return;
@@ -218,9 +201,7 @@ class _InsumosState extends State<Insumos> with SingleTickerProviderStateMixin {
                   onTap: () async {
                     final result = await Navigator.push<Map<String, dynamic>?>(
                       context,
-                      MaterialPageRoute(
-                        builder: (_) => const AddCompraInsumo(tipo: 2),
-                      ),
+                      MaterialPageRoute(builder: (_) => const AddCompraInsumo(tipo: 2)),
                     );
                     if (!mounted || result?['success'] != true) {
                       return;
@@ -255,7 +236,7 @@ class _InsumosState extends State<Insumos> with SingleTickerProviderStateMixin {
             tabs: const [
               Tab(text: 'Lista'),
               Tab(text: 'Registros'),
-              Tab(text: 'Graficos'),
+              Tab(text: 'Gráficos'),
             ],
             onTap: (int inde) {
               setState(() {
@@ -287,9 +268,7 @@ class _InsumosState extends State<Insumos> with SingleTickerProviderStateMixin {
                 final hasFilters = _listController.hasActiveFilters();
                 return _FilterSelector(
                   label: hasFilters
-                      ? _listController.tipoLabel(
-                          _listController.currentFilter!.tipoInsumo!,
-                        )
+                      ? _listController.tipoLabel(_listController.currentFilter!.tipoInsumo!)
                       : 'Filtrar por tipo',
                   isActive: hasFilters,
                   onTap: _showTipoFilter,
@@ -313,18 +292,14 @@ class _InsumosState extends State<Insumos> with SingleTickerProviderStateMixin {
           return const Center(child: CircularProgressIndicator());
         }
 
-        if (_listController.errorMessage != null &&
-            _listController.insumos.isEmpty) {
+        if (_listController.errorMessage != null && _listController.insumos.isEmpty) {
           return ListView(
             children: [
               const SizedBox(height: 120),
               Center(
                 child: Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 24),
-                  child: Text(
-                    _listController.errorMessage!,
-                    textAlign: TextAlign.center,
-                  ),
+                  child: Text(_listController.errorMessage!, textAlign: TextAlign.center),
                 ),
               ),
             ],
@@ -352,10 +327,7 @@ class _InsumosState extends State<Insumos> with SingleTickerProviderStateMixin {
                 description: _listController.buildDescription(insumo),
                 quantity: _listController.buildQuantity(insumo),
                 onTap: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(builder: (_) => const DetailInsumo()),
-                  );
+                  Navigator.push(context, MaterialPageRoute(builder: (_) => const DetailInsumo()));
                 },
                 onDelete: () => _confirmDeleteInsumo(insumo),
               );
@@ -374,18 +346,14 @@ class _InsumosState extends State<Insumos> with SingleTickerProviderStateMixin {
           return const Center(child: CircularProgressIndicator());
         }
 
-        if (_listController.errorMessage != null &&
-            _listController.registros.isEmpty) {
+        if (_listController.errorMessage != null && _listController.registros.isEmpty) {
           return ListView(
             children: [
               const SizedBox(height: 120),
               Center(
                 child: Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 24),
-                  child: Text(
-                    _listController.errorMessage!,
-                    textAlign: TextAlign.center,
-                  ),
+                  child: Text(_listController.errorMessage!, textAlign: TextAlign.center),
                 ),
               ),
             ],
@@ -514,10 +482,7 @@ class _InsumosState extends State<Insumos> with SingleTickerProviderStateMixin {
                         'icon/danger-linear.svg',
                         width: 80,
                         height: 80,
-                        colorFilter: const ColorFilter.mode(
-                          Colors.red,
-                          BlendMode.srcIn,
-                        ),
+                        colorFilter: const ColorFilter.mode(Colors.red, BlendMode.srcIn),
                       ),
                       const SizedBox(height: 16),
                       Text(
@@ -576,17 +541,13 @@ class _InsumosState extends State<Insumos> with SingleTickerProviderStateMixin {
                                   }
                                 },
                           style: ElevatedButton.styleFrom(
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(8),
-                            ),
+                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
                             side: const BorderSide(color: Colors.red),
                             elevation: 0,
                             backgroundColor: Colors.transparent,
                           ),
                           child: Text(
-                            _deleteController.isLoading
-                                ? 'Excluindo...'
-                                : 'Excluir',
+                            _deleteController.isLoading ? 'Excluindo...' : 'Excluir',
                             style: const TextStyle(color: Colors.red),
                           ),
                         ),
@@ -650,11 +611,7 @@ class _InsumoCard extends StatelessWidget {
             borderRadius: BorderRadius.circular(12),
           ),
           shadows: const [
-            BoxShadow(
-              color: Color(0x0A000000),
-              blurRadius: 24,
-              offset: Offset(0, 0),
-            ),
+            BoxShadow(color: Color(0x0A000000), blurRadius: 24, offset: Offset(0, 0)),
           ],
         ),
         child: Row(
@@ -670,18 +627,13 @@ class _InsumoCard extends StatelessWidget {
                     clipBehavior: Clip.antiAlias,
                     decoration: ShapeDecoration(
                       color: const Color(0x198C8C8C),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(42.67),
-                      ),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(42.67)),
                     ),
                     child: SvgPicture.asset(
                       'icon/diamond.svg',
                       width: 16,
                       height: 16,
-                      colorFilter: const ColorFilter.mode(
-                        Color(0xFF8C8C8C),
-                        BlendMode.srcIn,
-                      ),
+                      colorFilter: const ColorFilter.mode(Color(0xFF8C8C8C), BlendMode.srcIn),
                     ),
                   ),
                   const SizedBox(width: 16),
@@ -701,9 +653,7 @@ class _InsumoCard extends StatelessWidget {
                         _CardText(description, fontSize: 12),
                         const SizedBox(height: 8),
                         _CardText(
-                          quantity.isEmpty
-                              ? 'Quantidade nao informada'
-                              : quantity,
+                          quantity.isEmpty ? 'Quantidade nao informada' : quantity,
                           fontSize: 12,
                           color: const Color(0xFF8C8C8C),
                         ),
@@ -723,15 +673,9 @@ class _InsumoCard extends StatelessWidget {
             Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                GestureDetector(
-                  onTap: onDelete,
-                  child: SvgPicture.asset('icon/trash.svg'),
-                ),
+                GestureDetector(onTap: onDelete, child: SvgPicture.asset('icon/trash.svg')),
                 const SizedBox(height: 12),
-                GestureDetector(
-                  onTap: () {},
-                  child: SvgPicture.asset('icon/square-pen.svg'),
-                ),
+                GestureDetector(onTap: () {}, child: SvgPicture.asset('icon/square-pen.svg')),
               ],
             ),
           ],
@@ -768,13 +712,7 @@ class _RegistroCard extends StatelessWidget {
           side: const BorderSide(width: 1, color: Color(0xFFEBEBEB)),
           borderRadius: BorderRadius.circular(12),
         ),
-        shadows: const [
-          BoxShadow(
-            color: Color(0x0A000000),
-            blurRadius: 24,
-            offset: Offset(0, 0),
-          ),
-        ],
+        shadows: const [BoxShadow(color: Color(0x0A000000), blurRadius: 24, offset: Offset(0, 0))],
       ),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.center,
@@ -784,9 +722,7 @@ class _RegistroCard extends StatelessWidget {
             clipBehavior: Clip.antiAlias,
             decoration: ShapeDecoration(
               color: const Color(0x198C8C8C),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(42.67),
-              ),
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(42.67)),
             ),
             child: Icon(
               registro.tipo.id?.toString() == '1'
@@ -805,11 +741,7 @@ class _RegistroCard extends StatelessWidget {
                 const SizedBox(height: 8),
                 _CardText(registro.estoqueNome, fontSize: 12),
                 const SizedBox(height: 8),
-                _CardText(
-                  '$tipoLabel - $quantity',
-                  fontSize: 12,
-                  color: const Color(0xFF8C8C8C),
-                ),
+                _CardText('$tipoLabel - $quantity', fontSize: 12, color: const Color(0xFF8C8C8C)),
                 if (obs != null && obs.isNotEmpty) ...[
                   const SizedBox(height: 8),
                   _CardText(obs, fontSize: 12),
@@ -827,10 +759,7 @@ class _RegistroCard extends StatelessWidget {
           Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              GestureDetector(
-                onTap: onDelete,
-                child: SvgPicture.asset('icon/trash.svg'),
-              ),
+              GestureDetector(onTap: onDelete, child: SvgPicture.asset('icon/trash.svg')),
               const SizedBox(height: 12),
               SvgPicture.asset('icon/square-pen.svg'),
             ],
@@ -842,11 +771,7 @@ class _RegistroCard extends StatelessWidget {
 }
 
 class _CardText extends StatelessWidget {
-  const _CardText(
-    this.text, {
-    required this.fontSize,
-    this.color = const Color(0xFF313131),
-  });
+  const _CardText(this.text, {required this.fontSize, this.color = const Color(0xFF313131)});
 
   final String text;
   final double fontSize;
@@ -869,11 +794,7 @@ class _CardText extends StatelessWidget {
 }
 
 class _FilterSelector extends StatelessWidget {
-  const _FilterSelector({
-    required this.label,
-    required this.isActive,
-    required this.onTap,
-  });
+  const _FilterSelector({required this.label, required this.isActive, required this.onTap});
 
   final String label;
   final bool isActive;
@@ -898,11 +819,7 @@ class _FilterSelector extends StatelessWidget {
             borderRadius: BorderRadius.circular(8),
           ),
           shadows: const [
-            BoxShadow(
-              color: Color(0x0A000000),
-              blurRadius: 24,
-              offset: Offset(0, 0),
-            ),
+            BoxShadow(color: Color(0x0A000000), blurRadius: 24, offset: Offset(0, 0)),
           ],
         ),
         child: Row(
@@ -911,9 +828,7 @@ class _FilterSelector extends StatelessWidget {
             Text(
               label,
               style: TextStyle(
-                color: isActive
-                    ? MyColors.colorPrimary
-                    : const Color(0xFF8C8C8C),
+                color: isActive ? MyColors.colorPrimary : const Color(0xFF8C8C8C),
                 fontSize: 14,
                 fontFamily: 'Montserrat',
                 fontWeight: FontWeight.w500,

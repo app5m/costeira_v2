@@ -5,6 +5,7 @@ class AnimalLotModel extends AnimalLotEntity {
     required super.id,
     required super.appUsersId,
     required super.nome,
+    super.appPotreirosId,
     super.createAt,
     super.updateAt,
     super.animalsCount,
@@ -17,6 +18,9 @@ class AnimalLotModel extends AnimalLotEntity {
       id: int.tryParse(json['id']?.toString() ?? '') ?? 0,
       appUsersId: int.tryParse(json['app_users_id']?.toString() ?? '') ?? 0,
       nome: json['nome']?.toString() ?? '',
+      appPotreirosId:
+          int.tryParse(json['app_potreiros_id']?.toString() ?? '') ??
+          int.tryParse(json['id_potreiro']?.toString() ?? ''),
       createAt: json['create_at']?.toString(),
       updateAt: json['update_at']?.toString(),
       animalsCount: animals.length,

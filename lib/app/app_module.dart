@@ -48,12 +48,14 @@ import 'package:costeira/features/potreiros/presentation/pages/potreiros/protrei
 import 'package:costeira/features/potreiros/presentation/pages/potreiros/potreiro_edit.dart';
 import 'package:costeira/features/potreiros/presentation/pages/potreiros/potreiros_page.dart';
 import 'package:costeira/features/potreiros/presentation/pages/potreiros_e_carga_animal.dart';
+import 'package:costeira/features/sanitarios/sanitarios_binds.dart';
 import 'package:costeira/features/tasks/tasks_binds.dart';
 import 'package:costeira/features/auth/presentation/pages/onboarding.view.dart';
 import 'package:costeira/features/auth/presentation/pages/splash.dart';
 import 'package:costeira/features/auth/presentation/pages/welcome_page.dart';
 import 'package:costeira/features/auth/presentation/pages/validation_code_page.dart';
 import 'package:costeira/features/insumos/insumos_binds.dart';
+import 'package:costeira/features/pastagem_nutricao_suplemento/pastagem_nutricao_suplemento_binds.dart';
 import 'package:flutter_modular/flutter_modular.dart';
 
 class AppModule extends Module {
@@ -85,6 +87,8 @@ class AppModule extends Module {
     PotreirosBinds.register(i);
     AnimalsBinds.register(i);
     InsumosBinds.register(i);
+    PastagemNutricaoSuplementoBinds.register(i);
+    SanitariosBinds.register(i);
     TasksBinds.register(i);
   }
 

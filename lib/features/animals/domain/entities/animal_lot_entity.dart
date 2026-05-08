@@ -3,6 +3,7 @@ class AnimalLotEntity {
     required this.id,
     required this.appUsersId,
     required this.nome,
+    this.appPotreirosId,
     this.createAt,
     this.updateAt,
     this.animalsCount = 0,
@@ -11,6 +12,7 @@ class AnimalLotEntity {
   final int id;
   final int appUsersId;
   final String nome;
+  final int? appPotreirosId;
   final String? createAt;
   final String? updateAt;
   final int animalsCount;

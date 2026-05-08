@@ -25,11 +25,9 @@ class TaskPage extends StatefulWidget {
   State<TaskPage> createState() => _TaskPageState();
 }
 
-class _TaskPageState extends State<TaskPage>
-    with SingleTickerProviderStateMixin {
+class _TaskPageState extends State<TaskPage> with SingleTickerProviderStateMixin {
   late TabController _tabController;
-  final ListTasksController _tasksController =
-      Modular.get<ListTasksController>();
+  final ListTasksController _tasksController = Modular.get<ListTasksController>();
   int index = 0;
   int _responsaveisTabVersion = 0;
 
@@ -74,9 +72,7 @@ class _TaskPageState extends State<TaskPage>
     }
     final current = _tasksController.filter.month ?? DateTime.now();
     await _loadTasks(
-      filter: _tasksController.filter.copyWith(
-        month: DateTime(current.year, current.month - 1),
-      ),
+      filter: _tasksController.filter.copyWith(month: DateTime(current.year, current.month - 1)),
     );
   }
 
@@ -86,9 +82,7 @@ class _TaskPageState extends State<TaskPage>
     }
     final current = _tasksController.filter.month ?? DateTime.now();
     await _loadTasks(
-      filter: _tasksController.filter.copyWith(
-        month: DateTime(current.year, current.month + 1),
-      ),
+      filter: _tasksController.filter.copyWith(month: DateTime(current.year, current.month + 1)),
     );
   }
 
@@ -103,20 +97,14 @@ class _TaskPageState extends State<TaskPage>
       if (!mounted) {
         return;
       }
-      AppSnackBar.show(
-        context: context,
-        message: message.message,
-        isError: false,
-      );
+      AppSnackBar.show(context: context, message: message.message, isError: false);
     } catch (error) {
       if (!mounted) {
         return;
       }
       AppSnackBar.show(
         context: context,
-        message: error is ApiException
-            ? error.message
-            : 'Nao foi possivel excluir a tarefa.',
+        message: error is ApiException ? error.message : 'Nao foi possivel excluir a tarefa.',
         isError: true,
       );
     }
@@ -128,20 +116,14 @@ class _TaskPageState extends State<TaskPage>
       if (!mounted) {
         return;
       }
-      AppSnackBar.show(
-        context: context,
-        message: message.message,
-        isError: false,
-      );
+      AppSnackBar.show(context: context, message: message.message, isError: false);
     } catch (error) {
       if (!mounted) {
         return;
       }
       AppSnackBar.show(
         context: context,
-        message: error is ApiException
-            ? error.message
-            : 'Nao foi possivel concluir a tarefa.',
+        message: error is ApiException ? error.message : 'Nao foi possivel concluir a tarefa.',
         isError: true,
       );
     }
@@ -177,10 +159,7 @@ class _TaskPageState extends State<TaskPage>
               ),
               onPressed: () async {
                 if (index == 0) {
-                  await Navigator.push(
-                    context,
-                    MaterialPageRoute(builder: (_) => const AddTask()),
-                  );
+                  await Navigator.push(context, MaterialPageRoute(builder: (_) => const AddTask()));
                   await _loadTasks();
                   return;
                 }
@@ -223,7 +202,7 @@ class _TaskPageState extends State<TaskPage>
             tabs: const [
               Tab(text: 'Lista'),
               Tab(text: 'Responsaveis'),
-              Tab(text: 'Graficos'),
+              Tab(text: 'Gráficos'),
             ],
             onTap: (int inde) {
               setState(() {
@@ -261,8 +240,7 @@ class _TaskPageState extends State<TaskPage>
             const SizedBox(height: 16),
             _buildTaskList(),
           ],
-          if (index == 1)
-            TaskResponsaveisTab(key: ValueKey(_responsaveisTabVersion)),
+          if (index == 1) TaskResponsaveisTab(key: ValueKey(_responsaveisTabVersion)),
           if (index == 2) const Expanded(child: TaskGraphs()),
         ],
       ),
@@ -365,10 +343,7 @@ class _TaskPageState extends State<TaskPage>
 
     return GestureDetector(
       onTap: () {
-        Navigator.push(
-          context,
-          MaterialPageRoute(builder: (_) => DetailTask(task: task)),
-        );
+        Navigator.push(context, MaterialPageRoute(builder: (_) => DetailTask(task: task)));
       },
       child: Container(
         width: MediaQuery.of(context).size.width - 40,
@@ -396,18 +371,13 @@ class _TaskPageState extends State<TaskPage>
                     padding: const EdgeInsets.all(8),
                     decoration: ShapeDecoration(
                       color: const Color(0x198C8C8C),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(42.67),
-                      ),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(42.67)),
                     ),
                     child: SvgPicture.asset(
                       'icon/book-check.svg',
                       width: 16,
                       height: 16,
-                      colorFilter: const ColorFilter.mode(
-                        Color(0xFF8C8C8C),
-                        BlendMode.srcIn,
-                      ),
+                      colorFilter: const ColorFilter.mode(Color(0xFF8C8C8C), BlendMode.srcIn),
                     ),
                   ),
                   Expanded(
@@ -520,9 +490,7 @@ class _TaskPageState extends State<TaskPage>
     if (task.datas.isEmpty) {
       return task.tipo == 2 ? 'Mensal' : 'Sem datas';
     }
-    return task.datas
-        .map((item) => item.mesAno ?? item.data.split(' ').first)
-        .join(', ');
+    return task.datas.map((item) => item.mesAno ?? item.data.split(' ').first).join(', ');
   }
 
   Future<bool> _showDeleteConfirmation() async {
@@ -538,20 +506,13 @@ class _TaskPageState extends State<TaskPage>
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  Container(
-                    width: 72,
-                    height: 2,
-                    color: const Color(0xFFE2E2E2),
-                  ),
+                  Container(width: 72, height: 2, color: const Color(0xFFE2E2E2)),
                   const SizedBox(height: 20),
                   SvgPicture.asset(
                     'icon/danger-linear.svg',
                     width: 80,
                     height: 80,
-                    colorFilter: const ColorFilter.mode(
-                      Colors.red,
-                      BlendMode.srcIn,
-                    ),
+                    colorFilter: const ColorFilter.mode(Colors.red, BlendMode.srcIn),
                   ),
                   const SizedBox(height: 16),
                   const Text(
@@ -654,10 +615,7 @@ class _MonthSelector extends StatelessWidget {
             children: [
               GestureDetector(
                 onTap: isLoading ? null : onFilter,
-                child: Icon(
-                  Icons.filter_list,
-                  color: isLoading ? const Color(0xFFBDBDBD) : null,
-                ),
+                child: Icon(Icons.filter_list, color: isLoading ? const Color(0xFFBDBDBD) : null),
               ),
               const SizedBox(width: 12),
               GestureDetector(
@@ -700,8 +658,7 @@ class _TaskFilterSheetState extends State<_TaskFilterSheet> {
   }
 
   Future<void> _pickDate({required bool isStart}) async {
-    final initialDate =
-        (isStart ? _dataIn : _dataOut) ?? _dataIn ?? DateTime.now();
+    final initialDate = (isStart ? _dataIn : _dataOut) ?? _dataIn ?? DateTime.now();
     final picked = await showDatePicker(
       context: context,
       initialDate: initialDate,
@@ -734,13 +691,7 @@ class _TaskFilterSheetState extends State<_TaskFilterSheet> {
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Center(
-              child: Container(
-                width: 72,
-                height: 4,
-                color: const Color(0xFFE2E2E2),
-              ),
-            ),
+            Center(child: Container(width: 72, height: 4, color: const Color(0xFFE2E2E2))),
             const SizedBox(height: 24),
             const Text(
               'Filtros',
@@ -760,9 +711,7 @@ class _TaskFilterSheetState extends State<_TaskFilterSheet> {
             const SizedBox(height: 12),
             _FilterDateField(
               label: 'Data final',
-              value: _dataOut == null
-                  ? 'Selecionar'
-                  : formatTaskDate(_dataOut!),
+              value: _dataOut == null ? 'Selecionar' : formatTaskDate(_dataOut!),
               onTap: () => _pickDate(isStart: false),
             ),
             const SizedBox(height: 12),
@@ -816,11 +765,7 @@ class _TaskFilterSheetState extends State<_TaskFilterSheet> {
 }
 
 class _FilterDateField extends StatelessWidget {
-  const _FilterDateField({
-    required this.label,
-    required this.value,
-    required this.onTap,
-  });
+  const _FilterDateField({required this.label, required this.value, required this.onTap});
 
   final String label;
   final String value;

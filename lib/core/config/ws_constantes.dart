@@ -48,6 +48,20 @@ class WSConstantes {
       '/tarefas/adicionarResponsavel';
   static const String tarefasExcluirResponsavel = '/tarefas/excluirResponsavel';
   static const String tarefasGraficos = '/tarefas/graficos';
+  static const String suplementacaoListar = '/suplementacao/listar';
+  static const String suplementacaoAdicionar = '/suplementacao/adicionar';
+  static const String suplementacaoAdicionarRegistro =
+      '/suplementacao/adicionarRegistro';
+  static const String suplementacaoExcluir = '/suplementacao/excluir';
+  static const String suplementacaoExcluirRegistro =
+      '/suplementacao/excluirRegistro';
+  static const String suplementacaoGraficos = '/suplementacao/graficos';
+  static const String pastagensListar = '/pastagens/listar';
+  static const String pastagensAdicionar = '/pastagens/adicionar';
+  static const String pastagensExcluir = '/pastagens/excluir';
+  static const String pastagensGraficos = '/pastagens/graficos';
+  static const String sanitariosListar = '/sanitarios/listar';
+  static const String sanitariosAdicionar = '/sanitarios/adicionar';
 
   static const int tipoPessoaFisica = 1;
   static const int tipoPessoaJuridica = 2;

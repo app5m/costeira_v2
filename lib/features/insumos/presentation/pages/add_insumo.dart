@@ -1,3 +1,5 @@
+import 'dart:math' as math;
+
 import 'package:costeira/core/components/app_select_overlay.dart';
 import 'package:costeira/core/components/app_snack.dart';
 import 'package:costeira/features/insumos/domain/entities/insumos.dart';
@@ -122,16 +124,10 @@ class _AddInsumoState extends State<AddInsumo> {
                       FilteringTextInputFormatter.allow(RegExp(r'[0-9,.]')),
                     ],
                   ),
-                  _buildTextField(
+                  _buildQuantityField(
                     controller: _controller.qtdTotalController,
                     label: 'Quantidade',
                     hint: '5',
-                    keyboardType: const TextInputType.numberWithOptions(
-                      decimal: true,
-                    ),
-                    inputFormatters: [
-                      FilteringTextInputFormatter.allow(RegExp(r'[0-9,.]')),
-                    ],
                   ),
                   _buildTextField(
                     controller: _controller.dataValidadeController,
@@ -288,6 +284,62 @@ class _AddInsumoState extends State<AddInsumo> {
         decoration: _inputDecoration(hint),
       ),
     );
+  }
+
+  Widget _buildQuantityField({
+    required TextEditingController controller,
+    required String label,
+    required String hint,
+  }) {
+    return _buildFieldShell(
+      label: label,
+      child: Row(
+        children: [
+          IconButton.filledTonal(
+            onPressed: () => _changeQuantity(controller, -1),
+            style: IconButton.styleFrom(foregroundColor: Colors.black),
+            icon: const Icon(Icons.remove, color: Colors.black),
+          ),
+          const SizedBox(width: 8),
+          Expanded(
+            child: TextField(
+              controller: controller,
+              textAlign: TextAlign.center,
+              keyboardType: const TextInputType.numberWithOptions(
+                decimal: true,
+              ),
+              inputFormatters: [
+                FilteringTextInputFormatter.allow(RegExp(r'[0-9,.]')),
+              ],
+              style: const TextStyle(
+                color: Color(0xFF313131),
+                fontSize: 14,
+                fontFamily: 'Montserrat',
+                fontWeight: FontWeight.w400,
+                height: 1.50,
+                letterSpacing: 0.10,
+              ),
+              decoration: _inputDecoration(hint),
+            ),
+          ),
+          const SizedBox(width: 8),
+          IconButton.filledTonal(
+            onPressed: () => _changeQuantity(controller, 1),
+            style: IconButton.styleFrom(foregroundColor: Colors.black),
+            icon: const Icon(Icons.add, color: Colors.black),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _changeQuantity(TextEditingController controller, double delta) {
+    final current =
+        double.tryParse(controller.text.trim().replaceAll(',', '.')) ?? 0;
+    final next = math.max(0, current + delta);
+    controller.text = next % 1 == 0
+        ? next.toInt().toString()
+        : next.toStringAsFixed(2).replaceAll('.', ',');
   }
 
   Widget _buildFieldShell({required String label, required Widget child}) {
