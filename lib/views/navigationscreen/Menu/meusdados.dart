@@ -1,6 +1,7 @@
 import 'dart:io';
 
 import 'package:costeira/core/api/api_exception.dart';
+import 'package:costeira/core/components/app_snack.dart';
 import 'package:costeira/core/storage/session_storage.dart';
 import 'package:costeira/core/services/image_picker_service.dart';
 import 'package:costeira/features/account/models/account_profile.dart';
@@ -21,7 +22,8 @@ class MeusDados extends StatefulWidget {
   State<MeusDados> createState() => _MeusDadosState();
 }
 
-class _MeusDadosState extends State<MeusDados> with SingleTickerProviderStateMixin {
+class _MeusDadosState extends State<MeusDados>
+    with SingleTickerProviderStateMixin {
   late final TabController _tabController;
   final AccountRepository _accountRepository = AccountRepository();
 
@@ -92,7 +94,10 @@ class _MeusDadosState extends State<MeusDados> with SingleTickerProviderStateMix
     }
   }
 
-  UserSession _profileToSession(AccountProfile profile, {required UserSession currentUser}) {
+  UserSession _profileToSession(
+    AccountProfile profile, {
+    required UserSession currentUser,
+  }) {
     return UserSession(
       id: profile.id,
       name: profile.name,
@@ -122,7 +127,10 @@ class _MeusDadosState extends State<MeusDados> with SingleTickerProviderStateMix
             indicatorColor: MyColors.colorPrimary2,
             labelColor: Colors.black,
             unselectedLabelColor: Colors.grey,
-            labelStyle: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600),
+            labelStyle: const TextStyle(
+              fontSize: 12,
+              fontWeight: FontWeight.w600,
+            ),
           ),
           Expanded(
             child: _isLoading
@@ -195,7 +203,8 @@ class _ResponsibleDataTabState extends State<_ResponsibleDataTab> {
   @override
   void didUpdateWidget(covariant _ResponsibleDataTab oldWidget) {
     super.didUpdateWidget(oldWidget);
-    if (oldWidget.profile != widget.profile || oldWidget.session != widget.session) {
+    if (oldWidget.profile != widget.profile ||
+        oldWidget.session != widget.session) {
       _applyProfile();
     }
   }
@@ -206,9 +215,15 @@ class _ResponsibleDataTabState extends State<_ResponsibleDataTab> {
 
     _nameController.text = profile?.name ?? session?.name ?? '';
     _emailController.text = profile?.email ?? session?.email ?? '';
-    _phoneController.text = _phoneMaskFormatter.maskText(profile?.phone ?? session?.phone ?? '');
-    _birthDateController.text = _birthDateMaskFormatter.maskText(profile?.birthDate ?? '');
-    _cpfController.text = _cpfMaskFormatter.maskText(profile?.cpf ?? session?.document ?? '');
+    _phoneController.text = _phoneMaskFormatter.maskText(
+      profile?.phone ?? session?.phone ?? '',
+    );
+    _birthDateController.text = _birthDateMaskFormatter.maskText(
+      profile?.birthDate ?? '',
+    );
+    _cpfController.text = _cpfMaskFormatter.maskText(
+      profile?.cpf ?? session?.document ?? '',
+    );
   }
 
   @override
@@ -236,9 +251,15 @@ class _ResponsibleDataTabState extends State<_ResponsibleDataTab> {
                   CircleAvatar(
                     radius: 40,
                     backgroundColor: const Color(0xFFEBEBEB),
-                    backgroundImage: _selectedImage != null ? FileImage(_selectedImage!) : null,
+                    backgroundImage: _selectedImage != null
+                        ? FileImage(_selectedImage!)
+                        : null,
                     child: _selectedImage == null
-                        ? SvgPicture.asset('icon/user-round.svg', width: 40, height: 40)
+                        ? SvgPicture.asset(
+                            'icon/user-round.svg',
+                            width: 40,
+                            height: 40,
+                          )
                         : null,
                   ),
                   Positioned(
@@ -264,9 +285,15 @@ class _ResponsibleDataTabState extends State<_ResponsibleDataTab> {
                         child: _isUploadingImage
                             ? const Padding(
                                 padding: EdgeInsets.all(6),
-                                child: CircularProgressIndicator(strokeWidth: 2),
+                                child: CircularProgressIndicator(
+                                  strokeWidth: 2,
+                                ),
                               )
-                            : const Icon(Icons.image_outlined, color: Colors.grey, size: 18),
+                            : const Icon(
+                                Icons.image_outlined,
+                                color: Colors.grey,
+                                size: 18,
+                              ),
                       ),
                     ),
                   ),
@@ -354,7 +381,7 @@ class _ResponsibleDataTabState extends State<_ResponsibleDataTab> {
         cpf: _cpfController.text.trim(),
       );
 
-      _showMessage(response.message);
+      _showMessage(response.message, isError: !response.isSuccess);
 
       if (response.isSuccess) {
         await widget.onReloadProfile();
@@ -392,7 +419,7 @@ class _ResponsibleDataTabState extends State<_ResponsibleDataTab> {
         userId: session.id,
         imageFile: File(pickedFile.path),
       );
-      _showMessage(response.message);
+      _showMessage(response.message, isError: !response.isSuccess);
       await widget.onReloadProfile();
     } on ApiException catch (error) {
       _showMessage(error.message);
@@ -418,12 +445,12 @@ class _ResponsibleDataTabState extends State<_ResponsibleDataTab> {
       _requiredField(_phoneController.text) == null &&
       _requiredField(_cpfController.text) == null;
 
-  void _showMessage(String message) {
+  void _showMessage(String message, {bool isError = true}) {
     if (!mounted) {
       return;
     }
 
-    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(message)));
+    AppSnackBar.show(context: context, message: message, isError: isError);
   }
 }
 
@@ -454,8 +481,14 @@ class _FarmDataTab extends StatelessWidget {
         children: [
           _ReadonlyInfoCard(title: 'Nome da Fazenda', value: farm.name),
           _ReadonlyInfoCard(title: 'Endereço completo', value: farm.address),
-          _ReadonlyInfoCard(title: 'Área total', value: _formatArea(farm.totalArea)),
-          _ReadonlyInfoCard(title: 'Área útil', value: _formatArea(farm.usefulArea)),
+          _ReadonlyInfoCard(
+            title: 'Área total',
+            value: _formatArea(farm.totalArea),
+          ),
+          _ReadonlyInfoCard(
+            title: 'Área útil',
+            value: _formatArea(farm.usefulArea),
+          ),
           _ReadonlyInfoCard(
             title: 'Área utilizada para pecuários (verão)',
             value: _formatArea(farm.summerLivestockArea),
@@ -464,8 +497,14 @@ class _FarmDataTab extends StatelessWidget {
             title: 'Área utilizada para pecuários (inverno)',
             value: _formatArea(farm.winterLivestockArea),
           ),
-          _ReadonlyInfoCard(title: 'Atividades', value: _joinItems(farm.activities)),
-          _ReadonlyInfoCard(title: 'Sistema produtivo', value: _joinItems(farm.productionSystems)),
+          _ReadonlyInfoCard(
+            title: 'Atividades',
+            value: _joinItems(farm.activities),
+          ),
+          _ReadonlyInfoCard(
+            title: 'Sistema produtivo',
+            value: _joinItems(farm.productionSystems),
+          ),
         ],
       ),
     );
@@ -475,7 +514,10 @@ class _FarmDataTab extends StatelessWidget {
     if (items.isEmpty) {
       return 'Não informado';
     }
-    return items.map((item) => item.name).where((name) => name.isNotEmpty).join(' • ');
+    return items
+        .map((item) => item.name)
+        .where((name) => name.isNotEmpty)
+        .join(' • ');
   }
 
   String _formatArea(String value) {
@@ -503,7 +545,11 @@ class _ReadonlyInfoCard extends StatelessWidget {
         borderRadius: BorderRadius.circular(12),
         border: Border.all(color: const Color(0xFFEBEBEB)),
         boxShadow: const [
-          BoxShadow(color: Color(0x0A000000), blurRadius: 24, offset: Offset(0, 0)),
+          BoxShadow(
+            color: Color(0x0A000000),
+            blurRadius: 24,
+            offset: Offset(0, 0),
+          ),
         ],
       ),
       child: Column(

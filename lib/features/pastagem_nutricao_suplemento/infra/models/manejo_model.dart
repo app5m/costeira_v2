@@ -47,13 +47,15 @@ class TipoManejoModel extends TipoManejo {
     required super.id,
     required super.nome,
     required super.unidade,
+    super.tipoInsumo,
   });
 
   factory TipoManejoModel.fromJson(Map<String, dynamic> json) {
     return TipoManejoModel(
       id: json['id']?.toString() ?? '',
       nome: json['nome']?.toString() ?? '',
-      unidade: json['unidade']?.toString() ?? '',
+      tipoInsumo: json['tipo_insumo']?.toString() ?? '',
+      unidade: _unidadeFromJson(json['unidade']),
     );
   }
 }
@@ -70,6 +72,13 @@ class ManejoReferenceModel extends ManejoReference {
 }
 
 int _asInt(dynamic value) => int.tryParse(value?.toString() ?? '') ?? 0;
+
+String _unidadeFromJson(dynamic value) {
+  if (value is Map) {
+    return value['nome']?.toString() ?? '';
+  }
+  return value?.toString() ?? '';
+}
 
 double? _asDouble(dynamic value) {
   if (value == null) return null;

@@ -183,3 +183,111 @@ class SanitarioUpsertEntity {
     );
   }
 }
+
+class DeleteSanitarioEntity {
+  const DeleteSanitarioEntity({required this.appUsersId, required this.id});
+
+  final int appUsersId;
+  final int id;
+}
+
+class SanitarioExecucaoInsumoEntity {
+  const SanitarioExecucaoInsumoEntity({
+    required this.idInsumo,
+    required this.quantidade,
+  });
+
+  final int idInsumo;
+  final double quantidade;
+}
+
+class SanitarioExecucaoEntity {
+  const SanitarioExecucaoEntity({
+    required this.id,
+    this.appUsersId,
+    required this.dataExecucao,
+    required this.insumos,
+  });
+
+  final int id;
+  final int? appUsersId;
+  final String dataExecucao;
+  final List<SanitarioExecucaoInsumoEntity> insumos;
+
+  SanitarioExecucaoEntity copyWith({int? appUsersId}) {
+    return SanitarioExecucaoEntity(
+      id: id,
+      appUsersId: appUsersId ?? this.appUsersId,
+      dataExecucao: dataExecucao,
+      insumos: insumos,
+    );
+  }
+}
+
+class SanitarioChartsFilterEntity {
+  const SanitarioChartsFilterEntity({
+    required this.appUsersId,
+    required this.mesAno,
+  });
+
+  final int appUsersId;
+  final String mesAno;
+}
+
+class SanitarioChartsEntity {
+  const SanitarioChartsEntity({
+    required this.planejadosExecutados,
+    required this.executadoPorInsumoTipoManejo,
+    required this.planejadosExecutadosMesAMes,
+  });
+
+  final SanitarioPlanejadoExecutadoEntity planejadosExecutados;
+  final List<SanitarioExecutadoInsumoTipoManejoEntity>
+  executadoPorInsumoTipoManejo;
+  final List<SanitarioPlanejadoExecutadoMesEntity> planejadosExecutadosMesAMes;
+
+  static const empty = SanitarioChartsEntity(
+    planejadosExecutados: SanitarioPlanejadoExecutadoEntity(
+      planejado: 0,
+      executado: 0,
+    ),
+    executadoPorInsumoTipoManejo: [],
+    planejadosExecutadosMesAMes: [],
+  );
+}
+
+class SanitarioPlanejadoExecutadoEntity {
+  const SanitarioPlanejadoExecutadoEntity({
+    required this.planejado,
+    required this.executado,
+  });
+
+  final double planejado;
+  final double executado;
+}
+
+class SanitarioExecutadoInsumoTipoManejoEntity {
+  const SanitarioExecutadoInsumoTipoManejoEntity({
+    required this.tipoManejo,
+    required this.insumo,
+    required this.quantidade,
+  });
+
+  final String tipoManejo;
+  final SanitarioReferenceEntity insumo;
+  final double quantidade;
+}
+
+class SanitarioPlanejadoExecutadoMesEntity {
+  const SanitarioPlanejadoExecutadoMesEntity({
+    required this.ano,
+    required this.mes,
+    required this.status,
+    required this.quantidade,
+  });
+
+  final int ano;
+  final int mes;
+  final String status;
+  final double quantidade;
+}

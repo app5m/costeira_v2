@@ -1,5 +1,6 @@
 import 'dart:math' as math;
 
+import 'package:costeira/core/components/app_snack.dart';
 import 'package:costeira/features/pastagem_nutricao_suplemento/domain/entities/suplemento.dart';
 import 'package:costeira/features/pastagem_nutricao_suplemento/presentation/controllers/get_suplemento_charts_controller.dart';
 import 'package:flutter/material.dart';
@@ -18,7 +19,8 @@ class _GraficosSuplementoState extends State<GraficosSuplemento> {
   @override
   void initState() {
     super.initState();
-    _controller = Modular.get<GetSuplementoChartsController>()..addListener(_sync);
+    _controller = Modular.get<GetSuplementoChartsController>()
+      ..addListener(_sync);
     WidgetsBinding.instance.addPostFrameCallback((_) => _load());
   }
 
@@ -37,10 +39,11 @@ class _GraficosSuplementoState extends State<GraficosSuplemento> {
       await _controller.load();
     } catch (_) {
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(_controller.errorMessage ?? 'Nao foi possivel carregar os gráficos.'),
-        ),
+      AppSnackBar.show(
+        context: context,
+        message:
+            _controller.errorMessage ??
+            'Nao foi possivel carregar os gráficos.',
       );
     }
   }
@@ -50,10 +53,11 @@ class _GraficosSuplementoState extends State<GraficosSuplemento> {
       await _controller.previousMonth();
     } catch (_) {
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(_controller.errorMessage ?? 'Nao foi possivel carregar os gráficos.'),
-        ),
+      AppSnackBar.show(
+        context: context,
+        message:
+            _controller.errorMessage ??
+            'Nao foi possivel carregar os gráficos.',
       );
     }
   }
@@ -63,10 +67,11 @@ class _GraficosSuplementoState extends State<GraficosSuplemento> {
       await _controller.nextMonth();
     } catch (_) {
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(_controller.errorMessage ?? 'Nao foi possivel carregar os gráficos.'),
-        ),
+      AppSnackBar.show(
+        context: context,
+        message:
+            _controller.errorMessage ??
+            'Nao foi possivel carregar os gráficos.',
       );
     }
   }
@@ -88,7 +93,10 @@ class _GraficosSuplementoState extends State<GraficosSuplemento> {
         )
         .toList(growable: false);
     final consumoLote = comparativo
-        .map((item) => _ChartPoint(label: item.potreiroNome, value: item.consumoTotal))
+        .map(
+          (item) =>
+              _ChartPoint(label: item.potreiroNome, value: item.consumoTotal),
+        )
         .toList(growable: false);
     final mesAMes = charts.mesAMes
         .map((item) => _ChartPoint(label: item.label, value: item.value))
@@ -113,9 +121,16 @@ class _GraficosSuplementoState extends State<GraficosSuplemento> {
               suffix: ' kg',
             ),
             const SizedBox(height: 16),
-            _BarChartCard(title: 'Comparativo entre potreiros e lotes', points: consumoLote),
+            _BarChartCard(
+              title: 'Comparativo entre potreiros e lotes',
+              points: consumoLote,
+            ),
             const SizedBox(height: 16),
-            _LineChartCard(title: 'Consumo mês a mês', points: mesAMes, suffix: ' kg'),
+            _LineChartCard(
+              title: 'Consumo mês a mês',
+              points: mesAMes,
+              suffix: ' kg',
+            ),
           ],
         ),
       ),
@@ -142,7 +157,11 @@ class _GraficosSuplementoState extends State<GraficosSuplemento> {
 }
 
 class _MonthSelector extends StatelessWidget {
-  const _MonthSelector({required this.label, required this.onPrevious, required this.onNext});
+  const _MonthSelector({
+    required this.label,
+    required this.onPrevious,
+    required this.onNext,
+  });
 
   final String label;
   final VoidCallback? onPrevious;
@@ -159,12 +178,21 @@ class _MonthSelector extends StatelessWidget {
           side: const BorderSide(width: 1, color: Color(0xFFEBEBEB)),
           borderRadius: BorderRadius.circular(8),
         ),
-        shadows: const [BoxShadow(color: Color(0x0A000000), blurRadius: 24, offset: Offset(0, 0))],
+        shadows: const [
+          BoxShadow(
+            color: Color(0x0A000000),
+            blurRadius: 24,
+            offset: Offset(0, 0),
+          ),
+        ],
       ),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          InkWell(onTap: onPrevious, child: const Icon(Icons.arrow_back_rounded)),
+          InkWell(
+            onTap: onPrevious,
+            child: const Icon(Icons.arrow_back_rounded),
+          ),
           Text(
             label,
             textAlign: TextAlign.center,
@@ -175,7 +203,10 @@ class _MonthSelector extends StatelessWidget {
               fontWeight: FontWeight.w500,
             ),
           ),
-          InkWell(onTap: onNext, child: const Icon(Icons.arrow_forward_rounded)),
+          InkWell(
+            onTap: onNext,
+            child: const Icon(Icons.arrow_forward_rounded),
+          ),
         ],
       ),
     );
@@ -183,7 +214,11 @@ class _MonthSelector extends StatelessWidget {
 }
 
 class _LineChartCard extends StatelessWidget {
-  const _LineChartCard({required this.title, required this.points, required this.suffix});
+  const _LineChartCard({
+    required this.title,
+    required this.points,
+    required this.suffix,
+  });
 
   final String title;
   final List<_ChartPoint> points;
@@ -246,7 +281,13 @@ class _ChartCard extends StatelessWidget {
           side: const BorderSide(width: 1, color: Color(0xFFEBEBEB)),
           borderRadius: BorderRadius.circular(16),
         ),
-        shadows: const [BoxShadow(color: Color(0x0A000000), blurRadius: 24, offset: Offset(0, 0))],
+        shadows: const [
+          BoxShadow(
+            color: Color(0x0A000000),
+            blurRadius: 24,
+            offset: Offset(0, 0),
+          ),
+        ],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -303,8 +344,15 @@ class _LineChartPainter extends CustomPainter {
     const bottom = 38.0;
     const top = 12.0;
     const right = 10.0;
-    final chart = Rect.fromLTRB(left, top, size.width - right, size.height - bottom);
-    final maxValue = _niceMax(points.map((point) => point.value).fold(0, math.max));
+    final chart = Rect.fromLTRB(
+      left,
+      top,
+      size.width - right,
+      size.height - bottom,
+    );
+    final maxValue = _niceMax(
+      points.map((point) => point.value).fold(0, math.max),
+    );
     final textPainter = TextPainter(textDirection: TextDirection.ltr);
     final gridPaint = Paint()
       ..color = const Color(0xFFEDEDED)
@@ -314,7 +362,12 @@ class _LineChartPainter extends CustomPainter {
       final y = chart.top + (chart.height / 4) * i;
       canvas.drawLine(Offset(chart.left, y), Offset(chart.right, y), gridPaint);
       final value = maxValue - (maxValue / 4) * i;
-      _drawText(textPainter, canvas, '${_formatDecimal(value)}$suffix', Offset(0, y - 8));
+      _drawText(
+        textPainter,
+        canvas,
+        '${_formatDecimal(value)}$suffix',
+        Offset(0, y - 8),
+      );
     }
 
     if (points.length == 1) {
@@ -382,8 +435,15 @@ class _BarChartPainter extends CustomPainter {
     const bottom = 38.0;
     const top = 12.0;
     const right = 10.0;
-    final chart = Rect.fromLTRB(left, top, size.width - right, size.height - bottom);
-    final maxValue = _niceMax(points.map((point) => point.value).fold(0, math.max));
+    final chart = Rect.fromLTRB(
+      left,
+      top,
+      size.width - right,
+      size.height - bottom,
+    );
+    final maxValue = _niceMax(
+      points.map((point) => point.value).fold(0, math.max),
+    );
     final textPainter = TextPainter(textDirection: TextDirection.ltr);
     final gridPaint = Paint()
       ..color = const Color(0xFFEDEDED)

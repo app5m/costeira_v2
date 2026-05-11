@@ -1,3 +1,4 @@
+import 'package:costeira/core/components/app_snack.dart';
 import 'package:costeira/core/components/app_select_overlay.dart';
 import 'package:costeira/features/pastagem_nutricao_suplemento/domain/entities/suplemento.dart';
 import 'package:costeira/features/pastagem_nutricao_suplemento/presentation/controllers/suplemento_registro_form_controller.dart';
@@ -7,7 +8,11 @@ import 'package:flutter/services.dart';
 import 'package:flutter_modular/flutter_modular.dart';
 
 class AddSuplementoRegistro extends StatefulWidget {
-  const AddSuplementoRegistro({super.key, required this.suplemento, this.registro});
+  const AddSuplementoRegistro({
+    super.key,
+    required this.suplemento,
+    this.registro,
+  });
 
   final Suplemento suplemento;
   final SuplementoRegistro? registro;
@@ -22,9 +27,13 @@ class _AddSuplementoRegistroState extends State<AddSuplementoRegistro> {
   @override
   void initState() {
     super.initState();
-    _controller = Modular.get<SuplementoRegistroFormController>()..addListener(_sync);
+    _controller = Modular.get<SuplementoRegistroFormController>()
+      ..addListener(_sync);
     WidgetsBinding.instance.addPostFrameCallback(
-      (_) => _controller.init(suplemento: widget.suplemento, registro: widget.registro),
+      (_) => _controller.init(
+        suplemento: widget.suplemento,
+        registro: widget.registro,
+      ),
     );
   }
 
@@ -42,12 +51,17 @@ class _AddSuplementoRegistroState extends State<AddSuplementoRegistro> {
     try {
       final result = await _controller.submit();
       if (!mounted || result == null) return;
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(result.message)));
+      AppSnackBar.show(
+        context: context,
+        message: result.message,
+        isError: false,
+      );
       Navigator.pop(context, true);
     } catch (_) {
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(_controller.errorMessage ?? 'Erro ao salvar registro.')),
+      AppSnackBar.show(
+        context: context,
+        message: _controller.errorMessage ?? 'Erro ao salvar registro.',
       );
     }
   }
@@ -98,9 +112,9 @@ class _AddSuplementoRegistroState extends State<AddSuplementoRegistro> {
                 keyboardType: TextInputType.datetime,
                 readOnly: true,
                 onTap: () => _pickDate(_controller.dataController),
-                decoration: _inputDecoration(
-                  '10/06/2026',
-                ).copyWith(suffixIcon: const Icon(Icons.calendar_today_outlined)),
+                decoration: _inputDecoration('10/06/2026').copyWith(
+                  suffixIcon: const Icon(Icons.calendar_today_outlined),
+                ),
               ),
             ),
             _FieldShell(
@@ -117,9 +131,15 @@ class _AddSuplementoRegistroState extends State<AddSuplementoRegistro> {
                     child: TextField(
                       controller: _controller.quantidadeController,
                       textAlign: TextAlign.center,
-                      keyboardType: const TextInputType.numberWithOptions(decimal: true),
-                      inputFormatters: [FilteringTextInputFormatter.allow(RegExp(r'[0-9,.]'))],
-                      decoration: _inputDecoration('00 kg').copyWith(suffixText: 'kg'),
+                      keyboardType: const TextInputType.numberWithOptions(
+                        decimal: true,
+                      ),
+                      inputFormatters: [
+                        FilteringTextInputFormatter.allow(RegExp(r'[0-9,.]')),
+                      ],
+                      decoration: _inputDecoration(
+                        '00 kg',
+                      ).copyWith(suffixText: 'kg'),
                     ),
                   ),
                   const SizedBox(width: 8),
@@ -144,9 +164,13 @@ class _AddSuplementoRegistroState extends State<AddSuplementoRegistro> {
               child: ElevatedButton(
                 style: ElevatedButton.styleFrom(
                   backgroundColor: MyColors.colorPrimary,
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(8),
+                  ),
                 ),
-                onPressed: _controller.isFormValid && !_controller.isLoading ? _submit : null,
+                onPressed: _controller.isFormValid && !_controller.isLoading
+                    ? _submit
+                    : null,
                 child: _controller.isLoading
                     ? const SizedBox(
                         width: 20,
@@ -235,6 +259,9 @@ InputDecoration _inputDecoration(String hint) {
     filled: true,
     fillColor: const Color(0xFFEBEBEB),
     contentPadding: const EdgeInsets.symmetric(horizontal: 15, vertical: 16),
-    border: OutlineInputBorder(borderRadius: BorderRadius.circular(8), borderSide: BorderSide.none),
+    border: OutlineInputBorder(
+      borderRadius: BorderRadius.circular(8),
+      borderSide: BorderSide.none,
+    ),
   );
 }

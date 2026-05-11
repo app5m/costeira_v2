@@ -1,3 +1,4 @@
+import 'package:costeira/core/components/app_snack.dart';
 import 'package:costeira/features/pastagem_nutricao_suplemento/domain/entities/suplemento.dart';
 import 'package:costeira/features/pastagem_nutricao_suplemento/presentation/controllers/delete_suplemento_controller.dart';
 import 'package:costeira/features/pastagem_nutricao_suplemento/presentation/controllers/list_suplementos_controller.dart';
@@ -19,7 +20,8 @@ class Suplementos extends StatefulWidget {
   State<Suplementos> createState() => _SuplementosState();
 }
 
-class _SuplementosState extends State<Suplementos> with SingleTickerProviderStateMixin {
+class _SuplementosState extends State<Suplementos>
+    with SingleTickerProviderStateMixin {
   late final TabController _tabController;
   late final ListSuplementosController _controller;
   late final DeleteSuplementoController _deleteController;
@@ -30,7 +32,8 @@ class _SuplementosState extends State<Suplementos> with SingleTickerProviderStat
     super.initState();
     _tabController = TabController(length: 3, vsync: this);
     _controller = Modular.get<ListSuplementosController>()..addListener(_sync);
-    _deleteController = Modular.get<DeleteSuplementoController>()..addListener(_sync);
+    _deleteController = Modular.get<DeleteSuplementoController>()
+      ..addListener(_sync);
     WidgetsBinding.instance.addPostFrameCallback((_) => _load());
   }
 
@@ -51,8 +54,9 @@ class _SuplementosState extends State<Suplementos> with SingleTickerProviderStat
       await _controller.load();
     } catch (_) {
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(_controller.errorMessage ?? 'Erro ao listar suplementos.')),
+      AppSnackBar.show(
+        context: context,
+        message: _controller.errorMessage ?? 'Erro ao listar suplementos.',
       );
     }
   }
@@ -63,7 +67,9 @@ class _SuplementosState extends State<Suplementos> with SingleTickerProviderStat
       backgroundColor: Colors.white,
       floatingActionButton: index == 0
           ? FloatingActionButton(
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(64)),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(64),
+              ),
               onPressed: () async {
                 final changed = await Navigator.push<bool>(
                   context,
@@ -83,7 +89,7 @@ class _SuplementosState extends State<Suplementos> with SingleTickerProviderStat
           child: const Icon(Icons.arrow_back_ios, color: Colors.white),
         ),
         title: const Text(
-          'Suplementacao e Consumo',
+          'Suplementação e Consumo',
           style: TextStyle(
             color: Colors.white,
             fontSize: 16,
@@ -149,19 +155,26 @@ class _SuplementosState extends State<Suplementos> with SingleTickerProviderStat
     final confirmed = await _showDeleteSheet(
       context,
       title: 'Excluir suplementacao e consumo',
-      description: 'Tem certeza que deseja excluir essa suplementacao e consumo permanentemente?',
+      description:
+          'Tem certeza que deseja excluir essa suplementacao e consumo permanentemente?',
     );
     if (confirmed != true) return;
 
     try {
       final result = await _deleteController.deleteSuplemento(suplemento.id);
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(result.message)));
+      AppSnackBar.show(
+        context: context,
+        message: result.message,
+        isError: false,
+      );
       await _controller.reload();
     } catch (_) {
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(_deleteController.errorMessage ?? 'Erro ao excluir suplementacao.')),
+      AppSnackBar.show(
+        context: context,
+        message:
+            _deleteController.errorMessage ?? 'Erro ao excluir suplementacao.',
       );
     }
   }
@@ -177,12 +190,17 @@ class _SuplementosState extends State<Suplementos> with SingleTickerProviderStat
     try {
       final result = await _deleteController.deleteRegistro(registro.id);
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(result.message)));
+      AppSnackBar.show(
+        context: context,
+        message: result.message,
+        isError: false,
+      );
       await _controller.reload();
     } catch (_) {
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(_deleteController.errorMessage ?? 'Erro ao excluir registro.')),
+      AppSnackBar.show(
+        context: context,
+        message: _deleteController.errorMessage ?? 'Erro ao excluir registro.',
       );
     }
   }
@@ -214,7 +232,10 @@ class _SuplementosState extends State<Suplementos> with SingleTickerProviderStat
                   'icon/danger-linear.svg',
                   width: 80,
                   height: 80,
-                  colorFilter: const ColorFilter.mode(Colors.red, BlendMode.srcIn),
+                  colorFilter: const ColorFilter.mode(
+                    Colors.red,
+                    BlendMode.srcIn,
+                  ),
                 ),
                 const SizedBox(height: 16),
                 Text(
@@ -243,12 +264,17 @@ class _SuplementosState extends State<Suplementos> with SingleTickerProviderStat
                   child: ElevatedButton(
                     onPressed: () => Navigator.of(sheetContext).pop(true),
                     style: ElevatedButton.styleFrom(
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(8),
+                      ),
                       side: const BorderSide(color: Colors.red),
                       elevation: 0,
                       backgroundColor: Colors.transparent,
                     ),
-                    child: const Text('Excluir', style: TextStyle(color: Colors.red)),
+                    child: const Text(
+                      'Excluir',
+                      style: TextStyle(color: Colors.red),
+                    ),
                   ),
                 ),
                 TextButton(
@@ -327,7 +353,9 @@ class _ResumoCard extends StatelessWidget {
         .map((item) => _parseBrDouble(item.consumoReal?.consumoRealAnimalDia))
         .whereType<double>()
         .toList();
-    final media = consumos.isEmpty ? null : consumos.reduce((a, b) => a + b) / consumos.length;
+    final media = consumos.isEmpty
+        ? null
+        : consumos.reduce((a, b) => a + b) / consumos.length;
 
     return _SurfaceCard(
       child: Column(
@@ -375,7 +403,10 @@ class _SuplementoCard extends StatelessWidget {
   Widget build(BuildContext context) {
     return GestureDetector(
       onTap: () {
-        Navigator.push(context, MaterialPageRoute(builder: (_) => const DetailSuplemento()));
+        Navigator.push(
+          context,
+          MaterialPageRoute(builder: (_) => const DetailSuplemento()),
+        );
       },
       child: Padding(
         padding: const EdgeInsets.only(bottom: 8),
@@ -413,13 +444,23 @@ class _SuplementoCard extends StatelessWidget {
                       spacing: 8,
                       runSpacing: 8,
                       children: [
-                        _MetricChip(label: 'Peso medio', value: _kg(suplemento.pesoMedio)),
+                        _MetricChip(
+                          label: 'Peso medio',
+                          value: _kg(suplemento.pesoMedio),
+                        ),
                         _MetricChip(
                           label: 'Qtd animais',
-                          value: suplemento.quantidadeAnimais?.toString() ?? '-',
+                          value:
+                              suplemento.quantidadeAnimais?.toString() ?? '-',
                         ),
-                        _MetricChip(label: 'Qtd atual', value: _kg(suplemento.quantidadeAtual)),
-                        _MetricChip(label: 'Consumo animal', value: _consumoAnimal(suplemento)),
+                        _MetricChip(
+                          label: 'Qtd atual',
+                          value: _kg(suplemento.quantidadeAtual),
+                        ),
+                        _MetricChip(
+                          label: 'Consumo animal',
+                          value: _consumoAnimal(suplemento),
+                        ),
                       ],
                     ),
                     const SizedBox(height: 12),
@@ -441,7 +482,9 @@ class _SuplementoCard extends StatelessWidget {
                   if (value == 'edit') {
                     final changed = await Navigator.push<bool>(
                       context,
-                      MaterialPageRoute(builder: (_) => EditSuplemento(suplemento: suplemento)),
+                      MaterialPageRoute(
+                        builder: (_) => EditSuplemento(suplemento: suplemento),
+                      ),
                     );
                     if (changed == true) await onChanged();
                     return;
@@ -458,7 +501,8 @@ class _SuplementoCard extends StatelessWidget {
                     final changed = await Navigator.push<bool>(
                       context,
                       MaterialPageRoute(
-                        builder: (_) => AddSuplementoRegistro(suplemento: suplemento),
+                        builder: (_) =>
+                            AddSuplementoRegistro(suplemento: suplemento),
                       ),
                     );
                     if (changed == true) await onChanged();
@@ -468,7 +512,10 @@ class _SuplementoCard extends StatelessWidget {
                 itemBuilder: (context) => const [
                   PopupMenuItem(value: 'edit', child: Text('Editar')),
                   PopupMenuItem(value: 'delete', child: Text('Excluir')),
-                  PopupMenuItem(value: 'add_registro', child: Text('Adicionar registro')),
+                  PopupMenuItem(
+                    value: 'add_registro',
+                    child: Text('Adicionar registro'),
+                  ),
                 ],
               ),
             ],
@@ -480,7 +527,11 @@ class _SuplementoCard extends StatelessWidget {
 }
 
 class _RegistrosTab extends StatelessWidget {
-  const _RegistrosTab({required this.registros, required this.onChanged, required this.onDelete});
+  const _RegistrosTab({
+    required this.registros,
+    required this.onChanged,
+    required this.onDelete,
+  });
 
   final List<SuplementoRegistro> registros;
   final Future<void> Function() onChanged;
@@ -505,14 +556,18 @@ class _RegistrosTab extends StatelessWidget {
             child: Row(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                _IconBadge(icon: registro.tipo.id == 1 ? Icons.add : Icons.remove),
+                _IconBadge(
+                  icon: registro.tipo.id == 1 ? Icons.add : Icons.remove,
+                ),
                 const SizedBox(width: 16),
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        registro.tipo.nome.isEmpty ? 'Registro' : registro.tipo.nome,
+                        registro.tipo.nome.isEmpty
+                            ? 'Registro'
+                            : registro.tipo.nome,
                         style: const TextStyle(
                           color: Color(0xFF313131),
                           fontSize: 14,
@@ -550,8 +605,10 @@ class _RegistrosTab extends StatelessWidget {
                       final changed = await Navigator.push<bool>(
                         context,
                         MaterialPageRoute(
-                          builder: (_) =>
-                              AddSuplementoRegistro(suplemento: suplemento, registro: registro),
+                          builder: (_) => AddSuplementoRegistro(
+                            suplemento: suplemento,
+                            registro: registro,
+                          ),
                         ),
                       );
                       if (changed == true) await onChanged();
@@ -592,7 +649,13 @@ class _SurfaceCard extends StatelessWidget {
           side: const BorderSide(width: 1, color: Color(0xFFEBEBEB)),
           borderRadius: BorderRadius.circular(12),
         ),
-        shadows: const [BoxShadow(color: Color(0x0A000000), blurRadius: 24, offset: Offset(0, 0))],
+        shadows: const [
+          BoxShadow(
+            color: Color(0x0A000000),
+            blurRadius: 24,
+            offset: Offset(0, 0),
+          ),
+        ],
       ),
       child: child,
     );
@@ -618,7 +681,10 @@ class _IconBadge extends StatelessWidget {
               asset!,
               width: 16,
               height: 16,
-              colorFilter: const ColorFilter.mode(Color(0xFF8C8C8C), BlendMode.srcIn),
+              colorFilter: const ColorFilter.mode(
+                Color(0xFF8C8C8C),
+                BlendMode.srcIn,
+              ),
             )
           : Icon(icon, size: 16, color: const Color(0xFF8C8C8C)),
     );
@@ -668,7 +734,8 @@ class _MetricChip extends StatelessWidget {
   }
 }
 
-String _kg(double? value) => value == null ? '-' : '${value.toStringAsFixed(2)} kg';
+String _kg(double? value) =>
+    value == null ? '-' : '${value.toStringAsFixed(2)} kg';
 
 String _consumoAnimal(Suplemento suplemento) {
   final value = suplemento.consumoReal?.consumoRealAnimalDia;

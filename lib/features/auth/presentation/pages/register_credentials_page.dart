@@ -1,6 +1,7 @@
 import 'package:costeira/app/app_route_data.dart';
 import 'package:costeira/app/app_routes.dart';
 import 'package:costeira/core/api/api_exception.dart';
+import 'package:costeira/core/components/app_snack.dart';
 import 'package:costeira/core/services/location_service.dart';
 import 'package:costeira/features/auth/models/register_draft.dart';
 import 'package:costeira/features/auth/repositories/auth_repository.dart';
@@ -16,7 +17,8 @@ class RegisterCredentialsPage extends StatefulWidget {
   final RegisterDraft draft;
 
   @override
-  State<RegisterCredentialsPage> createState() => _RegisterCredentialsPageState();
+  State<RegisterCredentialsPage> createState() =>
+      _RegisterCredentialsPageState();
 }
 
 class _RegisterCredentialsPageState extends State<RegisterCredentialsPage> {
@@ -77,7 +79,9 @@ class _RegisterCredentialsPageState extends State<RegisterCredentialsPage> {
                   });
                 },
                 icon: Icon(
-                  _obscurePassword ? Icons.visibility_outlined : Icons.visibility_off_outlined,
+                  _obscurePassword
+                      ? Icons.visibility_outlined
+                      : Icons.visibility_off_outlined,
                   color: Colors.grey,
                 ),
               ),
@@ -141,7 +145,10 @@ class _RegisterCredentialsPageState extends State<RegisterCredentialsPage> {
         coordinates: coordinates,
       );
 
-      _showMessage(registerResponse.message);
+      _showMessage(
+        registerResponse.message,
+        isError: !registerResponse.isSuccess,
+      );
       if (!registerResponse.isSuccess) {
         return;
       }
@@ -152,7 +159,7 @@ class _RegisterCredentialsPageState extends State<RegisterCredentialsPage> {
         coordinates: coordinates,
       );
 
-      _showMessage(codeResponse.message);
+      _showMessage(codeResponse.message, isError: !codeResponse.isSuccess);
       if (!codeResponse.isSuccess || !mounted) {
         return;
       }
@@ -216,11 +223,11 @@ class _RegisterCredentialsPageState extends State<RegisterCredentialsPage> {
       _validatePassword(_passwordController.text) == null &&
       _validateConfirmPassword(_confirmPasswordController.text) == null;
 
-  void _showMessage(String message) {
+  void _showMessage(String message, {bool isError = true}) {
     if (!mounted) {
       return;
     }
-    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(message)));
+    AppSnackBar.show(context: context, message: message, isError: isError);
   }
 }
 

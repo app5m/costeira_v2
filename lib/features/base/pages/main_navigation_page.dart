@@ -2,7 +2,7 @@ import 'package:costeira/app/app_routes.dart';
 import 'package:costeira/core/storage/session_storage.dart';
 import 'package:costeira/features/auth/models/user_session.dart';
 import 'package:costeira/features/animals/presentation/pages/animals_page.dart';
-import 'package:costeira/views/navigationscreen/dashbord/dashboard.dart';
+import 'package:costeira/features/dashboard/presentation/pages/dashboard.dart';
 import 'package:costeira/views/navigationscreen/indicadores/indicadores.dart';
 import 'package:costeira/views/navigationscreen/movimentacoes/movimentacoes.dart';
 import 'package:flutter/material.dart';

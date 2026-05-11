@@ -1,5 +1,6 @@
 import 'package:costeira/app/app_routes.dart';
 import 'package:costeira/core/api/api_exception.dart';
+import 'package:costeira/core/components/app_snack.dart';
 import 'package:costeira/core/storage/session_storage.dart';
 import 'package:costeira/features/account/repositories/account_repository.dart';
 import 'package:costeira/features/auth/models/user_session.dart';
@@ -51,7 +52,11 @@ class _MyAccountPageState extends State<MyAccountPage> {
               CircleAvatar(
                 radius: 36,
                 backgroundColor: const Color(0xFFEBEBEB),
-                child: SvgPicture.asset('icon/user-round.svg', width: 36, height: 36),
+                child: SvgPicture.asset(
+                  'icon/user-round.svg',
+                  width: 36,
+                  height: 36,
+                ),
               ),
               const SizedBox(height: 12),
               Text(
@@ -135,7 +140,7 @@ class _MyAccountPageState extends State<MyAccountPage> {
 
     try {
       final response = await _accountRepository.deactivateAccount(_user!.id);
-      _showMessage(response.message);
+      _showMessage(response.message, isError: !response.isSuccess);
       if (response.isSuccess) {
         await SessionStorage.clearUserSession();
         if (!mounted) {
@@ -174,7 +179,9 @@ class _MyAccountPageState extends State<MyAccountPage> {
       context: context,
       builder: (dialogContext) {
         return AlertDialog(
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16),
+          ),
           title: Text(title),
           content: Text(description),
           actions: [
@@ -195,11 +202,11 @@ class _MyAccountPageState extends State<MyAccountPage> {
     );
   }
 
-  void _showMessage(String message) {
+  void _showMessage(String message, {bool isError = true}) {
     if (!mounted) {
       return;
     }
-    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(message)));
+    AppSnackBar.show(context: context, message: message, isError: isError);
   }
 }
 

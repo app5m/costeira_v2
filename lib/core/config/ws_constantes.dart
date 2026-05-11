@@ -15,6 +15,7 @@ class WSConstantes {
   static const String updatePassword = '/usuarios/updatepassword/';
   static const String updateAvatar = '/usuarios/updateavatar/';
   static const String utilLista = '/util/lista';
+  static const String dashboardListar = '/dashboard/listar';
   static const String animaisListar = '/animais/listar';
   static const String insumosListar = '/insumos/listar';
   static const String insumosListarTipo = '/insumos/listarTipo';
@@ -62,6 +63,9 @@ class WSConstantes {
   static const String pastagensGraficos = '/pastagens/graficos';
   static const String sanitariosListar = '/sanitarios/listar';
   static const String sanitariosAdicionar = '/sanitarios/adicionar';
+  static const String sanitariosExcluir = '/sanitarios/excluir';
+  static const String sanitariosSetExecutar = '/sanitarios/setExecutar';
+  static const String sanitariosGraficos = '/sanitarios/graficos';
 
   static const int tipoPessoaFisica = 1;
   static const int tipoPessoaJuridica = 2;

@@ -1,4 +1,5 @@
 import 'package:costeira/core/api/api_exception.dart';
+import 'package:costeira/core/components/app_snack.dart';
 import 'package:costeira/core/storage/session_storage.dart';
 import 'package:costeira/features/account/repositories/account_repository.dart';
 import 'package:costeira/features/auth/models/user_session.dart';
@@ -49,7 +50,8 @@ class _UpdatePasswordPageState extends State<UpdatePasswordPage> {
   }
 
   bool get _hasMinLength => _newPasswordController.text.length >= 8;
-  bool get _hasUppercase => _newPasswordController.text.contains(RegExp(r'[A-Z]'));
+  bool get _hasUppercase =>
+      _newPasswordController.text.contains(RegExp(r'[A-Z]'));
   bool get _passwordsMatch =>
       _confirmPasswordController.text.isNotEmpty &&
       _newPasswordController.text == _confirmPasswordController.text;
@@ -123,9 +125,15 @@ class _UpdatePasswordPageState extends State<UpdatePasswordPage> {
                       validator: _validateNewPassword,
                     ),
                     const SizedBox(height: 12),
-                    _PasswordRule(label: 'Deve ter no mínimo 8 caracteres', isValid: _hasMinLength),
+                    _PasswordRule(
+                      label: 'Deve ter no mínimo 8 caracteres',
+                      isValid: _hasMinLength,
+                    ),
                     const SizedBox(height: 8),
-                    _PasswordRule(label: 'Deve ter uma letra maiúscula', isValid: _hasUppercase),
+                    _PasswordRule(
+                      label: 'Deve ter uma letra maiúscula',
+                      isValid: _hasUppercase,
+                    ),
                     const SizedBox(height: 16),
                     AppFormField(
                       label: 'Repita a nova senha',
@@ -191,7 +199,7 @@ class _UpdatePasswordPageState extends State<UpdatePasswordPage> {
         id: _user!.id,
         password: _newPasswordController.text,
       );
-      _showMessage(response.message);
+      _showMessage(response.message, isError: !response.isSuccess);
       if (response.isSuccess && mounted) {
         Navigator.of(context).pop();
       }
@@ -239,11 +247,11 @@ class _UpdatePasswordPageState extends State<UpdatePasswordPage> {
       _validateNewPassword(_newPasswordController.text) == null &&
       _validateConfirmPassword(_confirmPasswordController.text) == null;
 
-  void _showMessage(String message) {
+  void _showMessage(String message, {bool isError = true}) {
     if (!mounted) {
       return;
     }
-    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(message)));
+    AppSnackBar.show(context: context, message: message, isError: isError);
   }
 }
 
@@ -257,7 +265,11 @@ class _PasswordRule extends StatelessWidget {
   Widget build(BuildContext context) {
     return Row(
       children: [
-        Icon(Icons.check_circle, color: isValid ? Colors.green : Colors.grey, size: 18),
+        Icon(
+          Icons.check_circle,
+          color: isValid ? Colors.green : Colors.grey,
+          size: 18,
+        ),
         const SizedBox(width: 8),
         Text(label, style: const TextStyle(color: MyColors.colorPrimary2)),
       ],

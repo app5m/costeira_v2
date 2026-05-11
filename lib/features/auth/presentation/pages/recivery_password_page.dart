@@ -1,4 +1,5 @@
 import 'package:costeira/core/api/api_exception.dart';
+import 'package:costeira/core/components/app_snack.dart';
 import 'package:costeira/features/auth/repositories/auth_repository.dart';
 import 'package:costeira/core/components/app_buttons.dart';
 import 'package:costeira/core/components/app_form_field.dart';
@@ -80,7 +81,7 @@ class _RecoverPasswordPageState extends State<RecoverPasswordPage> {
       final response = await _authRepository.recoverPassword(
         _emailController.text.trim(),
       );
-      _showMessage(response.message);
+      _showMessage(response.message, isError: !response.isSuccess);
       if (response.isSuccess && mounted) {
         Modular.to.pop();
       }
@@ -95,13 +96,11 @@ class _RecoverPasswordPageState extends State<RecoverPasswordPage> {
     }
   }
 
-  void _showMessage(String message) {
+  void _showMessage(String message, {bool isError = true}) {
     if (!mounted) {
       return;
     }
-    ScaffoldMessenger.of(
-      context,
-    ).showSnackBar(SnackBar(content: Text(message)));
+    AppSnackBar.show(context: context, message: message, isError: isError);
   }
 
   bool get _canSubmit {

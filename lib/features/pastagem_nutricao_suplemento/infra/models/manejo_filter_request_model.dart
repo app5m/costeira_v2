@@ -7,13 +7,11 @@ class ManejoFilterRequestModel {
   final Map<String, dynamic> data;
 
   factory ManejoFilterRequestModel.fromEntity(ManejoFilterEntity filter) {
-    return ManejoFilterRequestModel._(
-      {
-        'token': WSConstantes.token,
-        'app_users_id': filter.appUsersId,
-        'id': filter.id,
-        'id_potreiro': filter.idPotreiro,
-      }..removeWhere((key, value) => value == null),
-    );
+    return ManejoFilterRequestModel._({
+      'token': WSConstantes.token,
+      'app_users_id': filter.appUsersId,
+      'id': filter.id,
+      'id_potreiro': filter.idPotreiro,
+    });
   }
 }

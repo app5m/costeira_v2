@@ -31,11 +31,13 @@ class TipoManejo {
     required this.id,
     required this.nome,
     required this.unidade,
+    this.tipoInsumo = '',
   });
 
   final String id;
   final String nome;
   final String unidade;
+  final String tipoInsumo;
 }
 
 class ManejoReference {

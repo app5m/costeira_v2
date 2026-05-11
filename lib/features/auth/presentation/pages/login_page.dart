@@ -1,6 +1,7 @@
 import 'package:costeira/app/app_route_data.dart';
 import 'package:costeira/app/app_routes.dart';
 import 'package:costeira/core/api/api_exception.dart';
+import 'package:costeira/core/components/app_snack.dart';
 import 'package:costeira/core/services/location_service.dart';
 import 'package:costeira/features/auth/repositories/auth_repository.dart';
 import 'package:costeira/core/components/app_buttons.dart';
@@ -71,7 +72,9 @@ class _LoginPageState extends State<LoginPage> {
                   });
                 },
                 icon: Icon(
-                  _obscureText ? Icons.visibility_outlined : Icons.visibility_off_outlined,
+                  _obscureText
+                      ? Icons.visibility_outlined
+                      : Icons.visibility_off_outlined,
                   color: Colors.grey,
                 ),
               ),
@@ -130,7 +133,7 @@ class _LoginPageState extends State<LoginPage> {
         coordinates: coordinates,
       );
 
-      _showMessage(response.message);
+      _showMessage(response.message, isError: !response.isSuccess);
 
       if (!mounted) {
         return;
@@ -198,11 +201,11 @@ class _LoginPageState extends State<LoginPage> {
       _validateEmail(_emailController.text) == null &&
       _validatePassword(_passwordController.text) == null;
 
-  void _showMessage(String message) {
+  void _showMessage(String message, {bool isError = true}) {
     if (!mounted) {
       return;
     }
-    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(message)));
+    AppSnackBar.show(context: context, message: message, isError: isError);
   }
 }
 

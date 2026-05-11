@@ -1,5 +1,6 @@
 import 'dart:math' as math;
 
+import 'package:costeira/core/components/app_snack.dart';
 import 'package:costeira/features/pastagem_nutricao_suplemento/domain/entities/manejo.dart';
 import 'package:costeira/features/pastagem_nutricao_suplemento/presentation/controllers/get_manejo_charts_controller.dart';
 import 'package:flutter/material.dart';
@@ -37,13 +38,11 @@ class _GraficosManejoState extends State<GraficosManejo> {
       await _controller.load();
     } catch (_) {
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(
+      AppSnackBar.show(
+        context: context,
+        message:
             _controller.errorMessage ??
-                'Nao foi possivel carregar os graficos.',
-          ),
-        ),
+            'Nao foi possivel carregar os graficos.',
       );
     }
   }
@@ -53,13 +52,11 @@ class _GraficosManejoState extends State<GraficosManejo> {
       await _controller.previousMonth();
     } catch (_) {
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(
+      AppSnackBar.show(
+        context: context,
+        message:
             _controller.errorMessage ??
-                'Nao foi possivel carregar os graficos.',
-          ),
-        ),
+            'Nao foi possivel carregar os graficos.',
       );
     }
   }
@@ -69,13 +66,11 @@ class _GraficosManejoState extends State<GraficosManejo> {
       await _controller.nextMonth();
     } catch (_) {
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(
+      AppSnackBar.show(
+        context: context,
+        message:
             _controller.errorMessage ??
-                'Nao foi possivel carregar os graficos.',
-          ),
-        ),
+            'Nao foi possivel carregar os graficos.',
       );
     }
   }
@@ -87,25 +82,24 @@ class _GraficosManejoState extends State<GraficosManejo> {
     }
 
     final charts = _controller.charts ?? ManejoChartsEntity.empty;
-    final porPotreiro = charts.manejosPorPotreiro
-        .map(
-          (item) => _ChartPoint(
-            label: item.potreiroNome,
-            value: item.quantidade,
-            color: _colorFor(item.potreiroNome),
-          ),
-        )
-        .toList(growable: false);
-    final porTipo = charts.manejosTipoPotreiroMes
-        .map(
-          (item) => _ChartPoint(
-            label: item.tipoManejo,
-            subLabel: item.potreiroNome,
-            value: item.quantidade,
-            color: _colorFor(item.tipoManejo),
-          ),
-        )
-        .toList(growable: false);
+    final porPotreiro = _groupChartPoints(
+      charts.manejosPorPotreiro.map(
+        (item) => _ChartPoint(
+          label: item.potreiroNome,
+          value: item.quantidade,
+          color: _colorFor(item.potreiroNome),
+        ),
+      ),
+    );
+    final porTipo = _groupChartPoints(
+      charts.manejosTipoPotreiroMes.map(
+        (item) => _ChartPoint(
+          label: item.tipoManejo,
+          value: item.quantidade,
+          color: _colorFor(item.tipoManejo),
+        ),
+      ),
+    );
 
     return Expanded(
       child: RefreshIndicator(
@@ -253,7 +247,7 @@ class _SummaryCard extends StatelessWidget {
                             ),
                           ),
                           const Text(
-                            'manejos',
+                            'total',
                             style: TextStyle(
                               color: Color(0xFF8C8C8C),
                               fontSize: 12,
@@ -582,13 +576,28 @@ class _ChartPoint {
     required this.label,
     required this.value,
     required this.color,
-    this.subLabel,
   });
 
   final String label;
-  final String? subLabel;
   final double value;
   final Color color;
+}
+
+List<_ChartPoint> _groupChartPoints(Iterable<_ChartPoint> points) {
+  final grouped = <String, _ChartPoint>{};
+
+  for (final point in points) {
+    final label = point.label.trim().isEmpty ? '-' : point.label.trim();
+    final current = grouped[label];
+    grouped[label] = _ChartPoint(
+      label: label,
+      value: (current?.value ?? 0) + point.value,
+      color: current?.color ?? point.color,
+    );
+  }
+
+  return grouped.values.toList(growable: false)
+    ..sort((a, b) => b.value.compareTo(a.value));
 }
 
 Color _colorFor(String value) {

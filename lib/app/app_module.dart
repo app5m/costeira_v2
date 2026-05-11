@@ -11,6 +11,7 @@ import 'package:costeira/features/climate_and_rain/domain/entities/climate_entit
 import 'package:costeira/features/climate_and_rain/presentation/pages/climate_add.dart';
 import 'package:costeira/features/climate_and_rain/presentation/pages/climate_edit.dart';
 import 'package:costeira/features/climate_and_rain/presentation/pages/climate_page.dart';
+import 'package:costeira/features/dashboard/dashboard_binds.dart';
 import 'package:costeira/features/account/repositories/account_repository.dart';
 import 'package:costeira/features/animals/animals_binds.dart';
 import 'package:costeira/features/animals/domain/entities/animal_entity.dart';
@@ -86,6 +87,7 @@ class AppModule extends Module {
     ClimateAndRainBinds.register(i);
     PotreirosBinds.register(i);
     AnimalsBinds.register(i);
+    DashboardBinds.register(i);
     InsumosBinds.register(i);
     PastagemNutricaoSuplementoBinds.register(i);
     SanitariosBinds.register(i);

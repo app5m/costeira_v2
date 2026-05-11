@@ -71,7 +71,8 @@ class ManejoFormController extends ChangeNotifier {
     final manejo = _editingManejo;
     if (manejo == null) return true;
 
-    final tipoNome = selectedTipoManejo?.nome.trim() ?? manejo.tipoManejo;
+    final tipoNome =
+        _tipoManejoPayload(selectedTipoManejo) ?? manejo.tipoManejo;
     final quantidade = _parseDecimal(quantidadeController.text);
 
     return _selectedPotreiroId != manejo.appPotreirosId ||
@@ -164,7 +165,7 @@ class ManejoFormController extends ChangeNotifier {
         id: _editingManejo?.id,
         appUsersId: _currentUserId,
         appPotreirosId: _selectedPotreiroId!,
-        tipoManejo: tipoManejo.nome,
+        tipoManejo: _tipoManejoPayload(tipoManejo)!,
         dataManejo: dataController.text.trim(),
         quantidade: _parseDecimal(quantidadeController.text)!,
       );
@@ -185,11 +186,26 @@ class ManejoFormController extends ChangeNotifier {
     return unidade.isEmpty ? tipo.nome : '${tipo.nome} - $unidade';
   }
 
+  String? _tipoManejoPayload(TipoManejo? tipo) {
+    final tipoInsumo = tipo?.tipoInsumo.trim();
+    if (tipoInsumo != null && tipoInsumo.isNotEmpty) {
+      return tipoInsumo;
+    }
+
+    final nome = tipo?.nome.trim();
+    if (nome != null && nome.isNotEmpty) {
+      return nome;
+    }
+
+    return null;
+  }
+
   String? _resolveTipoManejoId(Manejo? manejo) {
     if (manejo == null) return null;
     final tipo = manejo.tipoManejo.trim().toLowerCase();
     final found = _tiposManejo.where((item) {
       return item.nome.trim().toLowerCase() == tipo ||
+          item.tipoInsumo.trim().toLowerCase() == tipo ||
           item.id.trim().toLowerCase() == tipo;
     }).firstOrNull;
     return found?.id;

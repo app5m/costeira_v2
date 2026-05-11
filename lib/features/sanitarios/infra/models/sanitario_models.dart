@@ -51,6 +51,150 @@ class SanitarioUpsertRequestModel {
   }
 }
 
+class DeleteSanitarioRequestModel {
+  const DeleteSanitarioRequestModel._(this.data);
+
+  final Map<String, dynamic> data;
+
+  factory DeleteSanitarioRequestModel.fromEntity(DeleteSanitarioEntity entity) {
+    return DeleteSanitarioRequestModel._({
+      'token': WSConstantes.token,
+      'app_users_id': entity.appUsersId,
+      'id': entity.id,
+    });
+  }
+}
+
+class SanitarioExecucaoRequestModel {
+  const SanitarioExecucaoRequestModel._(this.data);
+
+  final Map<String, dynamic> data;
+
+  factory SanitarioExecucaoRequestModel.fromEntity(
+    SanitarioExecucaoEntity execucao,
+  ) {
+    return SanitarioExecucaoRequestModel._(
+      {
+        'token': WSConstantes.token,
+        'id': execucao.id,
+        'app_users_id': execucao.appUsersId,
+        'data_execucao': execucao.dataExecucao,
+        'insumos': execucao.insumos
+            .map(
+              (item) => {
+                'id_insumo': item.idInsumo,
+                'quantidade': item.quantidade,
+              },
+            )
+            .toList(growable: false),
+      }..removeWhere((key, value) => value == null),
+    );
+  }
+}
+
+class SanitarioChartsFilterRequestModel {
+  const SanitarioChartsFilterRequestModel._(this.data);
+
+  final Map<String, dynamic> data;
+
+  factory SanitarioChartsFilterRequestModel.fromEntity(
+    SanitarioChartsFilterEntity filter,
+  ) {
+    return SanitarioChartsFilterRequestModel._({
+      'token': WSConstantes.token,
+      'app_users_id': filter.appUsersId,
+      'mes_ano': filter.mesAno,
+    });
+  }
+}
+
+class SanitarioChartsResponseModel extends SanitarioChartsEntity {
+  const SanitarioChartsResponseModel({
+    required super.planejadosExecutados,
+    required super.executadoPorInsumoTipoManejo,
+    required super.planejadosExecutadosMesAMes,
+  });
+
+  factory SanitarioChartsResponseModel.fromWrapper(Map<String, dynamic> json) {
+    final dataList = (json['data'] as List<dynamic>? ?? const [])
+        .whereType<Map>()
+        .map((item) => Map<String, dynamic>.from(item))
+        .toList(growable: false);
+    final data = dataList.isEmpty ? <String, dynamic>{} : dataList.first;
+
+    return SanitarioChartsResponseModel(
+      planejadosExecutados: SanitarioPlanejadoExecutadoModel.fromJson(
+        Map<String, dynamic>.from(data['planejados_executados'] as Map? ?? {}),
+      ),
+      executadoPorInsumoTipoManejo: _list(
+        data['executado_por_insumo_tipo_manejo'],
+        SanitarioExecutadoInsumoTipoManejoModel.fromJson,
+      ),
+      planejadosExecutadosMesAMes: _list(
+        data['planejados_executados_mes_a_mes'],
+        SanitarioPlanejadoExecutadoMesModel.fromJson,
+      ),
+    );
+  }
+}
+
+class SanitarioPlanejadoExecutadoModel
+    extends SanitarioPlanejadoExecutadoEntity {
+  const SanitarioPlanejadoExecutadoModel({
+    required super.planejado,
+    required super.executado,
+  });
+
+  factory SanitarioPlanejadoExecutadoModel.fromJson(Map<String, dynamic> json) {
+    return SanitarioPlanejadoExecutadoModel(
+      planejado: _double(json['planejado']) ?? 0,
+      executado: _double(json['executado']) ?? 0,
+    );
+  }
+}
+
+class SanitarioExecutadoInsumoTipoManejoModel
+    extends SanitarioExecutadoInsumoTipoManejoEntity {
+  const SanitarioExecutadoInsumoTipoManejoModel({
+    required super.tipoManejo,
+    required super.insumo,
+    required super.quantidade,
+  });
+
+  factory SanitarioExecutadoInsumoTipoManejoModel.fromJson(
+    Map<String, dynamic> json,
+  ) {
+    return SanitarioExecutadoInsumoTipoManejoModel(
+      tipoManejo: json['tipo_manejo']?.toString() ?? '',
+      insumo:
+          _reference(json['insumo']) ??
+          const SanitarioReferenceEntity(id: 0, nome: ''),
+      quantidade: _double(json['quantidade']) ?? 0,
+    );
+  }
+}
+
+class SanitarioPlanejadoExecutadoMesModel
+    extends SanitarioPlanejadoExecutadoMesEntity {
+  const SanitarioPlanejadoExecutadoMesModel({
+    required super.ano,
+    required super.mes,
+    required super.status,
+    required super.quantidade,
+  });
+
+  factory SanitarioPlanejadoExecutadoMesModel.fromJson(
+    Map<String, dynamic> json,
+  ) {
+    return SanitarioPlanejadoExecutadoMesModel(
+      ano: _int(json['ano']),
+      mes: _int(json['mes']),
+      status: json['status']?.toString() ?? '',
+      quantidade: _double(json['quantidade']) ?? 0,
+    );
+  }
+}
+
 class SanitariosListResponseModel extends SanitariosListEntity {
   const SanitariosListResponseModel({
     required super.rows,

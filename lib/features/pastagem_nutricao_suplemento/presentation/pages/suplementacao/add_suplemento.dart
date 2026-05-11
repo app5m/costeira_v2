@@ -1,3 +1,4 @@
+import 'package:costeira/core/components/app_snack.dart';
 import 'package:costeira/core/components/app_select_overlay.dart';
 import 'package:costeira/features/pastagem_nutricao_suplemento/domain/entities/suplemento.dart';
 import 'package:costeira/features/pastagem_nutricao_suplemento/presentation/controllers/suplemento_form_controller.dart';
@@ -41,14 +42,17 @@ class _AddSuplementoState extends State<AddSuplemento> {
     try {
       final result = await _controller.submit();
       if (!mounted || result == null) return;
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text(result.message)));
+      AppSnackBar.show(
+        context: context,
+        message: result.message,
+        isError: false,
+      );
       Navigator.pop(context, true);
     } catch (_) {
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(_controller.errorMessage ?? 'Erro ao salvar.')),
+      AppSnackBar.show(
+        context: context,
+        message: _controller.errorMessage ?? 'Erro ao salvar.',
       );
     }
   }

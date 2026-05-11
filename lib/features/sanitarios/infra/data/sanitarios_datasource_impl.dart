@@ -81,6 +81,70 @@ class SanitariosDatasourceImpl implements SanitariosDatasource {
     );
   }
 
+  @override
+  Future<ApiMessage> deleteSanitario(DeleteSanitarioEntity sanitario) async {
+    final payload = DeleteSanitarioRequestModel.fromEntity(sanitario).data;
+    AppLogger.info('SANITARIOS DATASOURCE: DELETE PAYLOAD=$payload');
+
+    final response = await _apiClient.post(
+      WSConstantes.sanitariosExcluir,
+      data: payload,
+    );
+    AppLogger.success('SANITARIOS DATASOURCE: DELETE RAW RESPONSE=$response');
+
+    return _parseMutationResponse(
+      response,
+      operationName: 'DELETE SANITARIO',
+      expectedSuccessMessage: 'Sanitario excluido com sucesso',
+    );
+  }
+
+  @override
+  Future<ApiMessage> executarSanitario(SanitarioExecucaoEntity execucao) async {
+    if (execucao.appUsersId == null) {
+      throw ApiException('Usuario nao autenticado para executar sanitario.');
+    }
+    if (execucao.insumos.isEmpty) {
+      throw ApiException('Informe ao menos um insumo utilizado.');
+    }
+
+    final payload = SanitarioExecucaoRequestModel.fromEntity(execucao).data;
+    AppLogger.info('SANITARIOS DATASOURCE: EXECUTAR PAYLOAD=$payload');
+
+    final response = await _apiClient.post(
+      WSConstantes.sanitariosSetExecutar,
+      data: payload,
+    );
+    AppLogger.success('SANITARIOS DATASOURCE: EXECUTAR RAW RESPONSE=$response');
+
+    return _parseMutationResponse(
+      response,
+      operationName: 'EXECUTAR SANITARIO',
+      expectedSuccessMessage: 'Sanitario executado com sucesso',
+    );
+  }
+
+  @override
+  Future<SanitarioChartsEntity> getSanitarioCharts(
+    SanitarioChartsFilterEntity filter,
+  ) async {
+    final payload = SanitarioChartsFilterRequestModel.fromEntity(filter).data;
+    AppLogger.info('SANITARIOS DATASOURCE: CHARTS PAYLOAD=$payload');
+
+    final response = await _apiClient.post(
+      WSConstantes.sanitariosGraficos,
+      data: payload,
+    );
+    AppLogger.success('SANITARIOS DATASOURCE: CHARTS RAW RESPONSE=$response');
+
+    final wrappers = responseAsList(response);
+    if (wrappers.isEmpty) {
+      return SanitarioChartsEntity.empty;
+    }
+
+    return SanitarioChartsResponseModel.fromWrapper(wrappers.first);
+  }
+
   ApiMessage _parseMutationResponse(
     dynamic response, {
     required String operationName,

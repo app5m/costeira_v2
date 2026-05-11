@@ -1,8 +1,10 @@
+import 'package:costeira/core/api/api_exception.dart';
+import 'package:costeira/core/components/app_snack.dart';
 import 'package:costeira/features/sanitarios/domain/entities/sanitario.dart';
+import 'package:costeira/features/sanitarios/presentation/controllers/delete_sanitario_controller.dart';
 import 'package:costeira/features/sanitarios/presentation/controllers/list_sanitarios_controller.dart';
-import 'package:costeira/features/sanitarios/presentation/pages/addplanejamento.dart';
-import 'package:costeira/features/sanitarios/presentation/pages/detailexecucoes.dart';
-import 'package:costeira/features/sanitarios/presentation/pages/graficosexecucoes.dart';
+import 'package:costeira/features/sanitarios/presentation/pages/add_planejamento.dart';
+import 'package:costeira/features/sanitarios/presentation/pages/detail_execucoes.dart';
 import 'package:costeira/theme/colors.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_modular/flutter_modular.dart';
@@ -15,24 +17,14 @@ class Execucoes extends StatefulWidget {
   State<Execucoes> createState() => _ExecucoesState();
 }
 
-class _ExecucoesState extends State<Execucoes>
-    with SingleTickerProviderStateMixin {
-  late final TabController _tabController;
+class _ExecucoesState extends State<Execucoes> {
   late final ListSanitariosController _controller;
-  int index = 0;
 
   @override
   void initState() {
     super.initState();
-    _tabController = TabController(length: 2, vsync: this);
     _controller = Modular.get<ListSanitariosController>();
     WidgetsBinding.instance.addPostFrameCallback((_) => _controller.load());
-  }
-
-  @override
-  void dispose() {
-    _tabController.dispose();
-    super.dispose();
   }
 
   @override
@@ -55,42 +47,13 @@ class _ExecucoesState extends State<Execucoes>
           ),
         ),
       ),
-      body: Column(
-        children: [
-          TabBar(
-            controller: _tabController,
-            tabs: const [
-              Tab(text: 'Lista'),
-              Tab(text: 'Gráficos'),
-            ],
-            onTap: (value) => setState(() => index = value),
-            indicatorSize: TabBarIndicatorSize.tab,
-            unselectedLabelColor: Colors.grey,
-            labelStyle: const TextStyle(
-              fontSize: 12,
-              fontFamily: 'Montserrat',
-              fontWeight: FontWeight.w600,
-            ),
-            unselectedLabelStyle: const TextStyle(
-              fontSize: 12,
-              fontFamily: 'Montserrat',
-              fontWeight: FontWeight.w700,
-            ),
-            dividerColor: Colors.grey,
-            labelColor: Colors.black,
-            indicatorColor: MyColors.colorPrimary2,
-          ),
-          if (index == 0)
-            Expanded(child: _ExecucoesList(controller: _controller)),
-          if (index == 1) GraficosExcucao(),
-        ],
-      ),
+      body: SanitariosExecucoesList(controller: _controller),
     );
   }
 }
 
-class _ExecucoesList extends StatelessWidget {
-  const _ExecucoesList({required this.controller});
+class SanitariosExecucoesList extends StatelessWidget {
+  const SanitariosExecucoesList({super.key, required this.controller});
 
   final ListSanitariosController controller;
 
@@ -122,28 +85,124 @@ class _ExecucoesList extends StatelessWidget {
             padding: const EdgeInsets.only(top: 16, bottom: 24),
             itemCount: sanitarios.length,
             itemBuilder: (context, index) {
-              return _ExecucaoCard(sanitario: sanitarios[index]);
+              return _ExecucaoCard(
+                sanitario: sanitarios[index],
+                onDelete: () => _confirmDelete(context, sanitarios[index]),
+                onSaved: controller.reload,
+              );
             },
           ),
         );
       },
     );
   }
+
+  Future<void> _confirmDelete(BuildContext context, SanitarioEntity sanitario) async {
+    final confirmed = await showModalBottomSheet<bool>(
+      backgroundColor: Colors.white,
+      context: context,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.only(
+          topLeft: Radius.circular(16),
+          topRight: Radius.circular(16),
+        ),
+      ),
+      builder: (BuildContext bc) {
+        return Padding(
+          padding: const EdgeInsets.fromLTRB(20, 16, 20, 24),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const SizedBox(height: 8),
+              Container(width: 72, height: 2, color: const Color(0xFFE2E2E2)),
+              const SizedBox(height: 24),
+              SvgPicture.asset(
+                'icon/danger-linear.svg',
+                width: 80,
+                height: 80,
+                colorFilter: const ColorFilter.mode(Colors.red, BlendMode.srcIn),
+              ),
+              const SizedBox(height: 16),
+              const Text(
+                'Excluir execução',
+                style: TextStyle(
+                  fontFamily: 'Montserrat',
+                  fontWeight: FontWeight.w600,
+                  fontSize: 16,
+                ),
+              ),
+              const SizedBox(height: 8),
+              const Text(
+                'Tem certeza que deseja excluir essa\nexecução permanentemente?',
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  fontFamily: 'Montserrat',
+                  fontWeight: FontWeight.w400,
+                  fontSize: 14,
+                  color: Color(0xFF8692A8),
+                ),
+              ),
+              const SizedBox(height: 16),
+              SizedBox(
+                width: double.infinity,
+                height: 50,
+                child: OutlinedButton(
+                  onPressed: () => Navigator.of(context).pop(true),
+                  style: OutlinedButton.styleFrom(
+                    side: const BorderSide(color: Colors.red),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                  ),
+                  child: const Text('Excluir', style: TextStyle(color: Colors.red)),
+                ),
+              ),
+              TextButton(
+                onPressed: () => Navigator.of(context).pop(false),
+                child: Text(
+                  'Cancelar',
+                  style: TextStyle(
+                    fontSize: 16,
+                    color: MyColors.colorOnPrimary,
+                    decoration: TextDecoration.underline,
+                    decorationColor: MyColors.colorOnPrimary,
+                  ),
+                ),
+              ),
+            ],
+          ),
+        );
+      },
+    );
+    if (confirmed != true || !context.mounted) return;
+
+    final deleteController = Modular.get<DeleteSanitarioController>();
+    try {
+      final result = await deleteController.deleteSanitario(sanitario.id);
+      if (!context.mounted) return;
+      AppSnackBar.show(
+        context: context,
+        message: result?.message ?? 'Execução excluida com sucesso.',
+        isError: false,
+      );
+      await controller.reload();
+    } on ApiException catch (error) {
+      if (!context.mounted) return;
+      AppSnackBar.show(context: context, message: error.message);
+    }
+  }
 }
 
 class _ExecucaoCard extends StatelessWidget {
-  const _ExecucaoCard({required this.sanitario});
+  const _ExecucaoCard({required this.sanitario, required this.onDelete, required this.onSaved});
 
   final SanitarioEntity sanitario;
+  final VoidCallback onDelete;
+  final VoidCallback onSaved;
 
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
       onTap: () {
-        Navigator.push(
-          context,
-          MaterialPageRoute(builder: (_) => const DetailExecucao()),
-        );
+        Navigator.push(context, MaterialPageRoute(builder: (_) => const DetailExecucao()));
       },
       child: Container(
         width: MediaQuery.of(context).size.width - 40,
@@ -172,29 +231,25 @@ class _ExecucaoCard extends StatelessWidget {
                   const SizedBox(height: 8),
                   Text(_insumos, style: _secondaryStyle),
                   const SizedBox(height: 8),
-                  Text(
-                    'Realizado em ${sanitario.dataExecucao ?? '-'}',
-                    style: _secondaryStyle,
-                  ),
+                  Text('Realizado em ${sanitario.dataExecucao ?? '-'}', style: _secondaryStyle),
                 ],
               ),
             ),
             const SizedBox(width: 8),
             Column(
               children: [
-                GestureDetector(
-                  onTap: () {},
-                  child: SvgPicture.asset('icon/trash.svg'),
-                ),
+                GestureDetector(onTap: onDelete, child: SvgPicture.asset('icon/trash.svg')),
                 const SizedBox(height: 12),
                 GestureDetector(
                   onTap: () {
                     Navigator.push<bool>(
                       context,
-                      MaterialPageRoute(
-                        builder: (_) => AddPlanejamento(sanitario: sanitario),
-                      ),
-                    );
+                      MaterialPageRoute(builder: (_) => AddPlanejamento(sanitario: sanitario)),
+                    ).then((saved) {
+                      if (saved == true) {
+                        onSaved();
+                      }
+                    });
                   },
                   child: SvgPicture.asset('icon/square-pen.svg'),
                 ),
@@ -207,9 +262,7 @@ class _ExecucaoCard extends StatelessWidget {
   }
 
   String get _targets {
-    final lotes = sanitario.lotes
-        .map((item) => item.nome.trim())
-        .where((item) => item.isNotEmpty);
+    final lotes = sanitario.lotes.map((item) => item.nome.trim()).where((item) => item.isNotEmpty);
     final categorias = sanitario.categorias
         .map((item) => item.nome.trim())
         .where((item) => item.isNotEmpty);
@@ -260,11 +313,7 @@ class _IconBadge extends StatelessWidget {
 }
 
 class _FeedbackState extends StatelessWidget {
-  const _FeedbackState({
-    required this.message,
-    this.actionLabel,
-    this.onAction,
-  });
+  const _FeedbackState({required this.message, this.actionLabel, this.onAction});
 
   final String message;
   final String? actionLabel;

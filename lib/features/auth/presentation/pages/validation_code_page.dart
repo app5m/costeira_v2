@@ -1,6 +1,7 @@
 import 'package:costeira/app/app_route_data.dart';
 import 'package:costeira/app/app_routes.dart';
 import 'package:costeira/core/api/api_exception.dart';
+import 'package:costeira/core/components/app_snack.dart';
 import 'package:costeira/core/models/user_coordinates.dart';
 import 'package:costeira/core/services/push_token_service.dart';
 import 'package:costeira/core/storage/session_storage.dart';
@@ -268,7 +269,7 @@ class _ValidationCodePageState extends State<ValidationCodePage> {
         tipo: widget.tipo,
       );
 
-      _showMessage(result.message.message);
+      _showMessage(result.message.message, isError: !result.message.isSuccess);
 
       if (!mounted) {
         return;
@@ -322,7 +323,7 @@ class _ValidationCodePageState extends State<ValidationCodePage> {
           longitude: widget.long,
         ),
       );
-      _showMessage(response.message);
+      _showMessage(response.message, isError: !response.isSuccess);
     } on ApiException catch (error) {
       _showMessage(error.message);
     } finally {
@@ -352,13 +353,11 @@ class _ValidationCodePageState extends State<ValidationCodePage> {
     }
   }
 
-  void _showMessage(String message) {
+  void _showMessage(String message, {bool isError = true}) {
     if (!mounted) {
       return;
     }
-    ScaffoldMessenger.of(
-      context,
-    ).showSnackBar(SnackBar(content: Text(message)));
+    AppSnackBar.show(context: context, message: message, isError: isError);
   }
 
   bool get _canSubmit => _pinController.text.trim().length == 4;
