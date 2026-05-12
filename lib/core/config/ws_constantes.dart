@@ -16,6 +16,12 @@ class WSConstantes {
   static const String updateAvatar = '/usuarios/updateavatar/';
   static const String utilLista = '/util/lista';
   static const String dashboardListar = '/dashboard/listar';
+  static const String movimentacoesListar = '/movimentacoes/listar';
+  static const String movimentacoesGraficos = '/movimentacoes/graficos';
+  static const String movimentacoesAdicionarCompra =
+      '/movimentacoes/adicionarCompra';
+  static const String movimentacoesExcluirCompra =
+      '/movimentacoes/excluirCompra';
   static const String animaisListar = '/animais/listar';
   static const String insumosListar = '/insumos/listar';
   static const String insumosListarTipo = '/insumos/listarTipo';

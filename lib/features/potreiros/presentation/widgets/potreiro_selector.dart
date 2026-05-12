@@ -126,11 +126,41 @@ class PotreiroSelectionSheet extends StatefulWidget {
 
 class _PotreiroSelectionSheetState extends State<PotreiroSelectionSheet> {
   late int? _selectedPotreiroId;
+  final TextEditingController _searchController = TextEditingController();
+  String _search = '';
 
   @override
   void initState() {
     super.initState();
     _selectedPotreiroId = widget.initialSelectedPotreiroId;
+    _searchController.addListener(_onSearchChanged);
+  }
+
+  @override
+  void dispose() {
+    _searchController.removeListener(_onSearchChanged);
+    _searchController.dispose();
+    super.dispose();
+  }
+
+  List<PotreiroEntity> get _filteredPotreiros {
+    final query = _normalize(_search);
+    if (query.isEmpty) {
+      return widget.potreiros;
+    }
+
+    return widget.potreiros
+        .where((item) {
+          return _normalize(item.nome).contains(query) ||
+              _normalize(item.statusAtual ?? '').contains(query);
+        })
+        .toList(growable: false);
+  }
+
+  void _onSearchChanged() {
+    setState(() {
+      _search = _searchController.text;
+    });
   }
 
   @override
@@ -178,6 +208,12 @@ class _PotreiroSelectionSheetState extends State<PotreiroSelectionSheet> {
               ),
             ),
             const SizedBox(height: 20),
+            if (!widget.isLoading &&
+                (widget.errorMessage ?? '').trim().isEmpty &&
+                widget.potreiros.isNotEmpty) ...[
+              _buildSearchField('Buscar potreiro'),
+              const SizedBox(height: 16),
+            ],
             Flexible(child: _buildBody(context)),
             const SizedBox(height: 20),
             SizedBox(
@@ -255,12 +291,19 @@ class _PotreiroSelectionSheetState extends State<PotreiroSelectionSheet> {
       );
     }
 
+    final potreiros = _filteredPotreiros;
+    if (potreiros.isEmpty) {
+      return const Center(
+        child: Text('Nenhum potreiro encontrado.', textAlign: TextAlign.center),
+      );
+    }
+
     return ListView.separated(
       shrinkWrap: true,
-      itemCount: widget.potreiros.length,
+      itemCount: potreiros.length,
       separatorBuilder: (_, __) => const SizedBox(height: 12),
       itemBuilder: (context, index) {
-        final item = widget.potreiros[index];
+        final item = potreiros[index];
         final isSelected = _selectedPotreiroId == item.id;
 
         return InkWell(
@@ -326,6 +369,37 @@ class _PotreiroSelectionSheetState extends State<PotreiroSelectionSheet> {
         );
       },
     );
+  }
+
+  Widget _buildSearchField(String hint) {
+    return TextField(
+      controller: _searchController,
+      textInputAction: TextInputAction.search,
+      decoration: InputDecoration(
+        hintText: hint,
+        prefixIcon: const Icon(Icons.search, color: Color(0xFF8C8C8C)),
+        suffixIcon: _search.trim().isEmpty
+            ? null
+            : IconButton(
+                onPressed: _searchController.clear,
+                icon: const Icon(Icons.close, color: Color(0xFF8C8C8C)),
+              ),
+        filled: true,
+        fillColor: const Color(0xFFEBEBEB),
+        contentPadding: const EdgeInsets.symmetric(
+          horizontal: 15,
+          vertical: 14,
+        ),
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(8),
+          borderSide: BorderSide.none,
+        ),
+      ),
+    );
+  }
+
+  String _normalize(String value) {
+    return value.trim().toLowerCase();
   }
 
   void _openAddPotreiroPage() {

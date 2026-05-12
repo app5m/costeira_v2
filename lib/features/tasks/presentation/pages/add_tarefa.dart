@@ -51,8 +51,7 @@ class _AddTaskState extends State<AddTask> {
   final _obsController = TextEditingController();
   final ListTaskResponsaveisController _responsaveisController =
       Modular.get<ListTaskResponsaveisController>();
-  final SaveTaskController _saveTaskController =
-      Modular.get<SaveTaskController>();
+  final SaveTaskController _saveTaskController = Modular.get<SaveTaskController>();
 
   int? _selectedType;
   int? _selectedUrgency;
@@ -109,8 +108,7 @@ class _AddTaskState extends State<AddTask> {
           .map((item) {
             final mesAno = item.mesAno ?? item.data;
             final month = _months.firstWhere(
-              (option) =>
-                  mesAno.toLowerCase().startsWith(option.label.toLowerCase()),
+              (option) => mesAno.toLowerCase().startsWith(option.label.toLowerCase()),
               orElse: () => const _MonthOption('', ''),
             );
             return month.value;
@@ -157,11 +155,7 @@ class _AddTaskState extends State<AddTask> {
         return;
       }
 
-      AppSnackBar.show(
-        context: context,
-        message: message.message,
-        isError: false,
-      );
+      AppSnackBar.show(context: context, message: message.message, isError: false);
       Navigator.pop(context);
     } catch (error) {
       if (!mounted) {
@@ -169,9 +163,7 @@ class _AddTaskState extends State<AddTask> {
       }
       AppSnackBar.show(
         context: context,
-        message: error is ApiException
-            ? error.message
-            : 'Nao foi possivel salvar a tarefa.',
+        message: error is ApiException ? error.message : 'Nao foi possivel salvar a tarefa.',
         isError: true,
       );
     } finally {
@@ -193,10 +185,7 @@ class _AddTaskState extends State<AddTask> {
 
   Future<void> _openResponsavelSelection() async {
     if (_responsaveisController.responsaveis.isEmpty) {
-      await Navigator.push(
-        context,
-        MaterialPageRoute(builder: (_) => const AddTaskResponsavel()),
-      );
+      await Navigator.push(context, MaterialPageRoute(builder: (_) => const AddTaskResponsavel()));
       await _responsaveisController.load().catchError((_) {});
       if (mounted && _responsaveisController.responsaveis.isNotEmpty) {
         await _openResponsavelSelection();
@@ -226,10 +215,7 @@ class _AddTaskState extends State<AddTask> {
     }
 
     if (result.shouldAdd) {
-      await Navigator.push(
-        context,
-        MaterialPageRoute(builder: (_) => const AddTaskResponsavel()),
-      );
+      await Navigator.push(context, MaterialPageRoute(builder: (_) => const AddTaskResponsavel()));
       await _responsaveisController.load().catchError((_) {});
       if (mounted && _responsaveisController.responsaveis.isNotEmpty) {
         await _openResponsavelSelection();
@@ -241,8 +227,7 @@ class _AddTaskState extends State<AddTask> {
   }
 
   Future<void> _pickDate({required bool isStart}) async {
-    final initialDate =
-        (isStart ? _startDate : _endDate) ?? _startDate ?? DateTime.now();
+    final initialDate = (isStart ? _startDate : _endDate) ?? _startDate ?? DateTime.now();
     final picked = await showDatePicker(
       context: context,
       initialDate: initialDate,
@@ -310,12 +295,12 @@ class _AddTaskState extends State<AddTask> {
             _buildTextField(
               controller: _descricaoController,
               label: 'O que fazer',
-              hint: 'Descricao da tarefa',
+              hint: 'Descrição da tarefa',
             ),
             _buildSelectField(
-              label: 'Responsavel',
+              label: 'Responsável',
               value: _selectedResponsavelName,
-              placeholder: 'Selecionar responsavel',
+              placeholder: 'Selecionar responsável',
               onTap: _openResponsavelSelection,
             ),
             _buildDropdown(
@@ -334,16 +319,12 @@ class _AddTaskState extends State<AddTask> {
             if (_selectedType == 1) ...[
               _buildDateField(
                 label: 'Data inicial',
-                value: _startDate == null
-                    ? 'Selecionar data'
-                    : formatTaskDate(_startDate!),
+                value: _startDate == null ? 'Selecionar data' : formatTaskDate(_startDate!),
                 onTap: () => _pickDate(isStart: true),
               ),
               _buildDateField(
                 label: 'Data final',
-                value: _endDate == null
-                    ? 'Selecionar data'
-                    : formatTaskDate(_endDate!),
+                value: _endDate == null ? 'Selecionar data' : formatTaskDate(_endDate!),
                 onTap: () => _pickDate(isStart: false),
               ),
             ],
@@ -355,15 +336,15 @@ class _AddTaskState extends State<AddTask> {
                 onTap: _openMonthSelection,
               ),
             _buildDropdown(
-              label: 'Urgencia',
+              label: 'Urgência',
               value: _selectedUrgency,
               options: _urgencies,
               onChanged: (value) => setState(() => _selectedUrgency = value),
             ),
             _buildTextField(
               controller: _obsController,
-              label: 'Observacoes',
-              hint: 'Observacoes da tarefa',
+              label: 'Observações',
+              hint: 'Observações da tarefa',
               maxLines: 3,
             ),
             const SizedBox(height: 16),
@@ -477,19 +458,14 @@ class _AddTaskState extends State<AddTask> {
                     maxLines: 2,
                     overflow: TextOverflow.ellipsis,
                     style: TextStyle(
-                      color: value.isEmpty
-                          ? const Color(0xFF8C8C8C)
-                          : const Color(0xFF313131),
+                      color: value.isEmpty ? const Color(0xFF8C8C8C) : const Color(0xFF313131),
                       fontSize: 14,
                       fontFamily: 'Montserrat',
                       fontWeight: FontWeight.w400,
                     ),
                   ),
                 ),
-                const Icon(
-                  Icons.keyboard_arrow_right,
-                  color: Color(0xFF8C8C8C),
-                ),
+                const Icon(Icons.keyboard_arrow_right, color: Color(0xFF8C8C8C)),
               ],
             ),
           ),
@@ -556,21 +532,16 @@ class _ResponsavelSelectionResult {
 }
 
 class _ResponsavelSelectionSheet extends StatefulWidget {
-  const _ResponsavelSelectionSheet({
-    required this.responsaveis,
-    required this.initialSelectedId,
-  });
+  const _ResponsavelSelectionSheet({required this.responsaveis, required this.initialSelectedId});
 
   final List<TaskResponsavelEntity> responsaveis;
   final int? initialSelectedId;
 
   @override
-  State<_ResponsavelSelectionSheet> createState() =>
-      _ResponsavelSelectionSheetState();
+  State<_ResponsavelSelectionSheet> createState() => _ResponsavelSelectionSheetState();
 }
 
-class _ResponsavelSelectionSheetState
-    extends State<_ResponsavelSelectionSheet> {
+class _ResponsavelSelectionSheetState extends State<_ResponsavelSelectionSheet> {
   late int? _selectedId = widget.initialSelectedId;
 
   @override
@@ -624,19 +595,12 @@ class _ResponsavelSelectionSheetState
                       });
                     },
                     child: Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 16,
-                        vertical: 14,
-                      ),
+                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
                       decoration: BoxDecoration(
-                        color: isSelected
-                            ? MyColors.colorPrimary
-                            : Colors.white,
+                        color: isSelected ? MyColors.colorPrimary : Colors.white,
                         borderRadius: BorderRadius.circular(16),
                         border: Border.all(color: const Color(0xFFEBEBEB)),
-                        boxShadow: const [
-                          BoxShadow(color: Color(0x0A000000), blurRadius: 24),
-                        ],
+                        boxShadow: const [BoxShadow(color: Color(0x0A000000), blurRadius: 24)],
                       ),
                       child: Row(
                         children: [
@@ -644,9 +608,7 @@ class _ResponsavelSelectionSheetState
                             child: Text(
                               responsavel.nome,
                               style: TextStyle(
-                                color: isSelected
-                                    ? Colors.white
-                                    : const Color(0xFF313131),
+                                color: isSelected ? Colors.white : const Color(0xFF313131),
                                 fontSize: 14,
                                 fontFamily: 'Montserrat',
                                 fontWeight: FontWeight.w500,
@@ -654,12 +616,8 @@ class _ResponsavelSelectionSheetState
                             ),
                           ),
                           Icon(
-                            isSelected
-                                ? Icons.check_circle
-                                : Icons.radio_button_unchecked,
-                            color: isSelected
-                                ? Colors.white
-                                : const Color(0xFF8C8C8C),
+                            isSelected ? Icons.check_circle : Icons.radio_button_unchecked,
+                            color: isSelected ? Colors.white : const Color(0xFF8C8C8C),
                           ),
                         ],
                       ),
@@ -673,10 +631,7 @@ class _ResponsavelSelectionSheetState
               width: double.infinity,
               child: OutlinedButton.icon(
                 onPressed: () {
-                  Navigator.pop(
-                    context,
-                    const _ResponsavelSelectionResult(shouldAdd: true),
-                  );
+                  Navigator.pop(context, const _ResponsavelSelectionResult(shouldAdd: true));
                 },
                 icon: const Icon(Icons.add_circle_outline),
                 label: const Text('Adicionar responsavel'),
@@ -684,19 +639,14 @@ class _ResponsavelSelectionSheetState
                   foregroundColor: MyColors.colorPrimary,
                   side: const BorderSide(color: MyColors.colorPrimary),
                   minimumSize: const Size(double.infinity, 48),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(8),
-                  ),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
                 ),
               ),
             ),
             const SizedBox(height: 12),
             CustomButton(
               onPressed: () {
-                Navigator.pop(
-                  context,
-                  _ResponsavelSelectionResult(selectedId: _selectedId),
-                );
+                Navigator.pop(context, _ResponsavelSelectionResult(selectedId: _selectedId));
               },
               text: 'Confirmar',
             ),
@@ -763,9 +713,7 @@ class _MonthSelectionSheetState extends State<_MonthSelectionSheet> {
                     controlAffinity: ListTileControlAffinity.trailing,
                     onChanged: (_) {
                       setState(() {
-                        isSelected
-                            ? _selected.remove(month.value)
-                            : _selected.add(month.value);
+                        isSelected ? _selected.remove(month.value) : _selected.add(month.value);
                       });
                     },
                   );

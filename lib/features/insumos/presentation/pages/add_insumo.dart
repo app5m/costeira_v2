@@ -50,8 +50,7 @@ class _AddInsumoState extends State<AddInsumo> {
       if (!mounted) return;
       AppSnackBar.show(
         context: context,
-        message:
-            _controller.errorMessage ?? 'Nao foi possivel salvar o insumo.',
+        message: _controller.errorMessage ?? 'Nao foi possivel salvar o insumo.',
         isError: true,
       );
     }
@@ -117,12 +116,8 @@ class _AddInsumoState extends State<AddInsumo> {
                     controller: _controller.valorUnidadeController,
                     label: 'Valor por unidade',
                     hint: '10,50',
-                    keyboardType: const TextInputType.numberWithOptions(
-                      decimal: true,
-                    ),
-                    inputFormatters: [
-                      FilteringTextInputFormatter.allow(RegExp(r'[0-9,.]')),
-                    ],
+                    keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                    inputFormatters: [FilteringTextInputFormatter.allow(RegExp(r'[0-9,.]'))],
                   ),
                   _buildQuantityField(
                     controller: _controller.qtdTotalController,
@@ -137,7 +132,7 @@ class _AddInsumoState extends State<AddInsumo> {
                   ),
                   _buildTextField(
                     controller: _controller.obsController,
-                    label: 'Observacoes',
+                    label: 'Observações',
                     hint: 'Estoque inicial',
                     maxLines: 3,
                   ),
@@ -156,22 +151,14 @@ class _AddInsumoState extends State<AddInsumo> {
                       style: ElevatedButton.styleFrom(
                         backgroundColor: MyColors.colorPrimary,
                         disabledBackgroundColor: const Color(0xFFBDBDBD),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(8),
-                        ),
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
                       ),
-                      onPressed:
-                          _controller.isLoading || !_controller.isFormValid
-                          ? null
-                          : _submit,
+                      onPressed: _controller.isLoading || !_controller.isFormValid ? null : _submit,
                       child: _controller.isLoading
                           ? const SizedBox(
                               width: 20,
                               height: 20,
-                              child: CircularProgressIndicator(
-                                strokeWidth: 2,
-                                color: Colors.white,
-                              ),
+                              child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
                             )
                           : const Text(
                               'Adicionar',
@@ -198,9 +185,7 @@ class _AddInsumoState extends State<AddInsumo> {
 
   Widget _buildTipoDropdown() {
     final value =
-        _controller.tipoInsumos.any(
-          (item) => item.id?.toString() == _controller.selectedTipoInsumo,
-        )
+        _controller.tipoInsumos.any((item) => item.id?.toString() == _controller.selectedTipoInsumo)
         ? _controller.selectedTipoInsumo
         : null;
 
@@ -211,12 +196,7 @@ class _AddInsumoState extends State<AddInsumo> {
         placeholder: 'Selecione',
         options: _controller.tipoInsumos
             .where((item) => item.id?.toString().isNotEmpty ?? false)
-            .map(
-              (item) => AppSelectOption<String>(
-                value: item.id.toString(),
-                label: item.nome,
-              ),
-            )
+            .map((item) => AppSelectOption<String>(value: item.id.toString(), label: item.nome))
             .toList(growable: false),
         enabled: _controller.tipoInsumos.isNotEmpty,
         onChanged: _controller.onTipoChanged,
@@ -234,8 +214,7 @@ class _AddInsumoState extends State<AddInsumo> {
     final typedItems = items
         .where((item) => int.tryParse(item.id?.toString() ?? '') != null)
         .toList(growable: false);
-    final effectiveValue =
-        typedItems.any((item) => int.tryParse(item.id.toString()) == value)
+    final effectiveValue = typedItems.any((item) => int.tryParse(item.id.toString()) == value)
         ? value
         : null;
 
@@ -246,10 +225,8 @@ class _AddInsumoState extends State<AddInsumo> {
         placeholder: 'Selecione',
         options: typedItems
             .map(
-              (item) => AppSelectOption<int>(
-                value: int.parse(item.id.toString()),
-                label: item.nome,
-              ),
+              (item) =>
+                  AppSelectOption<int>(value: int.parse(item.id.toString()), label: item.nome),
             )
             .toList(growable: false),
         enabled: typedItems.isNotEmpty,
@@ -305,12 +282,8 @@ class _AddInsumoState extends State<AddInsumo> {
             child: TextField(
               controller: controller,
               textAlign: TextAlign.center,
-              keyboardType: const TextInputType.numberWithOptions(
-                decimal: true,
-              ),
-              inputFormatters: [
-                FilteringTextInputFormatter.allow(RegExp(r'[0-9,.]')),
-              ],
+              keyboardType: const TextInputType.numberWithOptions(decimal: true),
+              inputFormatters: [FilteringTextInputFormatter.allow(RegExp(r'[0-9,.]'))],
               style: const TextStyle(
                 color: Color(0xFF313131),
                 fontSize: 14,
@@ -334,8 +307,7 @@ class _AddInsumoState extends State<AddInsumo> {
   }
 
   void _changeQuantity(TextEditingController controller, double delta) {
-    final current =
-        double.tryParse(controller.text.trim().replaceAll(',', '.')) ?? 0;
+    final current = double.tryParse(controller.text.trim().replaceAll(',', '.')) ?? 0;
     final next = math.max(0, current + delta);
     controller.text = next % 1 == 0
         ? next.toInt().toString()

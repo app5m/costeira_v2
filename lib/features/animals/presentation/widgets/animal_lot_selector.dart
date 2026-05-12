@@ -127,11 +127,38 @@ class AnimalLotSelectionSheet extends StatefulWidget {
 
 class _AnimalLotSelectionSheetState extends State<AnimalLotSelectionSheet> {
   late int? _selectedLotId;
+  final TextEditingController _searchController = TextEditingController();
+  String _search = '';
 
   @override
   void initState() {
     super.initState();
     _selectedLotId = widget.initialSelectedLotId;
+    _searchController.addListener(_onSearchChanged);
+  }
+
+  @override
+  void dispose() {
+    _searchController.removeListener(_onSearchChanged);
+    _searchController.dispose();
+    super.dispose();
+  }
+
+  List<AnimalLotEntity> get _filteredLots {
+    final query = _normalize(_search);
+    if (query.isEmpty) {
+      return widget.lots;
+    }
+
+    return widget.lots
+        .where((lot) => _normalize(lot.nome).contains(query))
+        .toList(growable: false);
+  }
+
+  void _onSearchChanged() {
+    setState(() {
+      _search = _searchController.text;
+    });
   }
 
   @override
@@ -179,6 +206,12 @@ class _AnimalLotSelectionSheetState extends State<AnimalLotSelectionSheet> {
               ),
             ),
             const SizedBox(height: 20),
+            if (!widget.isLoading &&
+                (widget.errorMessage ?? '').trim().isEmpty &&
+                widget.lots.isNotEmpty) ...[
+              _buildSearchField('Buscar lote'),
+              const SizedBox(height: 16),
+            ],
             Flexible(child: _buildBody(context)),
             const SizedBox(height: 20),
             SizedBox(
@@ -256,12 +289,19 @@ class _AnimalLotSelectionSheetState extends State<AnimalLotSelectionSheet> {
       );
     }
 
+    final lots = _filteredLots;
+    if (lots.isEmpty) {
+      return const Center(
+        child: Text('Nenhum lote encontrado.', textAlign: TextAlign.center),
+      );
+    }
+
     return ListView.separated(
       shrinkWrap: true,
-      itemCount: widget.lots.length,
+      itemCount: lots.length,
       separatorBuilder: (_, __) => const SizedBox(height: 12),
       itemBuilder: (context, index) {
-        final lot = widget.lots[index];
+        final lot = lots[index];
         final isSelected = _selectedLotId == lot.id;
 
         return InkWell(
@@ -308,6 +348,37 @@ class _AnimalLotSelectionSheetState extends State<AnimalLotSelectionSheet> {
         );
       },
     );
+  }
+
+  Widget _buildSearchField(String hint) {
+    return TextField(
+      controller: _searchController,
+      textInputAction: TextInputAction.search,
+      decoration: InputDecoration(
+        hintText: hint,
+        prefixIcon: const Icon(Icons.search, color: Color(0xFF8C8C8C)),
+        suffixIcon: _search.trim().isEmpty
+            ? null
+            : IconButton(
+                onPressed: _searchController.clear,
+                icon: const Icon(Icons.close, color: Color(0xFF8C8C8C)),
+              ),
+        filled: true,
+        fillColor: const Color(0xFFEBEBEB),
+        contentPadding: const EdgeInsets.symmetric(
+          horizontal: 15,
+          vertical: 14,
+        ),
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(8),
+          borderSide: BorderSide.none,
+        ),
+      ),
+    );
+  }
+
+  String _normalize(String value) {
+    return value.trim().toLowerCase();
   }
 
   void _openAddLotPage() {

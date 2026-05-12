@@ -280,7 +280,7 @@ class _AnimalListState extends State<AnimalList> {
                       return ListView(
                         children: const [
                           SizedBox(height: 120),
-                          Center(child: Text('Nenhum animal cadastrado ate agora.')),
+                          Center(child: Text('Nenhum animal cadastrado até agora.')),
                         ],
                       );
                     }

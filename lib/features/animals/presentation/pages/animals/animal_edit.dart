@@ -28,8 +28,7 @@ class EditAnimal extends StatefulWidget {
 class _EditAnimalState extends State<EditAnimal> {
   static const _pesoFormatter = FixedTwoDecimalInputFormatter();
 
-  final AnimalEditPageController _pageController =
-      Modular.get<AnimalEditPageController>();
+  final AnimalEditPageController _pageController = Modular.get<AnimalEditPageController>();
 
   @override
   void initState() {
@@ -93,9 +92,7 @@ class _EditAnimalState extends State<EditAnimal> {
     }
 
     if (result.shouldAddLot) {
-      final created = await Modular.to.pushNamed<Map<String, dynamic>?>(
-        AppRoutes.animalLotsAdd,
-      );
+      final created = await Modular.to.pushNamed<Map<String, dynamic>?>(AppRoutes.animalLotsAdd);
 
       if (!mounted) {
         return;
@@ -104,8 +101,7 @@ class _EditAnimalState extends State<EditAnimal> {
       if (created?['success'] == true) {
         AppSnackBar.show(
           context: context,
-          message:
-              created?['message']?.toString() ?? 'Lote adicionado com sucesso.',
+          message: created?['message']?.toString() ?? 'Lote adicionado com sucesso.',
           isError: false,
         );
 
@@ -121,9 +117,7 @@ class _EditAnimalState extends State<EditAnimal> {
           }
           AppSnackBar.show(
             context: context,
-            message:
-                _pageController.errorMessage ??
-                'Nao foi possivel recarregar os lotes.',
+            message: _pageController.errorMessage ?? 'Nao foi possivel recarregar os lotes.',
             isError: true,
           );
         }
@@ -167,9 +161,7 @@ class _EditAnimalState extends State<EditAnimal> {
     }
 
     if (result.shouldAddPotreiro) {
-      final created = await Modular.to.pushNamed<Map<String, dynamic>?>(
-        AppRoutes.potreirosAdd,
-      );
+      final created = await Modular.to.pushNamed<Map<String, dynamic>?>(AppRoutes.potreirosAdd);
 
       if (!mounted) {
         return;
@@ -178,9 +170,7 @@ class _EditAnimalState extends State<EditAnimal> {
       if (created?['success'] == true) {
         AppSnackBar.show(
           context: context,
-          message:
-              created?['message']?.toString() ??
-              'Potreiro adicionado com sucesso.',
+          message: created?['message']?.toString() ?? 'Potreiro adicionado com sucesso.',
           isError: false,
         );
 
@@ -196,9 +186,7 @@ class _EditAnimalState extends State<EditAnimal> {
           }
           AppSnackBar.show(
             context: context,
-            message:
-                _pageController.errorMessage ??
-                'Nao foi possivel recarregar os potreiros.',
+            message: _pageController.errorMessage ?? 'Nao foi possivel recarregar os potreiros.',
             isError: true,
           );
         }
@@ -263,9 +251,7 @@ class _EditAnimalState extends State<EditAnimal> {
                   controller: _pageController.pesoController,
                   label: 'Peso',
                   hint: '700.50',
-                  keyboardType: const TextInputType.numberWithOptions(
-                    decimal: true,
-                  ),
+                  keyboardType: const TextInputType.numberWithOptions(decimal: true),
                   inputFormatters: const [_pesoFormatter],
                 ),
                 _buildDropdown<ListItemEntity>(
@@ -296,8 +282,8 @@ class _EditAnimalState extends State<EditAnimal> {
                   ),
                 _buildTextField(
                   controller: _pageController.obsController,
-                  label: 'Observacoes gerais',
-                  hint: 'Animal em observacao',
+                  label: 'Observações gerais',
+                  hint: 'Animal em observação',
                   maxLines: 3,
                 ),
                 if (_pageController.errorMessage != null) ...[
@@ -311,8 +297,7 @@ class _EditAnimalState extends State<EditAnimal> {
                 CustomButton(
                   onPressed: _submit,
                   text: 'Salvar',
-                  enabled:
-                      _pageController.isFormValid && _pageController.hasChanges,
+                  enabled: _pageController.isFormValid && _pageController.hasChanges,
                   isLoading: _pageController.isLoading,
                 ),
                 const SizedBox(height: 32),
@@ -359,7 +344,7 @@ class _EditAnimalState extends State<EditAnimal> {
                 value: 2,
                 groupValue: _pageController.selectedSexo,
                 contentPadding: EdgeInsets.zero,
-                title: const Text('Femea'),
+                title: const Text('Fêmea'),
                 onChanged: (value) {
                   if (value != null) {
                     _pageController.onSexoChanged(value);
@@ -421,10 +406,7 @@ class _EditAnimalState extends State<EditAnimal> {
             ),
             filled: true,
             fillColor: const Color(0xFFEBEBEB),
-            contentPadding: const EdgeInsets.symmetric(
-              horizontal: 15,
-              vertical: 16,
-            ),
+            contentPadding: const EdgeInsets.symmetric(horizontal: 15, vertical: 16),
             border: OutlineInputBorder(
               borderRadius: BorderRadius.circular(8),
               borderSide: BorderSide.none,
@@ -464,12 +446,7 @@ class _EditAnimalState extends State<EditAnimal> {
           value: effectiveValue,
           placeholder: 'Selecione',
           options: items
-              .map(
-                (item) => AppSelectOption<int>(
-                  value: item.id,
-                  label: itemLabel(item),
-                ),
-              )
+              .map((item) => AppSelectOption<int>(value: item.id, label: itemLabel(item)))
               .toList(growable: false),
           enabled: items.isNotEmpty,
           onChanged: onChanged,
@@ -483,8 +460,7 @@ class _EditAnimalState extends State<EditAnimal> {
     required String? value,
     required void Function(String? value) onChanged,
   }) {
-    final effectiveValue =
-        AnimalEditPageController.animalStatuses.contains(value) ? value : null;
+    final effectiveValue = AnimalEditPageController.animalStatuses.contains(value) ? value : null;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -505,10 +481,7 @@ class _EditAnimalState extends State<EditAnimal> {
           value: effectiveValue,
           placeholder: 'Selecione o status',
           options: AnimalEditPageController.animalStatuses
-              .map(
-                (status) =>
-                    AppSelectOption<String>(value: status, label: status),
-              )
+              .map((status) => AppSelectOption<String>(value: status, label: status))
               .toList(growable: false),
           enabled: AnimalEditPageController.animalStatuses.isNotEmpty,
           onChanged: onChanged,

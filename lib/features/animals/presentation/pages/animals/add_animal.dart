@@ -25,8 +25,7 @@ class AnimalAdd extends StatefulWidget {
 class _AnimalAddState extends State<AnimalAdd> {
   static const _pesoFormatter = FixedTwoDecimalInputFormatter();
 
-  final AnimalAddPageController _pageController =
-      Modular.get<AnimalAddPageController>();
+  final AnimalAddPageController _pageController = Modular.get<AnimalAddPageController>();
 
   @override
   void initState() {
@@ -87,9 +86,7 @@ class _AnimalAddState extends State<AnimalAdd> {
     }
 
     if (result.shouldAddLot) {
-      final created = await Modular.to.pushNamed<Map<String, dynamic>?>(
-        AppRoutes.animalLotsAdd,
-      );
+      final created = await Modular.to.pushNamed<Map<String, dynamic>?>(AppRoutes.animalLotsAdd);
 
       if (!mounted) {
         return;
@@ -98,8 +95,7 @@ class _AnimalAddState extends State<AnimalAdd> {
       if (created?['success'] == true) {
         AppSnackBar.show(
           context: context,
-          message:
-              created?['message']?.toString() ?? 'Lote adicionado com sucesso.',
+          message: created?['message']?.toString() ?? 'Lote adicionado com sucesso.',
           isError: false,
         );
 
@@ -115,9 +111,7 @@ class _AnimalAddState extends State<AnimalAdd> {
           }
           AppSnackBar.show(
             context: context,
-            message:
-                _pageController.errorMessage ??
-                'Nao foi possivel recarregar os lotes.',
+            message: _pageController.errorMessage ?? 'Nao foi possivel recarregar os lotes.',
             isError: true,
           );
         }
@@ -161,9 +155,7 @@ class _AnimalAddState extends State<AnimalAdd> {
     }
 
     if (result.shouldAddPotreiro) {
-      final created = await Modular.to.pushNamed<Map<String, dynamic>?>(
-        AppRoutes.potreirosAdd,
-      );
+      final created = await Modular.to.pushNamed<Map<String, dynamic>?>(AppRoutes.potreirosAdd);
 
       if (!mounted) {
         return;
@@ -172,9 +164,7 @@ class _AnimalAddState extends State<AnimalAdd> {
       if (created?['success'] == true) {
         AppSnackBar.show(
           context: context,
-          message:
-              created?['message']?.toString() ??
-              'Potreiro adicionado com sucesso.',
+          message: created?['message']?.toString() ?? 'Potreiro adicionado com sucesso.',
           isError: false,
         );
 
@@ -190,9 +180,7 @@ class _AnimalAddState extends State<AnimalAdd> {
           }
           AppSnackBar.show(
             context: context,
-            message:
-                _pageController.errorMessage ??
-                'Nao foi possivel recarregar os potreiros.',
+            message: _pageController.errorMessage ?? 'Nao foi possivel recarregar os potreiros.',
             isError: true,
           );
         }
@@ -257,9 +245,7 @@ class _AnimalAddState extends State<AnimalAdd> {
                   controller: _pageController.pesoController,
                   label: 'Peso',
                   hint: '700.50',
-                  keyboardType: const TextInputType.numberWithOptions(
-                    decimal: true,
-                  ),
+                  keyboardType: const TextInputType.numberWithOptions(decimal: true),
                   inputFormatters: const [_pesoFormatter],
                 ),
                 _buildDropdown<ListItemEntity>(
@@ -352,7 +338,7 @@ class _AnimalAddState extends State<AnimalAdd> {
                 value: 2,
                 groupValue: _pageController.selectedSexo,
                 contentPadding: EdgeInsets.zero,
-                title: const Text('Femea'),
+                title: const Text('Fêmea'),
                 onChanged: (value) {
                   if (value != null) {
                     _pageController.onSexoChanged(value);
@@ -414,10 +400,7 @@ class _AnimalAddState extends State<AnimalAdd> {
             ),
             filled: true,
             fillColor: const Color(0xFFEBEBEB),
-            contentPadding: const EdgeInsets.symmetric(
-              horizontal: 15,
-              vertical: 16,
-            ),
+            contentPadding: const EdgeInsets.symmetric(horizontal: 15, vertical: 16),
             border: OutlineInputBorder(
               borderRadius: BorderRadius.circular(8),
               borderSide: BorderSide.none,
@@ -457,12 +440,7 @@ class _AnimalAddState extends State<AnimalAdd> {
           value: effectiveValue,
           placeholder: 'Selecione',
           options: items
-              .map(
-                (item) => AppSelectOption<int>(
-                  value: item.id,
-                  label: itemLabel(item),
-                ),
-              )
+              .map((item) => AppSelectOption<int>(value: item.id, label: itemLabel(item)))
               .toList(growable: false),
           enabled: items.isNotEmpty,
           onChanged: onChanged,
@@ -476,8 +454,7 @@ class _AnimalAddState extends State<AnimalAdd> {
     required String? value,
     required void Function(String? value) onChanged,
   }) {
-    final effectiveValue =
-        AnimalAddPageController.animalStatuses.contains(value) ? value : null;
+    final effectiveValue = AnimalAddPageController.animalStatuses.contains(value) ? value : null;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -498,10 +475,7 @@ class _AnimalAddState extends State<AnimalAdd> {
           value: effectiveValue,
           placeholder: 'Selecione o status',
           options: AnimalAddPageController.animalStatuses
-              .map(
-                (status) =>
-                    AppSelectOption<String>(value: status, label: status),
-              )
+              .map((status) => AppSelectOption<String>(value: status, label: status))
               .toList(growable: false),
           enabled: AnimalAddPageController.animalStatuses.isNotEmpty,
           onChanged: onChanged,
