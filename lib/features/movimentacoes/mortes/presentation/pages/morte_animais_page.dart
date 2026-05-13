@@ -125,6 +125,7 @@ class MorteAnimaisPage extends StatelessWidget {
     if (!pageController.isAnimalSelected(animal.id)) {
       return;
     }
+    final previousCausa = pageController.animalCausa(animal.id);
     final causa = await showModalBottomSheet<String?>(
       context: context,
       isScrollControlled: true,
@@ -132,10 +133,11 @@ class MorteAnimaisPage extends StatelessWidget {
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
       ),
-      builder: (_) =>
-          _CausaSheet(initialValue: pageController.animalCausa(animal.id)),
+      builder: (_) => _CausaSheet(initialValue: previousCausa),
     );
-    pageController.setAnimalCausa(animal.id, causa);
+    if (causa != null) {
+      pageController.setAnimalCausa(animal.id, causa);
+    }
   }
 }
 
@@ -227,10 +229,16 @@ class _CausaSheetState extends State<_CausaSheet> {
                 ),
               ),
             ),
-            TextButton(
-              onPressed: () => Navigator.pop(context),
-              child: const Text('Ignorar'),
-            ),
+            if ((widget.initialValue ?? '').trim().isNotEmpty)
+              TextButton(
+                onPressed: () => Navigator.pop(context, ''),
+                child: const Text('Remover causa'),
+              )
+            else
+              TextButton(
+                onPressed: () => Navigator.pop(context),
+                child: const Text('Ignorar'),
+              ),
           ],
         ),
       ),

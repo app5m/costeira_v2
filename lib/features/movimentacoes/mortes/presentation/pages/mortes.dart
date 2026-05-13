@@ -20,8 +20,7 @@ class Mortes extends StatefulWidget {
 }
 
 class _MortesState extends State<Mortes> with SingleTickerProviderStateMixin {
-  final MortesListPageController _listPageController =
-      Modular.get<MortesListPageController>();
+  final MortesListPageController _listPageController = Modular.get<MortesListPageController>();
 
   late TabController _tabController;
   int index = 0;
@@ -94,9 +93,7 @@ class _MortesState extends State<Mortes> with SingleTickerProviderStateMixin {
           backgroundColor: Colors.white,
           floatingActionButton: index == 0
               ? FloatingActionButton(
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(64),
-                  ),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(64)),
                   onPressed: () {
                     Navigator.push(
                       context,
@@ -131,7 +128,7 @@ class _MortesState extends State<Mortes> with SingleTickerProviderStateMixin {
                 controller: _tabController,
                 tabs: const [
                   Tab(text: 'Lista'),
-                  Tab(text: 'Grafico'),
+                  Tab(text: 'Gráfico'),
                 ],
                 onTap: (value) {
                   setState(() {
@@ -190,9 +187,7 @@ class _MortesState extends State<Mortes> with SingleTickerProviderStateMixin {
               color: hasFilters ? const Color(0x14128977) : Colors.transparent,
               borderRadius: BorderRadius.circular(999),
               border: Border.all(
-                color: hasFilters
-                    ? MyColors.colorPrimary
-                    : const Color(0xFFE6E6E6),
+                color: hasFilters ? MyColors.colorPrimary : const Color(0xFFE6E6E6),
               ),
             ),
             child: Row(
@@ -201,17 +196,13 @@ class _MortesState extends State<Mortes> with SingleTickerProviderStateMixin {
                 Icon(
                   Icons.tune_rounded,
                   size: 16,
-                  color: hasFilters
-                      ? MyColors.colorPrimary
-                      : const Color(0xFF8C8C8C),
+                  color: hasFilters ? MyColors.colorPrimary : const Color(0xFF8C8C8C),
                 ),
                 const SizedBox(width: 6),
                 Text(
                   hasFilters ? 'Filtros ativos' : 'Filtrar',
                   style: TextStyle(
-                    color: hasFilters
-                        ? MyColors.colorPrimary
-                        : const Color(0xFF8C8C8C),
+                    color: hasFilters ? MyColors.colorPrimary : const Color(0xFF8C8C8C),
                     fontSize: 12,
                     fontFamily: 'Montserrat',
                     fontWeight: FontWeight.w600,
@@ -230,17 +221,13 @@ class _MortesState extends State<Mortes> with SingleTickerProviderStateMixin {
       return const Center(child: CircularProgressIndicator());
     }
 
-    if (_listPageController.errorMessage != null &&
-        _listPageController.mortes.isEmpty) {
+    if (_listPageController.errorMessage != null && _listPageController.mortes.isEmpty) {
       return ListView(
         children: [
           const SizedBox(height: 120),
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 24),
-            child: Text(
-              _listPageController.errorMessage!,
-              textAlign: TextAlign.center,
-            ),
+            child: Text(_listPageController.errorMessage!, textAlign: TextAlign.center),
           ),
         ],
       );
@@ -264,10 +251,7 @@ class _MortesState extends State<Mortes> with SingleTickerProviderStateMixin {
           return _MorteCard(
             morte: morte,
             onOpen: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(builder: (_) => DetailMorte(morte: morte)),
-              );
+              Navigator.push(context, MaterialPageRoute(builder: (_) => DetailMorte(morte: morte)));
             },
             onEdit: () {
               Navigator.push(
@@ -336,10 +320,7 @@ class _MortesState extends State<Mortes> with SingleTickerProviderStateMixin {
                     'icon/danger-linear.svg',
                     width: 80,
                     height: 80,
-                    colorFilter: const ColorFilter.mode(
-                      Colors.red,
-                      BlendMode.srcIn,
-                    ),
+                    colorFilter: const ColorFilter.mode(Colors.red, BlendMode.srcIn),
                   ),
                   const SizedBox(height: 16),
                   const Text(
@@ -369,9 +350,7 @@ class _MortesState extends State<Mortes> with SingleTickerProviderStateMixin {
                     child: ElevatedButton(
                       onPressed: () async {
                         Navigator.of(context).pop();
-                        final message = await _listPageController.deleteMorte(
-                          morte,
-                        );
+                        final message = await _listPageController.deleteMorte(morte);
                         if (!mounted || !pageContext.mounted) {
                           return;
                         }
@@ -382,17 +361,12 @@ class _MortesState extends State<Mortes> with SingleTickerProviderStateMixin {
                         );
                       },
                       style: ElevatedButton.styleFrom(
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(8),
-                        ),
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
                         side: const BorderSide(color: Colors.red),
                         elevation: 0,
                         backgroundColor: Colors.transparent,
                       ),
-                      child: const Text(
-                        'Excluir',
-                        style: TextStyle(color: Colors.red),
-                      ),
+                      child: const Text('Excluir', style: TextStyle(color: Colors.red)),
                     ),
                   ),
                   TextButton(
@@ -446,11 +420,7 @@ class _MorteCard extends StatelessWidget {
             borderRadius: BorderRadius.circular(12),
           ),
           shadows: const [
-            BoxShadow(
-              color: Color(0x0A000000),
-              blurRadius: 24,
-              offset: Offset(0, 0),
-            ),
+            BoxShadow(color: Color(0x0A000000), blurRadius: 24, offset: Offset(0, 0)),
           ],
         ),
         child: Row(
@@ -465,18 +435,13 @@ class _MorteCard extends StatelessWidget {
                     padding: const EdgeInsets.all(8),
                     decoration: ShapeDecoration(
                       color: const Color(0x198C8C8C),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(42.67),
-                      ),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(42.67)),
                     ),
                     child: SvgPicture.asset(
                       'icon/skull.svg',
                       width: 16,
                       height: 16,
-                      colorFilter: const ColorFilter.mode(
-                        Color(0xFF8C8C8C),
-                        BlendMode.srcIn,
-                      ),
+                      colorFilter: const ColorFilter.mode(Color(0xFF8C8C8C), BlendMode.srcIn),
                     ),
                   ),
                   const SizedBox(width: 16),
@@ -526,15 +491,9 @@ class _MorteCard extends StatelessWidget {
             const SizedBox(width: 8),
             Column(
               children: [
-                GestureDetector(
-                  onTap: onDelete,
-                  child: SvgPicture.asset('icon/trash.svg'),
-                ),
+                GestureDetector(onTap: onDelete, child: SvgPicture.asset('icon/trash.svg')),
                 const SizedBox(height: 12),
-                GestureDetector(
-                  onTap: onEdit,
-                  child: SvgPicture.asset('icon/square-pen.svg'),
-                ),
+                GestureDetector(onTap: onEdit, child: SvgPicture.asset('icon/square-pen.svg')),
               ],
             ),
           ],
@@ -544,13 +503,9 @@ class _MorteCard extends StatelessWidget {
   }
 
   String get _title {
-    final categoria = morte.animais.isNotEmpty
-        ? morte.animais.first.categoria?.nome.trim()
-        : null;
+    final categoria = morte.animais.isNotEmpty ? morte.animais.first.categoria?.nome.trim() : null;
     final label = categoria?.isNotEmpty == true ? ' - $categoria' : '';
-    final count = morte.qtdAnimais == 1
-        ? '1 animal'
-        : '${morte.qtdAnimais} animais';
+    final count = morte.qtdAnimais == 1 ? '1 animal' : '${morte.qtdAnimais} animais';
     return '$count$label';
   }
 }

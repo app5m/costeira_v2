@@ -20,8 +20,7 @@ class Vendas extends StatefulWidget {
 }
 
 class _VendasState extends State<Vendas> with SingleTickerProviderStateMixin {
-  final VendasListPageController _listPageController =
-      Modular.get<VendasListPageController>();
+  final VendasListPageController _listPageController = Modular.get<VendasListPageController>();
 
   late TabController _tabController;
   int index = 0;
@@ -47,10 +46,7 @@ class _VendasState extends State<Vendas> with SingleTickerProviderStateMixin {
   }
 
   Future<void> _openAdd() async {
-    await Navigator.push(
-      context,
-      MaterialPageRoute(builder: (_) => const AddVenda()),
-    );
+    await Navigator.push(context, MaterialPageRoute(builder: (_) => const AddVenda()));
     if (!mounted) {
       return;
     }
@@ -97,9 +93,7 @@ class _VendasState extends State<Vendas> with SingleTickerProviderStateMixin {
           backgroundColor: Colors.white,
           floatingActionButton: index == 0
               ? FloatingActionButton(
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(64),
-                  ),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(64)),
                   onPressed: _openAdd,
                   child: const Padding(
                     padding: EdgeInsets.all(12.0),
@@ -129,7 +123,7 @@ class _VendasState extends State<Vendas> with SingleTickerProviderStateMixin {
                 controller: _tabController,
                 tabs: const [
                   Tab(text: 'Lista'),
-                  Tab(text: 'Grafico'),
+                  Tab(text: 'Gráfico'),
                 ],
                 onTap: (value) {
                   setState(() {
@@ -188,9 +182,7 @@ class _VendasState extends State<Vendas> with SingleTickerProviderStateMixin {
               color: hasFilters ? const Color(0x14128977) : Colors.transparent,
               borderRadius: BorderRadius.circular(999),
               border: Border.all(
-                color: hasFilters
-                    ? MyColors.colorPrimary
-                    : const Color(0xFFE6E6E6),
+                color: hasFilters ? MyColors.colorPrimary : const Color(0xFFE6E6E6),
               ),
             ),
             child: Row(
@@ -199,17 +191,13 @@ class _VendasState extends State<Vendas> with SingleTickerProviderStateMixin {
                 Icon(
                   Icons.tune_rounded,
                   size: 16,
-                  color: hasFilters
-                      ? MyColors.colorPrimary
-                      : const Color(0xFF8C8C8C),
+                  color: hasFilters ? MyColors.colorPrimary : const Color(0xFF8C8C8C),
                 ),
                 const SizedBox(width: 6),
                 Text(
                   hasFilters ? 'Filtros ativos' : 'Filtrar',
                   style: TextStyle(
-                    color: hasFilters
-                        ? MyColors.colorPrimary
-                        : const Color(0xFF8C8C8C),
+                    color: hasFilters ? MyColors.colorPrimary : const Color(0xFF8C8C8C),
                     fontSize: 12,
                     fontFamily: 'Montserrat',
                     fontWeight: FontWeight.w600,
@@ -228,17 +216,13 @@ class _VendasState extends State<Vendas> with SingleTickerProviderStateMixin {
       return const Center(child: CircularProgressIndicator());
     }
 
-    if (_listPageController.errorMessage != null &&
-        _listPageController.vendas.isEmpty) {
+    if (_listPageController.errorMessage != null && _listPageController.vendas.isEmpty) {
       return ListView(
         children: [
           const SizedBox(height: 120),
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 24),
-            child: Text(
-              _listPageController.errorMessage!,
-              textAlign: TextAlign.center,
-            ),
+            child: Text(_listPageController.errorMessage!, textAlign: TextAlign.center),
           ),
         ],
       );
@@ -268,10 +252,7 @@ class _VendasState extends State<Vendas> with SingleTickerProviderStateMixin {
           return _VendaCard(
             venda: venda,
             onOpen: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(builder: (_) => DetailVenda(venda: venda)),
-              );
+              Navigator.push(context, MaterialPageRoute(builder: (_) => DetailVenda(venda: venda)));
             },
             onEdit: () {
               Navigator.push(
@@ -340,10 +321,7 @@ class _VendasState extends State<Vendas> with SingleTickerProviderStateMixin {
                     'icon/danger-linear.svg',
                     width: 80,
                     height: 80,
-                    colorFilter: const ColorFilter.mode(
-                      Colors.red,
-                      BlendMode.srcIn,
-                    ),
+                    colorFilter: const ColorFilter.mode(Colors.red, BlendMode.srcIn),
                   ),
                   const SizedBox(height: 16),
                   const Text(
@@ -373,9 +351,7 @@ class _VendasState extends State<Vendas> with SingleTickerProviderStateMixin {
                     child: ElevatedButton(
                       onPressed: () async {
                         Navigator.of(context).pop();
-                        final message = await _listPageController.deleteVenda(
-                          venda,
-                        );
+                        final message = await _listPageController.deleteVenda(venda);
                         if (!mounted || !pageContext.mounted) {
                           return;
                         }
@@ -386,17 +362,12 @@ class _VendasState extends State<Vendas> with SingleTickerProviderStateMixin {
                         );
                       },
                       style: ElevatedButton.styleFrom(
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(8),
-                        ),
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
                         side: const BorderSide(color: Colors.red),
                         elevation: 0,
                         backgroundColor: Colors.transparent,
                       ),
-                      child: const Text(
-                        'Excluir',
-                        style: TextStyle(color: Colors.red),
-                      ),
+                      child: const Text('Excluir', style: TextStyle(color: Colors.red)),
                     ),
                   ),
                   TextButton(
@@ -450,11 +421,7 @@ class _VendaCard extends StatelessWidget {
             borderRadius: BorderRadius.circular(12),
           ),
           shadows: const [
-            BoxShadow(
-              color: Color(0x0A000000),
-              blurRadius: 24,
-              offset: Offset(0, 0),
-            ),
+            BoxShadow(color: Color(0x0A000000), blurRadius: 24, offset: Offset(0, 0)),
           ],
         ),
         child: Row(
@@ -469,15 +436,9 @@ class _VendaCard extends StatelessWidget {
                     padding: const EdgeInsets.all(8),
                     decoration: ShapeDecoration(
                       color: const Color(0x198C8C8C),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(42.67),
-                      ),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(42.67)),
                     ),
-                    child: SvgPicture.asset(
-                      'icon/arrow-left-right.svg',
-                      width: 16,
-                      height: 16,
-                    ),
+                    child: SvgPicture.asset('icon/arrow-left-right.svg', width: 16, height: 16),
                   ),
                   const SizedBox(width: 16),
                   Expanded(
@@ -536,15 +497,9 @@ class _VendaCard extends StatelessWidget {
             const SizedBox(width: 8),
             Column(
               children: [
-                GestureDetector(
-                  onTap: onDelete,
-                  child: SvgPicture.asset('icon/trash.svg'),
-                ),
+                GestureDetector(onTap: onDelete, child: SvgPicture.asset('icon/trash.svg')),
                 const SizedBox(height: 12),
-                GestureDetector(
-                  onTap: onEdit,
-                  child: SvgPicture.asset('icon/square-pen.svg'),
-                ),
+                GestureDetector(onTap: onEdit, child: SvgPicture.asset('icon/square-pen.svg')),
               ],
             ),
           ],
@@ -554,9 +509,7 @@ class _VendaCard extends StatelessWidget {
   }
 
   String get _title {
-    final categoria = venda.animais.isNotEmpty
-        ? venda.animais.first.categoria?.nome.trim()
-        : null;
+    final categoria = venda.animais.isNotEmpty ? venda.animais.first.categoria?.nome.trim() : null;
     final label = categoria?.isNotEmpty == true ? ' - $categoria' : '';
     return '${venda.qtdAnimais} animais$label';
   }

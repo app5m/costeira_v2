@@ -16,10 +16,15 @@ class MorteSelectedAnimal {
   final AnimalEntity animal;
   final String? causa;
 
-  MorteSelectedAnimal copyWith({String? causa}) {
-    return MorteSelectedAnimal(animal: animal, causa: causa ?? this.causa);
+  MorteSelectedAnimal copyWith({Object? causa = _keepValue}) {
+    return MorteSelectedAnimal(
+      animal: animal,
+      causa: causa == _keepValue ? this.causa : causa as String?,
+    );
   }
 }
+
+const _keepValue = Object();
 
 class MorteFormPageController extends ChangeNotifier {
   MorteFormPageController(
@@ -62,7 +67,6 @@ class MorteFormPageController extends ChangeNotifier {
   List<AnimalEntity> get animais => _animalsController.animals;
   List<PotreiroEntity> get potreiros => _potreirosController.potreiros;
   List<MorteSelectedAnimal> get selectedAnimais => _selectedAnimais;
-
   PotreiroEntity? get selectedPotreiro {
     try {
       return potreiros.firstWhere((item) => item.id == selectedPotreiroId);
