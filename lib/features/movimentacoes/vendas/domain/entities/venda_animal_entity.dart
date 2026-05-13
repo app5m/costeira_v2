@@ -1,0 +1,51 @@
+import 'package:costeira/features/movimentacoes/domain/entities/movimentacao_reference_entity.dart';
+
+class VendaAnimalEntity {
+  const VendaAnimalEntity({
+    this.movimentacaoAnimalId,
+    this.tipo,
+    this.dataVinculo,
+    required this.id,
+    this.appUsersId,
+    this.appAnimaisCategoriasId,
+    this.appAnimaisSubcategoriasId,
+    this.utBasesRaciaisId,
+    this.appAnimaisLotesId,
+    this.appPotreirosId,
+    this.sexo,
+    this.brinco,
+    this.pesoTotal,
+    this.createAt,
+    this.updateAt,
+    this.obs,
+    this.status,
+    this.categoria,
+    this.subcategoria,
+    this.baseRacial,
+    this.lote,
+    this.potreiro,
+  });
+
+  final int? movimentacaoAnimalId;
+  final String? tipo;
+  final String? dataVinculo;
+  final int id;
+  final int? appUsersId;
+  final int? appAnimaisCategoriasId;
+  final int? appAnimaisSubcategoriasId;
+  final int? utBasesRaciaisId;
+  final int? appAnimaisLotesId;
+  final int? appPotreirosId;
+  final int? sexo;
+  final String? brinco;
+  final double? pesoTotal;
+  final String? createAt;
+  final String? updateAt;
+  final String? obs;
+  final String? status;
+  final MovimentacaoReferenceEntity? categoria;
+  final MovimentacaoReferenceEntity? subcategoria;
+  final MovimentacaoReferenceEntity? baseRacial;
+  final MovimentacaoReferenceEntity? lote;
+  final MovimentacaoReferenceEntity? potreiro;
+}

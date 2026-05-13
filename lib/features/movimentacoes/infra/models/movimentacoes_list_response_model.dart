@@ -1,5 +1,7 @@
 import 'package:costeira/features/movimentacoes/domain/entities/movimentacoes_list_entity.dart';
 import 'package:costeira/features/movimentacoes/infra/models/compra_model.dart';
+import 'package:costeira/features/movimentacoes/infra/models/morte_model.dart';
+import 'package:costeira/features/movimentacoes/infra/models/venda_model.dart';
 
 class MovimentacoesListResponseModel extends MovimentacoesListEntity {
   const MovimentacoesListResponseModel({
@@ -15,12 +17,20 @@ class MovimentacoesListResponseModel extends MovimentacoesListEntity {
         .whereType<Map>()
         .map((item) => CompraModel.fromJson(Map<String, dynamic>.from(item)))
         .toList(growable: false);
+    final vendas = (data['vendas'] as List<dynamic>? ?? const [])
+        .whereType<Map>()
+        .map((item) => VendaModel.fromJson(Map<String, dynamic>.from(item)))
+        .toList(growable: false);
+    final mortes = (data['mortes'] as List<dynamic>? ?? const [])
+        .whereType<Map>()
+        .map((item) => MorteModel.fromJson(Map<String, dynamic>.from(item)))
+        .toList(growable: false);
 
     return MovimentacoesListResponseModel(
       rows: int.tryParse(json['rows']?.toString() ?? '') ?? compras.length,
       compras: compras,
-      vendas: _asList(data['vendas']),
-      mortes: _asList(data['mortes']),
+      vendas: vendas,
+      mortes: mortes,
     );
   }
 
@@ -32,12 +42,5 @@ class MovimentacoesListResponseModel extends MovimentacoesListEntity {
       return Map<String, dynamic>.from(raw);
     }
     return <String, dynamic>{};
-  }
-
-  static List<dynamic> _asList(dynamic raw) {
-    if (raw is List) {
-      return raw;
-    }
-    return const [];
   }
 }

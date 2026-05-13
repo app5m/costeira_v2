@@ -71,6 +71,30 @@ class GetDashboardController extends ChangeNotifier {
     return load(filter: _yearFilter(year));
   }
 
+  Future<void> previousPeriod() {
+    if (_isSingleDayFilter(_filter)) {
+      return selectDay(_filter.dataIn.subtract(const Duration(days: 1)));
+    }
+    return previousYear();
+  }
+
+  Future<void> nextPeriod() {
+    if (_isSingleDayFilter(_filter)) {
+      return selectDay(_filter.dataIn.add(const Duration(days: 1)));
+    }
+    return nextYear();
+  }
+
+  Future<void> selectDay(DateTime date) {
+    final selectedDate = DateTime(date.year, date.month, date.day);
+    return load(
+      filter: DashboardFilterEntity(
+        dataIn: selectedDate,
+        dataOut: selectedDate,
+      ),
+    );
+  }
+
   void _setLoading(bool value) {
     _isLoading = value;
     notifyListeners();
@@ -85,5 +109,11 @@ class GetDashboardController extends ChangeNotifier {
       dataIn: DateTime(year),
       dataOut: DateTime(year, 12, 31),
     );
+  }
+
+  static bool _isSingleDayFilter(DashboardFilterEntity filter) {
+    return filter.dataIn.year == filter.dataOut.year &&
+        filter.dataIn.month == filter.dataOut.month &&
+        filter.dataIn.day == filter.dataOut.day;
   }
 }

@@ -55,13 +55,31 @@ class _DashboardState extends State<Dashboard> {
 
   Future<void> _previousYear() async {
     try {
-      await _controller.previousYear();
+      await _controller.previousPeriod();
     } catch (_) {}
   }
 
   Future<void> _nextYear() async {
     try {
-      await _controller.nextYear();
+      await _controller.nextPeriod();
+    } catch (_) {}
+  }
+
+  Future<void> _selectDate() async {
+    final currentDate = _controller.filter.dataIn;
+    final picked = await showDatePicker(
+      context: context,
+      initialDate: currentDate,
+      firstDate: DateTime(2000),
+      lastDate: DateTime(2100),
+    );
+
+    if (picked == null) {
+      return;
+    }
+
+    try {
+      await _controller.selectDay(picked);
     } catch (_) {}
   }
 
@@ -96,10 +114,12 @@ class _DashboardState extends State<Dashboard> {
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 20),
               child: _PeriodCard(
-                year: _controller.filter.dataIn.year,
+                dataIn: _controller.filter.dataIn,
+                dataOut: _controller.filter.dataOut,
                 isLoading: isLoading,
                 onPrevious: _previousYear,
                 onNext: _nextYear,
+                onSelectDate: _selectDate,
               ),
             ),
             const SizedBox(height: 16),
@@ -186,16 +206,20 @@ class _DashboardState extends State<Dashboard> {
 
 class _PeriodCard extends StatelessWidget {
   const _PeriodCard({
-    required this.year,
+    required this.dataIn,
+    required this.dataOut,
     required this.isLoading,
     required this.onPrevious,
     required this.onNext,
+    required this.onSelectDate,
   });
 
-  final int year;
+  final DateTime dataIn;
+  final DateTime dataOut;
   final bool isLoading;
   final VoidCallback onPrevious;
   final VoidCallback onNext;
+  final VoidCallback onSelectDate;
 
   @override
   Widget build(BuildContext context) {
@@ -209,20 +233,35 @@ class _PeriodCard extends StatelessWidget {
             icon: const Icon(Icons.chevron_left_rounded),
           ),
           Expanded(
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                SvgPicture.asset('icon/calendar.svg', width: 18, height: 18),
-                const SizedBox(width: 8),
-                Text(
-                  '01/01/$year - 31/12/$year',
-                  style: const TextStyle(
-                    color: Color(0xFF313131),
-                    fontSize: 13,
-                    fontWeight: FontWeight.w500,
-                  ),
+            child: InkWell(
+              borderRadius: BorderRadius.circular(8),
+              onTap: isLoading ? null : onSelectDate,
+              child: Padding(
+                padding: const EdgeInsets.symmetric(vertical: 8),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    SvgPicture.asset(
+                      'icon/calendar.svg',
+                      width: 18,
+                      height: 18,
+                    ),
+                    const SizedBox(width: 8),
+                    Flexible(
+                      child: Text(
+                        _formatPeriodLabel(dataIn, dataOut),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: const TextStyle(
+                          color: Color(0xFF313131),
+                          fontSize: 13,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                    ),
+                  ],
                 ),
-              ],
+              ),
             ),
           ),
           IconButton(
@@ -875,6 +914,21 @@ String _displayValue(String? value) {
     return '-';
   }
   return trimmed;
+}
+
+String _formatPeriodLabel(DateTime dataIn, DateTime dataOut) {
+  final start = _formatDateLabel(dataIn);
+  final end = _formatDateLabel(dataOut);
+  if (start == end) {
+    return start;
+  }
+  return '$start - $end';
+}
+
+String _formatDateLabel(DateTime date) {
+  return '${date.day.toString().padLeft(2, '0')}/'
+      '${date.month.toString().padLeft(2, '0')}/'
+      '${date.year.toString().padLeft(4, '0')}';
 }
 
 double _parsePercent(String value) {

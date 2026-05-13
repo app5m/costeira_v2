@@ -6,6 +6,7 @@ import 'package:costeira/core/input_formatters/fixed_two_decimal_input_formatter
 import 'package:costeira/features/animals/presentation/widgets/animal_lot_selector.dart';
 import 'package:costeira/features/movimentacoes/compras/presentation/page_controllers/compra_form_page_controller.dart';
 import 'package:costeira/features/movimentacoes/compras/presentation/pages/compra_animais_page.dart';
+import 'package:costeira/features/movimentacoes/compras/presentation/pages/compra_animais_lista_page.dart';
 import 'package:costeira/features/movimentacoes/domain/entities/compra_entity.dart';
 import 'package:costeira/features/potreiros/presentation/widgets/potreiro_selector.dart';
 import 'package:costeira/theme/colors.dart';
@@ -146,6 +147,18 @@ class _CompraFormPageState extends State<CompraFormPage> {
     );
   }
 
+  Future<void> _openAnimalsList() async {
+    final compra = widget.compra;
+    await Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (_) => compra == null
+            ? CompraAnimaisListaPage.draft(pageController: _pageController)
+            : CompraAnimaisListaPage.saved(animais: compra.animais),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return AnimatedBuilder(
@@ -226,8 +239,8 @@ class _CompraFormPageState extends State<CompraFormPage> {
                 ),
                 _buildTextField(
                   controller: _pageController.obsController,
-                  label: 'Observacoes',
-                  hint: 'Digite observacoes sobre a compra',
+                  label: 'Observações',
+                  hint: 'Digite observações sobre a compra',
                   maxLines: 3,
                 ),
                 _buildAnimalsSummary(),
@@ -276,7 +289,7 @@ class _CompraFormPageState extends State<CompraFormPage> {
               .map(
                 (tipo) => AppSelectOption<String>(
                   value: tipo,
-                  label: tipo == 'kg' ? 'KG' : 'Por cabeca',
+                  label: tipo == 'kg' ? 'KG' : 'Por cabeça',
                 ),
               )
               .toList(growable: false),
@@ -310,7 +323,13 @@ class _CompraFormPageState extends State<CompraFormPage> {
         const SizedBox(height: 8),
         InkWell(
           borderRadius: BorderRadius.circular(8),
-          onTap: _pageController.isEdit ? null : _openAnimalsManager,
+          onTap: _pageController.isEdit
+              ? count == 0
+                    ? null
+                    : _openAnimalsList
+              : count == 0
+              ? _openAnimalsManager
+              : _openAnimalsManager,
           child: Ink(
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
@@ -334,7 +353,7 @@ class _CompraFormPageState extends State<CompraFormPage> {
                     ),
                   ),
                 ),
-                if (!_pageController.isEdit)
+                if (!_pageController.isEdit || count > 0)
                   const Icon(
                     Icons.keyboard_arrow_right,
                     color: Color(0xFF8C8C8C),

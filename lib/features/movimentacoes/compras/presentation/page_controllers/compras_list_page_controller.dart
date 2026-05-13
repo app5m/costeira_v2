@@ -17,6 +17,8 @@ class ComprasListPageController extends ChangeNotifier {
       _listController.isLoading || _deleteController.isLoading;
   String? get errorMessage =>
       _listController.errorMessage ?? _deleteController.errorMessage;
+  String? get currentDataInFilter => _listController.currentFilter?.dataIn;
+  String? get currentDataOutFilter => _listController.currentFilter?.dataOut;
 
   Future<String?> loadInitialData() async {
     try {
@@ -45,6 +47,24 @@ class ComprasListPageController extends ChangeNotifier {
       return _deleteController.errorMessage ??
           'Nao foi possivel excluir a compra.';
     }
+  }
+
+  Future<String?> applyDateFilters({
+    required String? dataIn,
+    required String? dataOut,
+  }) async {
+    try {
+      await _listController.load(dataIn: dataIn, dataOut: dataOut);
+      return null;
+    } catch (_) {
+      return _listController.errorMessage ??
+          'Nao foi possivel aplicar os filtros.';
+    }
+  }
+
+  bool hasActiveFilters() {
+    return (currentDataInFilter?.trim().isNotEmpty ?? false) ||
+        (currentDataOutFilter?.trim().isNotEmpty ?? false);
   }
 
   @override

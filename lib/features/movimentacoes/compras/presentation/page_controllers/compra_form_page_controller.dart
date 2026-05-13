@@ -59,6 +59,9 @@ class CompraFormPageController extends ChangeNotifier {
   int? selectedAnimalBaseRacialId;
   List<CompraUpsertAnimalEntity> _animais = const [];
   int _animalListLoadRequest = 0;
+  final Map<int, String> _animalCategoryLabels = {};
+  final Map<int, String> _animalSubcategoryLabels = {};
+  final Map<int, String> _animalBaseRacialLabels = {};
 
   bool get isEdit => _editingCompra != null;
   bool get isLoading =>
@@ -149,6 +152,7 @@ class CompraFormPageController extends ChangeNotifier {
         _lotsController.load(),
         _potreirosController.load(),
       ]);
+      _cacheAnimalLabelsFromCurrentLists();
       _syncAnimalCategory();
       notifyListeners();
     } catch (_) {}
@@ -185,6 +189,7 @@ class CompraFormPageController extends ChangeNotifier {
       if (request != _animalListLoadRequest) {
         return;
       }
+      _cacheAnimalLabelsFromCurrentLists();
       _syncAnimalCategory();
       notifyListeners();
     } catch (_) {}
@@ -296,6 +301,24 @@ class CompraFormPageController extends ChangeNotifier {
     notifyListeners();
   }
 
+  String animalCategoryLabel(int id) {
+    return _animalCategoryLabels[id] ?? 'Categoria $id';
+  }
+
+  String? animalSubcategoryLabel(int? id) {
+    if (id == null) {
+      return null;
+    }
+    return _animalSubcategoryLabels[id] ?? 'Subcategoria $id';
+  }
+
+  String? animalBaseRacialLabel(int? id) {
+    if (id == null) {
+      return null;
+    }
+    return _animalBaseRacialLabels[id] ?? 'Base racial $id';
+  }
+
   Future<PageActionResult> submit() async {
     final validation = _validateForm();
     if (validation != null) {
@@ -400,6 +423,22 @@ class CompraFormPageController extends ChangeNotifier {
     }
     if (!shouldShowAnimalSubcategory) {
       selectedAnimalSubcategoryId = null;
+    }
+  }
+
+  void _cacheAnimalLabelsFromCurrentLists() {
+    final result = _getListController.result;
+    if (result == null) {
+      return;
+    }
+    for (final category in result.animaisCategorias) {
+      _animalCategoryLabels[category.id] = category.nome.trim();
+      for (final subcategory in category.subcategorias) {
+        _animalSubcategoryLabels[subcategory.id] = subcategory.nome.trim();
+      }
+    }
+    for (final base in result.animaisBasesRaciais) {
+      _animalBaseRacialLabels[base.id] = base.nome.trim();
     }
   }
 

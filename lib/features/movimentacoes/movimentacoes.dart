@@ -3,10 +3,10 @@ import 'package:costeira/features/movimentacoes/compras/presentation/pages/compr
 import 'package:costeira/views/navigationscreen/movimentacoes/consumo/consumo.dart';
 
 import 'package:costeira/views/navigationscreen/movimentacoes/trocacategoria/trocas.dart';
-import 'package:costeira/views/navigationscreen/movimentacoes/vendas/vendas.dart';
+import 'package:costeira/features/movimentacoes/vendas/presentation/pages/vendas.dart';
 import 'package:flutter/material.dart';
 
-import 'mortes/mortes.dart';
+import 'mortes/presentation/pages/mortes.dart';
 import 'nascimento/nascimentos.dart';
 
 class Movimentacoes extends StatefulWidget {

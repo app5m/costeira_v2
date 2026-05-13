@@ -4,7 +4,7 @@ import 'package:costeira/features/auth/models/user_session.dart';
 import 'package:costeira/features/animals/presentation/pages/animals_page.dart';
 import 'package:costeira/features/dashboard/presentation/pages/dashboard.dart';
 import 'package:costeira/views/navigationscreen/indicadores/indicadores.dart';
-import 'package:costeira/views/navigationscreen/movimentacoes/movimentacoes.dart';
+import 'package:costeira/features/movimentacoes/movimentacoes.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_modular/flutter_modular.dart';
 import 'package:flutter_svg/flutter_svg.dart';
@@ -97,7 +97,9 @@ class _MainNavigationPageState extends State<MainNavigationPage> {
                 ),
                 children: [
                   TextSpan(
-                    text: _user?.name.isNotEmpty == true ? _user!.name : 'Usuário',
+                    text: _user?.name.isNotEmpty == true
+                        ? _user!.name
+                        : 'Usuário',
                     style: const TextStyle(fontWeight: FontWeight.w700),
                   ),
                 ],
@@ -117,7 +119,10 @@ class _MainNavigationPageState extends State<MainNavigationPage> {
           IconButton(
             icon: SvgPicture.asset(
               'icon/noti.svg',
-              colorFilter: const ColorFilter.mode(Colors.white, BlendMode.srcIn),
+              colorFilter: const ColorFilter.mode(
+                Colors.white,
+                BlendMode.srcIn,
+              ),
             ),
             onPressed: () {
               Modular.to.pushNamed(AppRoutes.notifications);
@@ -139,7 +144,11 @@ class _MainNavigationPageState extends State<MainNavigationPage> {
         padding: const EdgeInsets.only(left: 16.0),
         child: Text(
           _title,
-          style: const TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.w600),
+          style: const TextStyle(
+            color: Colors.white,
+            fontSize: 16,
+            fontWeight: FontWeight.w600,
+          ),
         ),
       ),
       actions: [
@@ -167,7 +176,13 @@ class _MainNavigationPageState extends State<MainNavigationPage> {
             _selectedIndex = page;
           });
         },
-        children: const [Dashboard(), AnimalsPage(), Movimentacoes(), Indicadores(), Menu()],
+        children: const [
+          Dashboard(),
+          AnimalsPage(),
+          Movimentacoes(),
+          Indicadores(),
+          Menu(),
+        ],
       ),
       bottomNavigationBar: BottomNavigationBar(
         backgroundColor: Colors.white,

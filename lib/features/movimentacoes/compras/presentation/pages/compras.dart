@@ -2,6 +2,7 @@ import 'package:costeira/core/components/app_snack.dart';
 import 'package:costeira/features/movimentacoes/compras/presentation/page_controllers/compras_list_page_controller.dart';
 import 'package:costeira/features/movimentacoes/compras/presentation/page_controllers/compras_page_controller.dart';
 import 'package:costeira/features/movimentacoes/domain/entities/compra_entity.dart';
+import 'package:costeira/features/movimentacoes/presentation/widgets/movimentacao_date_filter_sheet.dart';
 import 'package:costeira/theme/colors.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_modular/flutter_modular.dart';
@@ -56,6 +57,39 @@ class _ComprasState extends State<Compras> with SingleTickerProviderStateMixin {
     await _listPageController.loadInitialData();
   }
 
+  Future<void> _showFilterSheet() async {
+    final result = await showModalBottomSheet<MovimentacaoDateFilterResult>(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (_) => MovimentacaoDateFilterSheet(
+        initialDataIn: _listPageController.currentDataInFilter,
+        initialDataOut: _listPageController.currentDataOutFilter,
+      ),
+    );
+
+    if (!mounted || result == null) {
+      return;
+    }
+
+    final message = await _listPageController.applyDateFilters(
+      dataIn: result.shouldClear ? null : result.dataIn,
+      dataOut: result.shouldClear ? null : result.dataOut,
+    );
+    if (!mounted) {
+      return;
+    }
+    AppSnackBar.show(
+      context: context,
+      message:
+          message ??
+          (result.shouldClear
+              ? 'Filtros removidos com sucesso.'
+              : 'Filtros aplicados com sucesso.'),
+      isError: message != null,
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return AnimatedBuilder(
@@ -97,7 +131,7 @@ class _ComprasState extends State<Compras> with SingleTickerProviderStateMixin {
                 controller: _pageController.tabController,
                 tabs: const [
                   Tab(text: 'Lista'),
-                  Tab(text: 'Grafico'),
+                  Tab(text: 'Gráfico'),
                 ],
                 onTap: _pageController.setTabIndex,
                 automaticIndicatorColorAdjustment: false,
@@ -119,13 +153,74 @@ class _ComprasState extends State<Compras> with SingleTickerProviderStateMixin {
               ),
               const SizedBox(height: 16),
               if (_pageController.tabIndex == 0)
-                Expanded(child: _buildList())
+                _buildListTab()
               else
                 const GraficosCompras(),
             ],
           ),
         );
       },
+    );
+  }
+
+  Widget _buildListTab() {
+    return Expanded(
+      child: Column(
+        children: [
+          _buildFilterPill(),
+          const SizedBox(height: 16),
+          Expanded(child: _buildList()),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildFilterPill() {
+    final hasFilters = _listPageController.hasActiveFilters();
+    return Row(
+      children: [
+        const SizedBox(width: 20),
+        InkWell(
+          borderRadius: BorderRadius.circular(999),
+          onTap: _showFilterSheet,
+          child: Container(
+            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+            decoration: BoxDecoration(
+              color: hasFilters ? const Color(0x14128977) : Colors.transparent,
+              borderRadius: BorderRadius.circular(999),
+              border: Border.all(
+                color: hasFilters
+                    ? MyColors.colorPrimary
+                    : const Color(0xFFE6E6E6),
+              ),
+            ),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Icon(
+                  Icons.tune_rounded,
+                  size: 16,
+                  color: hasFilters
+                      ? MyColors.colorPrimary
+                      : const Color(0xFF8C8C8C),
+                ),
+                const SizedBox(width: 6),
+                Text(
+                  hasFilters ? 'Filtros ativos' : 'Filtrar',
+                  style: TextStyle(
+                    color: hasFilters
+                        ? MyColors.colorPrimary
+                        : const Color(0xFF8C8C8C),
+                    fontSize: 12,
+                    fontFamily: 'Montserrat',
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ],
     );
   }
 

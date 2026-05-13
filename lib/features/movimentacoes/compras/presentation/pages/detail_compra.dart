@@ -1,4 +1,4 @@
-import 'package:costeira/features/movimentacoes/domain/entities/compra_animal_entity.dart';
+import 'package:costeira/features/movimentacoes/compras/presentation/pages/compra_animais_lista_page.dart';
 import 'package:costeira/features/movimentacoes/domain/entities/compra_entity.dart';
 import 'package:costeira/theme/colors.dart';
 import 'package:flutter/material.dart';
@@ -10,6 +10,10 @@ class DetailCompra extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final animaisLabel = compra.animais.length == 1
+        ? '1 animal vinculado'
+        : '${compra.animais.length} animais vinculados';
+
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: AppBar(
@@ -38,13 +42,12 @@ class DetailCompra extends StatelessWidget {
             _InfoField(label: 'Data da compra', value: compra.data),
             _InfoField(
               label: 'Tipo de compra',
-              value: compra.tipoCompra == 'kg' ? 'KG' : 'Por cabeca',
+              value: compra.tipoCompra == 'kg' ? 'KG' : 'Por cabeça',
             ),
             _InfoField(label: 'Valor unitário', value: compra.valorUnitario),
             _InfoField(label: 'Fornecedor', value: compra.fornecedor),
             _InfoField(label: 'Município', value: compra.municipio),
             _InfoField(label: 'Observações', value: compra.obs),
-            const SizedBox(height: 8),
             const Text(
               'Animais',
               style: TextStyle(
@@ -55,13 +58,48 @@ class DetailCompra extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 8),
-            if (compra.animais.isEmpty)
-              const Padding(
-                padding: EdgeInsets.symmetric(vertical: 12),
-                child: Text('Nenhum animal vinculado.'),
-              )
-            else
-              ...compra.animais.map(_AnimalCard.new),
+            InkWell(
+              borderRadius: BorderRadius.circular(8),
+              onTap: compra.animais.isEmpty
+                  ? null
+                  : () => Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) => CompraAnimaisListaPage.saved(
+                          animais: compra.animais,
+                        ),
+                      ),
+                    ),
+              child: Ink(
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  color: const Color(0xFFEBEBEB),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: Row(
+                  children: [
+                    Expanded(
+                      child: Text(
+                        compra.animais.isEmpty
+                            ? 'Nenhum animal vinculado'
+                            : animaisLabel,
+                        style: const TextStyle(
+                          color: Color(0xFF313131),
+                          fontSize: 14,
+                          fontFamily: 'Montserrat',
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                    ),
+                    if (compra.animais.isNotEmpty)
+                      const Icon(
+                        Icons.keyboard_arrow_right,
+                        color: Color(0xFF8C8C8C),
+                      ),
+                  ],
+                ),
+              ),
+            ),
           ],
         ),
       ),
@@ -112,41 +150,6 @@ class _InfoField extends StatelessWidget {
         ),
         const SizedBox(height: 18),
       ],
-    );
-  }
-}
-
-class _AnimalCard extends StatelessWidget {
-  const _AnimalCard(this.animal);
-
-  final CompraAnimalEntity animal;
-
-  @override
-  Widget build(BuildContext context) {
-    final brinco = animal.brinco?.trim().isNotEmpty == true
-        ? animal.brinco!.trim()
-        : 'Sem brinco';
-    return Container(
-      margin: const EdgeInsets.only(bottom: 8),
-      padding: const EdgeInsets.all(12),
-      decoration: BoxDecoration(
-        border: Border.all(color: const Color(0xFFEBEBEB)),
-        borderRadius: BorderRadius.circular(8),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(brinco, style: const TextStyle(fontWeight: FontWeight.w600)),
-          const SizedBox(height: 4),
-          Text(
-            [
-              animal.categoria?.nome,
-              animal.sexo == 1 ? 'Macho' : 'Fêmea',
-              animal.pesoTotal == null ? null : '${animal.pesoTotal} kg',
-            ].where((item) => item?.trim().isNotEmpty == true).join(' - '),
-          ),
-        ],
-      ),
     );
   }
 }

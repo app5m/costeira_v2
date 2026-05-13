@@ -230,7 +230,7 @@ class _CompraAnimalSheetState extends State<_CompraAnimalSheet> {
                         value: 2,
                         groupValue: widget.pageController.selectedAnimalSexo,
                         contentPadding: EdgeInsets.zero,
-                        title: const Text('Femea'),
+                        title: const Text('Fêmea'),
                         onChanged: (value) {
                           if (value != null) {
                             widget.pageController.onAnimalSexoChanged(value);
@@ -403,7 +403,7 @@ class _DraftAnimalCard extends StatelessWidget {
                 ),
                 const SizedBox(height: 4),
                 Text(
-                  '${animal.sexo == 1 ? 'Macho' : 'Femea'} - ${animal.pesoTotal} kg',
+                  '${animal.sexo == 1 ? 'Macho' : 'Fêmea'} - ${animal.pesoTotal} kg',
                 ),
               ],
             ),

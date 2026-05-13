@@ -20,8 +20,14 @@ class WSConstantes {
   static const String movimentacoesGraficos = '/movimentacoes/graficos';
   static const String movimentacoesAdicionarCompra =
       '/movimentacoes/adicionarCompra';
+  static const String movimentacoesAdicionarVenda =
+      '/movimentacoes/adicionarVenda';
+  static const String movimentacoesAdicionarMorte =
+      '/movimentacoes/adicionarMorte';
   static const String movimentacoesExcluirCompra =
       '/movimentacoes/excluirCompra';
+  static const String movimentacoesExcluirVenda = '/movimentacoes/excluirVenda';
+  static const String movimentacoesExcluirMorte = '/movimentacoes/excluirMorte';
   static const String animaisListar = '/animais/listar';
   static const String insumosListar = '/insumos/listar';
   static const String insumosListarTipo = '/insumos/listarTipo';
