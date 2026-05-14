@@ -1,6 +1,8 @@
 import 'package:costeira/features/movimentacoes/domain/entities/movimentacoes_list_entity.dart';
 import 'package:costeira/features/movimentacoes/infra/models/compra_model.dart';
 import 'package:costeira/features/movimentacoes/infra/models/morte_model.dart';
+import 'package:costeira/features/movimentacoes/infra/models/nascimento_model.dart';
+import 'package:costeira/features/movimentacoes/infra/models/troca_categoria_model.dart';
 import 'package:costeira/features/movimentacoes/infra/models/venda_model.dart';
 
 class MovimentacoesListResponseModel extends MovimentacoesListEntity {
@@ -9,6 +11,8 @@ class MovimentacoesListResponseModel extends MovimentacoesListEntity {
     required super.compras,
     super.vendas,
     super.mortes,
+    super.nascimentos,
+    super.trocaCategoria,
   });
 
   factory MovimentacoesListResponseModel.fromJson(Map<String, dynamic> json) {
@@ -25,12 +29,29 @@ class MovimentacoesListResponseModel extends MovimentacoesListEntity {
         .whereType<Map>()
         .map((item) => MorteModel.fromJson(Map<String, dynamic>.from(item)))
         .toList(growable: false);
+    final nascimentos = (data['nascimentos'] as List<dynamic>? ?? const [])
+        .whereType<Map>()
+        .map(
+          (item) => NascimentoModel.fromJson(Map<String, dynamic>.from(item)),
+        )
+        .toList(growable: false);
+    final trocaCategoria =
+        (data['troca_categoria'] as List<dynamic>? ?? const [])
+            .whereType<Map>()
+            .map(
+              (item) =>
+                  TrocaCategoriaModel.fromJson(Map<String, dynamic>.from(item)),
+            )
+            .toList(growable: false);
 
     return MovimentacoesListResponseModel(
-      rows: int.tryParse(json['rows']?.toString() ?? '') ?? compras.length,
+      rows:
+          int.tryParse(json['rows']?.toString() ?? '') ?? trocaCategoria.length,
       compras: compras,
       vendas: vendas,
       mortes: mortes,
+      nascimentos: nascimentos,
+      trocaCategoria: trocaCategoria,
     );
   }
 

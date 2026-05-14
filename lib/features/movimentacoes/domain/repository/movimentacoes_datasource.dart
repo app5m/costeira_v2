@@ -3,6 +3,8 @@ import 'package:costeira/features/movimentacoes/domain/entities/morte_charts_ent
 import 'package:costeira/features/movimentacoes/domain/entities/movimentacao_charts_filter_entity.dart';
 import 'package:costeira/features/movimentacoes/domain/entities/movimentacao_filter_entity.dart';
 import 'package:costeira/features/movimentacoes/domain/entities/movimentacoes_list_entity.dart';
+import 'package:costeira/features/movimentacoes/domain/entities/nascimento_charts_entity.dart';
+import 'package:costeira/features/movimentacoes/domain/entities/troca_categoria_charts_entity.dart';
 import 'package:costeira/features/movimentacoes/domain/entities/venda_charts_entity.dart';
 
 abstract interface class MovimentacoesDatasource {
@@ -16,6 +18,12 @@ abstract interface class MovimentacoesDatasource {
     MovimentacaoChartsFilterEntity filter,
   );
   Future<MorteChartsEntity> getMorteCharts(
+    MovimentacaoChartsFilterEntity filter,
+  );
+  Future<NascimentoChartsEntity> getNascimentoCharts(
+    MovimentacaoChartsFilterEntity filter,
+  );
+  Future<TrocaCategoriaChartsEntity> getTrocaCategoriaCharts(
     MovimentacaoChartsFilterEntity filter,
   );
 }

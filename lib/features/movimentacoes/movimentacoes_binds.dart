@@ -16,6 +16,10 @@ import 'package:costeira/features/movimentacoes/domain/usecases/get_compra_chart
 import 'package:costeira/features/movimentacoes/domain/usecases/get_compras_usecase.dart';
 import 'package:costeira/features/movimentacoes/domain/usecases/get_morte_charts_usecase.dart';
 import 'package:costeira/features/movimentacoes/domain/usecases/get_mortes_usecase.dart';
+import 'package:costeira/features/movimentacoes/domain/usecases/get_nascimento_charts_usecase.dart';
+import 'package:costeira/features/movimentacoes/domain/usecases/get_nascimentos_usecase.dart';
+import 'package:costeira/features/movimentacoes/domain/usecases/get_troca_categoria_charts_usecase.dart';
+import 'package:costeira/features/movimentacoes/domain/usecases/get_troca_categoria_usecase.dart';
 import 'package:costeira/features/movimentacoes/domain/usecases/get_venda_charts_usecase.dart';
 import 'package:costeira/features/movimentacoes/domain/usecases/get_vendas_usecase.dart';
 import 'package:costeira/features/movimentacoes/infra/data/movimentacoes_datasource_impl.dart';
@@ -31,6 +35,32 @@ import 'package:costeira/features/movimentacoes/mortes/presentation/controllers/
 import 'package:costeira/features/movimentacoes/mortes/presentation/controllers/list_mortes_controller.dart';
 import 'package:costeira/features/movimentacoes/mortes/presentation/page_controllers/morte_form_page_controller.dart';
 import 'package:costeira/features/movimentacoes/mortes/presentation/page_controllers/mortes_list_page_controller.dart';
+import 'package:costeira/features/movimentacoes/nascimento/presentation/controllers/get_nascimento_charts_controller.dart';
+import 'package:costeira/features/movimentacoes/nascimento/presentation/controllers/list_nascimentos_controller.dart';
+import 'package:costeira/features/movimentacoes/nascimento/domain/repository/nascimentos_datasource.dart';
+import 'package:costeira/features/movimentacoes/nascimento/domain/usecases/create_nascimento_usecase.dart';
+import 'package:costeira/features/movimentacoes/nascimento/domain/usecases/delete_nascimento_usecase.dart';
+import 'package:costeira/features/movimentacoes/nascimento/domain/usecases/update_nascimento_usecase.dart';
+import 'package:costeira/features/movimentacoes/nascimento/infra/data/nascimentos_datasource_impl.dart';
+import 'package:costeira/features/movimentacoes/nascimento/presentation/controllers/add_nascimento_controller.dart';
+import 'package:costeira/features/movimentacoes/nascimento/presentation/controllers/delete_nascimento_controller.dart';
+import 'package:costeira/features/movimentacoes/nascimento/presentation/controllers/edit_nascimento_controller.dart';
+import 'package:costeira/features/movimentacoes/nascimento/presentation/page_controllers/nascimento_form_page_controller.dart';
+import 'package:costeira/features/movimentacoes/nascimento/presentation/page_controllers/nascimentos_list_page_controller.dart';
+import 'package:costeira/features/movimentacoes/nascimento/presentation/page_controllers/nascimentos_page_controller.dart';
+import 'package:costeira/features/movimentacoes/troca_categoria/presentation/controllers/get_troca_categoria_charts_controller.dart';
+import 'package:costeira/features/movimentacoes/troca_categoria/domain/repository/troca_categoria_datasource.dart';
+import 'package:costeira/features/movimentacoes/troca_categoria/domain/usecases/create_troca_categoria_usecase.dart';
+import 'package:costeira/features/movimentacoes/troca_categoria/domain/usecases/delete_troca_categoria_usecase.dart';
+import 'package:costeira/features/movimentacoes/troca_categoria/domain/usecases/update_troca_categoria_usecase.dart';
+import 'package:costeira/features/movimentacoes/troca_categoria/infra/data/troca_categoria_datasource_impl.dart';
+import 'package:costeira/features/movimentacoes/troca_categoria/presentation/controllers/add_troca_categoria_controller.dart';
+import 'package:costeira/features/movimentacoes/troca_categoria/presentation/controllers/delete_troca_categoria_controller.dart';
+import 'package:costeira/features/movimentacoes/troca_categoria/presentation/controllers/edit_troca_categoria_controller.dart';
+import 'package:costeira/features/movimentacoes/troca_categoria/presentation/controllers/list_troca_categoria_controller.dart';
+import 'package:costeira/features/movimentacoes/troca_categoria/presentation/page_controllers/troca_categoria_form_page_controller.dart';
+import 'package:costeira/features/movimentacoes/troca_categoria/presentation/page_controllers/troca_categoria_list_page_controller.dart';
+import 'package:costeira/features/movimentacoes/troca_categoria/presentation/page_controllers/troca_categoria_page_controller.dart';
 import 'package:costeira/features/movimentacoes/vendas/domain/repository/vendas_datasource.dart';
 import 'package:costeira/features/movimentacoes/vendas/domain/usecase/create_venda_usecase.dart';
 import 'package:costeira/features/movimentacoes/vendas/domain/usecase/delete_venda_usecase.dart';
@@ -52,22 +82,36 @@ class MovimentacoesBinds {
     );
     i.addLazySingleton<ComprasDatasource>(ComprasDatasourceImpl.new);
     i.addLazySingleton<VendasDatasource>(VendasDatasourceImpl.new);
+    i.addLazySingleton<TrocaCategoriaDatasource>(
+      TrocaCategoriaDatasourceImpl.new,
+    );
     i.addLazySingleton<MortesDatasource>(MortesDatasourceImpl.new);
+    i.addLazySingleton<NascimentosDatasource>(NascimentosDatasourceImpl.new);
     i.addLazySingleton(GetComprasUsecase.new);
     i.addLazySingleton(GetVendasUsecase.new);
     i.addLazySingleton(GetMortesUsecase.new);
+    i.addLazySingleton(GetNascimentosUsecase.new);
+    i.addLazySingleton(GetTrocaCategoriaUsecase.new);
     i.addLazySingleton(GetCompraChartsUsecase.new);
     i.addLazySingleton(GetVendaChartsUsecase.new);
     i.addLazySingleton(GetMorteChartsUsecase.new);
+    i.addLazySingleton(GetNascimentoChartsUsecase.new);
+    i.addLazySingleton(GetTrocaCategoriaChartsUsecase.new);
     i.addLazySingleton(CreateCompraUsecase.new);
     i.addLazySingleton(UpdateCompraUsecase.new);
     i.addLazySingleton(DeleteCompraUsecase.new);
     i.addLazySingleton(CreateVendaUsecase.new);
     i.addLazySingleton(UpdateVendaUsecase.new);
     i.addLazySingleton(DeleteVendaUsecase.new);
+    i.addLazySingleton(CreateTrocaCategoriaUsecase.new);
+    i.addLazySingleton(UpdateTrocaCategoriaUsecase.new);
+    i.addLazySingleton(DeleteTrocaCategoriaUsecase.new);
     i.addLazySingleton(CreateMorteUsecase.new);
     i.addLazySingleton(UpdateMorteUsecase.new);
     i.addLazySingleton(DeleteMorteUsecase.new);
+    i.addLazySingleton(CreateNascimentoUsecase.new);
+    i.addLazySingleton(UpdateNascimentoUsecase.new);
+    i.addLazySingleton(DeleteNascimentoUsecase.new);
     i.add<AddCompraController>(AddCompraController.new);
     i.add<EditCompraController>(EditCompraController.new);
     i.add<DeleteCompraController>(DeleteCompraController.new);
@@ -75,14 +119,26 @@ class MovimentacoesBinds {
     i.add<EditVendaController>(EditVendaController.new);
     i.add<DeleteVendaController>(DeleteVendaController.new);
     i.add<ListVendasController>(ListVendasController.new);
+    i.add<AddTrocaCategoriaController>(AddTrocaCategoriaController.new);
+    i.add<EditTrocaCategoriaController>(EditTrocaCategoriaController.new);
+    i.add<DeleteTrocaCategoriaController>(DeleteTrocaCategoriaController.new);
     i.add<AddMorteController>(AddMorteController.new);
     i.add<EditMorteController>(EditMorteController.new);
     i.add<DeleteMorteController>(DeleteMorteController.new);
     i.add<ListMortesController>(ListMortesController.new);
+    i.add<AddNascimentoController>(AddNascimentoController.new);
+    i.add<EditNascimentoController>(EditNascimentoController.new);
+    i.add<DeleteNascimentoController>(DeleteNascimentoController.new);
     i.add<GetCompraChartsController>(GetCompraChartsController.new);
     i.add<GetVendaChartsController>(GetVendaChartsController.new);
     i.add<GetMorteChartsController>(GetMorteChartsController.new);
+    i.add<GetNascimentoChartsController>(GetNascimentoChartsController.new);
+    i.add<GetTrocaCategoriaChartsController>(
+      GetTrocaCategoriaChartsController.new,
+    );
     i.add<ListComprasController>(ListComprasController.new);
+    i.add<ListNascimentosController>(ListNascimentosController.new);
+    i.add<ListTrocaCategoriaController>(ListTrocaCategoriaController.new);
     i.add<ComprasPageController>(ComprasPageController.new);
     i.add<ComprasListPageController>(ComprasListPageController.new);
     i.add<CompraFormPageController>(CompraFormPageController.new);
@@ -90,5 +146,15 @@ class MovimentacoesBinds {
     i.add<VendasListPageController>(VendasListPageController.new);
     i.add<MorteFormPageController>(MorteFormPageController.new);
     i.add<MortesListPageController>(MortesListPageController.new);
+    i.add<NascimentosPageController>(NascimentosPageController.new);
+    i.add<NascimentosListPageController>(NascimentosListPageController.new);
+    i.add<NascimentoFormPageController>(NascimentoFormPageController.new);
+    i.add<TrocaCategoriaPageController>(TrocaCategoriaPageController.new);
+    i.add<TrocaCategoriaListPageController>(
+      TrocaCategoriaListPageController.new,
+    );
+    i.add<TrocaCategoriaFormPageController>(
+      TrocaCategoriaFormPageController.new,
+    );
   }
 }

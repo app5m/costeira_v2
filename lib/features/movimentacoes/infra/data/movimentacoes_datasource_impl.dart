@@ -7,6 +7,8 @@ import 'package:costeira/features/movimentacoes/domain/entities/morte_charts_ent
 import 'package:costeira/features/movimentacoes/domain/entities/movimentacao_charts_filter_entity.dart';
 import 'package:costeira/features/movimentacoes/domain/entities/movimentacao_filter_entity.dart';
 import 'package:costeira/features/movimentacoes/domain/entities/movimentacoes_list_entity.dart';
+import 'package:costeira/features/movimentacoes/domain/entities/nascimento_charts_entity.dart';
+import 'package:costeira/features/movimentacoes/domain/entities/troca_categoria_charts_entity.dart';
 import 'package:costeira/features/movimentacoes/domain/entities/venda_charts_entity.dart';
 import 'package:costeira/features/movimentacoes/domain/repository/movimentacoes_datasource.dart';
 import 'package:costeira/features/movimentacoes/infra/models/compra_charts_response_model.dart';
@@ -14,6 +16,8 @@ import 'package:costeira/features/movimentacoes/infra/models/morte_charts_respon
 import 'package:costeira/features/movimentacoes/infra/models/movimentacao_charts_filter_request_model.dart';
 import 'package:costeira/features/movimentacoes/infra/models/movimentacao_filter_request_model.dart';
 import 'package:costeira/features/movimentacoes/infra/models/movimentacoes_list_response_model.dart';
+import 'package:costeira/features/movimentacoes/infra/models/nascimento_charts_response_model.dart';
+import 'package:costeira/features/movimentacoes/infra/models/troca_categoria_charts_response_model.dart';
 import 'package:costeira/features/movimentacoes/infra/models/venda_charts_response_model.dart';
 
 class MovimentacoesDatasourceImpl implements MovimentacoesDatasource {
@@ -59,6 +63,22 @@ class MovimentacoesDatasourceImpl implements MovimentacoesDatasource {
   ) async {
     final response = await _getChartsResponse(filter);
     return MorteChartsResponseModel.fromJson(response);
+  }
+
+  @override
+  Future<NascimentoChartsEntity> getNascimentoCharts(
+    MovimentacaoChartsFilterEntity filter,
+  ) async {
+    final response = await _getChartsResponse(filter);
+    return NascimentoChartsResponseModel.fromJson(response);
+  }
+
+  @override
+  Future<TrocaCategoriaChartsEntity> getTrocaCategoriaCharts(
+    MovimentacaoChartsFilterEntity filter,
+  ) async {
+    final response = await _getChartsResponse(filter);
+    return TrocaCategoriaChartsResponseModel.fromJson(response);
   }
 
   Future<Map<String, dynamic>> _getChartsResponse(

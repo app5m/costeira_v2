@@ -36,21 +36,15 @@ class DetailVenda extends StatelessWidget {
             _ReadOnlyField(label: 'Data', value: venda.data),
             _ReadOnlyField(
               label: 'Quantidade',
-              value: venda.qtdAnimais == 1
-                  ? '1 animal'
-                  : '${venda.qtdAnimais} animais',
+              value: venda.qtdAnimais == 1 ? '1 animal' : '${venda.qtdAnimais} animais',
             ),
             _ReadOnlyField(
               label: 'Peso medio',
-              value: venda.pesoMedio == null
-                  ? '-'
-                  : '${venda.pesoMedio!.toStringAsFixed(2)} kg',
+              value: venda.pesoMedio == null ? '-' : '${venda.pesoMedio!.toStringAsFixed(2)} kg',
             ),
             _ReadOnlyField(
               label: 'Peso total',
-              value: venda.pesoTotal == null
-                  ? '-'
-                  : '${venda.pesoTotal!.toStringAsFixed(2)} kg',
+              value: venda.pesoTotal == null ? '-' : '${venda.pesoTotal!.toStringAsFixed(2)} kg',
             ),
             _ReadOnlyField(
               label: 'Valor unitario',
@@ -60,28 +54,20 @@ class DetailVenda extends StatelessWidget {
             ),
             _ReadOnlyField(
               label: 'Valor total',
-              value: venda.valorTotal?.trim().isNotEmpty == true
-                  ? venda.valorTotal!.trim()
-                  : '-',
+              value: venda.valorTotal?.trim().isNotEmpty == true ? venda.valorTotal!.trim() : '-',
             ),
             _ReadOnlyField(
               label: 'Comprador',
-              value: venda.comprador?.trim().isNotEmpty == true
-                  ? venda.comprador!.trim()
-                  : '-',
+              value: venda.comprador?.trim().isNotEmpty == true ? venda.comprador!.trim() : '-',
             ),
             _ReadOnlyField(
               label: 'Municipio',
-              value: venda.municipio?.trim().isNotEmpty == true
-                  ? venda.municipio!.trim()
-                  : '-',
+              value: venda.municipio?.trim().isNotEmpty == true ? venda.municipio!.trim() : '-',
             ),
             _ReadOnlyField(label: 'Destino', value: _destinosLabel),
             _ReadOnlyField(
-              label: 'Observacoes',
-              value: venda.obs?.trim().isNotEmpty == true
-                  ? venda.obs!.trim()
-                  : '-',
+              label: 'Observações',
+              value: venda.obs?.trim().isNotEmpty == true ? venda.obs!.trim() : '-',
               maxLines: 3,
             ),
             InkWell(
@@ -92,9 +78,7 @@ class DetailVenda extends StatelessWidget {
                       Navigator.push(
                         context,
                         MaterialPageRoute(
-                          builder: (_) => VendaAnimaisVinculadosPage(
-                            animais: venda.animais,
-                          ),
+                          builder: (_) => VendaAnimaisVinculadosPage(animais: venda.animais),
                         ),
                       );
                     },
@@ -120,10 +104,7 @@ class DetailVenda extends StatelessWidget {
                       ),
                     ),
                     if (venda.animais.isNotEmpty)
-                      const Icon(
-                        Icons.keyboard_arrow_right,
-                        color: Color(0xFF8C8C8C),
-                      ),
+                      const Icon(Icons.keyboard_arrow_right, color: Color(0xFF8C8C8C)),
                   ],
                 ),
               ),
@@ -149,11 +130,7 @@ class DetailVenda extends StatelessWidget {
 }
 
 class _ReadOnlyField extends StatelessWidget {
-  const _ReadOnlyField({
-    required this.label,
-    required this.value,
-    this.maxLines = 1,
-  });
+  const _ReadOnlyField({required this.label, required this.value, this.maxLines = 1});
 
   final String label;
   final String value;
@@ -189,10 +166,7 @@ class _ReadOnlyField extends StatelessWidget {
           decoration: InputDecoration(
             filled: true,
             fillColor: const Color(0xFFEBEBEB),
-            contentPadding: const EdgeInsets.symmetric(
-              horizontal: 15,
-              vertical: 16,
-            ),
+            contentPadding: const EdgeInsets.symmetric(horizontal: 15, vertical: 16),
             border: OutlineInputBorder(
               borderRadius: BorderRadius.circular(8),
               borderSide: BorderSide.none,

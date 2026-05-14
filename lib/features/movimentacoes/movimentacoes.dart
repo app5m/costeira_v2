@@ -1,13 +1,12 @@
+import 'package:costeira/features/movimentacoes/nascimento/presentation/pages/nascimentos.dart';
 import 'package:costeira/views/navigationscreen/movimentacoes/abortos/abortos.dart';
 import 'package:costeira/features/movimentacoes/compras/presentation/pages/compras.dart';
 import 'package:costeira/views/navigationscreen/movimentacoes/consumo/consumo.dart';
-
-import 'package:costeira/views/navigationscreen/movimentacoes/trocacategoria/trocas.dart';
+import 'package:costeira/features/movimentacoes/troca_categoria/presentation/pages/trocas.dart';
 import 'package:costeira/features/movimentacoes/vendas/presentation/pages/vendas.dart';
 import 'package:flutter/material.dart';
 
 import 'mortes/presentation/pages/mortes.dart';
-import 'nascimento/nascimentos.dart';
 
 class Movimentacoes extends StatefulWidget {
   const Movimentacoes({super.key});

@@ -34,21 +34,14 @@ class DetailMorte extends StatelessWidget {
         child: Column(
           children: [
             _ReadOnlyField(label: 'Data', value: morte.data),
-            _ReadOnlyField(
-              label: 'Potreiro',
-              value: morte.potreiro?.nome ?? '-',
-            ),
+            _ReadOnlyField(label: 'Potreiro', value: morte.potreiro?.nome ?? '-'),
             _ReadOnlyField(
               label: 'Quantidade',
-              value: morte.qtdAnimais == 1
-                  ? '1 animal'
-                  : '${morte.qtdAnimais} animais',
+              value: morte.qtdAnimais == 1 ? '1 animal' : '${morte.qtdAnimais} animais',
             ),
             _ReadOnlyField(
-              label: 'Observacoes',
-              value: morte.obs?.trim().isNotEmpty == true
-                  ? morte.obs!.trim()
-                  : '-',
+              label: 'Observações',
+              value: morte.obs?.trim().isNotEmpty == true ? morte.obs!.trim() : '-',
               maxLines: 3,
             ),
             InkWell(
@@ -59,9 +52,7 @@ class DetailMorte extends StatelessWidget {
                       Navigator.push(
                         context,
                         MaterialPageRoute(
-                          builder: (_) => MorteAnimaisVinculadosPage(
-                            animais: morte.animais,
-                          ),
+                          builder: (_) => MorteAnimaisVinculadosPage(animais: morte.animais),
                         ),
                       );
                     },
@@ -87,10 +78,7 @@ class DetailMorte extends StatelessWidget {
                       ),
                     ),
                     if (morte.animais.isNotEmpty)
-                      const Icon(
-                        Icons.keyboard_arrow_right,
-                        color: Color(0xFF8C8C8C),
-                      ),
+                      const Icon(Icons.keyboard_arrow_right, color: Color(0xFF8C8C8C)),
                   ],
                 ),
               ),
@@ -104,11 +92,7 @@ class DetailMorte extends StatelessWidget {
 }
 
 class _ReadOnlyField extends StatelessWidget {
-  const _ReadOnlyField({
-    required this.label,
-    required this.value,
-    this.maxLines = 1,
-  });
+  const _ReadOnlyField({required this.label, required this.value, this.maxLines = 1});
 
   final String label;
   final String value;
@@ -137,10 +121,7 @@ class _ReadOnlyField extends StatelessWidget {
           decoration: InputDecoration(
             filled: true,
             fillColor: const Color(0xFFEBEBEB),
-            contentPadding: const EdgeInsets.symmetric(
-              horizontal: 15,
-              vertical: 16,
-            ),
+            contentPadding: const EdgeInsets.symmetric(horizontal: 15, vertical: 16),
             border: OutlineInputBorder(
               borderRadius: BorderRadius.circular(8),
               borderSide: BorderSide.none,
