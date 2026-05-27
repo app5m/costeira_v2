@@ -28,6 +28,14 @@ class WSConstantes {
       '/movimentacoes/adicionarNascimento';
   static const String movimentacoesAdicionarTrocaCategoria =
       '/movimentacoes/adicionarTrocaCategoria';
+  static const String movimentacoesAdicionarTransferencia =
+      '/movimentacoes/adicionarTransferencia';
+  static const String movimentacoesAdicionarAbigeato =
+      '/movimentacoes/adicionarAbigeato';
+  static const String movimentacoesAdicionarAborto =
+      '/movimentacoes/adicionarAborto';
+  static const String movimentacoesAdicionarConsumo =
+      '/movimentacoes/adicionarConsumo';
   static const String movimentacoesExcluirCompra =
       '/movimentacoes/excluirCompra';
   static const String movimentacoesExcluirVenda = '/movimentacoes/excluirVenda';
@@ -36,6 +44,14 @@ class WSConstantes {
       '/movimentacoes/excluirNascimento';
   static const String movimentacoesExcluirTrocaCategoria =
       '/movimentacoes/excluirTrocaCategoria';
+  static const String movimentacoesExcluirTransferencia =
+      '/movimentacoes/excluirTransferencia';
+  static const String movimentacoesExcluirAbigeato =
+      '/movimentacoes/excluirAbigeato';
+  static const String movimentacoesExcluirAborto =
+      '/movimentacoes/excluirAborto';
+  static const String movimentacoesExcluirConsumo =
+      '/movimentacoes/excluirConsumo';
   static const String animaisListar = '/animais/listar';
   static const String insumosListar = '/insumos/listar';
   static const String insumosListarTipo = '/insumos/listarTipo';

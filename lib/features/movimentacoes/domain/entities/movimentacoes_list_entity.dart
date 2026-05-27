@@ -1,7 +1,11 @@
+import 'package:costeira/features/movimentacoes/domain/entities/aborto_entity.dart';
+import 'package:costeira/features/movimentacoes/domain/entities/abigeato_entity.dart';
 import 'package:costeira/features/movimentacoes/domain/entities/compra_entity.dart';
+import 'package:costeira/features/movimentacoes/domain/entities/consumo_entity.dart';
 import 'package:costeira/features/movimentacoes/domain/entities/morte_entity.dart';
 import 'package:costeira/features/movimentacoes/domain/entities/nascimento_entity.dart';
 import 'package:costeira/features/movimentacoes/domain/entities/troca_categoria_entity.dart';
+import 'package:costeira/features/movimentacoes/domain/entities/transferencia_entity.dart';
 import 'package:costeira/features/movimentacoes/vendas/domain/entities/venda_entity.dart';
 
 class MovimentacoesListEntity {
@@ -12,6 +16,10 @@ class MovimentacoesListEntity {
     this.mortes = const [],
     this.nascimentos = const [],
     this.trocaCategoria = const [],
+    this.abigeatos = const [],
+    this.abortos = const [],
+    this.consumos = const [],
+    this.transferencias = const [],
   });
 
   final int rows;
@@ -20,4 +28,8 @@ class MovimentacoesListEntity {
   final List<MorteEntity> mortes;
   final List<NascimentoEntity> nascimentos;
   final List<TrocaCategoriaEntity> trocaCategoria;
+  final List<AbigeatoEntity> abigeatos;
+  final List<AbortoEntity> abortos;
+  final List<ConsumoEntity> consumos;
+  final List<TransferenciaEntity> transferencias;
 }

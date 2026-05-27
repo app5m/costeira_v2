@@ -1,63 +1,11 @@
+import 'package:costeira/features/movimentacoes/domain/entities/consumo_entity.dart';
+import 'package:costeira/theme/colors.dart';
 import 'package:flutter/material.dart';
 
-import '../../../../../theme/colors.dart';
+class DetailConsumo extends StatelessWidget {
+  const DetailConsumo({super.key, required this.consumo});
 
-class DetailConsumo extends StatefulWidget {
-  const DetailConsumo({super.key});
-
-  @override
-  State<DetailConsumo> createState() => _DetailConsumoState();
-}
-
-class _DetailConsumoState extends State<DetailConsumo> {
-  Widget buildTextField(String label, String hint) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          label,
-          style: TextStyle(
-            color: const Color(0xFF313131),
-            fontSize: 14,
-            fontFamily: 'Montserrat',
-            fontWeight: FontWeight.w400,
-            height: 1.50,
-            letterSpacing: 0.10,
-          ),
-        ),
-        const SizedBox(height: 6),
-        TextField(
-          style: TextStyle(
-            color: Color(0xFF313131),
-            fontSize: 14,
-            fontFamily: 'Montserrat',
-            fontWeight: FontWeight.w400,
-            height: 1.50,
-            letterSpacing: 0.10,
-          ),
-          decoration: InputDecoration(
-            hintText: hint,
-            hintStyle: TextStyle(
-              color: Color(0xFF313131),
-              fontSize: 14,
-              fontFamily: 'Montserrat',
-              fontWeight: FontWeight.w400,
-              height: 1.50,
-              letterSpacing: 0.10,
-            ),
-            filled: true,
-            fillColor: Color(0xFFEBEBEB),
-            contentPadding: EdgeInsets.symmetric(horizontal: 15, vertical: 16),
-            border: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(8),
-              borderSide: BorderSide.none,
-            ),
-          ),
-        ),
-        const SizedBox(height: 18),
-      ],
-    );
-  }
+  final ConsumoEntity consumo;
 
   @override
   Widget build(BuildContext context) {
@@ -65,13 +13,11 @@ class _DetailConsumoState extends State<DetailConsumo> {
       backgroundColor: Colors.white,
       appBar: AppBar(
         backgroundColor: MyColors.colorPrimary,
-        leading: GestureDetector(
-          onTap: () {
-            Navigator.pop(context);
-          },
-          child: Icon(Icons.arrow_back_ios, color: Colors.white),
+        leading: IconButton(
+          onPressed: () => Navigator.pop(context),
+          icon: const Icon(Icons.arrow_back_ios, color: Colors.white),
         ),
-        title: Text(
+        title: const Text(
           'Detalhes consumo',
           style: TextStyle(
             color: Colors.white,
@@ -82,21 +28,83 @@ class _DetailConsumoState extends State<DetailConsumo> {
         ),
       ),
       body: SingleChildScrollView(
-        child: Container(
-          margin: EdgeInsets.symmetric(horizontal: 20),
-          child: Column(
-            children: [
-              SizedBox(height: 16),
-              buildTextField("Brinco", "Ex: 2034"),
-              buildTextField("Data", "00/00/0000"),
-              buildTextField("Categoria", "Selecionar"),
-              buildTextField("Peso médio", "000 kg"),
-
-              const SizedBox(height: 32),
-            ],
-          ),
+        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+        child: Column(
+          children: [
+            _InfoField(label: 'Data', value: consumo.data),
+            _InfoField(label: 'Animais', value: _animalsLabel),
+            _InfoField(label: 'Peso medio', value: _formatKg(consumo.pesoMedio)),
+            _InfoField(label: 'Peso total', value: _formatKg(consumo.pesoTotal)),
+            _InfoField(label: 'Observações', value: consumo.obs, maxLines: 4),
+            const SizedBox(height: 32),
+          ],
         ),
       ),
+    );
+  }
+
+  String get _animalsLabel {
+    final count = consumo.qtdAnimais;
+    return count == 1 ? '1 animal' : '$count animais';
+  }
+
+  String? _formatKg(double? value) {
+    if (value == null) {
+      return null;
+    }
+    return '${value.toStringAsFixed(2)} kg';
+  }
+}
+
+class _InfoField extends StatelessWidget {
+  const _InfoField({required this.label, this.value, this.maxLines = 1});
+
+  final String label;
+  final String? value;
+  final int maxLines;
+
+  @override
+  Widget build(BuildContext context) {
+    final text = value?.trim().isNotEmpty == true ? value!.trim() : '-';
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Align(
+          alignment: Alignment.centerLeft,
+          child: Text(
+            label,
+            style: const TextStyle(
+              color: Color(0xFF313131),
+              fontSize: 14,
+              fontFamily: 'Montserrat',
+              fontWeight: FontWeight.w400,
+              height: 1.50,
+            ),
+          ),
+        ),
+        const SizedBox(height: 6),
+        Container(
+          width: double.infinity,
+          padding: const EdgeInsets.symmetric(horizontal: 15, vertical: 16),
+          decoration: BoxDecoration(
+            color: const Color(0xFFEBEBEB),
+            borderRadius: BorderRadius.circular(8),
+          ),
+          child: Text(
+            text,
+            maxLines: maxLines,
+            overflow: TextOverflow.ellipsis,
+            style: const TextStyle(
+              color: Color(0xFF313131),
+              fontSize: 14,
+              fontFamily: 'Montserrat',
+              fontWeight: FontWeight.w400,
+              height: 1.50,
+            ),
+          ),
+        ),
+        const SizedBox(height: 18),
+      ],
     );
   }
 }

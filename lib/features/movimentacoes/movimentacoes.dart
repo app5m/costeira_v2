@@ -1,8 +1,10 @@
+import 'package:costeira/features/movimentacoes/abigeatos/abigeatos.dart';
+import 'package:costeira/features/movimentacoes/abortos/abortos.dart';
+import 'package:costeira/features/movimentacoes/consumo/consumo.dart';
 import 'package:costeira/features/movimentacoes/nascimento/presentation/pages/nascimentos.dart';
-import 'package:costeira/views/navigationscreen/movimentacoes/abortos/abortos.dart';
 import 'package:costeira/features/movimentacoes/compras/presentation/pages/compras.dart';
-import 'package:costeira/views/navigationscreen/movimentacoes/consumo/consumo.dart';
 import 'package:costeira/features/movimentacoes/troca_categoria/presentation/pages/trocas.dart';
+import 'package:costeira/features/movimentacoes/transferencias/transferencia.dart';
 import 'package:costeira/features/movimentacoes/vendas/presentation/pages/vendas.dart';
 import 'package:flutter/material.dart';
 
@@ -32,7 +34,7 @@ class _MovimentacoesState extends State<Movimentacoes> {
                   MaterialPageRoute(builder: (context) => Compras()),
                 );
               },
-              child: ButtonMotivetion('Compras'),
+              child: buttonMotivetion('Compras'),
             ),
             SizedBox(height: 16),
             GestureDetector(
@@ -42,7 +44,7 @@ class _MovimentacoesState extends State<Movimentacoes> {
                   MaterialPageRoute(builder: (context) => Vendas()),
                 );
               },
-              child: ButtonMotivetion('Vendas'),
+              child: buttonMotivetion('Vendas'),
             ),
             SizedBox(height: 16),
             GestureDetector(
@@ -52,7 +54,7 @@ class _MovimentacoesState extends State<Movimentacoes> {
                   MaterialPageRoute(builder: (context) => Mortes()),
                 );
               },
-              child: ButtonMotivetion('Mortes'),
+              child: buttonMotivetion('Mortes'),
             ),
             SizedBox(height: 16),
             GestureDetector(
@@ -62,7 +64,7 @@ class _MovimentacoesState extends State<Movimentacoes> {
                   MaterialPageRoute(builder: (context) => Nascimentos()),
                 );
               },
-              child: ButtonMotivetion('Nascimentos'),
+              child: buttonMotivetion('Nascimentos'),
             ),
             SizedBox(height: 16),
             GestureDetector(
@@ -72,7 +74,17 @@ class _MovimentacoesState extends State<Movimentacoes> {
                   MaterialPageRoute(builder: (context) => TrocaCategoria()),
                 );
               },
-              child: ButtonMotivetion('Trocas de categoria'),
+              child: buttonMotivetion('Trocas de categoria'),
+            ),
+            SizedBox(height: 16),
+            GestureDetector(
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => Abigeatos()),
+                );
+              },
+              child: buttonMotivetion('Abigeatos'),
             ),
             SizedBox(height: 16),
             GestureDetector(
@@ -82,7 +94,7 @@ class _MovimentacoesState extends State<Movimentacoes> {
                   MaterialPageRoute(builder: (context) => Abortos()),
                 );
               },
-              child: ButtonMotivetion('Abigeato e abortos'),
+              child: buttonMotivetion('Abortos'),
             ),
             SizedBox(height: 16),
             GestureDetector(
@@ -92,17 +104,17 @@ class _MovimentacoesState extends State<Movimentacoes> {
                   MaterialPageRoute(builder: (context) => Consumo()),
                 );
               },
-              child: ButtonMotivetion('Consumo (carnear)'),
+              child: buttonMotivetion('Consumo (carnear)'),
             ),
             SizedBox(height: 16),
             GestureDetector(
               onTap: () {
                 Navigator.push(
                   context,
-                  MaterialPageRoute(builder: (context) => Consumo()),
+                  MaterialPageRoute(builder: (context) => Transferencia()),
                 );
               },
-              child: ButtonMotivetion('Transferências de campo'),
+              child: buttonMotivetion('Transferências de campo'),
             ),
           ],
         ),
@@ -110,7 +122,7 @@ class _MovimentacoesState extends State<Movimentacoes> {
     );
   }
 
-  Widget ButtonMotivetion(String title) {
+  Widget buttonMotivetion(String title) {
     return Container(
       width: MediaQuery.of(context).size.width - 40,
       padding: const EdgeInsets.all(16),

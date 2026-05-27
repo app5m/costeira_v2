@@ -2,22 +2,30 @@ import 'package:costeira/core/api/api_client.dart';
 import 'package:costeira/core/api/api_response_utils.dart';
 import 'package:costeira/core/config/ws_constantes.dart';
 import 'package:costeira/core/utils/app_logger.dart';
+import 'package:costeira/features/movimentacoes/domain/entities/aborto_charts_entity.dart';
+import 'package:costeira/features/movimentacoes/domain/entities/abigeato_charts_entity.dart';
 import 'package:costeira/features/movimentacoes/domain/entities/compra_charts_entity.dart';
+import 'package:costeira/features/movimentacoes/domain/entities/consumo_charts_entity.dart';
 import 'package:costeira/features/movimentacoes/domain/entities/morte_charts_entity.dart';
 import 'package:costeira/features/movimentacoes/domain/entities/movimentacao_charts_filter_entity.dart';
 import 'package:costeira/features/movimentacoes/domain/entities/movimentacao_filter_entity.dart';
 import 'package:costeira/features/movimentacoes/domain/entities/movimentacoes_list_entity.dart';
 import 'package:costeira/features/movimentacoes/domain/entities/nascimento_charts_entity.dart';
 import 'package:costeira/features/movimentacoes/domain/entities/troca_categoria_charts_entity.dart';
+import 'package:costeira/features/movimentacoes/domain/entities/transferencia_charts_entity.dart';
 import 'package:costeira/features/movimentacoes/domain/entities/venda_charts_entity.dart';
 import 'package:costeira/features/movimentacoes/domain/repository/movimentacoes_datasource.dart';
+import 'package:costeira/features/movimentacoes/infra/models/aborto_charts_response_model.dart';
+import 'package:costeira/features/movimentacoes/infra/models/abigeato_charts_response_model.dart';
 import 'package:costeira/features/movimentacoes/infra/models/compra_charts_response_model.dart';
+import 'package:costeira/features/movimentacoes/infra/models/consumo_charts_response_model.dart';
 import 'package:costeira/features/movimentacoes/infra/models/morte_charts_response_model.dart';
 import 'package:costeira/features/movimentacoes/infra/models/movimentacao_charts_filter_request_model.dart';
 import 'package:costeira/features/movimentacoes/infra/models/movimentacao_filter_request_model.dart';
 import 'package:costeira/features/movimentacoes/infra/models/movimentacoes_list_response_model.dart';
 import 'package:costeira/features/movimentacoes/infra/models/nascimento_charts_response_model.dart';
 import 'package:costeira/features/movimentacoes/infra/models/troca_categoria_charts_response_model.dart';
+import 'package:costeira/features/movimentacoes/infra/models/transferencia_charts_response_model.dart';
 import 'package:costeira/features/movimentacoes/infra/models/venda_charts_response_model.dart';
 
 class MovimentacoesDatasourceImpl implements MovimentacoesDatasource {
@@ -79,6 +87,38 @@ class MovimentacoesDatasourceImpl implements MovimentacoesDatasource {
   ) async {
     final response = await _getChartsResponse(filter);
     return TrocaCategoriaChartsResponseModel.fromJson(response);
+  }
+
+  @override
+  Future<AbigeatoChartsEntity> getAbigeatoCharts(
+    MovimentacaoChartsFilterEntity filter,
+  ) async {
+    final response = await _getChartsResponse(filter);
+    return AbigeatoChartsResponseModel.fromJson(response);
+  }
+
+  @override
+  Future<AbortoChartsEntity> getAbortoCharts(
+    MovimentacaoChartsFilterEntity filter,
+  ) async {
+    final response = await _getChartsResponse(filter);
+    return AbortoChartsResponseModel.fromJson(response);
+  }
+
+  @override
+  Future<ConsumoChartsEntity> getConsumoCharts(
+    MovimentacaoChartsFilterEntity filter,
+  ) async {
+    final response = await _getChartsResponse(filter);
+    return ConsumoChartsResponseModel.fromJson(response);
+  }
+
+  @override
+  Future<TransferenciaChartsEntity> getTransferenciaCharts(
+    MovimentacaoChartsFilterEntity filter,
+  ) async {
+    final response = await _getChartsResponse(filter);
+    return TransferenciaChartsResponseModel.fromJson(response);
   }
 
   Future<Map<String, dynamic>> _getChartsResponse(
