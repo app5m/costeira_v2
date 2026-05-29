@@ -5,6 +5,7 @@ import 'package:costeira/features/sanitarios/presentation/controllers/delete_san
 import 'package:costeira/features/sanitarios/presentation/controllers/list_sanitarios_controller.dart';
 import 'package:costeira/features/sanitarios/presentation/pages/add_execucao.dart';
 import 'package:costeira/features/sanitarios/presentation/pages/add_planejamento.dart';
+import 'package:costeira/features/sanitarios/presentation/pages/detail_planejamento.dart';
 import 'package:costeira/theme/colors.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_modular/flutter_modular.dart';
@@ -41,7 +42,9 @@ class SanitariosPlanejamentoList extends StatelessWidget {
 
         final sanitarios = controller.planejados;
         if (sanitarios.isEmpty) {
-          return const _FeedbackState(message: 'Nenhum planejamento encontrado.');
+          return const _FeedbackState(
+            message: 'Nenhum planejamento encontrado.',
+          );
         }
 
         return RefreshIndicator(
@@ -57,7 +60,8 @@ class SanitariosPlanejamentoList extends StatelessWidget {
                   Navigator.push<bool>(
                     context,
                     MaterialPageRoute(
-                      builder: (_) => AddExecucaoSanitario(sanitario: sanitarios[index]),
+                      builder: (_) =>
+                          AddExecucaoSanitario(sanitario: sanitarios[index]),
                     ),
                   ).then((saved) {
                     if (saved == true) {
@@ -69,7 +73,8 @@ class SanitariosPlanejamentoList extends StatelessWidget {
                   Navigator.push<bool>(
                     context,
                     MaterialPageRoute(
-                      builder: (_) => AddPlanejamento(sanitario: sanitarios[index]),
+                      builder: (_) =>
+                          AddPlanejamento(sanitario: sanitarios[index]),
                     ),
                   ).then((saved) {
                     if (saved == true) {
@@ -85,7 +90,10 @@ class SanitariosPlanejamentoList extends StatelessWidget {
     );
   }
 
-  Future<void> _confirmDelete(BuildContext context, SanitarioEntity sanitario) async {
+  Future<void> _confirmDelete(
+    BuildContext context,
+    SanitarioEntity sanitario,
+  ) async {
     final confirmed = await showModalBottomSheet<bool>(
       backgroundColor: Colors.white,
       context: context,
@@ -96,66 +104,77 @@ class SanitariosPlanejamentoList extends StatelessWidget {
         ),
       ),
       builder: (BuildContext bc) {
-        return Padding(
-          padding: const EdgeInsets.fromLTRB(20, 16, 20, 24),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              const SizedBox(height: 8),
-              Container(width: 72, height: 2, color: const Color(0xFFE2E2E2)),
-              const SizedBox(height: 24),
-              SvgPicture.asset(
-                'icon/danger-linear.svg',
-                width: 80,
-                height: 80,
-                colorFilter: const ColorFilter.mode(Colors.red, BlendMode.srcIn),
-              ),
-              const SizedBox(height: 16),
-              const Text(
-                'Excluir planejamento',
-                style: TextStyle(
-                  fontFamily: 'Montserrat',
-                  fontWeight: FontWeight.w600,
-                  fontSize: 16,
-                ),
-              ),
-              const SizedBox(height: 8),
-              const Text(
-                'Tem certeza que deseja excluir esse\nplanejamento permanentemente?',
-                textAlign: TextAlign.center,
-                style: TextStyle(
-                  fontFamily: 'Montserrat',
-                  fontWeight: FontWeight.w400,
-                  fontSize: 14,
-                  color: Color(0xFF8692A8),
-                ),
-              ),
-              const SizedBox(height: 16),
-              SizedBox(
-                width: double.infinity,
-                height: 50,
-                child: OutlinedButton(
-                  onPressed: () => Navigator.of(context).pop(true),
-                  style: OutlinedButton.styleFrom(
-                    side: const BorderSide(color: Colors.red),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+        return SafeArea(
+          top: false,
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(20, 16, 20, 24),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const SizedBox(height: 8),
+                Container(width: 72, height: 2, color: const Color(0xFFE2E2E2)),
+                const SizedBox(height: 24),
+                SvgPicture.asset(
+                  'icon/danger-linear.svg',
+                  width: 80,
+                  height: 80,
+                  colorFilter: const ColorFilter.mode(
+                    Colors.red,
+                    BlendMode.srcIn,
                   ),
-                  child: const Text('Excluir', style: TextStyle(color: Colors.red)),
                 ),
-              ),
-              TextButton(
-                onPressed: () => Navigator.of(context).pop(false),
-                child: Text(
-                  'Cancelar',
+                const SizedBox(height: 16),
+                const Text(
+                  'Excluir planejamento',
                   style: TextStyle(
+                    fontFamily: 'Montserrat',
+                    fontWeight: FontWeight.w600,
                     fontSize: 16,
-                    color: MyColors.colorOnPrimary,
-                    decoration: TextDecoration.underline,
-                    decorationColor: MyColors.colorOnPrimary,
                   ),
                 ),
-              ),
-            ],
+                const SizedBox(height: 8),
+                const Text(
+                  'Tem certeza que deseja excluir esse\nplanejamento permanentemente?',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    fontFamily: 'Montserrat',
+                    fontWeight: FontWeight.w400,
+                    fontSize: 14,
+                    color: Color(0xFF8692A8),
+                  ),
+                ),
+                const SizedBox(height: 16),
+                SizedBox(
+                  width: double.infinity,
+                  height: 50,
+                  child: OutlinedButton(
+                    onPressed: () => Navigator.of(context).pop(true),
+                    style: OutlinedButton.styleFrom(
+                      side: const BorderSide(color: Colors.red),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                    ),
+                    child: const Text(
+                      'Excluir',
+                      style: TextStyle(color: Colors.red),
+                    ),
+                  ),
+                ),
+                TextButton(
+                  onPressed: () => Navigator.of(context).pop(false),
+                  child: Text(
+                    'Cancelar',
+                    style: TextStyle(
+                      fontSize: 16,
+                      color: MyColors.colorOnPrimary,
+                      decoration: TextDecoration.underline,
+                      decorationColor: MyColors.colorOnPrimary,
+                    ),
+                  ),
+                ),
+              ],
+            ),
           ),
         );
       },
@@ -226,69 +245,80 @@ class _PlanejamentoState extends State<Planejamento> {
           ),
         ),
       ),
-      body: AnimatedBuilder(
-        animation: _controller,
-        builder: (context, _) {
-          if (_controller.isLoading) {
-            return const Center(child: CircularProgressIndicator());
-          }
+      body: SafeArea(
+        top: false,
+        child: AnimatedBuilder(
+          animation: _controller,
+          builder: (context, _) {
+            if (_controller.isLoading) {
+              return const Center(child: CircularProgressIndicator());
+            }
 
-          if (_controller.errorMessage != null) {
-            return _FeedbackState(
-              message: _controller.errorMessage!,
-              actionLabel: 'Tentar novamente',
-              onAction: () => _controller.load(),
+            if (_controller.errorMessage != null) {
+              return _FeedbackState(
+                message: _controller.errorMessage!,
+                actionLabel: 'Tentar novamente',
+                onAction: () => _controller.load(),
+              );
+            }
+
+            final sanitarios = _controller.planejados;
+            if (sanitarios.isEmpty) {
+              return const _FeedbackState(
+                message: 'Nenhum planejamento encontrado.',
+              );
+            }
+
+            return RefreshIndicator(
+              onRefresh: _controller.reload,
+              child: ListView.builder(
+                padding: const EdgeInsets.only(top: 16, bottom: 88),
+                itemCount: sanitarios.length,
+                itemBuilder: (context, index) {
+                  return _SanitarioCard(
+                    sanitario: sanitarios[index],
+                    onDelete: () => _confirmDelete(context, sanitarios[index]),
+                    onExecute: () {
+                      Navigator.push<bool>(
+                        context,
+                        MaterialPageRoute(
+                          builder: (_) => AddExecucaoSanitario(
+                            sanitario: sanitarios[index],
+                          ),
+                        ),
+                      ).then((saved) {
+                        if (saved == true) {
+                          _controller.reload();
+                        }
+                      });
+                    },
+                    onEdit: () {
+                      Navigator.push<bool>(
+                        context,
+                        MaterialPageRoute(
+                          builder: (_) =>
+                              AddPlanejamento(sanitario: sanitarios[index]),
+                        ),
+                      ).then((saved) {
+                        if (saved == true) {
+                          _controller.reload();
+                        }
+                      });
+                    },
+                  );
+                },
+              ),
             );
-          }
-
-          final sanitarios = _controller.planejados;
-          if (sanitarios.isEmpty) {
-            return const _FeedbackState(message: 'Nenhum planejamento encontrado.');
-          }
-
-          return RefreshIndicator(
-            onRefresh: _controller.reload,
-            child: ListView.builder(
-              padding: const EdgeInsets.only(top: 16, bottom: 88),
-              itemCount: sanitarios.length,
-              itemBuilder: (context, index) {
-                return _SanitarioCard(
-                  sanitario: sanitarios[index],
-                  onDelete: () => _confirmDelete(context, sanitarios[index]),
-                  onExecute: () {
-                    Navigator.push<bool>(
-                      context,
-                      MaterialPageRoute(
-                        builder: (_) => AddExecucaoSanitario(sanitario: sanitarios[index]),
-                      ),
-                    ).then((saved) {
-                      if (saved == true) {
-                        _controller.reload();
-                      }
-                    });
-                  },
-                  onEdit: () {
-                    Navigator.push<bool>(
-                      context,
-                      MaterialPageRoute(
-                        builder: (_) => AddPlanejamento(sanitario: sanitarios[index]),
-                      ),
-                    ).then((saved) {
-                      if (saved == true) {
-                        _controller.reload();
-                      }
-                    });
-                  },
-                );
-              },
-            ),
-          );
-        },
+          },
+        ),
       ),
     );
   }
 
-  Future<void> _confirmDelete(BuildContext context, SanitarioEntity sanitario) async {
+  Future<void> _confirmDelete(
+    BuildContext context,
+    SanitarioEntity sanitario,
+  ) async {
     final confirmed = await showModalBottomSheet<bool>(
       backgroundColor: Colors.white,
       context: context,
@@ -299,66 +329,77 @@ class _PlanejamentoState extends State<Planejamento> {
         ),
       ),
       builder: (BuildContext bc) {
-        return Padding(
-          padding: const EdgeInsets.fromLTRB(20, 16, 20, 24),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              const SizedBox(height: 8),
-              Container(width: 72, height: 2, color: const Color(0xFFE2E2E2)),
-              const SizedBox(height: 24),
-              SvgPicture.asset(
-                'icon/danger-linear.svg',
-                width: 80,
-                height: 80,
-                colorFilter: const ColorFilter.mode(Colors.red, BlendMode.srcIn),
-              ),
-              const SizedBox(height: 16),
-              const Text(
-                'Excluir planejamento',
-                style: TextStyle(
-                  fontFamily: 'Montserrat',
-                  fontWeight: FontWeight.w600,
-                  fontSize: 16,
-                ),
-              ),
-              const SizedBox(height: 8),
-              const Text(
-                'Tem certeza que deseja excluir esse\nplanejamento permanentemente?',
-                textAlign: TextAlign.center,
-                style: TextStyle(
-                  fontFamily: 'Montserrat',
-                  fontWeight: FontWeight.w400,
-                  fontSize: 14,
-                  color: Color(0xFF8692A8),
-                ),
-              ),
-              const SizedBox(height: 16),
-              SizedBox(
-                width: double.infinity,
-                height: 50,
-                child: OutlinedButton(
-                  onPressed: () => Navigator.of(context).pop(true),
-                  style: OutlinedButton.styleFrom(
-                    side: const BorderSide(color: Colors.red),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+        return SafeArea(
+          top: false,
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(20, 16, 20, 24),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const SizedBox(height: 8),
+                Container(width: 72, height: 2, color: const Color(0xFFE2E2E2)),
+                const SizedBox(height: 24),
+                SvgPicture.asset(
+                  'icon/danger-linear.svg',
+                  width: 80,
+                  height: 80,
+                  colorFilter: const ColorFilter.mode(
+                    Colors.red,
+                    BlendMode.srcIn,
                   ),
-                  child: const Text('Excluir', style: TextStyle(color: Colors.red)),
                 ),
-              ),
-              TextButton(
-                onPressed: () => Navigator.of(context).pop(false),
-                child: Text(
-                  'Cancelar',
+                const SizedBox(height: 16),
+                const Text(
+                  'Excluir planejamento',
                   style: TextStyle(
+                    fontFamily: 'Montserrat',
+                    fontWeight: FontWeight.w600,
                     fontSize: 16,
-                    color: MyColors.colorOnPrimary,
-                    decoration: TextDecoration.underline,
-                    decorationColor: MyColors.colorOnPrimary,
                   ),
                 ),
-              ),
-            ],
+                const SizedBox(height: 8),
+                const Text(
+                  'Tem certeza que deseja excluir esse\nplanejamento permanentemente?',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    fontFamily: 'Montserrat',
+                    fontWeight: FontWeight.w400,
+                    fontSize: 14,
+                    color: Color(0xFF8692A8),
+                  ),
+                ),
+                const SizedBox(height: 16),
+                SizedBox(
+                  width: double.infinity,
+                  height: 50,
+                  child: OutlinedButton(
+                    onPressed: () => Navigator.of(context).pop(true),
+                    style: OutlinedButton.styleFrom(
+                      side: const BorderSide(color: Colors.red),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                    ),
+                    child: const Text(
+                      'Excluir',
+                      style: TextStyle(color: Colors.red),
+                    ),
+                  ),
+                ),
+                TextButton(
+                  onPressed: () => Navigator.of(context).pop(false),
+                  child: Text(
+                    'Cancelar',
+                    style: TextStyle(
+                      fontSize: 16,
+                      color: MyColors.colorOnPrimary,
+                      decoration: TextDecoration.underline,
+                      decorationColor: MyColors.colorOnPrimary,
+                    ),
+                  ),
+                ),
+              ],
+            ),
           ),
         );
       },
@@ -397,90 +438,117 @@ class _SanitarioCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      width: MediaQuery.of(context).size.width - 40,
-      padding: const EdgeInsets.all(16),
-      margin: const EdgeInsets.only(bottom: 8, left: 20, right: 20),
-      decoration: ShapeDecoration(
-        color: Colors.white,
-        shape: RoundedRectangleBorder(
-          side: const BorderSide(width: 1, color: Color(0xFFEBEBEB)),
-          borderRadius: BorderRadius.circular(12),
+    return GestureDetector(
+      onTap: () {
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (_) => DetailPlanejamento(sanitario: sanitario),
+          ),
+        );
+      },
+      child: Container(
+        width: MediaQuery.of(context).size.width - 40,
+        padding: const EdgeInsets.all(16),
+        margin: const EdgeInsets.only(bottom: 8, left: 20, right: 20),
+        decoration: ShapeDecoration(
+          color: Colors.white,
+          shape: RoundedRectangleBorder(
+            side: const BorderSide(width: 1, color: Color(0xFFEBEBEB)),
+            borderRadius: BorderRadius.circular(12),
+          ),
+          shadows: const [
+            BoxShadow(
+              color: Color(0x0A000000),
+              blurRadius: 24,
+              offset: Offset(0, 0),
+            ),
+          ],
         ),
-        shadows: const [BoxShadow(color: Color(0x0A000000), blurRadius: 24, offset: Offset(0, 0))],
-      ),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Expanded(
-            child: Row(
-              crossAxisAlignment: CrossAxisAlignment.center,
-              children: [
-                _IconBadge(),
-                const SizedBox(width: 16),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        _title,
-                        style: const TextStyle(
-                          color: Color(0xFF313131),
-                          fontSize: 14,
-                          fontFamily: 'Montserrat',
-                          fontWeight: FontWeight.w500,
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Expanded(
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  _IconBadge(),
+                  const SizedBox(width: 16),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          _title,
+                          style: const TextStyle(
+                            color: Color(0xFF313131),
+                            fontSize: 14,
+                            fontFamily: 'Montserrat',
+                            fontWeight: FontWeight.w500,
+                          ),
                         ),
-                      ),
-                      const SizedBox(height: 8),
-                      Text(_lotes, style: _secondaryStyle),
-                      const SizedBox(height: 8),
-                      Text(sanitario.dataPlanejada ?? '-', style: _secondaryStyle),
-                    ],
+                        const SizedBox(height: 8),
+                        Text(_lotes, style: _secondaryStyle),
+                        const SizedBox(height: 8),
+                        Text(
+                          sanitario.dataPlanejada ?? '-',
+                          style: _secondaryStyle,
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(width: 8),
+            PopupMenuButton<_SanitarioAction>(
+              icon: const Icon(Icons.more_vert, color: Color(0xFF8C8C8C)),
+              color: Colors.white,
+              surfaceTintColor: Colors.white,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(8),
+              ),
+              onSelected: (action) {
+                switch (action) {
+                  case _SanitarioAction.edit:
+                    onEdit();
+                    break;
+                  case _SanitarioAction.delete:
+                    onDelete();
+                    break;
+                  case _SanitarioAction.execute:
+                    onExecute();
+                    break;
+                }
+              },
+              itemBuilder: (context) => const [
+                PopupMenuItem(
+                  value: _SanitarioAction.edit,
+                  child: _ActionMenuItem(
+                    icon: Icons.edit_outlined,
+                    label: 'Editar',
+                  ),
+                ),
+                PopupMenuItem(
+                  value: _SanitarioAction.delete,
+                  child: _ActionMenuItem(
+                    icon: Icons.delete_outline,
+                    label: 'Excluir',
+                    color: Colors.red,
+                  ),
+                ),
+                PopupMenuItem(
+                  value: _SanitarioAction.execute,
+                  child: _ActionMenuItem(
+                    icon: Icons.check_circle_outline,
+                    label: 'Executar',
                   ),
                 ),
               ],
             ),
-          ),
-          const SizedBox(width: 8),
-          PopupMenuButton<_SanitarioAction>(
-            icon: const Icon(Icons.more_vert, color: Color(0xFF8C8C8C)),
-            color: Colors.white,
-            surfaceTintColor: Colors.white,
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-            onSelected: (action) {
-              switch (action) {
-                case _SanitarioAction.edit:
-                  onEdit();
-                  break;
-                case _SanitarioAction.delete:
-                  onDelete();
-                  break;
-                case _SanitarioAction.execute:
-                  onExecute();
-                  break;
-              }
-            },
-            itemBuilder: (context) => const [
-              PopupMenuItem(
-                value: _SanitarioAction.edit,
-                child: _ActionMenuItem(icon: Icons.edit_outlined, label: 'Editar'),
-              ),
-              PopupMenuItem(
-                value: _SanitarioAction.delete,
-                child: _ActionMenuItem(
-                  icon: Icons.delete_outline,
-                  label: 'Excluir',
-                  color: Colors.red,
-                ),
-              ),
-              PopupMenuItem(
-                value: _SanitarioAction.execute,
-                child: _ActionMenuItem(icon: Icons.check_circle_outline, label: 'Executar'),
-              ),
-            ],
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
@@ -490,7 +558,9 @@ class _SanitarioCard extends StatelessWidget {
         .map((item) => item.nome.trim())
         .where((item) => item.isNotEmpty)
         .join(', ');
-    return categorias.isEmpty ? sanitario.tipoManejo : '${sanitario.tipoManejo} • $categorias';
+    return categorias.isEmpty
+        ? sanitario.tipoManejo
+        : '${sanitario.tipoManejo} • $categorias';
   }
 
   String get _lotes {
@@ -562,7 +632,11 @@ class _IconBadge extends StatelessWidget {
 }
 
 class _FeedbackState extends StatelessWidget {
-  const _FeedbackState({required this.message, this.actionLabel, this.onAction});
+  const _FeedbackState({
+    required this.message,
+    this.actionLabel,
+    this.onAction,
+  });
 
   final String message;
   final String? actionLabel;

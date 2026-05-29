@@ -1,10 +1,11 @@
+import 'package:br_validators/validators/br_validators.dart';
 import 'package:costeira/app/app_routes.dart';
 import 'package:costeira/core/api/api_exception.dart';
-import 'package:costeira/features/auth/models/register_draft.dart';
-import 'package:costeira/features/auth/repositories/auth_repository.dart';
 import 'package:costeira/core/components/app_buttons.dart';
 import 'package:costeira/core/components/app_form_field.dart';
 import 'package:costeira/core/components/flow_page_scaffold.dart';
+import 'package:costeira/features/auth/models/register_draft.dart';
+import 'package:costeira/features/auth/repositories/auth_repository.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_modular/flutter_modular.dart';
 import 'package:mask_text_input_formatter/mask_text_input_formatter.dart';
@@ -22,23 +23,17 @@ class _RegisterCompanyPageState extends State<RegisterCompanyPage> {
   final _nomeFantasiaController = TextEditingController();
   final _razaoSocialController = TextEditingController();
   final _inscricaoEstadualController = TextEditingController();
+  final _authRepository = AuthRepository();
   final _cnpjMaskFormatter = MaskTextInputFormatter(
     mask: '##.###.###/####-##',
     filter: {'#': RegExp(r'\d')},
   );
-  late final AuthRepository _authRepository;
-  bool _isValidatingCnpj = false;
+  bool _isLookingUpCnpj = false;
   bool _isCnpjApproved = false;
   String? _cnpjMessage;
   bool _cnpjMessageIsError = false;
-  String _lastValidatedCnpj = '';
-  int _cnpjValidationRequestId = 0;
-
-  @override
-  void initState() {
-    super.initState();
-    _authRepository = Modular.get<AuthRepository>();
-  }
+  String _lastLookedUpCnpj = '';
+  int _cnpjLookupRequestId = 0;
 
   @override
   void dispose() {
@@ -84,8 +79,8 @@ class _RegisterCompanyPageState extends State<RegisterCompanyPage> {
         ),
       ),
       footer: PrimaryButton(
-        label: 'Avançar',
-        isLoading: _isValidatingCnpj,
+        label: 'Avancar',
+        isLoading: _isLookingUpCnpj,
         onPressed: _canSubmit ? _submit : null,
       ),
     );
@@ -97,7 +92,7 @@ class _RegisterCompanyPageState extends State<RegisterCompanyPage> {
     }
 
     final draft = RegisterDraft(
-      cnpj: _cnpjController.text.trim(),
+      cnpj: _cleanDocument(_cnpjController.text),
       nomeFantasia: _nomeFantasiaController.text.trim(),
       razaoSocial: _razaoSocialController.text.trim(),
       ie: _inscricaoEstadualController.text.trim(),
@@ -108,18 +103,21 @@ class _RegisterCompanyPageState extends State<RegisterCompanyPage> {
 
   String? _requiredField(String? value) {
     if ((value ?? '').trim().isEmpty) {
-      return 'Campo obrigatório';
+      return 'Campo obrigatorio';
     }
     return null;
   }
 
   String? _validateCnpj(String? value) {
-    final cleanValue = (value ?? '').replaceAll(RegExp(r'\D'), '');
+    final cleanValue = _cleanDocument(value ?? '');
     if (cleanValue.isEmpty) {
-      return 'Campo obrigatório';
+      return 'Campo obrigatorio';
     }
-    if (cleanValue.length != 14) {
-      return 'CNPJ inválido';
+    if (cleanValue.length < 14) {
+      return null;
+    }
+    if (!BRValidators.validateCNPJ(cleanValue)) {
+      return 'CNPJ invalido';
     }
     return null;
   }
@@ -160,7 +158,7 @@ class _RegisterCompanyPageState extends State<RegisterCompanyPage> {
               height: 1.5,
               letterSpacing: 0.1,
             ),
-            suffixIcon: _isValidatingCnpj
+            suffixIcon: _isLookingUpCnpj
                 ? const Padding(
                     padding: EdgeInsets.all(14),
                     child: SizedBox(
@@ -190,57 +188,80 @@ class _RegisterCompanyPageState extends State<RegisterCompanyPage> {
   }
 
   void _handleCnpjChanged(String value) {
-    final cleanValue = value.replaceAll(RegExp(r'\D'), '');
+    final cleanValue = _cleanDocument(value);
 
     if (cleanValue.length < 14) {
       setState(() {
         _isCnpjApproved = false;
-        _isValidatingCnpj = false;
+        _isLookingUpCnpj = false;
         _cnpjMessage = null;
         _cnpjMessageIsError = false;
-        _lastValidatedCnpj = '';
+        _lastLookedUpCnpj = '';
       });
       return;
     }
 
-    if (cleanValue.length == 14 && _lastValidatedCnpj != cleanValue) {
-      _validateCnpjRemotely(value, cleanValue);
+    if (!BRValidators.validateCNPJ(cleanValue)) {
+      setState(() {
+        _isCnpjApproved = false;
+        _isLookingUpCnpj = false;
+        _cnpjMessage = 'CNPJ invalido.';
+        _cnpjMessageIsError = true;
+        _lastLookedUpCnpj = cleanValue;
+      });
+      return;
+    }
+
+    if (_lastLookedUpCnpj != cleanValue) {
+      _lookupCnpjData(cleanValue);
     }
   }
 
-  Future<void> _validateCnpjRemotely(String formattedValue, String cleanValue) async {
-    final requestId = ++_cnpjValidationRequestId;
+  Future<void> _lookupCnpjData(String cleanValue) async {
+    final requestId = ++_cnpjLookupRequestId;
 
     setState(() {
-      _isValidatingCnpj = true;
+      _isLookingUpCnpj = true;
       _isCnpjApproved = false;
       _cnpjMessage = null;
       _cnpjMessageIsError = false;
     });
 
     try {
-      final response = await _authRepository.validateCnpj(formattedValue.trim());
-      if (!mounted || requestId != _cnpjValidationRequestId) {
+      final result = await _authRepository.lookupCnpj(_cnpjController.text.trim());
+      if (!mounted || requestId != _cnpjLookupRequestId) {
         return;
       }
 
+      if (result.nomeFantasia.isNotEmpty) {
+        _nomeFantasiaController.text = result.nomeFantasia;
+      }
+      if (result.razaoSocial.isNotEmpty) {
+        _razaoSocialController.text = result.razaoSocial;
+      }
+      if (result.inscricaoEstadual.isNotEmpty) {
+        _inscricaoEstadualController.text = result.inscricaoEstadual;
+      }
+
       setState(() {
-        _lastValidatedCnpj = cleanValue;
-        _isValidatingCnpj = false;
-        _isCnpjApproved = response.isSuccess;
-        _cnpjMessage = response.isSuccess ? 'CNPJ validado com sucesso.' : 'CNPJ inválido.';
-        _cnpjMessageIsError = !response.isSuccess;
+        _lastLookedUpCnpj = cleanValue;
+        _isLookingUpCnpj = false;
+        _isCnpjApproved = true;
+        _cnpjMessage = result.situacaoCadastral.isEmpty
+            ? 'CNPJ validado com sucesso.'
+            : 'CNPJ ${result.situacaoCadastral}.';
+        _cnpjMessageIsError = false;
       });
-    } on ApiException {
-      if (!mounted || requestId != _cnpjValidationRequestId) {
+    } on ApiException catch (error) {
+      if (!mounted || requestId != _cnpjLookupRequestId) {
         return;
       }
 
       setState(() {
-        _lastValidatedCnpj = cleanValue;
-        _isValidatingCnpj = false;
+        _lastLookedUpCnpj = cleanValue;
+        _isLookingUpCnpj = false;
         _isCnpjApproved = false;
-        _cnpjMessage = 'CNPJ inválido.';
+        _cnpjMessage = error.message;
         _cnpjMessageIsError = true;
       });
     }
@@ -248,9 +269,14 @@ class _RegisterCompanyPageState extends State<RegisterCompanyPage> {
 
   bool get _canSubmit =>
       _validateCnpj(_cnpjController.text) == null &&
+      _cleanDocument(_cnpjController.text).length == 14 &&
       _isCnpjApproved &&
       _requiredField(_nomeFantasiaController.text) == null &&
       _requiredField(_razaoSocialController.text) == null;
+
+  String _cleanDocument(String value) {
+    return value.replaceAll(RegExp(r'\D'), '');
+  }
 }
 
 typedef Cadastro = RegisterCompanyPage;

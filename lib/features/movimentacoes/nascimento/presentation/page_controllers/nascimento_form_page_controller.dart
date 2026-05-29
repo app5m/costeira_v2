@@ -50,6 +50,7 @@ class NascimentoFormPageController extends ChangeNotifier {
   AnimalEntity? _selectedTerneiro;
   int? selectedPotreiroId;
   int? selectedLotId;
+  _NascimentoFormSnapshot? _initialSnapshot;
 
   bool get isEdit => _editingNascimento != null;
   bool get isLoading =>
@@ -118,7 +119,12 @@ class NascimentoFormPageController extends ChangeNotifier {
       selectedPotreiroId != null &&
       selectedLotId != null &&
       dataController.text.trim().isNotEmpty &&
-      (isEdit || (_selectedMatriz != null && _selectedTerneiro != null));
+      (isEdit || (_selectedMatriz != null && _selectedTerneiro != null)) &&
+      hasChanges;
+  bool get hasChanges =>
+      !isEdit ||
+      _initialSnapshot == null ||
+      _currentSnapshot() != _initialSnapshot;
 
   Future<void> init({NascimentoEntity? nascimento}) async {
     _editingNascimento = nascimento;
@@ -128,6 +134,9 @@ class NascimentoFormPageController extends ChangeNotifier {
       dataController.text = nascimento.data;
       pesoController.text = nascimento.pesoTotal?.toStringAsFixed(2) ?? '';
       obsController.text = nascimento.obs ?? '';
+      _initialSnapshot = _currentSnapshot();
+    } else {
+      _initialSnapshot = null;
     }
 
     try {
@@ -288,6 +297,21 @@ class NascimentoFormPageController extends ChangeNotifier {
     return trimmed.isEmpty ? null : trimmed;
   }
 
+  _NascimentoFormSnapshot _currentSnapshot() {
+    return _NascimentoFormSnapshot(
+      selectedPotreiroId: selectedPotreiroId,
+      selectedLotId: selectedLotId,
+      data: dataController.text.trim(),
+      pesoTotal: _normalizePeso(pesoController.text),
+      obs: _normalizeOptionalText(obsController.text),
+    );
+  }
+
+  String? _normalizeOptionalText(String value) {
+    final trimmed = value.trim();
+    return trimmed.isEmpty ? null : trimmed;
+  }
+
   @override
   void dispose() {
     _addController.removeListener(notifyListeners);
@@ -301,4 +325,35 @@ class NascimentoFormPageController extends ChangeNotifier {
     animalFilterController.dispose();
     super.dispose();
   }
+}
+
+class _NascimentoFormSnapshot {
+  const _NascimentoFormSnapshot({
+    required this.selectedPotreiroId,
+    required this.selectedLotId,
+    required this.data,
+    required this.pesoTotal,
+    required this.obs,
+  });
+
+  final int? selectedPotreiroId;
+  final int? selectedLotId;
+  final String data;
+  final String pesoTotal;
+  final String? obs;
+
+  @override
+  bool operator ==(Object other) {
+    return identical(this, other) ||
+        other is _NascimentoFormSnapshot &&
+            other.selectedPotreiroId == selectedPotreiroId &&
+            other.selectedLotId == selectedLotId &&
+            other.data == data &&
+            other.pesoTotal == pesoTotal &&
+            other.obs == obs;
+  }
+
+  @override
+  int get hashCode =>
+      Object.hash(selectedPotreiroId, selectedLotId, data, pesoTotal, obs);
 }

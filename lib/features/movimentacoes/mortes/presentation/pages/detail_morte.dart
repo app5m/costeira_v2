@@ -11,6 +11,9 @@ class DetailMorte extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final causeLabel = _causeLabel;
+    final hasLinkedAnimals = morte.animais.isNotEmpty;
+
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: AppBar(
@@ -29,70 +32,104 @@ class DetailMorte extends StatelessWidget {
           ),
         ),
       ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
-        child: Column(
-          children: [
-            _ReadOnlyField(label: 'Data', value: morte.data),
-            _ReadOnlyField(label: 'Potreiro', value: morte.potreiro?.nome ?? '-'),
-            _ReadOnlyField(
-              label: 'Quantidade',
-              value: morte.qtdAnimais == 1 ? '1 animal' : '${morte.qtdAnimais} animais',
-            ),
-            _ReadOnlyField(
-              label: 'Observações',
-              value: morte.obs?.trim().isNotEmpty == true ? morte.obs!.trim() : '-',
-              maxLines: 3,
-            ),
-            InkWell(
-              borderRadius: BorderRadius.circular(8),
-              onTap: morte.animais.isEmpty
-                  ? null
-                  : () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (_) => MorteAnimaisVinculadosPage(animais: morte.animais),
-                        ),
-                      );
-                    },
-              child: Ink(
-                padding: const EdgeInsets.all(16),
-                decoration: BoxDecoration(
-                  color: const Color(0xFFEBEBEB),
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                child: Row(
-                  children: [
-                    Expanded(
-                      child: Text(
-                        morte.animais.length == 1
-                            ? '1 animal vinculado'
-                            : '${morte.animais.length} animais vinculados',
-                        style: const TextStyle(
-                          color: Color(0xFF313131),
-                          fontSize: 14,
-                          fontFamily: 'Montserrat',
-                          fontWeight: FontWeight.w500,
-                        ),
-                      ),
-                    ),
-                    if (morte.animais.isNotEmpty)
-                      const Icon(Icons.keyboard_arrow_right, color: Color(0xFF8C8C8C)),
-                  ],
-                ),
+      body: SafeArea(
+        top: false,
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+          child: Column(
+            children: [
+              _ReadOnlyField(label: 'Data', value: morte.data),
+              _ReadOnlyField(
+                label: 'Potreiro',
+                value: morte.potreiro?.nome ?? '-',
               ),
-            ),
-            const SizedBox(height: 32),
-          ],
+              if (causeLabel != null)
+                _ReadOnlyField(label: 'Causa da morte', value: causeLabel),
+              _ReadOnlyField(
+                label: 'Quantidade',
+                value: morte.qtdAnimais == 1
+                    ? '1 animal'
+                    : '${morte.qtdAnimais} animais',
+              ),
+              _ReadOnlyField(
+                label: 'Observações',
+                value: morte.obs?.trim().isNotEmpty == true
+                    ? morte.obs!.trim()
+                    : '-',
+                maxLines: 3,
+              ),
+              if (hasLinkedAnimals)
+                InkWell(
+                  borderRadius: BorderRadius.circular(8),
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) =>
+                            MorteAnimaisVinculadosPage(animais: morte.animais),
+                      ),
+                    );
+                  },
+                  child: Ink(
+                    padding: const EdgeInsets.all(16),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFEBEBEB),
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: Row(
+                      children: [
+                        Expanded(
+                          child: Text(
+                            morte.animais.length == 1
+                                ? '1 animal vinculado'
+                                : '${morte.animais.length} animais vinculados',
+                            style: const TextStyle(
+                              color: Color(0xFF313131),
+                              fontSize: 14,
+                              fontFamily: 'Montserrat',
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ),
+                        ),
+                        const Icon(
+                          Icons.keyboard_arrow_right,
+                          color: Color(0xFF8C8C8C),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              const SizedBox(height: 32),
+            ],
+          ),
         ),
       ),
     );
   }
+
+  String? get _causeLabel {
+    final causes = morte.animais
+        .map((animal) => animal.causa?.trim())
+        .where((cause) => cause != null && cause.isNotEmpty)
+        .cast<String>()
+        .toSet()
+        .toList(growable: false);
+    if (causes.isEmpty) {
+      return null;
+    }
+    if (causes.length == 1) {
+      return causes.first;
+    }
+    return causes.join(' / ');
+  }
 }
 
 class _ReadOnlyField extends StatelessWidget {
-  const _ReadOnlyField({required this.label, required this.value, this.maxLines = 1});
+  const _ReadOnlyField({
+    required this.label,
+    required this.value,
+    this.maxLines = 1,
+  });
 
   final String label;
   final String value;
@@ -121,7 +158,10 @@ class _ReadOnlyField extends StatelessWidget {
           decoration: InputDecoration(
             filled: true,
             fillColor: const Color(0xFFEBEBEB),
-            contentPadding: const EdgeInsets.symmetric(horizontal: 15, vertical: 16),
+            contentPadding: const EdgeInsets.symmetric(
+              horizontal: 15,
+              vertical: 16,
+            ),
             border: OutlineInputBorder(
               borderRadius: BorderRadius.circular(8),
               borderSide: BorderSide.none,

@@ -80,6 +80,29 @@ class ListVendasController extends ChangeNotifier {
     }
   }
 
+  Future<VendaEntity?> findById(int vendaId) async {
+    try {
+      final user = await SessionStorage.getUserSession();
+      if (user == null) {
+        throw ApiException('Usuario nao autenticado.');
+      }
+
+      final result = await _getVendasUsecase(
+        MovimentacaoFilterEntity(appUsersId: user.id, id: vendaId),
+      );
+      return result.data.cast<VendaEntity?>().firstWhere(
+        (item) => item?.id == vendaId,
+        orElse: () => null,
+      );
+    } on ApiException catch (error) {
+      _errorMessage = error.message;
+      AppLogger.error(
+        'VENDAS LIST CONTROLLER: ERRO AO BUSCAR VENDA MSG=${error.message}',
+      );
+      rethrow;
+    }
+  }
+
   void removeById(int vendaId) {
     _vendas = _vendas.where((item) => item.id != vendaId).toList();
     _rows = _vendas.length;

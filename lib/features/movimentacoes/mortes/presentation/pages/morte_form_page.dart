@@ -70,11 +70,14 @@ class _MorteFormPageState extends State<MorteFormPage> {
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
       ),
-      builder: (_) => PotreiroSelectionSheet(
-        potreiros: _pageController.potreiros,
-        initialSelectedPotreiroId: _pageController.selectedPotreiroId,
-        isLoading: _pageController.isLoading,
-        errorMessage: _pageController.errorMessage,
+      builder: (_) => SafeArea(
+        top: false,
+        child: PotreiroSelectionSheet(
+          potreiros: _pageController.potreiros,
+          initialSelectedPotreiroId: _pageController.selectedPotreiroId,
+          isLoading: _pageController.isLoading,
+          errorMessage: _pageController.errorMessage,
+        ),
       ),
     );
 
@@ -140,36 +143,41 @@ class _MorteFormPageState extends State<MorteFormPage> {
               ),
             ),
           ),
-          body: SingleChildScrollView(
-            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                PotreiroSelectorField(
-                  label: 'Potreiro',
-                  value: _pageController.selectedPotreiroLabel,
-                  onTap: _openPotreiroSelection,
-                  isLoading: _pageController.isLoading,
-                  errorMessage: _pageController.errorMessage,
-                ),
-                _buildDateField(),
-                _buildAnimalsSummary(),
-                if (_pageController.errorMessage != null) ...[
-                  const SizedBox(height: 8),
-                  Text(
-                    _pageController.errorMessage!,
-                    style: const TextStyle(color: Colors.red, fontSize: 12),
+          body: SafeArea(
+            top: false,
+            child: SingleChildScrollView(
+              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  PotreiroSelectorField(
+                    label: 'Potreiro',
+                    value: _pageController.selectedPotreiroLabel,
+                    onTap: _openPotreiroSelection,
+                    isLoading: _pageController.isLoading,
+                    errorMessage: _pageController.errorMessage,
                   ),
+                  _buildDateField(),
+                  if (!_pageController.isEdit ||
+                      widget.morte?.animais.isNotEmpty == true)
+                    _buildAnimalsSummary(),
+                  if (_pageController.errorMessage != null) ...[
+                    const SizedBox(height: 8),
+                    Text(
+                      _pageController.errorMessage!,
+                      style: const TextStyle(color: Colors.red, fontSize: 12),
+                    ),
+                  ],
+                  const SizedBox(height: 20),
+                  CustomButton(
+                    onPressed: _submit,
+                    text: _pageController.isEdit ? 'Salvar' : 'Adicionar',
+                    enabled: _pageController.isFormValid,
+                    isLoading: _pageController.isLoading,
+                  ),
+                  const SizedBox(height: 80),
                 ],
-                const SizedBox(height: 20),
-                CustomButton(
-                  onPressed: _submit,
-                  text: _pageController.isEdit ? 'Salvar' : 'Adicionar',
-                  enabled: _pageController.isFormValid,
-                  isLoading: _pageController.isLoading,
-                ),
-                const SizedBox(height: 80),
-              ],
+              ),
             ),
           ),
         );
@@ -216,8 +224,10 @@ class _MorteFormPageState extends State<MorteFormPage> {
   }
 
   Widget _buildAnimalsSummary() {
+    final morte = widget.morte;
+    final hasLinkedAnimals = morte?.animais.isNotEmpty == true;
     final count = _pageController.isEdit
-        ? (widget.morte?.animais.length ?? 0)
+        ? (morte?.qtdAnimais ?? morte?.animais.length ?? 0)
         : _pageController.selectedAnimais.length;
 
     return Column(
@@ -236,9 +246,9 @@ class _MorteFormPageState extends State<MorteFormPage> {
         InkWell(
           borderRadius: BorderRadius.circular(8),
           onTap: _pageController.isEdit
-              ? count == 0
-                    ? null
-                    : _openLinkedAnimals
+              ? hasLinkedAnimals
+                    ? _openLinkedAnimals
+                    : null
               : _openAnimals,
           child: Ink(
             padding: const EdgeInsets.all(16),
@@ -263,10 +273,11 @@ class _MorteFormPageState extends State<MorteFormPage> {
                     ),
                   ),
                 ),
-                const Icon(
-                  Icons.keyboard_arrow_right,
-                  color: Color(0xFF8C8C8C),
-                ),
+                if (!_pageController.isEdit || hasLinkedAnimals)
+                  const Icon(
+                    Icons.keyboard_arrow_right,
+                    color: Color(0xFF8C8C8C),
+                  ),
               ],
             ),
           ),

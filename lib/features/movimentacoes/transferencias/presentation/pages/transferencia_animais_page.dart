@@ -33,86 +33,90 @@ class TransferenciaAnimaisPage extends StatelessWidget {
               ),
             ),
           ),
-          body: Column(
-            children: [
-              Padding(
-                padding: const EdgeInsets.fromLTRB(20, 16, 20, 10),
-                child: TextField(
-                  controller: pageController.animalFilterController,
-                  decoration: InputDecoration(
-                    hintText: 'Filtrar por brinco',
-                    prefixIcon: const Icon(Icons.search),
-                    filled: true,
-                    fillColor: const Color(0xFFEBEBEB),
-                    contentPadding: const EdgeInsets.symmetric(
-                      horizontal: 15,
-                      vertical: 14,
-                    ),
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(8),
-                      borderSide: BorderSide.none,
-                    ),
-                  ),
-                ),
-              ),
-              Expanded(
-                child: pageController.isLoading
-                    ? const Center(child: CircularProgressIndicator())
-                    : animais.isEmpty
-                    ? const Center(child: Text('Nenhum animal encontrado.'))
-                    : RefreshIndicator(
-                        onRefresh: pageController.reloadAnimais,
-                        child: ListView.separated(
-                          padding: const EdgeInsets.fromLTRB(20, 8, 20, 16),
-                          itemCount: animais.length,
-                          separatorBuilder: (_, __) =>
-                              const SizedBox(height: 10),
-                          itemBuilder: (context, index) {
-                            final animal = animais[index];
-                            return _AnimalTile(
-                              animal: animal,
-                              isSelected: pageController.isAnimalSelected(
-                                animal.id,
-                              ),
-                              onTap: () => pageController.toggleAnimal(animal),
-                            );
-                          },
-                        ),
+          body: SafeArea(
+            top: false,
+            child: Column(
+              children: [
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(20, 16, 20, 10),
+                  child: TextField(
+                    controller: pageController.animalFilterController,
+                    decoration: InputDecoration(
+                      hintText: 'Filtrar por brinco',
+                      prefixIcon: const Icon(Icons.search),
+                      filled: true,
+                      fillColor: const Color(0xFFEBEBEB),
+                      contentPadding: const EdgeInsets.symmetric(
+                        horizontal: 15,
+                        vertical: 14,
                       ),
-              ),
-              SafeArea(
-                top: false,
-                child: Padding(
-                  padding: const EdgeInsets.fromLTRB(20, 8, 20, 16),
-                  child: SizedBox(
-                    width: double.infinity,
-                    height: 50,
-                    child: ElevatedButton(
-                      onPressed: pageController.selectedAnimais.isEmpty
-                          ? null
-                          : () => Navigator.pop(context),
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: MyColors.colorPrimary,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(8),
-                        ),
-                      ),
-                      child: Text(
-                        pageController.selectedAnimais.length == 1
-                            ? 'Confirmar 1 animal'
-                            : 'Confirmar ${pageController.selectedAnimais.length} animais',
-                        style: const TextStyle(
-                          color: Colors.white,
-                          fontSize: 14,
-                          fontFamily: 'Montserrat',
-                          fontWeight: FontWeight.w600,
-                        ),
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(8),
+                        borderSide: BorderSide.none,
                       ),
                     ),
                   ),
                 ),
-              ),
-            ],
+                Expanded(
+                  child: pageController.isLoading
+                      ? const Center(child: CircularProgressIndicator())
+                      : animais.isEmpty
+                      ? const Center(child: Text('Nenhum animal encontrado.'))
+                      : RefreshIndicator(
+                          onRefresh: pageController.reloadAnimais,
+                          child: ListView.separated(
+                            padding: const EdgeInsets.fromLTRB(20, 8, 20, 16),
+                            itemCount: animais.length,
+                            separatorBuilder: (_, __) =>
+                                const SizedBox(height: 10),
+                            itemBuilder: (context, index) {
+                              final animal = animais[index];
+                              return _AnimalTile(
+                                animal: animal,
+                                isSelected: pageController.isAnimalSelected(
+                                  animal.id,
+                                ),
+                                onTap: () =>
+                                    pageController.toggleAnimal(animal),
+                              );
+                            },
+                          ),
+                        ),
+                ),
+                SafeArea(
+                  top: false,
+                  child: Padding(
+                    padding: const EdgeInsets.fromLTRB(20, 8, 20, 16),
+                    child: SizedBox(
+                      width: double.infinity,
+                      height: 50,
+                      child: ElevatedButton(
+                        onPressed: pageController.selectedAnimais.isEmpty
+                            ? null
+                            : () => Navigator.pop(context),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: MyColors.colorPrimary,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                        ),
+                        child: Text(
+                          pageController.selectedAnimais.length == 1
+                              ? 'Confirmar 1 animal'
+                              : 'Confirmar ${pageController.selectedAnimais.length} animais',
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontSize: 14,
+                            fontFamily: 'Montserrat',
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
           ),
         );
       },

@@ -87,89 +87,92 @@ class _AddCompraInsumoState extends State<AddCompraInsumo> {
               ),
             ),
           ),
-          body: SingleChildScrollView(
-            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                if (_controller.isLoading && _controller.insumos.isEmpty)
-                  const Padding(
-                    padding: EdgeInsets.only(top: 80),
-                    child: Center(child: CircularProgressIndicator()),
-                  )
-                else ...[
-                  _buildInsumoSelect(),
-                  _buildReadOnlyField(
-                    label: 'Unidade de medida',
-                    value: _controller.selectedUnidadeLabel,
-                  ),
-                  _buildTextField(
-                    controller: _controller.qtdController,
-                    label: 'Quantidade',
-                    hint: 'Ex: 25',
-                    keyboardType: const TextInputType.numberWithOptions(
-                      decimal: true,
+          body: SafeArea(
+            top: false,
+            child: SingleChildScrollView(
+              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  if (_controller.isLoading && _controller.insumos.isEmpty)
+                    const Padding(
+                      padding: EdgeInsets.only(top: 80),
+                      child: Center(child: CircularProgressIndicator()),
+                    )
+                  else ...[
+                    _buildInsumoSelect(),
+                    _buildReadOnlyField(
+                      label: 'Unidade de medida',
+                      value: _controller.selectedUnidadeLabel,
                     ),
-                    inputFormatters: [
-                      FilteringTextInputFormatter.allow(RegExp(r'[0-9,.]')),
-                    ],
-                  ),
-                  _buildTextField(
-                    controller: _controller.obsController,
-                    label: 'Observações',
-                    hint: _isCompra
-                        ? 'Compra realizada'
-                        : 'Utilização no campo',
-                    maxLines: 3,
-                  ),
-                  if (_controller.errorMessage != null) ...[
-                    const SizedBox(height: 8),
-                    Text(
-                      _controller.errorMessage!,
-                      style: const TextStyle(color: Colors.red, fontSize: 12),
-                    ),
-                  ],
-                  const SizedBox(height: 16),
-                  SizedBox(
-                    width: double.infinity,
-                    height: 50,
-                    child: ElevatedButton(
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: MyColors.colorPrimary,
-                        disabledBackgroundColor: const Color(0xFFBDBDBD),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(8),
-                        ),
+                    _buildTextField(
+                      controller: _controller.qtdController,
+                      label: 'Quantidade',
+                      hint: 'Ex: 25',
+                      keyboardType: const TextInputType.numberWithOptions(
+                        decimal: true,
                       ),
-                      onPressed:
-                          _controller.isLoading || !_controller.isFormValid
-                          ? null
-                          : _submit,
-                      child: _controller.isLoading
-                          ? const SizedBox(
-                              width: 20,
-                              height: 20,
-                              child: CircularProgressIndicator(
-                                strokeWidth: 2,
-                                color: Colors.white,
-                              ),
-                            )
-                          : const Text(
-                              'Adicionar',
-                              textAlign: TextAlign.center,
-                              style: TextStyle(
-                                color: Colors.white,
-                                fontSize: 14,
-                                fontFamily: 'Montserrat',
-                                fontWeight: FontWeight.w600,
-                                height: 1.29,
-                              ),
-                            ),
+                      inputFormatters: [
+                        FilteringTextInputFormatter.allow(RegExp(r'[0-9,.]')),
+                      ],
                     ),
-                  ),
-                  const SizedBox(height: 32),
+                    _buildTextField(
+                      controller: _controller.obsController,
+                      label: 'Observações',
+                      hint: _isCompra
+                          ? 'Compra realizada'
+                          : 'Utilização no campo',
+                      maxLines: 3,
+                    ),
+                    if (_controller.errorMessage != null) ...[
+                      const SizedBox(height: 8),
+                      Text(
+                        _controller.errorMessage!,
+                        style: const TextStyle(color: Colors.red, fontSize: 12),
+                      ),
+                    ],
+                    const SizedBox(height: 16),
+                    SizedBox(
+                      width: double.infinity,
+                      height: 50,
+                      child: ElevatedButton(
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: MyColors.colorPrimary,
+                          disabledBackgroundColor: const Color(0xFFBDBDBD),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                        ),
+                        onPressed:
+                            _controller.isLoading || !_controller.isFormValid
+                            ? null
+                            : _submit,
+                        child: _controller.isLoading
+                            ? const SizedBox(
+                                width: 20,
+                                height: 20,
+                                child: CircularProgressIndicator(
+                                  strokeWidth: 2,
+                                  color: Colors.white,
+                                ),
+                              )
+                            : const Text(
+                                'Adicionar',
+                                textAlign: TextAlign.center,
+                                style: TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 14,
+                                  fontFamily: 'Montserrat',
+                                  fontWeight: FontWeight.w600,
+                                  height: 1.29,
+                                ),
+                              ),
+                      ),
+                    ),
+                    const SizedBox(height: 32),
+                  ],
                 ],
-              ],
+              ),
             ),
           ),
         );

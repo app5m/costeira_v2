@@ -70,21 +70,23 @@ class _OnboardingPageState extends State<OnboardingPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.white,
-      body: Stack(
-        children: [
-          PageView.builder(
-            controller: _pageController,
-            itemCount: onboardingPages.length,
-            onPageChanged: (value) {
-              setState(() {
-                _currentPage = value;
-              });
-            },
-            itemBuilder: (context, index) {
-              return _OnboardingStep(data: onboardingPages[index], onNext: _onNext);
-            },
-          ),
-        ],
+      body: SafeArea(
+        child: Stack(
+          children: [
+            PageView.builder(
+              controller: _pageController,
+              itemCount: onboardingPages.length,
+              onPageChanged: (value) {
+                setState(() {
+                  _currentPage = value;
+                });
+              },
+              itemBuilder: (context, index) {
+                return _OnboardingStep(data: onboardingPages[index], onNext: _onNext);
+              },
+            ),
+          ],
+        ),
       ),
     );
   }

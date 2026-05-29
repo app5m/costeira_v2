@@ -1,9 +1,10 @@
 import 'package:costeira/features/sanitarios/domain/entities/sanitario.dart';
+import 'package:costeira/features/sanitarios/presentation/pages/detail_execucoes.dart';
 import 'package:costeira/theme/colors.dart';
 import 'package:flutter/material.dart';
 
-class DetailExecucao extends StatelessWidget {
-  const DetailExecucao({super.key, required this.sanitario});
+class DetailPlanejamento extends StatelessWidget {
+  const DetailPlanejamento({super.key, required this.sanitario});
 
   final SanitarioEntity sanitario;
 
@@ -18,7 +19,7 @@ class DetailExecucao extends StatelessWidget {
           child: const Icon(Icons.arrow_back_ios, color: Colors.white),
         ),
         title: const Text(
-          'Execuções',
+          'Detalhes do planejamento',
           style: TextStyle(
             color: Colors.white,
             fontSize: 16,
@@ -43,16 +44,8 @@ class DetailExecucao extends StatelessWidget {
                   value: sanitario.tipoCarrapaticida!,
                 ),
               ReadOnlyDetailField(
-                label: 'Produto utilizado',
-                value: _join(sanitario.insumos.map((item) => item.nome)),
-              ),
-              ReadOnlyDetailField(
                 label: 'Data planejada',
                 value: _emptyToDash(sanitario.dataPlanejada),
-              ),
-              ReadOnlyDetailField(
-                label: 'Data realizada',
-                value: _emptyToDash(sanitario.dataExecucao),
               ),
               ReadOnlyDetailField(
                 label: 'Categoria',
@@ -71,60 +64,6 @@ class DetailExecucao extends StatelessWidget {
             ],
           ),
         ),
-      ),
-    );
-  }
-}
-
-class ReadOnlyDetailField extends StatelessWidget {
-  const ReadOnlyDetailField({
-    super.key,
-    required this.label,
-    required this.value,
-    this.minHeight,
-  });
-
-  final String label;
-  final String value;
-  final double? minHeight;
-
-  @override
-  Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 18),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            label,
-            style: const TextStyle(
-              color: Color(0xFF313131),
-              fontSize: 14,
-              fontFamily: 'Montserrat',
-              fontWeight: FontWeight.w400,
-            ),
-          ),
-          const SizedBox(height: 6),
-          Container(
-            width: double.infinity,
-            constraints: BoxConstraints(minHeight: minHeight ?? 0),
-            padding: const EdgeInsets.symmetric(horizontal: 15, vertical: 16),
-            decoration: BoxDecoration(
-              color: const Color(0xFFEBEBEB),
-              borderRadius: BorderRadius.circular(8),
-            ),
-            child: Text(
-              value,
-              style: const TextStyle(
-                color: Color(0xFF313131),
-                fontSize: 14,
-                fontFamily: 'Montserrat',
-                fontWeight: FontWeight.w400,
-                height: 1.50,
-              ),
-            ),
-          ),
-        ],
       ),
     );
   }

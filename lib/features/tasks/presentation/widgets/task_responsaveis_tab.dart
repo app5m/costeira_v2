@@ -295,67 +295,70 @@ class _TaskResponsaveisTabState extends State<TaskResponsaveisTab> {
             borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
           ),
           builder: (context) {
-            return Padding(
-              padding: const EdgeInsets.fromLTRB(20, 16, 20, 24),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Container(
-                    width: 72,
-                    height: 2,
-                    color: const Color(0xFFE2E2E2),
-                  ),
-                  const SizedBox(height: 20),
-                  SvgPicture.asset(
-                    'icon/danger-linear.svg',
-                    width: 80,
-                    height: 80,
-                    colorFilter: const ColorFilter.mode(
-                      Colors.red,
-                      BlendMode.srcIn,
+            return SafeArea(
+              top: false,
+              child: Padding(
+                padding: const EdgeInsets.fromLTRB(20, 16, 20, 24),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Container(
+                      width: 72,
+                      height: 2,
+                      color: const Color(0xFFE2E2E2),
                     ),
-                  ),
-                  const SizedBox(height: 16),
-                  const Text(
-                    'Excluir responsavel',
-                    style: TextStyle(
-                      fontFamily: 'Montserrat',
-                      fontWeight: FontWeight.w600,
-                      fontSize: 16,
-                    ),
-                  ),
-                  const SizedBox(height: 8),
-                  const Text(
-                    'Tem certeza que deseja excluir esse\nresponsavel permanentemente?',
-                    textAlign: TextAlign.center,
-                    style: TextStyle(
-                      fontFamily: 'Montserrat',
-                      fontWeight: FontWeight.w400,
-                      fontSize: 14,
-                      color: Color(0xFF8692A8),
-                    ),
-                  ),
-                  const SizedBox(height: 16),
-                  CustomButton(
-                    onPressed: () => Navigator.of(context).pop(true),
-                    text: 'Excluir',
-                    backgroundColor: Colors.white,
-                    textColor: Colors.red,
-                    borderColor: Colors.red,
-                  ),
-                  TextButton(
-                    onPressed: () => Navigator.of(context).pop(false),
-                    child: const Text(
-                      'Cancelar',
-                      style: TextStyle(
-                        fontSize: 16,
-                        color: MyColors.colorOnPrimary,
-                        decoration: TextDecoration.underline,
-                        decorationColor: MyColors.colorOnPrimary,
+                    const SizedBox(height: 20),
+                    SvgPicture.asset(
+                      'icon/danger-linear.svg',
+                      width: 80,
+                      height: 80,
+                      colorFilter: const ColorFilter.mode(
+                        Colors.red,
+                        BlendMode.srcIn,
                       ),
                     ),
-                  ),
-                ],
+                    const SizedBox(height: 16),
+                    const Text(
+                      'Excluir responsavel',
+                      style: TextStyle(
+                        fontFamily: 'Montserrat',
+                        fontWeight: FontWeight.w600,
+                        fontSize: 16,
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    const Text(
+                      'Tem certeza que deseja excluir esse\nresponsavel permanentemente?',
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                        fontFamily: 'Montserrat',
+                        fontWeight: FontWeight.w400,
+                        fontSize: 14,
+                        color: Color(0xFF8692A8),
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                    CustomButton(
+                      onPressed: () => Navigator.of(context).pop(true),
+                      text: 'Excluir',
+                      backgroundColor: Colors.white,
+                      textColor: Colors.red,
+                      borderColor: Colors.red,
+                    ),
+                    TextButton(
+                      onPressed: () => Navigator.of(context).pop(false),
+                      child: const Text(
+                        'Cancelar',
+                        style: TextStyle(
+                          fontSize: 16,
+                          color: MyColors.colorOnPrimary,
+                          decoration: TextDecoration.underline,
+                          decorationColor: MyColors.colorOnPrimary,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
               ),
             );
           },

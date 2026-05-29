@@ -60,117 +60,121 @@ class _AddExecucaoSanitarioState extends State<AddExecucaoSanitario> {
           ),
         ),
       ),
-      body: _controller.isLoading && _controller.insumos.isEmpty
-          ? const Center(child: CircularProgressIndicator())
-          : SingleChildScrollView(
-              padding: const EdgeInsets.fromLTRB(20, 16, 20, 32),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  _Header(sanitario: widget.sanitario),
-                  const SizedBox(height: 18),
-                  _DateField(
-                    value: _dataExecucao == null
-                        ? '00/00/0000'
-                        : _formatDate(_dataExecucao!),
-                    onTap: _selectDate,
-                  ),
-                  _DropdownField<int>(
-                    label: 'Insumo utilizado',
-                    value: _controller.selectedInsumoId,
-                    placeholder: _controller.insumos.isEmpty
-                        ? 'Nenhum medicamento encontrado'
-                        : 'Selecione',
-                    options: _controller.insumos
-                        .map(
-                          (item) => AppSelectOption<int>(
-                            value: item.id,
-                            label: _controller.insumoLabel(item),
+      body: SafeArea(
+        top: false,
+        child: _controller.isLoading && _controller.insumos.isEmpty
+            ? const Center(child: CircularProgressIndicator())
+            : SingleChildScrollView(
+                padding: const EdgeInsets.fromLTRB(20, 16, 20, 32),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    _Header(sanitario: widget.sanitario),
+                    const SizedBox(height: 18),
+                    _DateField(
+                      value: _dataExecucao == null
+                          ? '00/00/0000'
+                          : _formatDate(_dataExecucao!),
+                      onTap: _selectDate,
+                    ),
+                    _DropdownField<int>(
+                      label: 'Insumo utilizado',
+                      value: _controller.selectedInsumoId,
+                      placeholder: _controller.insumos.isEmpty
+                          ? 'Nenhum medicamento encontrado'
+                          : 'Selecione',
+                      options: _controller.insumos
+                          .map(
+                            (item) => AppSelectOption<int>(
+                              value: item.id,
+                              label: _controller.insumoLabel(item),
+                            ),
+                          )
+                          .toList(growable: false),
+                      onChanged: _controller.onInsumoChanged,
+                    ),
+                    _QuantityField(
+                      controller: _controller.quantidadeController,
+                      unidade: _controller.unidadeSelecionada,
+                      enabled: _controller.selectedInsumoId != null,
+                      maxLabel: _controller.selectedInsumoId == null
+                          ? null
+                          : _controller.quantidadeMaximaLabel,
+                      onMinus: _controller.decrementQuantidade,
+                      onPlus: _controller.incrementQuantidade,
+                    ),
+                    SizedBox(
+                      height: 46,
+                      child: OutlinedButton.icon(
+                        onPressed: _controller.canAddItem ? _addItem : null,
+                        icon: const Icon(Icons.add),
+                        label: const Text('Adicionar insumo'),
+                        style: OutlinedButton.styleFrom(
+                          foregroundColor: MyColors.colorPrimary,
+                          side: BorderSide(color: MyColors.colorPrimary),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(8),
                           ),
-                        )
-                        .toList(growable: false),
-                    onChanged: _controller.onInsumoChanged,
-                  ),
-                  _QuantityField(
-                    controller: _controller.quantidadeController,
-                    unidade: _controller.unidadeSelecionada,
-                    enabled: _controller.selectedInsumoId != null,
-                    maxLabel: _controller.selectedInsumoId == null
-                        ? null
-                        : _controller.quantidadeMaximaLabel,
-                    onMinus: _controller.decrementQuantidade,
-                    onPlus: _controller.incrementQuantidade,
-                  ),
-                  SizedBox(
-                    height: 46,
-                    child: OutlinedButton.icon(
-                      onPressed: _controller.canAddItem ? _addItem : null,
-                      icon: const Icon(Icons.add),
-                      label: const Text('Adicionar insumo'),
-                      style: OutlinedButton.styleFrom(
-                        foregroundColor: MyColors.colorPrimary,
-                        side: BorderSide(color: MyColors.colorPrimary),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(8),
                         ),
                       ),
                     ),
-                  ),
-                  if (_controller.errorMessage != null) ...[
+                    if (_controller.errorMessage != null) ...[
+                      const SizedBox(height: 10),
+                      Text(
+                        _controller.errorMessage!,
+                        style: const TextStyle(color: Colors.red, fontSize: 12),
+                      ),
+                    ],
+                    const SizedBox(height: 20),
+                    const _SectionTitle('Insumos da execução'),
                     const SizedBox(height: 10),
-                    Text(
-                      _controller.errorMessage!,
-                      style: const TextStyle(color: Colors.red, fontSize: 12),
+                    if (_controller.itens.isEmpty)
+                      const _EmptyCart()
+                    else
+                      ..._controller.itens.map(
+                        (item) => _CartItem(
+                          name: item.insumo.nome,
+                          quantity: _controller.itemQuantityLabel(item),
+                          onRemove: () =>
+                              _controller.removeItem(item.insumo.id),
+                        ),
+                      ),
+                    const SizedBox(height: 20),
+                    SizedBox(
+                      height: 50,
+                      child: ElevatedButton(
+                        onPressed: _controller.canSubmit ? _submit : null,
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: MyColors.colorPrimary,
+                          disabledBackgroundColor: const Color(0xFFBDBDBD),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                        ),
+                        child: _controller.isLoading
+                            ? const SizedBox(
+                                width: 20,
+                                height: 20,
+                                child: CircularProgressIndicator(
+                                  strokeWidth: 2,
+                                  color: Colors.white,
+                                ),
+                              )
+                            : const Text(
+                                'Executar',
+                                style: TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 14,
+                                  fontFamily: 'Montserrat',
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                      ),
                     ),
                   ],
-                  const SizedBox(height: 20),
-                  const _SectionTitle('Insumos da execução'),
-                  const SizedBox(height: 10),
-                  if (_controller.itens.isEmpty)
-                    const _EmptyCart()
-                  else
-                    ..._controller.itens.map(
-                      (item) => _CartItem(
-                        name: item.insumo.nome,
-                        quantity: _controller.itemQuantityLabel(item),
-                        onRemove: () => _controller.removeItem(item.insumo.id),
-                      ),
-                    ),
-                  const SizedBox(height: 20),
-                  SizedBox(
-                    height: 50,
-                    child: ElevatedButton(
-                      onPressed: _controller.canSubmit ? _submit : null,
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: MyColors.colorPrimary,
-                        disabledBackgroundColor: const Color(0xFFBDBDBD),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(8),
-                        ),
-                      ),
-                      child: _controller.isLoading
-                          ? const SizedBox(
-                              width: 20,
-                              height: 20,
-                              child: CircularProgressIndicator(
-                                strokeWidth: 2,
-                                color: Colors.white,
-                              ),
-                            )
-                          : const Text(
-                              'Executar',
-                              style: TextStyle(
-                                color: Colors.white,
-                                fontSize: 14,
-                                fontFamily: 'Montserrat',
-                                fontWeight: FontWeight.w600,
-                              ),
-                            ),
-                    ),
-                  ),
-                ],
+                ),
               ),
-            ),
+      ),
     );
   }
 

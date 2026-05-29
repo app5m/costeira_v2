@@ -2,6 +2,7 @@ import 'package:costeira/core/api/api_exception.dart';
 import 'package:costeira/core/components/app_snack.dart';
 import 'package:costeira/features/movimentacoes/domain/entities/abigeato_charts_entity.dart';
 import 'package:costeira/features/movimentacoes/abigeatos/presentation/controllers/get_abigeato_charts_controller.dart';
+import 'package:costeira/features/movimentacoes/presentation/widgets/monthly_bar_chart_card.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_modular/flutter_modular.dart';
 
@@ -13,8 +14,7 @@ class GraficosAbigeato extends StatefulWidget {
 }
 
 class _GraficosAbigeatoState extends State<GraficosAbigeato> {
-  final GetAbigeatoChartsController _controller =
-      Modular.get<GetAbigeatoChartsController>();
+  final GetAbigeatoChartsController _controller = Modular.get<GetAbigeatoChartsController>();
 
   @override
   void initState() {
@@ -100,7 +100,15 @@ class _GraficosAbigeatoState extends State<GraficosAbigeato> {
             const SizedBox(height: 16),
             _TotalCard(value: data.quantidadeAbigeatos),
             const SizedBox(height: 16),
-            _MonthlyCard(points: data.mesAMes),
+            MonthlyBarChartCard(
+              title: 'Abigeatos por mês',
+              points: data.mesAMes
+                  .map(
+                    (point) =>
+                        MonthlyBarChartPoint(month: point.month, value: point.quantity.toDouble()),
+                  )
+                  .toList(),
+            ),
           ],
         ),
       ),
@@ -209,108 +217,8 @@ class _TotalCard extends StatelessWidget {
   }
 }
 
-class _MonthlyCard extends StatelessWidget {
-  const _MonthlyCard({required this.points});
-
-  final List<AbigeatoMonthlyEntity> points;
-
-  @override
-  Widget build(BuildContext context) {
-    final maxValue = points
-        .map((item) => item.quantity)
-        .fold<int>(0, (max, value) => value > max ? value : max);
-
-    return _BaseCard(
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          const Text(
-            'Abigeatos por mes',
-            style: TextStyle(
-              color: Color(0xFF313131),
-              fontSize: 16,
-              fontFamily: 'Montserrat',
-              fontWeight: FontWeight.w600,
-            ),
-          ),
-          const SizedBox(height: 16),
-          if (points.isEmpty)
-            const Padding(
-              padding: EdgeInsets.symmetric(vertical: 80),
-              child: Center(child: Text('Sem dados para o periodo.')),
-            )
-          else
-            for (final point in points) ...[
-              _MonthBar(point: point, maxValue: maxValue),
-              const SizedBox(height: 12),
-            ],
-        ],
-      ),
-    );
-  }
-}
-
-class _MonthBar extends StatelessWidget {
-  const _MonthBar({required this.point, required this.maxValue});
-
-  final AbigeatoMonthlyEntity point;
-  final int maxValue;
-
-  @override
-  Widget build(BuildContext context) {
-    final factor = maxValue <= 0 ? 0.0 : point.quantity / maxValue;
-    return Row(
-      children: [
-        SizedBox(
-          width: 44,
-          child: Text(
-            _monthShortName(point.month),
-            style: const TextStyle(
-              color: Color(0xFF8C8C8C),
-              fontSize: 12,
-              fontFamily: 'Montserrat',
-            ),
-          ),
-        ),
-        Expanded(
-          child: ClipRRect(
-            borderRadius: BorderRadius.circular(999),
-            child: LinearProgressIndicator(
-              value: factor,
-              minHeight: 12,
-              backgroundColor: const Color(0xFFECECEC),
-              color: const Color(0xFF008B42),
-            ),
-          ),
-        ),
-        const SizedBox(width: 12),
-        SizedBox(
-          width: 32,
-          child: Text(
-            point.quantity.toString(),
-            textAlign: TextAlign.right,
-            style: const TextStyle(
-              color: Color(0xFF313131),
-              fontSize: 12,
-              fontFamily: 'Montserrat',
-              fontWeight: FontWeight.w600,
-            ),
-          ),
-        ),
-      ],
-    );
-  }
-}
-
 String _formatMonth(DateTime date) {
   return '${_monthNames[date.month - 1]} ${date.year}';
-}
-
-String _monthShortName(int month) {
-  if (month < 1 || month > 12) {
-    return '-';
-  }
-  return _shortMonthNames[month - 1];
 }
 
 const _monthNames = [
@@ -326,19 +234,4 @@ const _monthNames = [
   'Outubro',
   'Novembro',
   'Dezembro',
-];
-
-const _shortMonthNames = [
-  'Jan',
-  'Fev',
-  'Mar',
-  'Abr',
-  'Mai',
-  'Jun',
-  'Jul',
-  'Ago',
-  'Set',
-  'Out',
-  'Nov',
-  'Dez',
 ];

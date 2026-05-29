@@ -27,50 +27,53 @@ class TrocaCategoriaAnimaisVinculadosPage extends StatelessWidget {
           ),
         ),
       ),
-      body: animais.isEmpty
-          ? const Center(child: Text('Nenhum animal vinculado.'))
-          : ListView.separated(
-              padding: const EdgeInsets.all(20),
-              itemCount: animais.length,
-              separatorBuilder: (_, __) => const SizedBox(height: 10),
-              itemBuilder: (context, index) {
-                final animal = animais[index];
-                return Container(
-                  padding: const EdgeInsets.all(14),
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    border: Border.all(color: const Color(0xFFEBEBEB)),
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        animal.brinco?.trim().isNotEmpty == true
-                            ? animal.brinco!.trim()
-                            : 'Sem brinco',
-                        style: const TextStyle(
-                          color: Color(0xFF313131),
-                          fontSize: 15,
-                          fontFamily: 'Montserrat',
-                          fontWeight: FontWeight.w600,
+      body: SafeArea(
+        top: false,
+        child: animais.isEmpty
+            ? const Center(child: Text('Nenhum animal vinculado.'))
+            : ListView.separated(
+                padding: const EdgeInsets.all(20),
+                itemCount: animais.length,
+                separatorBuilder: (_, __) => const SizedBox(height: 10),
+                itemBuilder: (context, index) {
+                  final animal = animais[index];
+                  return Container(
+                    padding: const EdgeInsets.all(14),
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      border: Border.all(color: const Color(0xFFEBEBEB)),
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          animal.brinco?.trim().isNotEmpty == true
+                              ? animal.brinco!.trim()
+                              : 'Sem brinco',
+                          style: const TextStyle(
+                            color: Color(0xFF313131),
+                            fontSize: 15,
+                            fontFamily: 'Montserrat',
+                            fontWeight: FontWeight.w600,
+                          ),
                         ),
-                      ),
-                      const SizedBox(height: 6),
-                      Text(
-                        _subtitle(animal),
-                        style: const TextStyle(
-                          color: Color(0xFF8C8C8C),
-                          fontSize: 12,
-                          fontFamily: 'Montserrat',
-                          fontWeight: FontWeight.w500,
+                        const SizedBox(height: 6),
+                        Text(
+                          _subtitle(animal),
+                          style: const TextStyle(
+                            color: Color(0xFF8C8C8C),
+                            fontSize: 12,
+                            fontFamily: 'Montserrat',
+                            fontWeight: FontWeight.w500,
+                          ),
                         ),
-                      ),
-                    ],
-                  ),
-                );
-              },
-            ),
+                      ],
+                    ),
+                  );
+                },
+              ),
+      ),
     );
   }
 

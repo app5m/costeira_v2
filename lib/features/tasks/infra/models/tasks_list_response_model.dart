@@ -14,19 +14,20 @@ class TasksListResponseModel extends TasksListEntity {
         ? Map<String, dynamic>.from(json['data'] as Map)
         : <String, dynamic>{};
     final rawTasks = data['lista'];
-    final rawResponsaveis = data['responsaveis'];
+    final rawResponsaveis = _firstPresentList(data, const [
+      'responsaveis',
+      'responsáveis',
+      'responsÃ¡veis',
+    ]);
 
-    final responsaveis = rawResponsaveis is List
-        ? rawResponsaveis
-              .whereType<Map>()
-              .map(
-                (item) => TaskResponsavelModel.fromJson(
-                  Map<String, dynamic>.from(item),
-                ),
-              )
-              .where((item) => item.nome.trim().isNotEmpty)
-              .toList(growable: false)
-        : <TaskResponsavelModel>[];
+    final responsaveis = rawResponsaveis
+        .whereType<Map>()
+        .map(
+          (item) =>
+              TaskResponsavelModel.fromJson(Map<String, dynamic>.from(item)),
+        )
+        .where((item) => item.nome.trim().isNotEmpty)
+        .toList(growable: false);
 
     final tasks = rawTasks is List
         ? rawTasks
@@ -44,4 +45,15 @@ class TasksListResponseModel extends TasksListEntity {
       responsaveis: responsaveis,
     );
   }
+}
+
+List<dynamic> _firstPresentList(Map<String, dynamic> data, List<String> keys) {
+  for (final key in keys) {
+    final value = data[key];
+    if (value is List) {
+      return value;
+    }
+  }
+
+  return const [];
 }

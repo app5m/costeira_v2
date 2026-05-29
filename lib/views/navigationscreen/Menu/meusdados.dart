@@ -114,40 +114,42 @@ class _MeusDadosState extends State<MeusDados>
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: PrimarySectionAppBar(context: context, title: 'Meus dados'),
-      body: Column(
-        children: [
-          if (_loadError != null && !_isLoading)
-            _ProfileErrorBanner(message: _loadError!, onRetry: _loadProfile),
-          TabBar(
-            controller: _tabController,
-            tabs: const [
-              Tab(text: 'Meus dados'),
-              Tab(text: 'Fazenda'),
-            ],
-            indicatorColor: MyColors.colorPrimary2,
-            labelColor: Colors.black,
-            unselectedLabelColor: Colors.grey,
-            labelStyle: const TextStyle(
-              fontSize: 12,
-              fontWeight: FontWeight.w600,
+      body: SafeArea(
+        child: Column(
+          children: [
+            if (_loadError != null && !_isLoading)
+              _ProfileErrorBanner(message: _loadError!, onRetry: _loadProfile),
+            TabBar(
+              controller: _tabController,
+              tabs: const [
+                Tab(text: 'Meus dados'),
+                Tab(text: 'Fazenda'),
+              ],
+              indicatorColor: MyColors.colorPrimary2,
+              labelColor: Colors.black,
+              unselectedLabelColor: Colors.grey,
+              labelStyle: const TextStyle(
+                fontSize: 12,
+                fontWeight: FontWeight.w600,
+              ),
             ),
-          ),
-          Expanded(
-            child: _isLoading
-                ? const Center(child: CircularProgressIndicator())
-                : TabBarView(
-                    controller: _tabController,
-                    children: [
-                      _ResponsibleDataTab(
-                        session: _user,
-                        profile: _profile,
-                        onReloadProfile: _loadProfile,
-                      ),
-                      _FarmDataTab(profile: _profile),
-                    ],
-                  ),
-          ),
-        ],
+            Expanded(
+              child: _isLoading
+                  ? const Center(child: CircularProgressIndicator())
+                  : TabBarView(
+                      controller: _tabController,
+                      children: [
+                        _ResponsibleDataTab(
+                          session: _user,
+                          profile: _profile,
+                          onReloadProfile: _loadProfile,
+                        ),
+                        _FarmDataTab(profile: _profile),
+                      ],
+                    ),
+            ),
+          ],
+        ),
       ),
     );
   }

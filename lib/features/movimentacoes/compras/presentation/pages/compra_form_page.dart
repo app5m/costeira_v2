@@ -76,11 +76,14 @@ class _CompraFormPageState extends State<CompraFormPage> {
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
       ),
-      builder: (_) => PotreiroSelectionSheet(
-        potreiros: _pageController.potreiros,
-        initialSelectedPotreiroId: _pageController.selectedPotreiroId,
-        isLoading: _pageController.isLoading,
-        errorMessage: _pageController.errorMessage,
+      builder: (_) => SafeArea(
+        top: false,
+        child: PotreiroSelectionSheet(
+          potreiros: _pageController.potreiros,
+          initialSelectedPotreiroId: _pageController.selectedPotreiroId,
+          isLoading: _pageController.isLoading,
+          errorMessage: _pageController.errorMessage,
+        ),
       ),
     );
 
@@ -111,11 +114,14 @@ class _CompraFormPageState extends State<CompraFormPage> {
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
       ),
-      builder: (_) => AnimalLotSelectionSheet(
-        lots: _pageController.lots,
-        initialSelectedLotId: _pageController.selectedLotId,
-        isLoading: _pageController.isLoading,
-        errorMessage: _pageController.errorMessage,
+      builder: (_) => SafeArea(
+        top: false,
+        child: AnimalLotSelectionSheet(
+          lots: _pageController.lots,
+          initialSelectedLotId: _pageController.selectedLotId,
+          isLoading: _pageController.isLoading,
+          errorMessage: _pageController.errorMessage,
+        ),
       ),
     );
 
@@ -191,75 +197,78 @@ class _CompraFormPageState extends State<CompraFormPage> {
               ),
             ),
           ),
-          body: SingleChildScrollView(
-            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                PotreiroSelectorField(
-                  label: 'Potreiro',
-                  value: _pageController.selectedPotreiroLabel,
-                  onTap: _openPotreiroSelection,
-                  isLoading: _pageController.isLoading,
-                  errorMessage: _pageController.errorMessage,
-                ),
-                AnimalLotSelectorField(
-                  label: 'Lote',
-                  value: _pageController.selectedLotLabel,
-                  onTap: _openLotSelection,
-                  isLoading: _pageController.isLoading,
-                  errorMessage: _pageController.errorMessage,
-                ),
-                _buildTextField(
-                  controller: _pageController.dataController,
-                  label: 'Data da compra',
-                  hint: '00/00/0000',
-                  readOnly: true,
-                  onTap: _selectDate,
-                ),
-                _buildTipoCompra(),
-                _buildTextField(
-                  controller: _pageController.valorUnitarioController,
-                  label: 'Valor unitario',
-                  hint: '2500,00',
-                  keyboardType: const TextInputType.numberWithOptions(
-                    decimal: true,
+          body: SafeArea(
+            top: false,
+            child: SingleChildScrollView(
+              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  PotreiroSelectorField(
+                    label: 'Potreiro',
+                    value: _pageController.selectedPotreiroLabel,
+                    onTap: _openPotreiroSelection,
+                    isLoading: _pageController.isLoading,
+                    errorMessage: _pageController.errorMessage,
                   ),
-                  inputFormatters: const [_moneyFormatter],
-                ),
-                _buildTextField(
-                  controller: _pageController.fornecedorController,
-                  label: 'Fornecedor',
-                  hint: 'Digite o nome do fornecedor',
-                ),
-                _buildTextField(
-                  controller: _pageController.municipioController,
-                  label: 'Municipio',
-                  hint: 'Digite o municipio da compra',
-                ),
-                _buildTextField(
-                  controller: _pageController.obsController,
-                  label: 'Observações',
-                  hint: 'Digite observações sobre a compra',
-                  maxLines: 3,
-                ),
-                _buildAnimalsSummary(),
-                if (_pageController.errorMessage != null) ...[
-                  const SizedBox(height: 8),
-                  Text(
-                    _pageController.errorMessage!,
-                    style: const TextStyle(color: Colors.red, fontSize: 12),
+                  AnimalLotSelectorField(
+                    label: 'Lote',
+                    value: _pageController.selectedLotLabel,
+                    onTap: _openLotSelection,
+                    isLoading: _pageController.isLoading,
+                    errorMessage: _pageController.errorMessage,
                   ),
+                  _buildTextField(
+                    controller: _pageController.dataController,
+                    label: 'Data da compra',
+                    hint: '00/00/0000',
+                    readOnly: true,
+                    onTap: _selectDate,
+                  ),
+                  _buildTipoCompra(),
+                  _buildTextField(
+                    controller: _pageController.valorUnitarioController,
+                    label: 'Valor unitário',
+                    hint: '2500,00',
+                    keyboardType: const TextInputType.numberWithOptions(
+                      decimal: true,
+                    ),
+                    inputFormatters: const [_moneyFormatter],
+                  ),
+                  _buildTextField(
+                    controller: _pageController.fornecedorController,
+                    label: 'Fornecedor',
+                    hint: 'Digite o nome do fornecedor',
+                  ),
+                  _buildTextField(
+                    controller: _pageController.municipioController,
+                    label: 'Município',
+                    hint: 'Digite o município da compra',
+                  ),
+                  _buildTextField(
+                    controller: _pageController.obsController,
+                    label: 'Observações',
+                    hint: 'Digite observações sobre a compra',
+                    maxLines: 3,
+                  ),
+                  _buildAnimalsSummary(),
+                  if (_pageController.errorMessage != null) ...[
+                    const SizedBox(height: 8),
+                    Text(
+                      _pageController.errorMessage!,
+                      style: const TextStyle(color: Colors.red, fontSize: 12),
+                    ),
+                  ],
+                  const SizedBox(height: 20),
+                  CustomButton(
+                    onPressed: _submit,
+                    text: _pageController.isEdit ? 'Salvar' : 'Adicionar',
+                    enabled: _pageController.isFormValid,
+                    isLoading: _pageController.isLoading,
+                  ),
+                  const SizedBox(height: 80),
                 ],
-                const SizedBox(height: 20),
-                CustomButton(
-                  onPressed: _submit,
-                  text: _pageController.isEdit ? 'Salvar' : 'Adicionar',
-                  enabled: _pageController.isFormValid,
-                  isLoading: _pageController.isLoading,
-                ),
-                const SizedBox(height: 80),
-              ],
+              ),
             ),
           ),
         );
@@ -301,8 +310,10 @@ class _CompraFormPageState extends State<CompraFormPage> {
   }
 
   Widget _buildAnimalsSummary() {
+    final compra = widget.compra;
+    final hasLinkedAnimals = compra?.animais.isNotEmpty == true;
     final count = _pageController.isEdit
-        ? (widget.compra?.animais.length ?? 0)
+        ? (compra?.qtdAnimais ?? compra?.animais.length ?? 0)
         : _pageController.animais.length;
     final label = count == 1 ? '1 animal' : '$count animais';
     final statusLabel = count == 1 ? 'adicionado' : 'adicionados';
@@ -324,9 +335,9 @@ class _CompraFormPageState extends State<CompraFormPage> {
         InkWell(
           borderRadius: BorderRadius.circular(8),
           onTap: _pageController.isEdit
-              ? count == 0
-                    ? null
-                    : _openAnimalsList
+              ? hasLinkedAnimals
+                    ? _openAnimalsList
+                    : null
               : count == 0
               ? _openAnimalsManager
               : _openAnimalsManager,
@@ -353,7 +364,7 @@ class _CompraFormPageState extends State<CompraFormPage> {
                     ),
                   ),
                 ),
-                if (!_pageController.isEdit || count > 0)
+                if (!_pageController.isEdit || hasLinkedAnimals)
                   const Icon(
                     Icons.keyboard_arrow_right,
                     color: Color(0xFF8C8C8C),

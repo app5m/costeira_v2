@@ -27,72 +27,78 @@ class _CargaAnimalState extends State<CargaAnimal> {
           style: TextStyle(color: Colors.white),
         ),
       ),
-      body: SingleChildScrollView(
-        child: Column(
-          children: [
-            Row(
-              children: [
-                Container(
-                  width: 92,
-                  margin: EdgeInsets.only(left: 20, bottom: 16, top: 16),
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 16,
-                    vertical: 4,
-                  ),
-                  decoration: ShapeDecoration(
-                    shape: RoundedRectangleBorder(
-                      side: BorderSide(
-                        width: 1,
-                        color: const Color(0xFFE6E6E6),
+      body: SafeArea(
+        top: false,
+        child: SingleChildScrollView(
+          child: Column(
+            children: [
+              Row(
+                children: [
+                  Container(
+                    width: 92,
+                    margin: EdgeInsets.only(left: 20, bottom: 16, top: 16),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 16,
+                      vertical: 4,
+                    ),
+                    decoration: ShapeDecoration(
+                      shape: RoundedRectangleBorder(
+                        side: BorderSide(
+                          width: 1,
+                          color: const Color(0xFFE6E6E6),
+                        ),
+                        borderRadius: BorderRadius.circular(64),
                       ),
-                      borderRadius: BorderRadius.circular(64),
+                    ),
+                    child: Row(
+                      children: [
+                        Text(
+                          'Filtro',
+                          textAlign: TextAlign.center,
+                          style: TextStyle(
+                            color: const Color(0xFF8C8C8C),
+                            fontSize: 12,
+                            fontFamily: 'Montserrat',
+                            fontWeight: FontWeight.w500,
+                            height: 1.50,
+                          ),
+                        ),
+                        Icon(
+                          Icons.keyboard_arrow_down_rounded,
+                          color: Color(0xFF8C8C8C),
+                        ),
+                      ],
                     ),
                   ),
-                  child: Row(
-                    children: [
-                      Text(
-                        'Filtro',
-                        textAlign: TextAlign.center,
-                        style: TextStyle(
-                          color: const Color(0xFF8C8C8C),
-                          fontSize: 12,
-                          fontFamily: 'Montserrat',
-                          fontWeight: FontWeight.w500,
-                          height: 1.50,
-                        ),
-                      ),
-                      Icon(
-                        Icons.keyboard_arrow_down_rounded,
-                        color: Color(0xFF8C8C8C),
-                      ),
-                    ],
-                  ),
-                ),
-              ],
-            ),
-            _MonthSelector(),
-            SizedBox(height: 16),
-            buildContainer('UA/hectare por potreiro', '4,8 UA/ha'),
-            SizedBox(height: 16),
-            buildContainer('Kg/hectare por potreiro', '2.160 kg/ha'),
-            SizedBox(height: 16),
-            buildContainer('Carga média da fazenda', '1,42 UA/ha e 640 kg/ha'),
-            Image.asset(
-              'images/mapageraldosporteiros.png',
-              width: MediaQuery.of(context).size.width,
-              fit: BoxFit.contain,
-            ),
-            Image.asset(
-              'images/uaha.png',
-              width: MediaQuery.of(context).size.width,
-              fit: BoxFit.contain,
-            ),
-            Image.asset(
-              'images/uaha2.png',
-              width: MediaQuery.of(context).size.width,
-              fit: BoxFit.contain,
-            ),
-          ],
+                ],
+              ),
+              _MonthSelector(),
+              SizedBox(height: 16),
+              buildContainer('UA/hectare por potreiro', '4,8 UA/ha'),
+              SizedBox(height: 16),
+              buildContainer('Kg/hectare por potreiro', '2.160 kg/ha'),
+              SizedBox(height: 16),
+              buildContainer(
+                'Carga média da fazenda',
+                '1,42 UA/ha e 640 kg/ha',
+              ),
+              Image.asset(
+                'images/mapageraldosporteiros.png',
+                width: MediaQuery.of(context).size.width,
+                fit: BoxFit.contain,
+              ),
+              Image.asset(
+                'images/uaha.png',
+                width: MediaQuery.of(context).size.width,
+                fit: BoxFit.contain,
+              ),
+              Image.asset(
+                'images/uaha2.png',
+                width: MediaQuery.of(context).size.width,
+                fit: BoxFit.contain,
+              ),
+            ],
+          ),
         ),
       ),
     );

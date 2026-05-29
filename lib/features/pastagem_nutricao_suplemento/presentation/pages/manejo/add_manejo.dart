@@ -79,88 +79,91 @@ class _AddManejoState extends State<AddManejo> {
           ),
         ),
       ),
-      body: _controller.isLoading
-          ? const Center(child: CircularProgressIndicator())
-          : SingleChildScrollView(
-              padding: const EdgeInsets.fromLTRB(20, 16, 20, 32),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  _DropdownField<int>(
-                    label: 'Potreiro',
-                    value: _controller.selectedPotreiroId,
-                    options: _controller.potreiros
-                        .map(
-                          (item) => AppSelectOption<int>(
-                            value: item.id,
-                            label: item.nome,
+      body: SafeArea(
+        top: false,
+        child: _controller.isLoading
+            ? const Center(child: CircularProgressIndicator())
+            : SingleChildScrollView(
+                padding: const EdgeInsets.fromLTRB(20, 16, 20, 32),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    _DropdownField<int>(
+                      label: 'Potreiro',
+                      value: _controller.selectedPotreiroId,
+                      options: _controller.potreiros
+                          .map(
+                            (item) => AppSelectOption<int>(
+                              value: item.id,
+                              label: item.nome,
+                            ),
+                          )
+                          .toList(),
+                      onChanged: _controller.onPotreiroChanged,
+                    ),
+                    _DropdownField<String>(
+                      label: 'Tipo de manejo',
+                      value: _controller.selectedTipoManejoId,
+                      options: _controller.tiposManejo
+                          .map(
+                            (item) => AppSelectOption<String>(
+                              value: item.id,
+                              label: _controller.tipoManejoLabel(item),
+                            ),
+                          )
+                          .toList(),
+                      onChanged: _controller.onTipoManejoChanged,
+                    ),
+                    _TextField(
+                      label: 'Data do manejo',
+                      hint: '01/06/2026',
+                      controller: _controller.dataController,
+                      keyboardType: TextInputType.datetime,
+                      readOnly: true,
+                      suffixIcon: const Icon(Icons.calendar_today_outlined),
+                      onTap: () => _pickDate(_controller.dataController),
+                    ),
+                    _QuantityField(
+                      label: 'Quantidade usada',
+                      controller: _controller.quantidadeController,
+                      unidade: _controller.quantidadeUnidade,
+                      onMinus: _controller.decrementQuantidade,
+                      onPlus: _controller.incrementQuantidade,
+                    ),
+                    if (_controller.errorMessage != null) ...[
+                      const SizedBox(height: 4),
+                      Text(
+                        _controller.errorMessage!,
+                        style: const TextStyle(color: Colors.red, fontSize: 12),
+                      ),
+                    ],
+                    const SizedBox(height: 16),
+                    SizedBox(
+                      width: double.infinity,
+                      height: 50,
+                      child: ElevatedButton(
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: MyColors.colorPrimary,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(8),
                           ),
-                        )
-                        .toList(),
-                    onChanged: _controller.onPotreiroChanged,
-                  ),
-                  _DropdownField<String>(
-                    label: 'Tipo de manejo',
-                    value: _controller.selectedTipoManejoId,
-                    options: _controller.tiposManejo
-                        .map(
-                          (item) => AppSelectOption<String>(
-                            value: item.id,
-                            label: _controller.tipoManejoLabel(item),
+                        ),
+                        onPressed: _controller.canSubmit ? _submit : null,
+                        child: Text(
+                          isEditing ? 'Atualizar' : 'Adicionar',
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontSize: 14,
+                            fontFamily: 'Montserrat',
+                            fontWeight: FontWeight.w600,
                           ),
-                        )
-                        .toList(),
-                    onChanged: _controller.onTipoManejoChanged,
-                  ),
-                  _TextField(
-                    label: 'Data do manejo',
-                    hint: '01/06/2026',
-                    controller: _controller.dataController,
-                    keyboardType: TextInputType.datetime,
-                    readOnly: true,
-                    suffixIcon: const Icon(Icons.calendar_today_outlined),
-                    onTap: () => _pickDate(_controller.dataController),
-                  ),
-                  _QuantityField(
-                    label: 'Quantidade usada',
-                    controller: _controller.quantidadeController,
-                    unidade: _controller.quantidadeUnidade,
-                    onMinus: _controller.decrementQuantidade,
-                    onPlus: _controller.incrementQuantidade,
-                  ),
-                  if (_controller.errorMessage != null) ...[
-                    const SizedBox(height: 4),
-                    Text(
-                      _controller.errorMessage!,
-                      style: const TextStyle(color: Colors.red, fontSize: 12),
+                        ),
+                      ),
                     ),
                   ],
-                  const SizedBox(height: 16),
-                  SizedBox(
-                    width: double.infinity,
-                    height: 50,
-                    child: ElevatedButton(
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: MyColors.colorPrimary,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(8),
-                        ),
-                      ),
-                      onPressed: _controller.canSubmit ? _submit : null,
-                      child: Text(
-                        isEditing ? 'Atualizar' : 'Adicionar',
-                        style: const TextStyle(
-                          color: Colors.white,
-                          fontSize: 14,
-                          fontFamily: 'Montserrat',
-                          fontWeight: FontWeight.w600,
-                        ),
-                      ),
-                    ),
-                  ),
-                ],
+                ),
               ),
-            ),
+      ),
     );
   }
 

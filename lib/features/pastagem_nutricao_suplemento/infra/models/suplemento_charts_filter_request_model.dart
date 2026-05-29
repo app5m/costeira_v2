@@ -9,10 +9,15 @@ class SuplementoChartsFilterRequestModel {
   factory SuplementoChartsFilterRequestModel.fromEntity(
     SuplementoChartsFilterEntity filter,
   ) {
-    return SuplementoChartsFilterRequestModel._({
-      'token': WSConstantes.token,
-      'app_users_id': filter.appUsersId,
-      'mes_ano': filter.mesAno,
-    });
+    return SuplementoChartsFilterRequestModel._(
+      {
+        'token': WSConstantes.token,
+        'app_users_id': filter.appUsersId,
+        'mes_ano': filter.mesAno,
+        'id_potreiro': filter.idPotreiro,
+        'id_lote': filter.idLote,
+        'id_produto': filter.idProduto,
+      }..removeWhere((key, value) => value == null),
+    );
   }
 }

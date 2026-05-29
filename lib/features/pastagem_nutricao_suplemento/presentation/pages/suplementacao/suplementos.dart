@@ -1,3 +1,4 @@
+import 'package:costeira/core/components/app_select_overlay.dart';
 import 'package:costeira/core/components/app_snack.dart';
 import 'package:costeira/features/pastagem_nutricao_suplemento/domain/entities/suplemento.dart';
 import 'package:costeira/features/pastagem_nutricao_suplemento/presentation/controllers/delete_suplemento_controller.dart';
@@ -25,6 +26,8 @@ class _SuplementosState extends State<Suplementos>
   late final TabController _tabController;
   late final ListSuplementosController _controller;
   late final DeleteSuplementoController _deleteController;
+  _SuplementoFilterValue _filter = const _SuplementoFilterValue();
+  _SuplementoFilterOptions _filterOptions = const _SuplementoFilterOptions();
   int index = 0;
 
   @override
@@ -51,7 +54,16 @@ class _SuplementosState extends State<Suplementos>
 
   Future<void> _load() async {
     try {
-      await _controller.load();
+      await _controller.load(
+        idPotreiro: _filter.idPotreiro,
+        idLote: _filter.idLote,
+        idProduto: _filter.idProduto,
+      );
+      if (!_filter.hasFilters) {
+        _filterOptions = _SuplementoFilterOptions.fromSuplementos(
+          _controller.suplementos,
+        );
+      }
     } catch (_) {
       if (!mounted) return;
       AppSnackBar.show(
@@ -59,6 +71,47 @@ class _SuplementosState extends State<Suplementos>
         message: _controller.errorMessage ?? 'Erro ao listar suplementos.',
       );
     }
+  }
+
+  Future<void> _showFilterSheet() async {
+    final result = await showModalBottomSheet<_SuplementoFilterValue>(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (_) => _SuplementoFilterSheet(
+        initialFilter: _filter,
+        options: _filterOptions,
+      ),
+    );
+
+    if (result == null || result == _filter) {
+      return;
+    }
+
+    setState(() {
+      _filter = result;
+    });
+    await _load();
+  }
+
+  String get _filterLabel {
+    if (!_filter.hasFilters) {
+      return 'Filtrar';
+    }
+
+    final values = [
+      _labelFor(_filterOptions.potreiros, _filter.idPotreiro),
+      _labelFor(_filterOptions.lotes, _filter.idLote),
+      _labelFor(_filterOptions.produtos, _filter.idProduto),
+    ].where((item) => item.isNotEmpty).toList(growable: false);
+
+    if (values.isEmpty) {
+      return 'Filtros ativos';
+    }
+    if (values.length == 1) {
+      return values.first;
+    }
+    return '${values.length} filtros ativos';
   }
 
   @override
@@ -76,7 +129,7 @@ class _SuplementosState extends State<Suplementos>
                   MaterialPageRoute(builder: (_) => const AddSuplemento()),
                 );
                 if (changed == true) {
-                  await _controller.reload();
+                  await _load();
                 }
               },
               child: const Icon(Icons.add, color: Colors.white),
@@ -98,55 +151,66 @@ class _SuplementosState extends State<Suplementos>
           ),
         ),
       ),
-      body: Column(
-        children: [
-          TabBar(
-            controller: _tabController,
-            tabs: const [
-              Tab(text: 'Dados'),
-              Tab(text: 'Registros'),
-              Tab(text: 'Gráficos'),
-            ],
-            onTap: (value) => setState(() => index = value),
-            automaticIndicatorColorAdjustment: false,
-            indicatorSize: TabBarIndicatorSize.tab,
-            unselectedLabelColor: Colors.grey,
-            labelStyle: const TextStyle(
-              fontSize: 12,
-              fontFamily: 'Montserrat',
-              fontWeight: FontWeight.w600,
-            ),
-            unselectedLabelStyle: const TextStyle(
-              fontSize: 12,
-              fontFamily: 'Montserrat',
-              fontWeight: FontWeight.w700,
-            ),
-            dividerColor: Colors.grey,
-            labelColor: Colors.black,
-            indicatorColor: MyColors.colorPrimary2,
-          ),
-          if (index == 0)
-            Expanded(
-              child: _DadosTab(
-                controller: _controller,
-                onChanged: _controller.reload,
-                onDelete: _deleteSuplemento,
-                onShowRegistros: () {
-                  _tabController.animateTo(1);
-                  setState(() => index = 1);
-                },
+      body: SafeArea(
+        top: false,
+        child: Column(
+          children: [
+            TabBar(
+              controller: _tabController,
+              tabs: const [
+                Tab(text: 'Dados'),
+                Tab(text: 'Registros'),
+                Tab(text: 'Gráficos'),
+              ],
+              onTap: (value) => setState(() => index = value),
+              automaticIndicatorColorAdjustment: false,
+              indicatorSize: TabBarIndicatorSize.tab,
+              unselectedLabelColor: Colors.grey,
+              labelStyle: const TextStyle(
+                fontSize: 12,
+                fontFamily: 'Montserrat',
+                fontWeight: FontWeight.w600,
               ),
-            ),
-          if (index == 1)
-            Expanded(
-              child: _RegistrosTab(
-                registros: _controller.registros,
-                onChanged: _controller.reload,
-                onDelete: _deleteRegistro,
+              unselectedLabelStyle: const TextStyle(
+                fontSize: 12,
+                fontFamily: 'Montserrat',
+                fontWeight: FontWeight.w700,
               ),
+              dividerColor: Colors.grey,
+              labelColor: Colors.black,
+              indicatorColor: MyColors.colorPrimary2,
             ),
-          if (index == 2) const Expanded(child: GraficosSuplemento()),
-        ],
+            const SizedBox(height: 16),
+            if (index == 0)
+              _FilterSelector(
+                label: _filterLabel,
+                isActive: _filter.hasFilters,
+                onTap: _showFilterSheet,
+              ),
+            if (index == 0) const SizedBox(height: 16),
+            if (index == 0)
+              Expanded(
+                child: _DadosTab(
+                  controller: _controller,
+                  onChanged: _load,
+                  onDelete: _deleteSuplemento,
+                  onShowRegistros: () {
+                    _tabController.animateTo(1);
+                    setState(() => index = 1);
+                  },
+                ),
+              ),
+            if (index == 1)
+              Expanded(
+                child: _RegistrosTab(
+                  registros: _controller.registros,
+                  onChanged: _load,
+                  onDelete: _deleteRegistro,
+                ),
+              ),
+            if (index == 2) const Expanded(child: GraficosSuplemento()),
+          ],
+        ),
       ),
     );
   }
@@ -168,7 +232,7 @@ class _SuplementosState extends State<Suplementos>
         message: result.message,
         isError: false,
       );
-      await _controller.reload();
+      await _load();
     } catch (_) {
       if (!mounted) return;
       AppSnackBar.show(
@@ -195,7 +259,7 @@ class _SuplementosState extends State<Suplementos>
         message: result.message,
         isError: false,
       );
-      await _controller.reload();
+      await _load();
     } catch (_) {
       if (!mounted) return;
       AppSnackBar.show(
@@ -298,6 +362,408 @@ class _SuplementosState extends State<Suplementos>
   }
 }
 
+class _FilterSelector extends StatelessWidget {
+  const _FilterSelector({
+    required this.label,
+    required this.isActive,
+    required this.onTap,
+  });
+
+  final String label;
+  final bool isActive;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    return InkWell(
+      borderRadius: BorderRadius.circular(8),
+      onTap: onTap,
+      child: Container(
+        width: MediaQuery.of(context).size.width - 40,
+        padding: const EdgeInsets.all(16),
+        clipBehavior: Clip.antiAlias,
+        decoration: ShapeDecoration(
+          color: isActive ? const Color(0x14128977) : Colors.white,
+          shape: RoundedRectangleBorder(
+            side: BorderSide(
+              width: 1,
+              color: isActive ? MyColors.colorPrimary : const Color(0xFFEBEBEB),
+            ),
+            borderRadius: BorderRadius.circular(8),
+          ),
+          shadows: const [
+            BoxShadow(
+              color: Color(0x0A000000),
+              blurRadius: 24,
+              offset: Offset(0, 0),
+            ),
+          ],
+        ),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Expanded(
+              child: Text(
+                label,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: TextStyle(
+                  color: isActive
+                      ? MyColors.colorPrimary
+                      : const Color(0xFF8C8C8C),
+                  fontSize: 14,
+                  fontFamily: 'Montserrat',
+                  fontWeight: FontWeight.w500,
+                  height: 1.50,
+                ),
+              ),
+            ),
+            const SizedBox(width: 12),
+            Icon(
+              Icons.tune_rounded,
+              color: isActive ? MyColors.colorPrimary : const Color(0xFF8C8C8C),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _SuplementoFilterValue {
+  const _SuplementoFilterValue({this.idPotreiro, this.idLote, this.idProduto});
+
+  final int? idPotreiro;
+  final int? idLote;
+  final int? idProduto;
+
+  bool get hasFilters =>
+      idPotreiro != null || idLote != null || idProduto != null;
+
+  @override
+  bool operator ==(Object other) {
+    return other is _SuplementoFilterValue &&
+        other.idPotreiro == idPotreiro &&
+        other.idLote == idLote &&
+        other.idProduto == idProduto;
+  }
+
+  @override
+  int get hashCode => Object.hash(idPotreiro, idLote, idProduto);
+}
+
+class _SuplementoFilterOptions {
+  const _SuplementoFilterOptions({
+    this.potreiros = const [],
+    this.lotes = const [],
+    this.produtos = const [],
+    this.lotePotreiroIds = const {},
+  });
+
+  final List<SuplementoReference> potreiros;
+  final List<SuplementoReference> lotes;
+  final List<SuplementoReference> produtos;
+  final Map<int, int> lotePotreiroIds;
+
+  factory _SuplementoFilterOptions.fromSuplementos(
+    List<Suplemento> suplementos,
+  ) {
+    final lotePotreiroIds = <int, int>{};
+    for (final item in suplementos) {
+      final loteId = item.lote?.id;
+      final potreiroId = item.potreiro?.id;
+      if (loteId != null && potreiroId != null) {
+        lotePotreiroIds[loteId] = potreiroId;
+      }
+    }
+
+    return _SuplementoFilterOptions(
+      potreiros: _uniqueReferences(
+        suplementos
+            .map((item) => item.potreiro)
+            .whereType<SuplementoReference>(),
+      ),
+      lotes: _uniqueReferences(
+        suplementos.map((item) => item.lote).whereType<SuplementoReference>(),
+      ),
+      produtos: _uniqueReferences(
+        suplementos
+            .map((item) => item.produto)
+            .whereType<SuplementoReference>(),
+      ),
+      lotePotreiroIds: lotePotreiroIds,
+    );
+  }
+}
+
+class _SuplementoFilterSheet extends StatefulWidget {
+  const _SuplementoFilterSheet({
+    required this.initialFilter,
+    required this.options,
+  });
+
+  final _SuplementoFilterValue initialFilter;
+  final _SuplementoFilterOptions options;
+
+  @override
+  State<_SuplementoFilterSheet> createState() => _SuplementoFilterSheetState();
+}
+
+class _SuplementoFilterSheetState extends State<_SuplementoFilterSheet> {
+  late int? _idPotreiro;
+  late int? _idLote;
+  late int? _idProduto;
+
+  bool get _hasAnyFilter =>
+      _idPotreiro != null || _idLote != null || _idProduto != null;
+
+  List<SuplementoReference> get _lotesDisponiveis {
+    if (_idPotreiro == null) {
+      return widget.options.lotes;
+    }
+
+    final vinculados = widget.options.lotes
+        .where((lote) => widget.options.lotePotreiroIds[lote.id] == _idPotreiro)
+        .toList(growable: false);
+
+    return vinculados.isEmpty ? widget.options.lotes : vinculados;
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    _idPotreiro = widget.initialFilter.idPotreiro;
+    _idLote = widget.initialFilter.idLote;
+    _idProduto = widget.initialFilter.idProduto;
+  }
+
+  void _applyFilters() {
+    Navigator.of(context).pop(
+      _SuplementoFilterValue(
+        idPotreiro: _idPotreiro,
+        idLote: _idLote,
+        idProduto: _idProduto,
+      ),
+    );
+  }
+
+  void _clearFilters() {
+    Navigator.of(context).pop(const _SuplementoFilterValue());
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return SafeArea(
+      child: Container(
+        decoration: const BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.vertical(top: Radius.circular(32)),
+        ),
+        child: Padding(
+          padding: EdgeInsets.only(
+            left: 20,
+            right: 20,
+            top: 20,
+            bottom: 24 + MediaQuery.of(context).viewInsets.bottom,
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Row(
+                children: [
+                  IconButton(
+                    onPressed: () => Navigator.of(context).pop(),
+                    icon: const Icon(
+                      Icons.arrow_back_ios_new,
+                      color: Color(0xFF313131),
+                    ),
+                  ),
+                  const Expanded(
+                    child: Text(
+                      'Filtrar',
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                        color: Color(0xFF313131),
+                        fontSize: 20,
+                        fontFamily: 'Montserrat',
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 48),
+                ],
+              ),
+              const SizedBox(height: 24),
+              _FilterSelectField(
+                label: 'Potreiro',
+                value: _idPotreiro,
+                options: widget.options.potreiros,
+                placeholder: 'Selecione',
+                onChanged: (value) {
+                  setState(() {
+                    _idPotreiro = value;
+                    if (!_lotesDisponiveis.any((lote) => lote.id == _idLote)) {
+                      _idLote = null;
+                    }
+                  });
+                },
+              ),
+              _FilterSelectField(
+                label: 'Lote',
+                value: _idLote,
+                options: _lotesDisponiveis,
+                placeholder: widget.options.lotes.isEmpty
+                    ? 'Nenhum lote encontrado'
+                    : 'Selecione',
+                onChanged: (value) {
+                  setState(() {
+                    _idLote = value;
+                  });
+                },
+              ),
+              _FilterSelectField(
+                label: 'Produto',
+                value: _idProduto,
+                options: widget.options.produtos,
+                placeholder: 'Selecione',
+                onChanged: (value) {
+                  setState(() {
+                    _idProduto = value;
+                  });
+                },
+              ),
+              const SizedBox(height: 14),
+              SizedBox(
+                width: double.infinity,
+                height: 56,
+                child: ElevatedButton(
+                  onPressed: _hasAnyFilter ? _applyFilters : null,
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: MyColors.colorPrimary,
+                    disabledBackgroundColor: MyColors.gray,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(16),
+                    ),
+                  ),
+                  child: const Text(
+                    'Filtrar',
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontFamily: 'Montserrat',
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 12),
+              SizedBox(
+                width: double.infinity,
+                height: 56,
+                child: OutlinedButton(
+                  onPressed: _hasAnyFilter ? _clearFilters : null,
+                  style: OutlinedButton.styleFrom(
+                    foregroundColor: MyColors.colorPrimary,
+                    disabledForegroundColor: MyColors.gray,
+                    side: BorderSide(
+                      color: _hasAnyFilter
+                          ? MyColors.colorPrimary
+                          : MyColors.gray,
+                    ),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(16),
+                    ),
+                  ),
+                  child: const Text(
+                    'Limpar',
+                    style: TextStyle(
+                      fontFamily: 'Montserrat',
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _FilterSelectField extends StatelessWidget {
+  const _FilterSelectField({
+    required this.label,
+    required this.value,
+    required this.options,
+    required this.placeholder,
+    required this.onChanged,
+  });
+
+  final String label;
+  final int? value;
+  final List<SuplementoReference> options;
+  final String placeholder;
+  final ValueChanged<int?> onChanged;
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 18),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            label,
+            style: const TextStyle(
+              color: Color(0xFF313131),
+              fontSize: 14,
+              fontFamily: 'Montserrat',
+              fontWeight: FontWeight.w400,
+            ),
+          ),
+          const SizedBox(height: 6),
+          AppSelectOverlay<int>(
+            value: options.any((item) => item.id == value) ? value : null,
+            placeholder: placeholder,
+            options: options
+                .map(
+                  (item) =>
+                      AppSelectOption<int>(value: item.id, label: item.nome),
+                )
+                .toList(growable: false),
+            enabled: options.isNotEmpty,
+            onChanged: onChanged,
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+List<SuplementoReference> _uniqueReferences(
+  Iterable<SuplementoReference> references,
+) {
+  final items = <int, SuplementoReference>{};
+  for (final reference in references) {
+    items.putIfAbsent(reference.id, () => reference);
+  }
+  final result = items.values.toList(growable: false);
+  result.sort((a, b) => a.nome.compareTo(b.nome));
+  return result;
+}
+
+String _labelFor(List<SuplementoReference> options, int? id) {
+  if (id == null) {
+    return '';
+  }
+  for (final option in options) {
+    if (option.id == id) {
+      return option.nome;
+    }
+  }
+  return '';
+}
+
 class _DadosTab extends StatelessWidget {
   const _DadosTab({
     required this.controller,
@@ -322,9 +788,9 @@ class _DadosTab extends StatelessWidget {
     }
 
     return RefreshIndicator(
-      onRefresh: controller.reload,
+      onRefresh: onChanged,
       child: ListView(
-        padding: const EdgeInsets.fromLTRB(20, 16, 20, 88),
+        padding: const EdgeInsets.fromLTRB(20, 0, 20, 88),
         children: [
           _ResumoCard(suplementos: controller.suplementos),
           const SizedBox(height: 16),
@@ -405,7 +871,9 @@ class _SuplementoCard extends StatelessWidget {
       onTap: () {
         Navigator.push(
           context,
-          MaterialPageRoute(builder: (_) => const DetailSuplemento()),
+          MaterialPageRoute(
+            builder: (_) => DetailSuplemento(suplemento: suplemento),
+          ),
         );
       },
       child: Padding(

@@ -79,34 +79,19 @@ class _AddSuplementoState extends State<AddSuplemento> {
           ),
         ),
       ),
-      body: _controller.isLoading
-          ? const Center(child: CircularProgressIndicator())
-          : SingleChildScrollView(
-              padding: const EdgeInsets.fromLTRB(20, 16, 20, 32),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  _DropdownField<int>(
-                    label: 'Potreiro',
-                    value: _controller.selectedPotreiroId,
-                    options: _controller.potreiros
-                        .map(
-                          (item) => AppSelectOption<int>(
-                            value: item.id,
-                            label: item.nome,
-                          ),
-                        )
-                        .toList(),
-                    onChanged: _controller.onPotreiroChanged,
-                  ),
-                  if (_controller.selectedPotreiroId != null)
+      body: SafeArea(
+        top: false,
+        child: _controller.isLoading
+            ? const Center(child: CircularProgressIndicator())
+            : SingleChildScrollView(
+                padding: const EdgeInsets.fromLTRB(20, 16, 20, 32),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
                     _DropdownField<int>(
-                      label: 'Lote',
-                      value: _controller.selectedLoteId,
-                      placeholder: _controller.lotesDisponiveis.isEmpty
-                          ? 'Nenhum lote encontrado'
-                          : 'Selecione',
-                      options: _controller.lotesDisponiveis
+                      label: 'Potreiro',
+                      value: _controller.selectedPotreiroId,
+                      options: _controller.potreiros
                           .map(
                             (item) => AppSelectOption<int>(
                               value: item.id,
@@ -114,69 +99,87 @@ class _AddSuplementoState extends State<AddSuplemento> {
                             ),
                           )
                           .toList(),
-                      onChanged: _controller.onLoteChanged,
+                      onChanged: _controller.onPotreiroChanged,
                     ),
-                  _DropdownField<int>(
-                    label: 'Produto utilizado',
-                    value: _controller.selectedProdutoId,
-                    options: _controller.produtos
-                        .map(
-                          (item) => AppSelectOption<int>(
-                            value: item.id,
-                            label: _controller.produtoLabel(item),
+                    if (_controller.selectedPotreiroId != null)
+                      _DropdownField<int>(
+                        label: 'Lote',
+                        value: _controller.selectedLoteId,
+                        placeholder: _controller.lotesDisponiveis.isEmpty
+                            ? 'Nenhum lote encontrado'
+                            : 'Selecione',
+                        options: _controller.lotesDisponiveis
+                            .map(
+                              (item) => AppSelectOption<int>(
+                                value: item.id,
+                                label: item.nome,
+                              ),
+                            )
+                            .toList(),
+                        onChanged: _controller.onLoteChanged,
+                      ),
+                    _DropdownField<int>(
+                      label: 'Produto utilizado',
+                      value: _controller.selectedProdutoId,
+                      options: _controller.produtos
+                          .map(
+                            (item) => AppSelectOption<int>(
+                              value: item.id,
+                              label: _controller.produtoLabel(item),
+                            ),
+                          )
+                          .toList(),
+                      onChanged: _controller.onProdutoChanged,
+                    ),
+                    _TextField(
+                      label: 'Data',
+                      hint: '01/06/2026',
+                      controller: _controller.dataController,
+                      keyboardType: TextInputType.datetime,
+                      readOnly: true,
+                      suffixIcon: const Icon(Icons.calendar_today_outlined),
+                      onTap: () => _pickDate(_controller.dataController),
+                    ),
+                    _QuantityField(
+                      label: 'Quantidade',
+                      controller: _controller.quantidadeController,
+                      onMinus: _controller.decrementQuantidade,
+                      onPlus: _controller.incrementQuantidade,
+                    ),
+                    if (_controller.errorMessage != null) ...[
+                      const SizedBox(height: 4),
+                      Text(
+                        _controller.errorMessage!,
+                        style: const TextStyle(color: Colors.red, fontSize: 12),
+                      ),
+                    ],
+                    const SizedBox(height: 16),
+                    SizedBox(
+                      width: double.infinity,
+                      height: 50,
+                      child: ElevatedButton(
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: MyColors.colorPrimary,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(8),
                           ),
-                        )
-                        .toList(),
-                    onChanged: _controller.onProdutoChanged,
-                  ),
-                  _TextField(
-                    label: 'Data',
-                    hint: '01/06/2026',
-                    controller: _controller.dataController,
-                    keyboardType: TextInputType.datetime,
-                    readOnly: true,
-                    suffixIcon: const Icon(Icons.calendar_today_outlined),
-                    onTap: () => _pickDate(_controller.dataController),
-                  ),
-                  _QuantityField(
-                    label: 'Quantidade',
-                    controller: _controller.quantidadeController,
-                    onMinus: _controller.decrementQuantidade,
-                    onPlus: _controller.incrementQuantidade,
-                  ),
-                  if (_controller.errorMessage != null) ...[
-                    const SizedBox(height: 4),
-                    Text(
-                      _controller.errorMessage!,
-                      style: const TextStyle(color: Colors.red, fontSize: 12),
+                        ),
+                        onPressed: _controller.isFormValid ? _submit : null,
+                        child: const Text(
+                          'Salvar',
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontSize: 14,
+                            fontFamily: 'Montserrat',
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      ),
                     ),
                   ],
-                  const SizedBox(height: 16),
-                  SizedBox(
-                    width: double.infinity,
-                    height: 50,
-                    child: ElevatedButton(
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: MyColors.colorPrimary,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(8),
-                        ),
-                      ),
-                      onPressed: _controller.isFormValid ? _submit : null,
-                      child: const Text(
-                        'Salvar',
-                        style: TextStyle(
-                          color: Colors.white,
-                          fontSize: 14,
-                          fontFamily: 'Montserrat',
-                          fontWeight: FontWeight.w600,
-                        ),
-                      ),
-                    ),
-                  ),
-                ],
+                ),
               ),
-            ),
+      ),
     );
   }
 

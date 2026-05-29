@@ -20,8 +20,10 @@ class Nascimentos extends StatefulWidget {
   State<Nascimentos> createState() => _NascimentosState();
 }
 
-class _NascimentosState extends State<Nascimentos> with SingleTickerProviderStateMixin {
-  final NascimentosPageController _pageController = Modular.get<NascimentosPageController>();
+class _NascimentosState extends State<Nascimentos>
+    with SingleTickerProviderStateMixin {
+  final NascimentosPageController _pageController =
+      Modular.get<NascimentosPageController>();
   final NascimentosListPageController _listPageController =
       Modular.get<NascimentosListPageController>();
 
@@ -46,7 +48,10 @@ class _NascimentosState extends State<Nascimentos> with SingleTickerProviderStat
   }
 
   Future<void> _openAdd() async {
-    await Navigator.push(context, MaterialPageRoute(builder: (_) => const AddNascimento()));
+    await Navigator.push(
+      context,
+      MaterialPageRoute(builder: (_) => const AddNascimento()),
+    );
     if (!mounted) {
       return;
     }
@@ -95,7 +100,9 @@ class _NascimentosState extends State<Nascimentos> with SingleTickerProviderStat
           backgroundColor: Colors.white,
           floatingActionButton: _pageController.shouldShowFab
               ? FloatingActionButton(
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(64)),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(64),
+                  ),
                   onPressed: _openAdd,
                   child: const Padding(
                     padding: EdgeInsets.all(12.0),
@@ -119,35 +126,41 @@ class _NascimentosState extends State<Nascimentos> with SingleTickerProviderStat
               ),
             ),
           ),
-          body: Column(
-            children: [
-              TabBar(
-                controller: _pageController.tabController,
-                tabs: const [
-                  Tab(text: 'Lista'),
-                  Tab(text: 'Gráfico'),
-                ],
-                onTap: _pageController.setTabIndex,
-                automaticIndicatorColorAdjustment: false,
-                indicatorSize: TabBarIndicatorSize.tab,
-                unselectedLabelColor: Colors.grey,
-                labelStyle: const TextStyle(
-                  fontSize: 12,
-                  fontFamily: 'Montserrat',
-                  fontWeight: FontWeight.w600,
+          body: SafeArea(
+            top: false,
+            child: Column(
+              children: [
+                TabBar(
+                  controller: _pageController.tabController,
+                  tabs: const [
+                    Tab(text: 'Lista'),
+                    Tab(text: 'Gráfico'),
+                  ],
+                  onTap: _pageController.setTabIndex,
+                  automaticIndicatorColorAdjustment: false,
+                  indicatorSize: TabBarIndicatorSize.tab,
+                  unselectedLabelColor: Colors.grey,
+                  labelStyle: const TextStyle(
+                    fontSize: 12,
+                    fontFamily: 'Montserrat',
+                    fontWeight: FontWeight.w600,
+                  ),
+                  unselectedLabelStyle: const TextStyle(
+                    fontSize: 12,
+                    fontFamily: 'Montserrat',
+                    fontWeight: FontWeight.w700,
+                  ),
+                  dividerColor: Colors.grey,
+                  labelColor: Colors.black,
+                  indicatorColor: MyColors.colorPrimary2,
                 ),
-                unselectedLabelStyle: const TextStyle(
-                  fontSize: 12,
-                  fontFamily: 'Montserrat',
-                  fontWeight: FontWeight.w700,
-                ),
-                dividerColor: Colors.grey,
-                labelColor: Colors.black,
-                indicatorColor: MyColors.colorPrimary2,
-              ),
-              const SizedBox(height: 16),
-              if (_pageController.tabIndex == 0) _buildListTab() else const GraficosNascimento(),
-            ],
+                const SizedBox(height: 16),
+                if (_pageController.tabIndex == 0)
+                  _buildListTab()
+                else
+                  const GraficosNascimento(),
+              ],
+            ),
           ),
         );
       },
@@ -180,7 +193,9 @@ class _NascimentosState extends State<Nascimentos> with SingleTickerProviderStat
               color: hasFilters ? const Color(0x14128977) : Colors.transparent,
               borderRadius: BorderRadius.circular(999),
               border: Border.all(
-                color: hasFilters ? MyColors.colorPrimary : const Color(0xFFE6E6E6),
+                color: hasFilters
+                    ? MyColors.colorPrimary
+                    : const Color(0xFFE6E6E6),
               ),
             ),
             child: Row(
@@ -189,13 +204,17 @@ class _NascimentosState extends State<Nascimentos> with SingleTickerProviderStat
                 Icon(
                   Icons.tune_rounded,
                   size: 16,
-                  color: hasFilters ? MyColors.colorPrimary : const Color(0xFF8C8C8C),
+                  color: hasFilters
+                      ? MyColors.colorPrimary
+                      : const Color(0xFF8C8C8C),
                 ),
                 const SizedBox(width: 6),
                 Text(
                   hasFilters ? 'Filtros ativos' : 'Filtrar',
                   style: TextStyle(
-                    color: hasFilters ? MyColors.colorPrimary : const Color(0xFF8C8C8C),
+                    color: hasFilters
+                        ? MyColors.colorPrimary
+                        : const Color(0xFF8C8C8C),
                     fontSize: 12,
                     fontFamily: 'Montserrat',
                     fontWeight: FontWeight.w600,
@@ -210,17 +229,22 @@ class _NascimentosState extends State<Nascimentos> with SingleTickerProviderStat
   }
 
   Widget _buildList() {
-    if (_listPageController.isLoading && _listPageController.nascimentos.isEmpty) {
+    if (_listPageController.isLoading &&
+        _listPageController.nascimentos.isEmpty) {
       return const Center(child: CircularProgressIndicator());
     }
 
-    if (_listPageController.errorMessage != null && _listPageController.nascimentos.isEmpty) {
+    if (_listPageController.errorMessage != null &&
+        _listPageController.nascimentos.isEmpty) {
       return ListView(
         children: [
           const SizedBox(height: 120),
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 24),
-            child: Text(_listPageController.errorMessage!, textAlign: TextAlign.center),
+            child: Text(
+              _listPageController.errorMessage!,
+              textAlign: TextAlign.center,
+            ),
           ),
         ],
       );
@@ -250,12 +274,17 @@ class _NascimentosState extends State<Nascimentos> with SingleTickerProviderStat
           return _NascimentoCard(
             nascimento: nascimento,
             onOpen: () {
-              Navigator.push(context, MaterialPageRoute(builder: (_) => const DetailNascimento()));
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (_) => const DetailNascimento()),
+              );
             },
             onEdit: () {
               Navigator.push(
                 context,
-                MaterialPageRoute(builder: (_) => EditNascimento(nascimento: nascimento)),
+                MaterialPageRoute(
+                  builder: (_) => EditNascimento(nascimento: nascimento),
+                ),
               ).then((_) => _listPageController.loadInitialData());
             },
             onDelete: () => _showModalBottomSheetExcluir(context, nascimento),
@@ -265,7 +294,10 @@ class _NascimentosState extends State<Nascimentos> with SingleTickerProviderStat
     );
   }
 
-  void _showModalBottomSheetExcluir(BuildContext context, NascimentoEntity nascimento) {
+  void _showModalBottomSheetExcluir(
+    BuildContext context,
+    NascimentoEntity nascimento,
+  ) {
     final pageContext = context;
     showModalBottomSheet(
       backgroundColor: Colors.white,
@@ -277,114 +309,127 @@ class _NascimentosState extends State<Nascimentos> with SingleTickerProviderStat
         ),
       ),
       builder: (BuildContext bc) {
-        return Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Container(
-              padding: const EdgeInsets.only(top: 8),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  const SizedBox(height: 8),
-                  Opacity(
-                    opacity: 0.70,
-                    child: Container(
-                      width: 72,
-                      decoration: const ShapeDecoration(
-                        shape: RoundedRectangleBorder(
-                          side: BorderSide(
-                            width: 2,
-                            strokeAlign: BorderSide.strokeAlignCenter,
-                            color: Color(0xFFE2E2E2),
+        return SafeArea(
+          top: false,
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Container(
+                padding: const EdgeInsets.only(top: 8),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    const SizedBox(height: 8),
+                    Opacity(
+                      opacity: 0.70,
+                      child: Container(
+                        width: 72,
+                        decoration: const ShapeDecoration(
+                          shape: RoundedRectangleBorder(
+                            side: BorderSide(
+                              width: 2,
+                              strokeAlign: BorderSide.strokeAlignCenter,
+                              color: Color(0xFFE2E2E2),
+                            ),
                           ),
                         ),
                       ),
                     ),
-                  ),
-                  const SizedBox(height: 8),
-                  Container(
-                    margin: const EdgeInsets.symmetric(horizontal: 20),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.end,
-                      children: [
-                        GestureDetector(
-                          onTap: () => Navigator.of(context).pop(false),
-                          child: const Icon(Icons.close),
-                        ),
-                      ],
-                    ),
-                  ),
-                  const SizedBox(height: 16),
-                  SvgPicture.asset(
-                    'icon/danger-linear.svg',
-                    width: 80,
-                    height: 80,
-                    colorFilter: const ColorFilter.mode(Colors.red, BlendMode.srcIn),
-                  ),
-                  const SizedBox(height: 16),
-                  const Text(
-                    'Excluir nascimento',
-                    style: TextStyle(
-                      fontFamily: 'Montserrat',
-                      fontWeight: FontWeight.w600,
-                      fontSize: 16,
-                      color: Color(0xff000000),
-                    ),
-                  ),
-                  const SizedBox(height: 8),
-                  const Text(
-                    'Tem certeza que deseja excluir esse\nnascimento permanentemente?',
-                    textAlign: TextAlign.center,
-                    style: TextStyle(
-                      fontFamily: 'Montserrat',
-                      fontWeight: FontWeight.w400,
-                      fontSize: 14,
-                      color: Color(0xFF8692A8),
-                    ),
-                  ),
-                  const SizedBox(height: 16),
-                  SizedBox(
-                    width: MediaQuery.of(context).size.width - 40,
-                    height: 50,
-                    child: ElevatedButton(
-                      onPressed: () async {
-                        Navigator.of(context).pop();
-                        final message = await _listPageController.deleteNascimento(nascimento);
-                        if (!mounted || !pageContext.mounted) {
-                          return;
-                        }
-                        AppSnackBar.show(
-                          context: pageContext,
-                          message: message ?? 'Nascimento excluido com sucesso.',
-                          isError: message != null,
-                        );
-                      },
-                      style: ElevatedButton.styleFrom(
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-                        side: const BorderSide(color: Colors.red),
-                        elevation: 0,
-                        backgroundColor: Colors.transparent,
+                    const SizedBox(height: 8),
+                    Container(
+                      margin: const EdgeInsets.symmetric(horizontal: 20),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.end,
+                        children: [
+                          GestureDetector(
+                            onTap: () => Navigator.of(context).pop(false),
+                            child: const Icon(Icons.close),
+                          ),
+                        ],
                       ),
-                      child: const Text('Excluir', style: TextStyle(color: Colors.red)),
                     ),
-                  ),
-                  TextButton(
-                    onPressed: () => Navigator.of(context).pop(false),
-                    child: Text(
-                      'Cancelar',
+                    const SizedBox(height: 16),
+                    SvgPicture.asset(
+                      'icon/danger-linear.svg',
+                      width: 80,
+                      height: 80,
+                      colorFilter: const ColorFilter.mode(
+                        Colors.red,
+                        BlendMode.srcIn,
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                    const Text(
+                      'Excluir nascimento',
                       style: TextStyle(
+                        fontFamily: 'Montserrat',
+                        fontWeight: FontWeight.w600,
                         fontSize: 16,
-                        color: MyColors.colorOnPrimary,
-                        decoration: TextDecoration.underline,
-                        decorationColor: MyColors.colorOnPrimary,
+                        color: Color(0xff000000),
                       ),
                     ),
-                  ),
-                  const SizedBox(height: 16),
-                ],
+                    const SizedBox(height: 8),
+                    const Text(
+                      'Tem certeza que deseja excluir esse\nnascimento permanentemente?',
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                        fontFamily: 'Montserrat',
+                        fontWeight: FontWeight.w400,
+                        fontSize: 14,
+                        color: Color(0xFF8692A8),
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                    SizedBox(
+                      width: MediaQuery.of(context).size.width - 40,
+                      height: 50,
+                      child: ElevatedButton(
+                        onPressed: () async {
+                          Navigator.of(context).pop();
+                          final message = await _listPageController
+                              .deleteNascimento(nascimento);
+                          if (!mounted || !pageContext.mounted) {
+                            return;
+                          }
+                          AppSnackBar.show(
+                            context: pageContext,
+                            message:
+                                message ?? 'Nascimento excluido com sucesso.',
+                            isError: message != null,
+                          );
+                        },
+                        style: ElevatedButton.styleFrom(
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                          side: const BorderSide(color: Colors.red),
+                          elevation: 0,
+                          backgroundColor: Colors.transparent,
+                        ),
+                        child: const Text(
+                          'Excluir',
+                          style: TextStyle(color: Colors.red),
+                        ),
+                      ),
+                    ),
+                    TextButton(
+                      onPressed: () => Navigator.of(context).pop(false),
+                      child: Text(
+                        'Cancelar',
+                        style: TextStyle(
+                          fontSize: 16,
+                          color: MyColors.colorOnPrimary,
+                          decoration: TextDecoration.underline,
+                          decorationColor: MyColors.colorOnPrimary,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                  ],
+                ),
               ),
-            ),
-          ],
+            ],
+          ),
         );
       },
     );
@@ -419,7 +464,11 @@ class _NascimentoCard extends StatelessWidget {
             borderRadius: BorderRadius.circular(12),
           ),
           shadows: const [
-            BoxShadow(color: Color(0x0A000000), blurRadius: 24, offset: Offset(0, 0)),
+            BoxShadow(
+              color: Color(0x0A000000),
+              blurRadius: 24,
+              offset: Offset(0, 0),
+            ),
           ],
         ),
         child: Row(
@@ -434,9 +483,15 @@ class _NascimentoCard extends StatelessWidget {
                     padding: const EdgeInsets.all(8),
                     decoration: ShapeDecoration(
                       color: const Color(0x198C8C8C),
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(42.67)),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(42.67),
+                      ),
                     ),
-                    child: SvgPicture.asset('icon/circle-star.svg', width: 16, height: 16),
+                    child: SvgPicture.asset(
+                      'icon/circle-star.svg',
+                      width: 16,
+                      height: 16,
+                    ),
                   ),
                   const SizedBox(width: 16),
                   Expanded(
@@ -483,9 +538,15 @@ class _NascimentoCard extends StatelessWidget {
             const SizedBox(width: 8),
             Column(
               children: [
-                GestureDetector(onTap: onDelete, child: SvgPicture.asset('icon/trash.svg')),
+                GestureDetector(
+                  onTap: onDelete,
+                  child: SvgPicture.asset('icon/trash.svg'),
+                ),
                 const SizedBox(height: 12),
-                GestureDetector(onTap: onEdit, child: SvgPicture.asset('icon/square-pen.svg')),
+                GestureDetector(
+                  onTap: onEdit,
+                  child: SvgPicture.asset('icon/square-pen.svg'),
+                ),
               ],
             ),
           ],
@@ -498,7 +559,7 @@ class _NascimentoCard extends StatelessWidget {
     final terneiros = nascimento.animais
         .where((item) => item.tipo.toLowerCase().contains('terneiro'))
         .toList();
-    final count = terneiros.isNotEmpty ? terneiros.length : nascimento.qtdAnimais;
+    final count = terneiros.isNotEmpty ? terneiros.length : 1;
     final sexo = terneiros.isNotEmpty ? _sexoLabel(terneiros.first.sexo) : null;
     final sexoLabel = sexo == null ? '' : ' - $sexo';
     return '$count ${count == 1 ? 'nascimento' : 'nascimentos'}$sexoLabel';

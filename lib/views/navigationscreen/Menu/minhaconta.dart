@@ -142,7 +142,7 @@ class _MyAccountPageState extends State<MyAccountPage> {
       final response = await _accountRepository.deactivateAccount(_user!.id);
       _showMessage(response.message, isError: !response.isSuccess);
       if (response.isSuccess) {
-        await SessionStorage.clearUserSession();
+        await SessionStorage.clearAuthData();
         if (!mounted) {
           return;
         }
@@ -160,7 +160,7 @@ class _MyAccountPageState extends State<MyAccountPage> {
   }
 
   Future<void> _logout() async {
-    await SessionStorage.clearUserSession();
+    await SessionStorage.clearAuthData();
     if (!mounted) {
       return;
     }

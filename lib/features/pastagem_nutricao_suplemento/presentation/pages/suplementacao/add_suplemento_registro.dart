@@ -88,107 +88,114 @@ class _AddSuplementoRegistroState extends State<AddSuplementoRegistro> {
           ),
         ),
       ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.fromLTRB(20, 16, 20, 32),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            _FieldShell(
-              label: 'Tipo',
-              child: AppSelectOverlay<int>(
-                value: _controller.selectedTipo,
-                placeholder: 'Selecione',
-                options: const [
-                  AppSelectOption(value: 1, label: 'Reabastecimento'),
-                  AppSelectOption(value: 2, label: 'Utilização'),
-                ],
-                onChanged: _controller.onTipoChanged,
-              ),
-            ),
-            _FieldShell(
-              label: 'Data',
-              child: TextField(
-                controller: _controller.dataController,
-                keyboardType: TextInputType.datetime,
-                readOnly: true,
-                onTap: () => _pickDate(_controller.dataController),
-                decoration: _inputDecoration('10/06/2026').copyWith(
-                  suffixIcon: const Icon(Icons.calendar_today_outlined),
+      body: SafeArea(
+        top: false,
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.fromLTRB(20, 16, 20, 32),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              _FieldShell(
+                label: 'Tipo',
+                child: AppSelectOverlay<int>(
+                  value: _controller.selectedTipo,
+                  placeholder: 'Selecione',
+                  options: const [
+                    AppSelectOption(value: 1, label: 'Reabastecimento'),
+                    AppSelectOption(value: 2, label: 'Utilização'),
+                  ],
+                  onChanged: _controller.onTipoChanged,
                 ),
               ),
-            ),
-            _FieldShell(
-              label: 'Quantidade',
-              child: Row(
-                children: [
-                  IconButton.filledTonal(
-                    onPressed: _controller.decrementQuantidade,
-                    style: IconButton.styleFrom(foregroundColor: Colors.black),
-                    icon: const Icon(Icons.remove, color: Colors.black),
+              _FieldShell(
+                label: 'Data',
+                child: TextField(
+                  controller: _controller.dataController,
+                  keyboardType: TextInputType.datetime,
+                  readOnly: true,
+                  onTap: () => _pickDate(_controller.dataController),
+                  decoration: _inputDecoration('10/06/2026').copyWith(
+                    suffixIcon: const Icon(Icons.calendar_today_outlined),
                   ),
-                  const SizedBox(width: 8),
-                  Expanded(
-                    child: TextField(
-                      controller: _controller.quantidadeController,
-                      textAlign: TextAlign.center,
-                      keyboardType: const TextInputType.numberWithOptions(
-                        decimal: true,
+                ),
+              ),
+              _FieldShell(
+                label: 'Quantidade',
+                child: Row(
+                  children: [
+                    IconButton.filledTonal(
+                      onPressed: _controller.decrementQuantidade,
+                      style: IconButton.styleFrom(
+                        foregroundColor: Colors.black,
                       ),
-                      inputFormatters: [
-                        FilteringTextInputFormatter.allow(RegExp(r'[0-9,.]')),
-                      ],
-                      decoration: _inputDecoration(
-                        '00 kg',
-                      ).copyWith(suffixText: 'kg'),
+                      icon: const Icon(Icons.remove, color: Colors.black),
+                    ),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: TextField(
+                        controller: _controller.quantidadeController,
+                        textAlign: TextAlign.center,
+                        keyboardType: const TextInputType.numberWithOptions(
+                          decimal: true,
+                        ),
+                        inputFormatters: [
+                          FilteringTextInputFormatter.allow(RegExp(r'[0-9,.]')),
+                        ],
+                        decoration: _inputDecoration(
+                          '00 kg',
+                        ).copyWith(suffixText: 'kg'),
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    IconButton.filledTonal(
+                      onPressed: _controller.incrementQuantidade,
+                      style: IconButton.styleFrom(
+                        foregroundColor: Colors.black,
+                      ),
+                      icon: const Icon(Icons.add, color: Colors.black),
+                    ),
+                  ],
+                ),
+              ),
+              if (_controller.errorMessage != null) ...[
+                Text(
+                  _controller.errorMessage!,
+                  style: const TextStyle(color: Colors.red, fontSize: 12),
+                ),
+                const SizedBox(height: 8),
+              ],
+              SizedBox(
+                width: double.infinity,
+                height: 50,
+                child: ElevatedButton(
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: MyColors.colorPrimary,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(8),
                     ),
                   ),
-                  const SizedBox(width: 8),
-                  IconButton.filledTonal(
-                    onPressed: _controller.incrementQuantidade,
-                    style: IconButton.styleFrom(foregroundColor: Colors.black),
-                    icon: const Icon(Icons.add, color: Colors.black),
-                  ),
-                ],
-              ),
-            ),
-            if (_controller.errorMessage != null) ...[
-              Text(
-                _controller.errorMessage!,
-                style: const TextStyle(color: Colors.red, fontSize: 12),
-              ),
-              const SizedBox(height: 8),
-            ],
-            SizedBox(
-              width: double.infinity,
-              height: 50,
-              child: ElevatedButton(
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: MyColors.colorPrimary,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                ),
-                onPressed: _controller.isFormValid && !_controller.isLoading
-                    ? _submit
-                    : null,
-                child: _controller.isLoading
-                    ? const SizedBox(
-                        width: 20,
-                        height: 20,
-                        child: CircularProgressIndicator(strokeWidth: 2),
-                      )
-                    : const Text(
-                        'Salvar',
-                        style: TextStyle(
-                          color: Colors.white,
-                          fontSize: 14,
-                          fontFamily: 'Montserrat',
-                          fontWeight: FontWeight.w600,
+                  onPressed: _controller.isFormValid && !_controller.isLoading
+                      ? _submit
+                      : null,
+                  child: _controller.isLoading
+                      ? const SizedBox(
+                          width: 20,
+                          height: 20,
+                          child: CircularProgressIndicator(strokeWidth: 2),
+                        )
+                      : const Text(
+                          'Salvar',
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontSize: 14,
+                            fontFamily: 'Montserrat',
+                            fontWeight: FontWeight.w600,
+                          ),
                         ),
-                      ),
+                ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );

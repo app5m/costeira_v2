@@ -21,7 +21,6 @@ class FlowPageScaffold extends StatelessWidget {
     return Scaffold(
       backgroundColor: MyColors.colorPrimary,
       body: SafeArea(
-        bottom: false,
         child: Column(
           children: [
             const SizedBox(height: 20),

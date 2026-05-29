@@ -44,7 +44,7 @@ class GetDashboardController extends ChangeNotifier {
         return;
       }
 
-      _filter = nextFilter;
+      _filter = requestFilter;
       _rows = result.rows;
       _dashboard = result.firstOrEmpty;
     } on ApiException catch (error) {
@@ -101,7 +101,9 @@ class GetDashboardController extends ChangeNotifier {
   }
 
   static DashboardFilterEntity _initialFilter() {
-    return _yearFilter(DateTime.now().year);
+    final today = DateTime.now();
+    final selectedDate = DateTime(today.year, today.month, today.day);
+    return DashboardFilterEntity(dataIn: selectedDate, dataOut: selectedDate);
   }
 
   static DashboardFilterEntity _yearFilter(int year) {

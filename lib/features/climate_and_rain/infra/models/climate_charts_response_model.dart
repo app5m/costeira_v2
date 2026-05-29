@@ -98,6 +98,16 @@ class ClimateYearComparisonModel extends ClimateYearComparisonEntity {
   static List<ClimateMonthlyRainPointEntity> _resolvePoints(
     Map<String, dynamic> json,
   ) {
+    final month = _resolveMonth(json);
+    if (month != null) {
+      return [
+        ClimateMonthlyRainPointEntity(
+          label: month,
+          value: ClimateMonthlyRainPointModel._resolveValue(json),
+        ),
+      ];
+    }
+
     const listKeys = ['valores', 'dados', 'itens', 'meses', 'points', 'data'];
     for (final key in listKeys) {
       final rawList = json[key];
@@ -133,6 +143,22 @@ class ClimateYearComparisonModel extends ClimateYearComparisonEntity {
 
     return monthEntries;
   }
+
+  static String? _resolveMonth(Map<String, dynamic> json) {
+    const candidates = ['mes', 'month', 'mes_nome', 'nome_mes', 'label'];
+    for (final key in candidates) {
+      final value = json[key]?.toString().trim() ?? '';
+      if (value.isNotEmpty && !_isYear(value)) {
+        return value;
+      }
+    }
+    return null;
+  }
+
+  static bool _isYear(String value) {
+    final parsed = int.tryParse(value);
+    return parsed != null && parsed >= 1900 && parsed <= 2200;
+  }
 }
 
 class ClimateChartsResponseModel extends ClimateChartsEntity {
@@ -153,17 +179,16 @@ class ClimateChartsResponseModel extends ClimateChartsEntity {
         )
         .toList(growable: false);
 
-    final comparativo =
-        (json['comparativo_ultimos_2_anos'] as List<dynamic>? ?? const [])
-            .asMap()
-            .entries
-            .map(
-              (entry) => ClimateYearComparisonModel.fromDynamic(
-                entry.value,
-                entry.key,
-              ),
-            )
-            .toList(growable: false);
+    final comparativo = _mergeSeriesByYear(
+      (json['comparativo_ultimos_2_anos'] as List<dynamic>? ?? const [])
+          .asMap()
+          .entries
+          .map(
+            (entry) =>
+                ClimateYearComparisonModel.fromDynamic(entry.value, entry.key),
+          )
+          .toList(growable: false),
+    );
 
     return ClimateChartsResponseModel(
       totalChuvaAcumulada: _toDouble(json['total_chuva_acumulada']),
@@ -172,6 +197,54 @@ class ClimateChartsResponseModel extends ClimateChartsEntity {
       comparativoUltimos2Anos: comparativo,
     );
   }
+}
+
+List<ClimateYearComparisonEntity> _mergeSeriesByYear(
+  List<ClimateYearComparisonEntity> series,
+) {
+  final grouped = <String, Map<String, ClimateMonthlyRainPointEntity>>{};
+  final yearLabels = <String, String>{};
+
+  for (final yearSeries in series) {
+    final yearKey = yearSeries.year.trim();
+    if (yearKey.isEmpty) {
+      continue;
+    }
+
+    yearLabels.putIfAbsent(yearKey, () => yearSeries.year);
+    final pointsByLabel = grouped.putIfAbsent(yearKey, () => {});
+
+    for (final point in yearSeries.points) {
+      final labelKey = _normalizePointLabel(point.label);
+      if (labelKey.isEmpty) {
+        continue;
+      }
+
+      final current = pointsByLabel[labelKey];
+      pointsByLabel[labelKey] = ClimateMonthlyRainPointEntity(
+        label: current?.label ?? point.label,
+        value: (current?.value ?? 0) + point.value,
+      );
+    }
+  }
+
+  return grouped.entries
+      .map(
+        (entry) => ClimateYearComparisonModel(
+          year: yearLabels[entry.key] ?? entry.key,
+          points: entry.value.values.toList(growable: false),
+        ),
+      )
+      .toList(growable: false);
+}
+
+String _normalizePointLabel(String label) {
+  final trimmed = label.trim();
+  final month = int.tryParse(trimmed);
+  if (month != null && month >= 1 && month <= 12) {
+    return month.toString().padLeft(2, '0');
+  }
+  return trimmed.toLowerCase();
 }
 
 double _toDouble(dynamic value) {

@@ -7,12 +7,14 @@ class DashboardFilterRequestModel {
   final Map<String, dynamic> data;
 
   factory DashboardFilterRequestModel.fromEntity(DashboardFilterEntity filter) {
-    return DashboardFilterRequestModel._({
-      'token': WSConstantes.token,
-      'app_users_id': filter.appUsersId,
-      'data_in': _formatDate(filter.dataIn),
-      'data_out': _formatDate(filter.dataOut),
-    });
+    return DashboardFilterRequestModel._(
+      {
+        'token': WSConstantes.token,
+        'app_users_id': filter.appUsersId,
+        'data_in': _formatDate(filter.dataIn),
+        'data_out': _formatDate(filter.dataOut),
+      }..removeWhere((key, value) => value == null),
+    );
   }
 }
 

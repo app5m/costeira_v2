@@ -47,15 +47,17 @@ class TransferenciaFormPageController extends ChangeNotifier {
   final TextEditingController lotFilterController = TextEditingController();
 
   TransferenciaUpsertEntity? _editingTransferencia;
-  String selectedTipo = tipoAnimais;
+  String? selectedTipo;
   int? selectedPotreiroDestinoId;
   int? selectedLoteDestinoId;
   List<AnimalEntity> _selectedAnimais = const [];
   List<AnimalLotEntity> _selectedLotes = const [];
+  _TransferenciaFormSnapshot? _initialSnapshot;
 
   bool get isEdit => _editingTransferencia?.id != null;
   bool get isTipoAnimais => selectedTipo == tipoAnimais;
   bool get isTipoLotes => selectedTipo == tipoLotes;
+  bool get hasSelectedTipo => selectedTipo != null;
   bool get isLoading =>
       _addController.isLoading ||
       _editController.isLoading ||
@@ -107,18 +109,24 @@ class TransferenciaFormPageController extends ChangeNotifier {
   bool get isFormValid {
     final baseValid =
         dataController.text.trim().isNotEmpty &&
+        selectedTipo != null &&
         selectedPotreiroDestinoId != null;
     if (!baseValid) {
       return false;
     }
     if (isEdit) {
-      return !isTipoLotes || selectedLoteDestinoId != null;
+      return (!isTipoLotes || selectedLoteDestinoId != null) && hasChanges;
     }
     if (isTipoAnimais) {
       return _selectedAnimais.isNotEmpty;
     }
     return selectedLoteDestinoId != null && _selectedLotes.isNotEmpty;
   }
+
+  bool get hasChanges =>
+      !isEdit ||
+      _initialSnapshot == null ||
+      _currentSnapshot() != _initialSnapshot;
 
   Future<void> init({TransferenciaUpsertEntity? transferencia}) async {
     _editingTransferencia = transferencia;
@@ -130,6 +138,10 @@ class TransferenciaFormPageController extends ChangeNotifier {
           : tipoAnimais;
       selectedPotreiroDestinoId = transferencia.potreiroDestino;
       selectedLoteDestinoId = transferencia.loteDestino;
+      _initialSnapshot = _currentSnapshot();
+    } else {
+      selectedTipo = null;
+      _initialSnapshot = null;
     }
 
     try {
@@ -212,7 +224,7 @@ class TransferenciaFormPageController extends ChangeNotifier {
     final entity = TransferenciaUpsertEntity(
       id: _editingTransferencia?.id,
       data: dataController.text.trim(),
-      tipo: selectedTipo,
+      tipo: selectedTipo!,
       potreiroDestino: selectedPotreiroDestinoId!,
       loteDestino: isTipoLotes ? selectedLoteDestinoId : null,
       obs: _emptyToNull(obsController.text),
@@ -269,6 +281,12 @@ class TransferenciaFormPageController extends ChangeNotifier {
         message: 'Informe a data da transferencia.',
       );
     }
+    if (selectedTipo == null) {
+      return const PageActionResult(
+        isSuccess: false,
+        message: 'Selecione o tipo da transferencia.',
+      );
+    }
     if (selectedPotreiroDestinoId == null) {
       return const PageActionResult(
         isSuccess: false,
@@ -294,6 +312,16 @@ class TransferenciaFormPageController extends ChangeNotifier {
       );
     }
     return null;
+  }
+
+  _TransferenciaFormSnapshot _currentSnapshot() {
+    return _TransferenciaFormSnapshot(
+      data: dataController.text.trim(),
+      tipo: selectedTipo,
+      selectedPotreiroDestinoId: selectedPotreiroDestinoId,
+      selectedLoteDestinoId: selectedLoteDestinoId,
+      obs: _emptyToNull(obsController.text),
+    );
   }
 
   PotreiroEntity? get _selectedPotreiroDestino {
@@ -332,4 +360,40 @@ class TransferenciaFormPageController extends ChangeNotifier {
     lotFilterController.dispose();
     super.dispose();
   }
+}
+
+class _TransferenciaFormSnapshot {
+  const _TransferenciaFormSnapshot({
+    required this.data,
+    required this.tipo,
+    required this.selectedPotreiroDestinoId,
+    required this.selectedLoteDestinoId,
+    required this.obs,
+  });
+
+  final String data;
+  final String? tipo;
+  final int? selectedPotreiroDestinoId;
+  final int? selectedLoteDestinoId;
+  final String? obs;
+
+  @override
+  bool operator ==(Object other) {
+    return identical(this, other) ||
+        other is _TransferenciaFormSnapshot &&
+            other.data == data &&
+            other.tipo == tipo &&
+            other.selectedPotreiroDestinoId == selectedPotreiroDestinoId &&
+            other.selectedLoteDestinoId == selectedLoteDestinoId &&
+            other.obs == obs;
+  }
+
+  @override
+  int get hashCode => Object.hash(
+    data,
+    tipo,
+    selectedPotreiroDestinoId,
+    selectedLoteDestinoId,
+    obs,
+  );
 }

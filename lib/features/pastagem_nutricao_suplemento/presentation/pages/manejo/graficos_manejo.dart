@@ -40,9 +40,7 @@ class _GraficosManejoState extends State<GraficosManejo> {
       if (!mounted) return;
       AppSnackBar.show(
         context: context,
-        message:
-            _controller.errorMessage ??
-            'Nao foi possivel carregar os graficos.',
+        message: _controller.errorMessage ?? 'Nao foi possivel carregar os graficos.',
       );
     }
   }
@@ -54,9 +52,7 @@ class _GraficosManejoState extends State<GraficosManejo> {
       if (!mounted) return;
       AppSnackBar.show(
         context: context,
-        message:
-            _controller.errorMessage ??
-            'Nao foi possivel carregar os graficos.',
+        message: _controller.errorMessage ?? 'Nao foi possivel carregar os graficos.',
       );
     }
   }
@@ -68,9 +64,7 @@ class _GraficosManejoState extends State<GraficosManejo> {
       if (!mounted) return;
       AppSnackBar.show(
         context: context,
-        message:
-            _controller.errorMessage ??
-            'Nao foi possivel carregar os graficos.',
+        message: _controller.errorMessage ?? 'Nao foi possivel carregar os graficos.',
       );
     }
   }
@@ -117,15 +111,9 @@ class _GraficosManejoState extends State<GraficosManejo> {
               const SizedBox(height: 16),
               _SummaryCard(points: porTipo, fallbackPoints: porPotreiro),
               const SizedBox(height: 16),
-              _HorizontalBarChartCard(
-                title: 'Manejo por potreiro',
-                points: porPotreiro,
-              ),
+              _HorizontalBarChartCard(title: 'Manejo por potreiro', points: porPotreiro),
               const SizedBox(height: 16),
-              _VerticalBarChartCard(
-                title: 'Tipos de manejo no mes',
-                points: porTipo,
-              ),
+              _VerticalBarChartCard(title: 'Tipos de manejo no mês', points: porTipo),
             ],
           ),
         ),
@@ -153,11 +141,7 @@ class _GraficosManejoState extends State<GraficosManejo> {
 }
 
 class _MonthSelector extends StatelessWidget {
-  const _MonthSelector({
-    required this.label,
-    required this.onPrevious,
-    required this.onNext,
-  });
+  const _MonthSelector({required this.label, required this.onPrevious, required this.onNext});
 
   final String label;
   final VoidCallback? onPrevious;
@@ -174,21 +158,12 @@ class _MonthSelector extends StatelessWidget {
           side: const BorderSide(width: 1, color: Color(0xFFEBEBEB)),
           borderRadius: BorderRadius.circular(8),
         ),
-        shadows: const [
-          BoxShadow(
-            color: Color(0x0A000000),
-            blurRadius: 24,
-            offset: Offset(0, 0),
-          ),
-        ],
+        shadows: const [BoxShadow(color: Color(0x0A000000), blurRadius: 24, offset: Offset(0, 0))],
       ),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          InkWell(
-            onTap: onPrevious,
-            child: const Icon(Icons.arrow_back_rounded),
-          ),
+          InkWell(onTap: onPrevious, child: const Icon(Icons.arrow_back_rounded)),
           Text(
             label,
             textAlign: TextAlign.center,
@@ -199,10 +174,7 @@ class _MonthSelector extends StatelessWidget {
               fontWeight: FontWeight.w500,
             ),
           ),
-          InkWell(
-            onTap: onNext,
-            child: const Icon(Icons.arrow_forward_rounded),
-          ),
+          InkWell(onTap: onNext, child: const Icon(Icons.arrow_forward_rounded)),
         ],
       ),
     );
@@ -218,13 +190,10 @@ class _SummaryCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final displayPoints = points.isEmpty ? fallbackPoints : points;
-    final total = displayPoints.fold<double>(
-      0,
-      (sum, item) => sum + item.value,
-    );
+    final total = displayPoints.fold<double>(0, (sum, item) => sum + item.value);
 
     return _ChartCard(
-      title: 'Resumo de areas manejadas',
+      title: 'Resumo de áreas manejadas',
       child: displayPoints.isEmpty
           ? const _EmptyChartText()
           : Column(
@@ -276,10 +245,7 @@ class _HorizontalBarChartCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final maxValue = points.fold<double>(
-      0,
-      (max, item) => math.max(max, item.value),
-    );
+    final maxValue = points.fold<double>(0, (max, item) => math.max(max, item.value));
 
     return _ChartCard(
       title: title,
@@ -384,13 +350,7 @@ class _ChartCard extends StatelessWidget {
           side: const BorderSide(width: 1, color: Color(0xFFEBEBEB)),
           borderRadius: BorderRadius.circular(16),
         ),
-        shadows: const [
-          BoxShadow(
-            color: Color(0x0A000000),
-            blurRadius: 24,
-            offset: Offset(0, 0),
-          ),
-        ],
+        shadows: const [BoxShadow(color: Color(0x0A000000), blurRadius: 24, offset: Offset(0, 0))],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -434,10 +394,7 @@ class _Legend extends StatelessWidget {
             Container(
               width: 12,
               height: 12,
-              decoration: BoxDecoration(
-                color: point.color,
-                shape: BoxShape.circle,
-              ),
+              decoration: BoxDecoration(color: point.color, shape: BoxShape.circle),
             ),
             const SizedBox(width: 8),
             Text(
@@ -465,7 +422,7 @@ class _EmptyChartText extends StatelessWidget {
       padding: EdgeInsets.symmetric(vertical: 40),
       child: Center(
         child: Text(
-          'Sem dados para exibir neste periodo.',
+          'Sem dados para exibir neste período.',
           textAlign: TextAlign.center,
           style: TextStyle(
             color: Color(0xFF8C8C8C),
@@ -524,15 +481,8 @@ class _BarChartPainter extends CustomPainter {
     const bottom = 44.0;
     const top = 12.0;
     const right = 10.0;
-    final chart = Rect.fromLTRB(
-      left,
-      top,
-      size.width - right,
-      size.height - bottom,
-    );
-    final maxValue = _niceMax(
-      points.map((point) => point.value).fold(0, math.max),
-    );
+    final chart = Rect.fromLTRB(left, top, size.width - right, size.height - bottom);
+    final maxValue = _niceMax(points.map((point) => point.value).fold(0, math.max));
     final textPainter = TextPainter(textDirection: TextDirection.ltr);
     final gridPaint = Paint()
       ..color = const Color(0xFFEDEDED)
@@ -572,11 +522,7 @@ class _BarChartPainter extends CustomPainter {
 }
 
 class _ChartPoint {
-  const _ChartPoint({
-    required this.label,
-    required this.value,
-    required this.color,
-  });
+  const _ChartPoint({required this.label, required this.value, required this.color});
 
   final String label;
   final double value;
@@ -596,8 +542,7 @@ List<_ChartPoint> _groupChartPoints(Iterable<_ChartPoint> points) {
     );
   }
 
-  return grouped.values.toList(growable: false)
-    ..sort((a, b) => b.value.compareTo(a.value));
+  return grouped.values.toList(growable: false)..sort((a, b) => b.value.compareTo(a.value));
 }
 
 Color _colorFor(String value) {

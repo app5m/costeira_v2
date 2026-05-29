@@ -46,7 +46,7 @@ class AnimalAddPageController extends ChangeNotifier {
   final TextEditingController pesoController = TextEditingController();
   final TextEditingController obsController = TextEditingController();
 
-  int selectedSexo = 2;
+  int? selectedSexo;
   int? selectedCategoryId;
   int? selectedSubcategoryId;
   int? selectedBaseRacialId;
@@ -97,27 +97,40 @@ class AnimalAddPageController extends ChangeNotifier {
 
   String get selectedPotreiroLabel =>
       selectedPotreiro?.nome ?? 'Selecionar potreiro';
-  bool get requiresSubcategory => selectedCategoryId == matrixCategoryId;
+  bool get requiresSubcategory =>
+      selectedSexo == 2 && selectedCategoryId == matrixCategoryId;
   bool get shouldShowStatusField =>
       selectedSexo == 2 &&
       selectedCategoryId == matrixCategoryId &&
       selectedSubcategoryId != null;
-  bool get isFormValid => selectedCategoryId != null && selectedSexo > 0;
+  bool get isFormValid =>
+      selectedSexo != null &&
+      selectedCategoryId != null &&
+      (!requiresSubcategory || selectedSubcategoryId != null);
 
   Future<void> init() async {
     AppLogger.info(
       'ANIMAIS ADD PAGE CONTROLLER: CARREGANDO DADOS PARA SEXO=$selectedSexo',
     );
+    _getListController.clear();
     try {
-      await Future.wait([
-        _getListController.load(selectedSexo),
-        _lotsController.load(),
-        _potreirosController.load(),
-      ]);
-      _syncSelectedCategory();
+      await Future.wait([_lotsController.load(), _potreirosController.load()]);
       notifyListeners();
     } catch (_) {
       AppLogger.error('ANIMAIS ADD PAGE CONTROLLER: ERRO AO CARREGAR DADOS');
+    }
+  }
+
+  Future<void> _loadListsForSexo(int sexo) async {
+    AppLogger.info(
+      'ANIMAIS ADD PAGE CONTROLLER: CARREGANDO LISTAS PARA SEXO=$sexo',
+    );
+    try {
+      await _getListController.load(sexo);
+      _syncSelectedCategory();
+      notifyListeners();
+    } catch (_) {
+      AppLogger.error('ANIMAIS ADD PAGE CONTROLLER: ERRO AO CARREGAR LISTAS');
     }
   }
 
@@ -133,9 +146,11 @@ class AnimalAddPageController extends ChangeNotifier {
     selectedSexo = value;
     selectedCategoryId = null;
     selectedSubcategoryId = null;
+    selectedBaseRacialId = null;
+    _getListController.clear();
     _syncStatusVisibility();
     notifyListeners();
-    init();
+    _loadListsForSexo(value);
   }
 
   void onCategoryChanged(int? value) {
@@ -172,6 +187,14 @@ class AnimalAddPageController extends ChangeNotifier {
   }
 
   Future<PageActionResult> submit() async {
+    final sexo = selectedSexo;
+    if (sexo == null) {
+      return const PageActionResult(
+        isSuccess: false,
+        message: 'Selecione o sexo do animal.',
+      );
+    }
+
     final categoryId = selectedCategoryId;
     if (categoryId == null) {
       return const PageActionResult(
@@ -194,7 +217,7 @@ class AnimalAddPageController extends ChangeNotifier {
           utBasesRaciaisId: selectedBaseRacialId,
           appAnimaisLotesId: selectedLotId,
           appPotreirosId: selectedPotreiroId,
-          sexo: selectedSexo,
+          sexo: sexo,
           brinco: _emptyToNull(brincoController.text),
           peso: _normalizePeso(pesoController.text),
           obs: _emptyToNull(obsController.text),
@@ -231,8 +254,9 @@ class AnimalAddPageController extends ChangeNotifier {
       return;
     }
 
-    if (!categories.any((item) => item.id == selectedCategoryId)) {
-      selectedCategoryId = categories.first.id;
+    if (selectedCategoryId != null &&
+        !categories.any((item) => item.id == selectedCategoryId)) {
+      selectedCategoryId = null;
     }
 
     if (!requiresSubcategory || subcategories.isEmpty) {
@@ -243,8 +267,9 @@ class AnimalAddPageController extends ChangeNotifier {
 
     if (basesRaciais.isEmpty) {
       selectedBaseRacialId = null;
-    } else if (!basesRaciais.any((item) => item.id == selectedBaseRacialId)) {
-      selectedBaseRacialId = basesRaciais.first.id;
+    } else if (selectedBaseRacialId != null &&
+        !basesRaciais.any((item) => item.id == selectedBaseRacialId)) {
+      selectedBaseRacialId = null;
     }
 
     _syncStatusVisibility();

@@ -40,13 +40,15 @@ class _SplashPageState extends State<SplashPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.white,
-      body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Image.asset('images/logosplash.png', height: 220, width: 312),
-            const SizedBox(height: 20),
-          ],
+      body: SafeArea(
+        child: Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Image.asset('images/logosplash.png', height: 220, width: 312),
+              const SizedBox(height: 20),
+            ],
+          ),
         ),
       ),
     );

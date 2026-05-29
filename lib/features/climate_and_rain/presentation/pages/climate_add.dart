@@ -80,65 +80,68 @@ class _ClimateAddState extends State<ClimateAdd> {
               ),
             ),
           ),
-          body: SingleChildScrollView(
-            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
-            child: Column(
-              children: [
-                _buildDateField(
-                  label: 'Data inicio',
-                  controller: _pageController.dataInController,
-                  onTap: () => _pickDate(
-                    title: 'Selecione a data inicial',
-                    initialValue: _pageController.dataInController.text,
-                    onSelected: _pageController.setDataIn,
-                  ),
-                ),
-                _buildDateField(
-                  label: 'Data fim',
-                  controller: _pageController.dataOutController,
-                  onTap: () => _pickDate(
-                    title: 'Selecione a data final',
-                    initialValue: _pageController.dataOutController.text,
-                    onSelected: _pageController.setDataOut,
-                  ),
-                ),
-                _buildTextField(
-                  controller: _pageController.quantidadeController,
-                  label: 'Quantidade',
-                  hint: '00 mm',
-                  keyboardType: const TextInputType.numberWithOptions(
-                    decimal: true,
-                  ),
-                ),
-                const SizedBox(height: 16),
-                SizedBox(
-                  width: double.infinity,
-                  height: 50,
-                  child: ElevatedButton(
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: MyColors.colorPrimary,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                    ),
-                    onPressed:
-                        _pageController.isLoading ||
-                            !_pageController.isFormValid
-                        ? null
-                        : _submit,
-                    child: Text(
-                      _pageController.isLoading ? 'Salvando...' : 'Salvar',
-                      style: const TextStyle(
-                        color: Colors.white,
-                        fontSize: 14,
-                        fontFamily: 'Montserrat',
-                        fontWeight: FontWeight.w600,
-                      ),
+          body: SafeArea(
+            top: false,
+            child: SingleChildScrollView(
+              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+              child: Column(
+                children: [
+                  _buildDateField(
+                    label: 'Data inicio',
+                    controller: _pageController.dataInController,
+                    onTap: () => _pickDate(
+                      title: 'Selecione a data inicial',
+                      initialValue: _pageController.dataInController.text,
+                      onSelected: _pageController.setDataIn,
                     ),
                   ),
-                ),
-                const SizedBox(height: 32),
-              ],
+                  _buildDateField(
+                    label: 'Data fim',
+                    controller: _pageController.dataOutController,
+                    onTap: () => _pickDate(
+                      title: 'Selecione a data final',
+                      initialValue: _pageController.dataOutController.text,
+                      onSelected: _pageController.setDataOut,
+                    ),
+                  ),
+                  _buildTextField(
+                    controller: _pageController.quantidadeController,
+                    label: 'Quantidade',
+                    hint: '00 mm',
+                    keyboardType: const TextInputType.numberWithOptions(
+                      decimal: true,
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  SizedBox(
+                    width: double.infinity,
+                    height: 50,
+                    child: ElevatedButton(
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: MyColors.colorPrimary,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                      ),
+                      onPressed:
+                          _pageController.isLoading ||
+                              !_pageController.isFormValid
+                          ? null
+                          : _submit,
+                      child: Text(
+                        _pageController.isLoading ? 'Salvando...' : 'Salvar',
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 14,
+                          fontFamily: 'Montserrat',
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 32),
+                ],
+              ),
             ),
           ),
         );

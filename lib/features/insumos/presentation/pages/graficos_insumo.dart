@@ -29,7 +29,9 @@ class _GraficosInsumoState extends State<GraficosInsumo> {
   @override
   void initState() {
     super.initState();
-    _controller = GetInsumoChartsController(Modular.get<GetInsumoChartsUsecase>());
+    _controller = GetInsumoChartsController(
+      Modular.get<GetInsumoChartsUsecase>(),
+    );
     WidgetsBinding.instance.addPostFrameCallback((_) => _loadCharts());
   }
 
@@ -46,7 +48,9 @@ class _GraficosInsumoState extends State<GraficosInsumo> {
       if (!mounted) return;
       AppSnackBar.show(
         context: context,
-        message: _controller.errorMessage ?? 'Nao foi possivel carregar os graficos.',
+        message:
+            _controller.errorMessage ??
+            'Nao foi possivel carregar os graficos.',
         isError: true,
       );
     }
@@ -59,7 +63,9 @@ class _GraficosInsumoState extends State<GraficosInsumo> {
       if (!mounted) return;
       AppSnackBar.show(
         context: context,
-        message: _controller.errorMessage ?? 'Nao foi possivel carregar os graficos.',
+        message:
+            _controller.errorMessage ??
+            'Nao foi possivel carregar os graficos.',
         isError: true,
       );
     }
@@ -72,7 +78,9 @@ class _GraficosInsumoState extends State<GraficosInsumo> {
       if (!mounted) return;
       AppSnackBar.show(
         context: context,
-        message: _controller.errorMessage ?? 'Nao foi possivel carregar os graficos.',
+        message:
+            _controller.errorMessage ??
+            'Nao foi possivel carregar os graficos.',
         isError: true,
       );
     }
@@ -97,7 +105,10 @@ class _GraficosInsumoState extends State<GraficosInsumo> {
                   Center(
                     child: Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 24),
-                      child: Text(_controller.errorMessage!, textAlign: TextAlign.center),
+                      child: Text(
+                        _controller.errorMessage!,
+                        textAlign: TextAlign.center,
+                      ),
                     ),
                   ),
                 ],
@@ -124,7 +135,10 @@ class _GraficosInsumoState extends State<GraficosInsumo> {
                     colors: _colors,
                   ),
                   const SizedBox(height: 16),
-                  _LineChartCard(title: 'Consumo mensal', points: charts.evolucaoMesAMes),
+                  _LineChartCard(
+                    title: 'Consumo mensal',
+                    points: charts.evolucaoMesAMes,
+                  ),
                   const SizedBox(height: 16),
                   _BarChartCard(
                     title: 'Evolução do valor em estoque',
@@ -161,7 +175,11 @@ class _GraficosInsumoState extends State<GraficosInsumo> {
 }
 
 class _MonthSelector extends StatelessWidget {
-  const _MonthSelector({required this.label, required this.onPrevious, required this.onNext});
+  const _MonthSelector({
+    required this.label,
+    required this.onPrevious,
+    required this.onNext,
+  });
 
   final String label;
   final VoidCallback? onPrevious;
@@ -179,12 +197,21 @@ class _MonthSelector extends StatelessWidget {
           side: const BorderSide(width: 1, color: Color(0xFFEBEBEB)),
           borderRadius: BorderRadius.circular(8),
         ),
-        shadows: const [BoxShadow(color: Color(0x0A000000), blurRadius: 24, offset: Offset(0, 0))],
+        shadows: const [
+          BoxShadow(
+            color: Color(0x0A000000),
+            blurRadius: 24,
+            offset: Offset(0, 0),
+          ),
+        ],
       ),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          InkWell(onTap: onPrevious, child: const Icon(Icons.arrow_back_rounded)),
+          InkWell(
+            onTap: onPrevious,
+            child: const Icon(Icons.arrow_back_rounded),
+          ),
           Text(
             label,
             textAlign: TextAlign.center,
@@ -196,7 +223,10 @@ class _MonthSelector extends StatelessWidget {
               height: 1.50,
             ),
           ),
-          InkWell(onTap: onNext, child: const Icon(Icons.arrow_forward_rounded)),
+          InkWell(
+            onTap: onNext,
+            child: const Icon(Icons.arrow_forward_rounded),
+          ),
         ],
       ),
     );
@@ -204,7 +234,11 @@ class _MonthSelector extends StatelessWidget {
 }
 
 class _DistributionCard extends StatelessWidget {
-  const _DistributionCard({required this.title, required this.items, required this.colors});
+  const _DistributionCard({
+    required this.title,
+    required this.items,
+    required this.colors,
+  });
 
   final String title;
   final List<InsumoQuantidadePorTipoEntity> items;
@@ -229,7 +263,10 @@ class _DistributionCard extends StatelessWidget {
                       width: 210,
                       height: 210,
                       child: CustomPaint(
-                        painter: _DonutChartPainter(items: visibleItems, colors: colors),
+                        painter: _DonutChartPainter(
+                          items: visibleItems,
+                          colors: colors,
+                        ),
                       ),
                     ),
                   ),
@@ -247,7 +284,10 @@ class _DistributionCard extends StatelessWidget {
                           Container(
                             width: 14,
                             height: 14,
-                            decoration: BoxDecoration(color: color, shape: BoxShape.circle),
+                            decoration: BoxDecoration(
+                              color: color,
+                              shape: BoxShape.circle,
+                            ),
                           ),
                           const SizedBox(width: 10),
                           Expanded(
@@ -297,7 +337,11 @@ class _LineChartCard extends StatelessWidget {
 }
 
 class _BarChartCard extends StatelessWidget {
-  const _BarChartCard({required this.title, required this.items, required this.colors});
+  const _BarChartCard({
+    required this.title,
+    required this.items,
+    required this.colors,
+  });
 
   final String title;
   final List<InsumoQuantidadePorTipoEntity> items;
@@ -339,7 +383,13 @@ class _ChartCard extends StatelessWidget {
           side: const BorderSide(width: 1, color: Color(0xFFEBEBEB)),
           borderRadius: BorderRadius.circular(16),
         ),
-        shadows: const [BoxShadow(color: Color(0x0A000000), blurRadius: 24, offset: Offset(0, 0))],
+        shadows: const [
+          BoxShadow(
+            color: Color(0x0A000000),
+            blurRadius: 24,
+            offset: Offset(0, 0),
+          ),
+        ],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -370,7 +420,7 @@ class _EmptyChartText extends StatelessWidget {
       padding: EdgeInsets.symmetric(vertical: 40),
       child: Center(
         child: Text(
-          'Sem dados para exibir neste periodo.',
+          'Sem dados para exibir neste período.',
           textAlign: TextAlign.center,
           style: TextStyle(
             color: Color(0xFF8C8C8C),
@@ -434,8 +484,15 @@ class _LineChartPainter extends CustomPainter {
     const bottom = 34.0;
     const top = 12.0;
     const right = 10.0;
-    final chart = Rect.fromLTRB(left, top, size.width - right, size.height - bottom);
-    final maxValue = _niceMax(points.map((point) => point.value).fold(0, math.max));
+    final chart = Rect.fromLTRB(
+      left,
+      top,
+      size.width - right,
+      size.height - bottom,
+    );
+    final maxValue = _niceMax(
+      points.map((point) => point.value).fold(0, math.max),
+    );
 
     final gridPaint = Paint()
       ..color = const Color(0xFFEDEDED)
@@ -450,7 +507,10 @@ class _LineChartPainter extends CustomPainter {
     }
 
     if (points.length == 1) {
-      final p = Offset(chart.left, chart.bottom - (points.first.value / maxValue) * chart.height);
+      final p = Offset(
+        chart.left,
+        chart.bottom - (points.first.value / maxValue) * chart.height,
+      );
       _drawPoint(canvas, p);
     } else {
       final path = Path();
@@ -527,8 +587,15 @@ class _BarChartPainter extends CustomPainter {
     const bottom = 34.0;
     const top = 12.0;
     const right = 10.0;
-    final chart = Rect.fromLTRB(left, top, size.width - right, size.height - bottom);
-    final maxValue = _niceMax(items.map((item) => item.quantidade).fold(0, math.max));
+    final chart = Rect.fromLTRB(
+      left,
+      top,
+      size.width - right,
+      size.height - bottom,
+    );
+    final maxValue = _niceMax(
+      items.map((item) => item.quantidade).fold(0, math.max),
+    );
     final gridPaint = Paint()
       ..color = const Color(0xFFEDEDED)
       ..strokeWidth = 1;

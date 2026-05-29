@@ -10,9 +10,11 @@ class DetailCompra extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final animaisLabel = compra.animais.length == 1
+    final count = compra.qtdAnimais;
+    final hasLinkedAnimals = compra.animais.isNotEmpty;
+    final animaisLabel = count == 1
         ? '1 animal vinculado'
-        : '${compra.animais.length} animais vinculados';
+        : '$count animais vinculados';
 
     return Scaffold(
       backgroundColor: Colors.white,
@@ -32,75 +34,76 @@ class DetailCompra extends StatelessWidget {
           ),
         ),
       ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            _InfoField(label: 'Potreiro', value: compra.potreiro?.nome),
-            _InfoField(label: 'Lote', value: compra.lote?.nome),
-            _InfoField(label: 'Data da compra', value: compra.data),
-            _InfoField(
-              label: 'Tipo de compra',
-              value: compra.tipoCompra == 'kg' ? 'KG' : 'Por cabeça',
-            ),
-            _InfoField(label: 'Valor unitário', value: compra.valorUnitario),
-            _InfoField(label: 'Fornecedor', value: compra.fornecedor),
-            _InfoField(label: 'Município', value: compra.municipio),
-            _InfoField(label: 'Observações', value: compra.obs),
-            const Text(
-              'Animais',
-              style: TextStyle(
-                color: Color(0xFF313131),
-                fontSize: 14,
-                fontFamily: 'Montserrat',
-                fontWeight: FontWeight.w600,
+      body: SafeArea(
+        top: false,
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              _InfoField(label: 'Potreiro', value: compra.potreiro?.nome),
+              _InfoField(label: 'Lote', value: compra.lote?.nome),
+              _InfoField(label: 'Data da compra', value: compra.data),
+              _InfoField(
+                label: 'Tipo de compra',
+                value: compra.tipoCompra == 'kg' ? 'KG' : 'Por cabeça',
               ),
-            ),
-            const SizedBox(height: 8),
-            InkWell(
-              borderRadius: BorderRadius.circular(8),
-              onTap: compra.animais.isEmpty
-                  ? null
-                  : () => Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (_) => CompraAnimaisListaPage.saved(
-                          animais: compra.animais,
-                        ),
-                      ),
-                    ),
-              child: Ink(
-                padding: const EdgeInsets.all(16),
-                decoration: BoxDecoration(
-                  color: const Color(0xFFEBEBEB),
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                child: Row(
-                  children: [
-                    Expanded(
-                      child: Text(
-                        compra.animais.isEmpty
-                            ? 'Nenhum animal vinculado'
-                            : animaisLabel,
-                        style: const TextStyle(
-                          color: Color(0xFF313131),
-                          fontSize: 14,
-                          fontFamily: 'Montserrat',
-                          fontWeight: FontWeight.w500,
-                        ),
-                      ),
-                    ),
-                    if (compra.animais.isNotEmpty)
-                      const Icon(
-                        Icons.keyboard_arrow_right,
-                        color: Color(0xFF8C8C8C),
-                      ),
-                  ],
+              _InfoField(label: 'Valor unitário', value: compra.valorUnitario),
+              _InfoField(label: 'Fornecedor', value: compra.fornecedor),
+              _InfoField(label: 'Município', value: compra.municipio),
+              _InfoField(label: 'Observações', value: compra.obs),
+              const Text(
+                'Animais',
+                style: TextStyle(
+                  color: Color(0xFF313131),
+                  fontSize: 14,
+                  fontFamily: 'Montserrat',
+                  fontWeight: FontWeight.w600,
                 ),
               ),
-            ),
-          ],
+              const SizedBox(height: 8),
+              InkWell(
+                borderRadius: BorderRadius.circular(8),
+                onTap: !hasLinkedAnimals
+                    ? null
+                    : () => Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (_) => CompraAnimaisListaPage.saved(
+                            animais: compra.animais,
+                          ),
+                        ),
+                      ),
+                child: Ink(
+                  padding: const EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFEBEBEB),
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: Row(
+                    children: [
+                      Expanded(
+                        child: Text(
+                          count == 0 ? 'Nenhum animal vinculado' : animaisLabel,
+                          style: const TextStyle(
+                            color: Color(0xFF313131),
+                            fontSize: 14,
+                            fontFamily: 'Montserrat',
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                      ),
+                      if (hasLinkedAnimals)
+                        const Icon(
+                          Icons.keyboard_arrow_right,
+                          color: Color(0xFF8C8C8C),
+                        ),
+                    ],
+                  ),
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );

@@ -72,23 +72,26 @@ class _DetailTrocaState extends State<DetailTroca> {
           ),
         ),
       ),
-      body: SingleChildScrollView(
-        child: Container(
-          margin: EdgeInsets.symmetric(horizontal: 20),
-          child: Column(
-            children: [
-              SizedBox(height: 16),
-              buildTextField("Data", '12/03/2025'),
-              buildTextField("Categoria de origem", "Vacas prenhes"),
-              buildTextField("Categoria de destino", 'Vacas paridas'),
+      body: SafeArea(
+        top: false,
+        child: SingleChildScrollView(
+          child: Container(
+            margin: EdgeInsets.symmetric(horizontal: 20),
+            child: Column(
+              children: [
+                SizedBox(height: 16),
+                buildTextField("Data", '12/03/2025'),
+                buildTextField("Categoria de origem", "Vacas prenhes"),
+                buildTextField("Categoria de destino", 'Vacas paridas'),
 
-              buildTextField(
-                "Selecione os animais (brincos)",
-                "2034, 2035, 2036, 2037, 2038",
-              ),
+                buildTextField(
+                  "Selecione os animais (brincos)",
+                  "2034, 2035, 2036, 2037, 2038",
+                ),
 
-              const SizedBox(height: 32),
-            ],
+                const SizedBox(height: 32),
+              ],
+            ),
           ),
         ),
       ),

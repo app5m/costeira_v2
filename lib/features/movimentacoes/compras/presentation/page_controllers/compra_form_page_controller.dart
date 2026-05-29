@@ -62,6 +62,7 @@ class CompraFormPageController extends ChangeNotifier {
   final Map<int, String> _animalCategoryLabels = {};
   final Map<int, String> _animalSubcategoryLabels = {};
   final Map<int, String> _animalBaseRacialLabels = {};
+  _CompraFormSnapshot? _initialSnapshot;
 
   bool get isEdit => _editingCompra != null;
   bool get isLoading =>
@@ -118,13 +119,18 @@ class CompraFormPageController extends ChangeNotifier {
       'Selecionar potreiro';
   String get selectedLotLabel =>
       selectedLot?.nome ?? _editingCompra?.lote?.nome ?? 'Selecionar lote';
+  bool get hasChanges =>
+      !isEdit ||
+      _initialSnapshot == null ||
+      _currentSnapshot() != _initialSnapshot;
   bool get isFormValid =>
       selectedPotreiroId != null &&
       selectedLotId != null &&
       dataController.text.trim().isNotEmpty &&
       selectedTipoCompra != null &&
       valorUnitarioController.text.trim().isNotEmpty &&
-      (isEdit || _animais.isNotEmpty);
+      (isEdit || _animais.isNotEmpty) &&
+      hasChanges;
   bool get shouldShowAnimalSubcategory =>
       selectedAnimalSexo == 2 && selectedAnimalCategoryId == matrixCategoryId;
 
@@ -144,6 +150,9 @@ class CompraFormPageController extends ChangeNotifier {
       fornecedorController.text = compra.fornecedor ?? '';
       municipioController.text = compra.municipio ?? '';
       obsController.text = compra.obs ?? '';
+      _initialSnapshot = _currentSnapshot();
+    } else {
+      _initialSnapshot = null;
     }
 
     try {
@@ -451,6 +460,28 @@ class CompraFormPageController extends ChangeNotifier {
     return trimmed.isEmpty ? null : trimmed;
   }
 
+  _CompraFormSnapshot _currentSnapshot() {
+    return _CompraFormSnapshot(
+      selectedPotreiroId: selectedPotreiroId,
+      selectedLotId: selectedLotId,
+      selectedTipoCompra: selectedTipoCompra,
+      data: dataController.text.trim(),
+      valorUnitario: _normalizeMoney(valorUnitarioController.text),
+      fornecedor: _normalizeOptionalText(fornecedorController.text),
+      municipio: _normalizeOptionalText(municipioController.text),
+      obs: _normalizeOptionalText(obsController.text),
+    );
+  }
+
+  String _normalizeMoney(String value) {
+    return value.replaceAll('R\$', '').trim();
+  }
+
+  String? _normalizeOptionalText(String value) {
+    final trimmed = value.trim();
+    return trimmed.isEmpty ? null : trimmed;
+  }
+
   @override
   void dispose() {
     _addController.removeListener(notifyListeners);
@@ -465,4 +496,52 @@ class CompraFormPageController extends ChangeNotifier {
     obsController.dispose();
     super.dispose();
   }
+}
+
+class _CompraFormSnapshot {
+  const _CompraFormSnapshot({
+    required this.selectedPotreiroId,
+    required this.selectedLotId,
+    required this.selectedTipoCompra,
+    required this.data,
+    required this.valorUnitario,
+    required this.fornecedor,
+    required this.municipio,
+    required this.obs,
+  });
+
+  final int? selectedPotreiroId;
+  final int? selectedLotId;
+  final String? selectedTipoCompra;
+  final String data;
+  final String valorUnitario;
+  final String? fornecedor;
+  final String? municipio;
+  final String? obs;
+
+  @override
+  bool operator ==(Object other) {
+    return identical(this, other) ||
+        other is _CompraFormSnapshot &&
+            other.selectedPotreiroId == selectedPotreiroId &&
+            other.selectedLotId == selectedLotId &&
+            other.selectedTipoCompra == selectedTipoCompra &&
+            other.data == data &&
+            other.valorUnitario == valorUnitario &&
+            other.fornecedor == fornecedor &&
+            other.municipio == municipio &&
+            other.obs == obs;
+  }
+
+  @override
+  int get hashCode => Object.hash(
+    selectedPotreiroId,
+    selectedLotId,
+    selectedTipoCompra,
+    data,
+    valorUnitario,
+    fornecedor,
+    municipio,
+    obs,
+  );
 }

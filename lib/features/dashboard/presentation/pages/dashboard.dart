@@ -3,6 +3,7 @@ import 'dart:math' as math;
 import 'package:costeira/core/api/api_exception.dart';
 import 'package:costeira/core/components/app_snack.dart';
 import 'package:costeira/features/dashboard/domain/entities/dashboard_entity.dart';
+import 'package:costeira/features/dashboard/domain/entities/dashboard_filter_entity.dart';
 import 'package:costeira/features/dashboard/presentation/controllers/get_dashboard_controller.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_modular/flutter_modular.dart';
@@ -16,8 +17,7 @@ class Dashboard extends StatefulWidget {
 }
 
 class _DashboardState extends State<Dashboard> {
-  final GetDashboardController _controller =
-      Modular.get<GetDashboardController>();
+  final GetDashboardController _controller = Modular.get<GetDashboardController>();
 
   @override
   void initState() {
@@ -53,33 +53,42 @@ class _DashboardState extends State<Dashboard> {
     }
   }
 
-  Future<void> _previousYear() async {
+  Future<void> _previousDay() async {
     try {
       await _controller.previousPeriod();
     } catch (_) {}
   }
 
-  Future<void> _nextYear() async {
+  Future<void> _nextDay() async {
     try {
       await _controller.nextPeriod();
     } catch (_) {}
   }
 
-  Future<void> _selectDate() async {
-    final currentDate = _controller.filter.dataIn;
-    final picked = await showDatePicker(
+  Future<void> _openFilter() async {
+    final range = await showModalBottomSheet<_DashboardDateRange>(
       context: context,
-      initialDate: currentDate,
-      firstDate: DateTime(2000),
-      lastDate: DateTime(2100),
+      isScrollControlled: true,
+      backgroundColor: Colors.white,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+      ),
+      builder: (context) {
+        return _DashboardFilterSheet(
+          initialDataIn: _controller.filter.dataIn,
+          initialDataOut: _controller.filter.dataOut,
+        );
+      },
     );
 
-    if (picked == null) {
+    if (range == null) {
       return;
     }
 
     try {
-      await _controller.selectDay(picked);
+      await _controller.load(
+        filter: DashboardFilterEntity(dataIn: range.dataIn, dataOut: range.dataOut),
+      );
     } catch (_) {}
   }
 
@@ -117,9 +126,9 @@ class _DashboardState extends State<Dashboard> {
                 dataIn: _controller.filter.dataIn,
                 dataOut: _controller.filter.dataOut,
                 isLoading: isLoading,
-                onPrevious: _previousYear,
-                onNext: _nextYear,
-                onSelectDate: _selectDate,
+                onPrevious: _previousDay,
+                onNext: _nextDay,
+                onSelectDate: _openFilter,
               ),
             ),
             const SizedBox(height: 16),
@@ -128,9 +137,9 @@ class _DashboardState extends State<Dashboard> {
               child: Wrap(
                 spacing: 16,
                 runSpacing: 16,
-                children: _buildMetrics(data)
-                    .map((metric) => _MetricCard(metric: metric))
-                    .toList(growable: false),
+                children: _buildMetrics(
+                  data,
+                ).map((metric) => _MetricCard(metric: metric)).toList(growable: false),
               ),
             ),
             const SizedBox(height: 16),
@@ -175,15 +184,12 @@ class _DashboardState extends State<Dashboard> {
       _DashboardMetric(
         'icon/cow-light.svg',
         'Total de animais',
-        '${indicators.totalAnimais} cabecas',
+        '${indicators.totalAnimais} cabeças',
       ),
       _DashboardMetric(
         'icon/workflow.svg',
-        'Media da fazenda',
-        _withSuffix(
-          indicators.mediaFazenda.valor,
-          indicators.mediaFazenda.descricao ?? 'kg/ha',
-        ),
+        'Média da fazenda',
+        _withSuffix(indicators.mediaFazenda.valor, indicators.mediaFazenda.descricao ?? 'kg/ha'),
       ),
       _DashboardMetric(
         'icon/cow-light.svg',
@@ -192,12 +198,12 @@ class _DashboardState extends State<Dashboard> {
       ),
       _DashboardMetric(
         'icon/chart-area.svg',
-        'Ganho medio diario',
+        'Ganho médio diário',
         _withSuffix(indicators.ganhoMedioDiario.valor, 'kg/dia'),
       ),
       _DashboardMetric(
         'icon/book-check.svg',
-        'Tarefas do mes',
+        'Tarefas do mês',
         '${indicators.tarefasMes.concluidas}/${indicators.tarefasMes.quantidade} concluidas',
       ),
     ];
@@ -241,11 +247,7 @@ class _PeriodCard extends StatelessWidget {
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    SvgPicture.asset(
-                      'icon/calendar.svg',
-                      width: 18,
-                      height: 18,
-                    ),
+                    SvgPicture.asset('icon/calendar.svg', width: 18, height: 18),
                     const SizedBox(width: 8),
                     Flexible(
                       child: Text(
@@ -275,6 +277,198 @@ class _PeriodCard extends StatelessWidget {
   }
 }
 
+class _DashboardDateRange {
+  const _DashboardDateRange({required this.dataIn, required this.dataOut});
+
+  final DateTime dataIn;
+  final DateTime dataOut;
+}
+
+class _DashboardFilterSheet extends StatefulWidget {
+  const _DashboardFilterSheet({required this.initialDataIn, required this.initialDataOut});
+
+  final DateTime initialDataIn;
+  final DateTime initialDataOut;
+
+  @override
+  State<_DashboardFilterSheet> createState() => _DashboardFilterSheetState();
+}
+
+class _DashboardFilterSheetState extends State<_DashboardFilterSheet> {
+  late DateTime _dataIn;
+  late DateTime _dataOut;
+
+  @override
+  void initState() {
+    super.initState();
+    _dataIn = _dateOnly(widget.initialDataIn);
+    _dataOut = _dateOnly(widget.initialDataOut);
+  }
+
+  Future<void> _pickDataIn() async {
+    final picked = await showDatePicker(
+      context: context,
+      initialDate: _dataIn,
+      firstDate: DateTime(2000),
+      lastDate: DateTime(2100),
+    );
+    if (picked == null) {
+      return;
+    }
+    final date = _dateOnly(picked);
+    setState(() {
+      _dataIn = date;
+      if (_dataOut.isBefore(_dataIn)) {
+        _dataOut = date;
+      }
+    });
+  }
+
+  Future<void> _pickDataOut() async {
+    final picked = await showDatePicker(
+      context: context,
+      initialDate: _dataOut.isBefore(_dataIn) ? _dataIn : _dataOut,
+      firstDate: DateTime(2000),
+      lastDate: DateTime(2100),
+    );
+    if (picked == null) {
+      return;
+    }
+    final date = _dateOnly(picked);
+    setState(() {
+      _dataOut = date;
+      if (_dataIn.isAfter(_dataOut)) {
+        _dataIn = date;
+      }
+    });
+  }
+
+  void _apply() {
+    Navigator.of(context).pop(_DashboardDateRange(dataIn: _dataIn, dataOut: _dataOut));
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final bottomInset = MediaQuery.of(context).viewInsets.bottom;
+
+    return SafeArea(
+      child: Padding(
+        padding: EdgeInsets.fromLTRB(20, 16, 20, 20 + bottomInset),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Center(child: Container(width: 72, height: 2, color: const Color(0xFFE2E2E2))),
+            const SizedBox(height: 20),
+            Row(
+              children: [
+                const Expanded(
+                  child: Text(
+                    'Filtro',
+                    style: TextStyle(
+                      color: Color(0xFF313131),
+                      fontSize: 18,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ),
+                IconButton(
+                  visualDensity: VisualDensity.compact,
+                  onPressed: () => Navigator.of(context).pop(),
+                  icon: const Icon(Icons.close_rounded),
+                ),
+              ],
+            ),
+            const SizedBox(height: 16),
+            _DateFilterField(
+              label: 'Data inicial',
+              value: _formatDateLabel(_dataIn),
+              onTap: _pickDataIn,
+            ),
+            const SizedBox(height: 12),
+            _DateFilterField(
+              label: 'Data final',
+              value: _formatDateLabel(_dataOut),
+              onTap: _pickDataOut,
+            ),
+            const SizedBox(height: 24),
+            SizedBox(
+              width: double.infinity,
+              height: 48,
+              child: ElevatedButton(
+                onPressed: _apply,
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: const Color(0xFF00823A),
+                  elevation: 0,
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                ),
+                child: const Text(
+                  'Aplicar filtro',
+                  style: TextStyle(color: Colors.white, fontSize: 14, fontWeight: FontWeight.w600),
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _DateFilterField extends StatelessWidget {
+  const _DateFilterField({required this.label, required this.value, required this.onTap});
+
+  final String label;
+  final String value;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    return InkWell(
+      borderRadius: BorderRadius.circular(8),
+      onTap: onTap,
+      child: Container(
+        width: double.infinity,
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          border: Border.all(color: const Color(0xFFEBEBEB)),
+          borderRadius: BorderRadius.circular(8),
+        ),
+        child: Row(
+          children: [
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    label,
+                    style: const TextStyle(
+                      color: Color(0xFF8C8C8C),
+                      fontSize: 12,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                  const SizedBox(height: 6),
+                  Text(
+                    value,
+                    style: const TextStyle(
+                      color: Color(0xFF313131),
+                      fontSize: 14,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            SvgPicture.asset('icon/calendar.svg', width: 18, height: 18),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
 class _MetricCard extends StatelessWidget {
   const _MetricCard({required this.metric});
 
@@ -293,19 +487,14 @@ class _MetricCard extends StatelessWidget {
           Container(
             padding: const EdgeInsets.all(8),
             decoration: BoxDecoration(
-              gradient: const LinearGradient(
-                colors: [Color(0xFF00823A), Color(0xFF00B752)],
-              ),
+              gradient: const LinearGradient(colors: [Color(0xFF00823A), Color(0xFF00B752)]),
               borderRadius: BorderRadius.circular(42.67),
             ),
             child: SvgPicture.asset(
               metric.icon,
               width: 16,
               height: 16,
-              colorFilter: const ColorFilter.mode(
-                Colors.white,
-                BlendMode.srcIn,
-              ),
+              colorFilter: const ColorFilter.mode(Colors.white, BlendMode.srcIn),
             ),
           ),
           const SizedBox(height: 8),
@@ -343,10 +532,7 @@ class _ProductionCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final maxValue = items.fold<double>(
-      0,
-      (current, item) => math.max(current, item.valor),
-    );
+    final maxValue = items.fold<double>(0, (current, item) => math.max(current, item.valor));
 
     return _BaseCard(
       child: Column(
@@ -363,9 +549,7 @@ class _ProductionCard extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.end,
                 children: items
                     .map((item) {
-                      final percent = maxValue <= 0
-                          ? 0.0
-                          : item.valor / maxValue;
+                      final percent = maxValue <= 0 ? 0.0 : item.valor / maxValue;
                       return Expanded(
                         child: Padding(
                           padding: const EdgeInsets.symmetric(horizontal: 3),
@@ -637,11 +821,7 @@ class _AxisLabel extends StatelessWidget {
   Widget build(BuildContext context) {
     return Text(
       text,
-      style: const TextStyle(
-        color: Color(0xFFB0B0B0),
-        fontSize: 12,
-        fontWeight: FontWeight.w500,
-      ),
+      style: const TextStyle(color: Color(0xFFB0B0B0), fontSize: 12, fontWeight: FontWeight.w500),
     );
   }
 }
@@ -656,10 +836,7 @@ class _DonutPainter extends CustomPainter {
     final stroke = 22.0;
     final rect = Offset.zero & size;
     final insetRect = rect.deflate(stroke / 2);
-    final total = items.fold<double>(
-      0,
-      (sum, item) => sum + math.max(item.quantidade, 0),
-    );
+    final total = items.fold<double>(0, (sum, item) => sum + math.max(item.quantidade, 0));
 
     var start = -math.pi / 2;
     final paint = Paint()
@@ -708,10 +885,7 @@ class _LineChartPainter extends CustomPainter {
     final gridPaint = Paint()
       ..color = const Color(0xFFEDEDED)
       ..strokeWidth = 1;
-    final labelPainter = TextPainter(
-      textDirection: TextDirection.ltr,
-      textAlign: TextAlign.right,
-    );
+    final labelPainter = TextPainter(textDirection: TextDirection.ltr, textAlign: TextAlign.right);
 
     for (var i = 0; i <= 4; i++) {
       final y = chart.top + (chart.height / 4) * i;
@@ -800,13 +974,7 @@ class _GaugePainter extends CustomPainter {
       ..color = const Color(0xFF00823A);
 
     canvas.drawArc(rect, math.pi, math.pi, false, background);
-    canvas.drawArc(
-      rect,
-      math.pi,
-      math.pi * (percent / 100).clamp(0, 1),
-      false,
-      foreground,
-    );
+    canvas.drawArc(rect, math.pi, math.pi * (percent / 100).clamp(0, 1), false, foreground);
   }
 
   @override
@@ -816,11 +984,7 @@ class _GaugePainter extends CustomPainter {
 }
 
 class _BaseCard extends StatelessWidget {
-  const _BaseCard({
-    required this.child,
-    this.width,
-    this.padding = const EdgeInsets.all(16),
-  });
+  const _BaseCard({required this.child, this.width, this.padding = const EdgeInsets.all(16)});
 
   final Widget child;
   final double? width;
@@ -836,11 +1000,7 @@ class _BaseCard extends StatelessWidget {
         border: Border.all(color: const Color(0xFFEBEBEB)),
         borderRadius: BorderRadius.circular(12),
         boxShadow: const [
-          BoxShadow(
-            color: Color(0x0A000000),
-            blurRadius: 24,
-            offset: Offset(0, 0),
-          ),
+          BoxShadow(color: Color(0x0A000000), blurRadius: 24, offset: Offset(0, 0)),
         ],
       ),
       child: child,
@@ -857,11 +1017,7 @@ class _CardTitle extends StatelessWidget {
   Widget build(BuildContext context) {
     return Text(
       text,
-      style: const TextStyle(
-        color: Color(0xFF313131),
-        fontSize: 14,
-        fontWeight: FontWeight.w600,
-      ),
+      style: const TextStyle(color: Color(0xFF313131), fontSize: 14, fontWeight: FontWeight.w600),
     );
   }
 }
@@ -875,11 +1031,7 @@ class _EmptyText extends StatelessWidget {
   Widget build(BuildContext context) {
     return Text(
       text,
-      style: const TextStyle(
-        color: Color(0xFF8C8C8C),
-        fontSize: 12,
-        fontWeight: FontWeight.w500,
-      ),
+      style: const TextStyle(color: Color(0xFF8C8C8C), fontSize: 12, fontWeight: FontWeight.w500),
     );
   }
 }
@@ -931,15 +1083,16 @@ String _formatDateLabel(DateTime date) {
       '${date.year.toString().padLeft(4, '0')}';
 }
 
+DateTime _dateOnly(DateTime date) {
+  return DateTime(date.year, date.month, date.day);
+}
+
 double _parsePercent(String value) {
   return double.tryParse(value.replaceAll('.', '').replaceAll(',', '.')) ?? 0;
 }
 
 double _parseDecimal(String? value) {
-  return double.tryParse(
-        value?.replaceAll('.', '').replaceAll(',', '.') ?? '',
-      ) ??
-      0;
+  return double.tryParse(value?.replaceAll('.', '').replaceAll(',', '.') ?? '') ?? 0;
 }
 
 Color _chartColor(int index) {

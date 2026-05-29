@@ -13,42 +13,53 @@ class AnimalChartsResponseModel extends AnimalChartsEntity {
   });
 
   factory AnimalChartsResponseModel.fromJson(Map<String, dynamic> json) {
+    final porCategoria = (json['por_categoria'] as List<dynamic>? ?? const [])
+        .whereType<Map>()
+        .map(
+          (item) =>
+              AnimalCategoryStatModel.fromJson(Map<String, dynamic>.from(item)),
+        )
+        .toList(growable: false);
+    final porSexo = (json['por_sexo'] as List<dynamic>? ?? const [])
+        .whereType<Map>()
+        .map(
+          (item) =>
+              AnimalSexStatModel.fromJson(Map<String, dynamic>.from(item)),
+        )
+        .toList(growable: false);
+    final distribuicaoCategoria =
+        (json['distribuicao_categoria'] as List<dynamic>? ?? const [])
+            .whereType<Map>()
+            .map(
+              (item) => AnimalCategoryDistributionModel.fromJson(
+                Map<String, dynamic>.from(item),
+              ),
+            )
+            .toList(growable: false);
+    final proporcaoSexo = (json['proporcao_sexo'] as List<dynamic>? ?? const [])
+        .whereType<Map>()
+        .map(
+          (item) =>
+              AnimalSexStatModel.fromJson(Map<String, dynamic>.from(item)),
+        )
+        .toList(growable: false);
+    final quantidadeAnimais = _firstPositive([
+      _toInt(json['quantidade_animais']),
+      _sumSexStats(proporcaoSexo),
+      _sumSexStats(porSexo),
+      _sumCategoryStats(porCategoria),
+      _sumDistributionStats(distribuicaoCategoria),
+    ]);
+
     return AnimalChartsResponseModel(
       pesoTotalRebanho: _toDouble(json['peso_total_rebanho']),
       pesoMedioFazenda: _toDouble(json['peso_medio_fazenda']),
       totalUa: _toDouble(json['total_ua']),
-      quantidadeAnimais: _toInt(json['quantidade_animais']),
-      porCategoria: (json['por_categoria'] as List<dynamic>? ?? const [])
-          .whereType<Map>()
-          .map(
-            (item) => AnimalCategoryStatModel.fromJson(
-              Map<String, dynamic>.from(item),
-            ),
-          )
-          .toList(growable: false),
-      porSexo: (json['por_sexo'] as List<dynamic>? ?? const [])
-          .whereType<Map>()
-          .map(
-            (item) =>
-                AnimalSexStatModel.fromJson(Map<String, dynamic>.from(item)),
-          )
-          .toList(growable: false),
-      distribuicaoCategoria:
-          (json['distribuicao_categoria'] as List<dynamic>? ?? const [])
-              .whereType<Map>()
-              .map(
-                (item) => AnimalCategoryDistributionModel.fromJson(
-                  Map<String, dynamic>.from(item),
-                ),
-              )
-              .toList(growable: false),
-      proporcaoSexo: (json['proporcao_sexo'] as List<dynamic>? ?? const [])
-          .whereType<Map>()
-          .map(
-            (item) =>
-                AnimalSexStatModel.fromJson(Map<String, dynamic>.from(item)),
-          )
-          .toList(growable: false),
+      quantidadeAnimais: quantidadeAnimais,
+      porCategoria: porCategoria,
+      porSexo: porSexo,
+      distribuicaoCategoria: distribuicaoCategoria,
+      proporcaoSexo: proporcaoSexo,
     );
   }
 }
@@ -119,4 +130,25 @@ int _toInt(dynamic value) {
   if (value == null) return 0;
   if (value is num) return value.toInt();
   return int.tryParse(value.toString()) ?? 0;
+}
+
+int _firstPositive(List<int> values) {
+  for (final value in values) {
+    if (value > 0) {
+      return value;
+    }
+  }
+  return 0;
+}
+
+int _sumSexStats(List<AnimalSexStatEntity> items) {
+  return items.fold<int>(0, (sum, item) => sum + item.quantidade);
+}
+
+int _sumCategoryStats(List<AnimalCategoryStatEntity> items) {
+  return items.fold<int>(0, (sum, item) => sum + item.quantidade);
+}
+
+int _sumDistributionStats(List<AnimalCategoryDistributionEntity> items) {
+  return items.fold<int>(0, (sum, item) => sum + item.quantidade);
 }

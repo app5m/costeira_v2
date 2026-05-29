@@ -85,44 +85,46 @@ class _AnimalsPageState extends State<AnimalsPage>
                   child: const Icon(Icons.add_rounded, color: Colors.white),
                 )
               : null,
-          body: Column(
-            children: [
-              TabBar(
-                controller: _pageController.tabController,
-                tabs: const [
-                  Tab(text: 'Dados'),
-                  Tab(text: 'Animais'),
-                  Tab(text: 'Lotes'),
-                ],
-                onTap: _pageController.setTabIndex,
-                automaticIndicatorColorAdjustment: false,
-                indicatorSize: TabBarIndicatorSize.tab,
-                unselectedLabelColor: Colors.grey,
-                labelStyle: const TextStyle(
-                  fontSize: 12,
-                  fontFamily: 'Montserrat',
-                  fontWeight: FontWeight.w600,
-                ),
-                unselectedLabelStyle: const TextStyle(
-                  fontSize: 12,
-                  fontFamily: 'Montserrat',
-                  fontWeight: FontWeight.w700,
-                ),
-                dividerColor: Colors.grey,
-                labelColor: Colors.black,
-                indicatorColor: MyColors.colorPrimary2,
-              ),
-              if (_pageController.tabIndex == 0)
-                const Expanded(child: DadosAnimais()),
-              if (_pageController.tabIndex == 1)
-                Expanded(
-                  child: AnimalList(
-                    key: ValueKey(_pageController.animalsListVersion),
+          body: SafeArea(
+            child: Column(
+              children: [
+                TabBar(
+                  controller: _pageController.tabController,
+                  tabs: const [
+                    Tab(text: 'Dados'),
+                    Tab(text: 'Animais'),
+                    Tab(text: 'Lotes'),
+                  ],
+                  onTap: _pageController.setTabIndex,
+                  automaticIndicatorColorAdjustment: false,
+                  indicatorSize: TabBarIndicatorSize.tab,
+                  unselectedLabelColor: Colors.grey,
+                  labelStyle: const TextStyle(
+                    fontSize: 12,
+                    fontFamily: 'Montserrat',
+                    fontWeight: FontWeight.w600,
                   ),
+                  unselectedLabelStyle: const TextStyle(
+                    fontSize: 12,
+                    fontFamily: 'Montserrat',
+                    fontWeight: FontWeight.w700,
+                  ),
+                  dividerColor: Colors.grey,
+                  labelColor: Colors.black,
+                  indicatorColor: MyColors.colorPrimary2,
                 ),
-              if (_pageController.tabIndex == 2)
-                LotesPage(key: ValueKey(_pageController.lotsListVersion)),
-            ],
+                if (_pageController.tabIndex == 0)
+                  const Expanded(child: DadosAnimais()),
+                if (_pageController.tabIndex == 1)
+                  Expanded(
+                    child: AnimalList(
+                      key: ValueKey(_pageController.animalsListVersion),
+                    ),
+                  ),
+                if (_pageController.tabIndex == 2)
+                  LotesPage(key: ValueKey(_pageController.lotsListVersion)),
+              ],
+            ),
           ),
         );
       },

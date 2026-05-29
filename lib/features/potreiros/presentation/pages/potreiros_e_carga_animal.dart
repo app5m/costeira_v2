@@ -28,20 +28,23 @@ class PotreirosECargaAnimal extends StatelessWidget {
           ),
         ),
       ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.symmetric(horizontal: 30, vertical: 32),
-        child: Column(
-          children: [
-            _ModuleCard(
-              label: 'Potreiros',
-              onTap: () => Modular.to.pushNamed(AppRoutes.potreiros),
-            ),
-            const SizedBox(height: 16),
-            _ModuleCard(
-              label: 'Carga Animal',
-              onTap: () => Modular.to.pushNamed(AppRoutes.cargaAnimal),
-            ),
-          ],
+      body: SafeArea(
+        top: false,
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.symmetric(horizontal: 30, vertical: 32),
+          child: Column(
+            children: [
+              _ModuleCard(
+                label: 'Potreiros',
+                onTap: () => Modular.to.pushNamed(AppRoutes.potreiros),
+              ),
+              const SizedBox(height: 16),
+              _ModuleCard(
+                label: 'Carga Animal',
+                onTap: () => Modular.to.pushNamed(AppRoutes.cargaAnimal),
+              ),
+            ],
+          ),
         ),
       ),
     );

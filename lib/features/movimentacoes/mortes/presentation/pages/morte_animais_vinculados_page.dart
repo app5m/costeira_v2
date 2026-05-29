@@ -29,57 +29,60 @@ class MorteAnimaisVinculadosPage extends StatelessWidget {
           ),
         ),
       ),
-      body: animais.isEmpty
-          ? const Center(child: Text('Nenhum animal vinculado.'))
-          : ListView.separated(
-              padding: const EdgeInsets.fromLTRB(20, 16, 20, 24),
-              itemCount: animais.length,
-              separatorBuilder: (_, __) => const SizedBox(height: 10),
-              itemBuilder: (context, index) {
-                final animal = animais[index];
-                return Container(
-                  padding: const EdgeInsets.all(14),
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    border: Border.all(color: const Color(0xFFEBEBEB)),
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        animal.brinco?.trim().isNotEmpty == true
-                            ? animal.brinco!.trim()
-                            : 'Animal ${animal.id}',
-                        style: const TextStyle(
-                          color: Color(0xFF313131),
-                          fontSize: 15,
-                          fontFamily: 'Montserrat',
-                          fontWeight: FontWeight.w600,
+      body: SafeArea(
+        top: false,
+        child: animais.isEmpty
+            ? const Center(child: Text('Nenhum animal vinculado.'))
+            : ListView.separated(
+                padding: const EdgeInsets.fromLTRB(20, 16, 20, 24),
+                itemCount: animais.length,
+                separatorBuilder: (_, __) => const SizedBox(height: 10),
+                itemBuilder: (context, index) {
+                  final animal = animais[index];
+                  return Container(
+                    padding: const EdgeInsets.all(14),
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      border: Border.all(color: const Color(0xFFEBEBEB)),
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          animal.brinco?.trim().isNotEmpty == true
+                              ? animal.brinco!.trim()
+                              : 'Animal ${animal.id}',
+                          style: const TextStyle(
+                            color: Color(0xFF313131),
+                            fontSize: 15,
+                            fontFamily: 'Montserrat',
+                            fontWeight: FontWeight.w600,
+                          ),
                         ),
-                      ),
-                      const SizedBox(height: 8),
-                      _InfoRow(
-                        label: 'Categoria',
-                        value: animal.categoria?.nome ?? '-',
-                      ),
-                      _InfoRow(
-                        label: 'Peso',
-                        value: animal.pesoTotal == null
-                            ? '-'
-                            : '${animal.pesoTotal!.toStringAsFixed(2)} kg',
-                      ),
-                      _InfoRow(
-                        label: 'Causa',
-                        value: animal.causa?.trim().isNotEmpty == true
-                            ? animal.causa!.trim()
-                            : '-',
-                      ),
-                    ],
-                  ),
-                );
-              },
-            ),
+                        const SizedBox(height: 8),
+                        _InfoRow(
+                          label: 'Categoria',
+                          value: animal.categoria?.nome ?? '-',
+                        ),
+                        _InfoRow(
+                          label: 'Peso',
+                          value: animal.pesoTotal == null
+                              ? '-'
+                              : '${animal.pesoTotal!.toStringAsFixed(2)} kg',
+                        ),
+                        _InfoRow(
+                          label: 'Causa',
+                          value: animal.causa?.trim().isNotEmpty == true
+                              ? animal.causa!.trim()
+                              : '-',
+                        ),
+                      ],
+                    ),
+                  );
+                },
+              ),
+      ),
     );
   }
 }

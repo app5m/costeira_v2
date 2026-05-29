@@ -7,11 +7,7 @@ class InsumoChartsResponseModel extends InsumoChartsEntity {
   });
 
   factory InsumoChartsResponseModel.fromJson(Map<String, dynamic> json) {
-    final dataList = (json['data'] as List<dynamic>? ?? const [])
-        .whereType<Map>()
-        .map((item) => Map<String, dynamic>.from(item))
-        .toList(growable: false);
-    final data = dataList.isEmpty ? <String, dynamic>{} : dataList.first;
+    final data = _resolveChartData(json);
 
     return InsumoChartsResponseModel(
       quantidadePorTipo: _mapList(
@@ -34,6 +30,23 @@ class InsumoChartsResponseModel extends InsumoChartsEntity {
         .map((item) => mapper(Map<String, dynamic>.from(item)))
         .toList(growable: false);
   }
+}
+
+Map<String, dynamic> _resolveChartData(Map<String, dynamic> json) {
+  final data = json['data'];
+
+  if (data is Map) {
+    return Map<String, dynamic>.from(data);
+  }
+
+  if (data is List) {
+    final first = data.whereType<Map>().firstOrNull;
+    if (first != null) {
+      return Map<String, dynamic>.from(first);
+    }
+  }
+
+  return json;
 }
 
 class InsumoQuantidadePorTipoModel extends InsumoQuantidadePorTipoEntity {

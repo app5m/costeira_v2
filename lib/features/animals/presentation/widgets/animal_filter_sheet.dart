@@ -105,9 +105,7 @@ class _AnimalFilterSheetState extends State<AnimalFilterSheet> {
   }
 
   Future<void> _loadFilterLists() async {
-    AppLogger.info(
-      'ANIMAIS FILTER SHEET: CARREGANDO LISTAS DE MACHO E FEMEA PARA FILTRO',
-    );
+    AppLogger.info('ANIMAIS FILTER SHEET: CARREGANDO LISTAS DE MACHO E FEMEA PARA FILTRO');
     setState(() {
       _isLoading = true;
       _errorMessage = null;
@@ -136,17 +134,13 @@ class _AnimalFilterSheetState extends State<AnimalFilterSheet> {
       _basesRaciais = basesById.values.toList()
         ..sort((a, b) => a.nome.trim().compareTo(b.nome.trim()));
 
-      final hasSelectedCategory = _categories.any(
-        (item) => item.id == _selectedCategoryId,
-      );
+      final hasSelectedCategory = _categories.any((item) => item.id == _selectedCategoryId);
       if (!hasSelectedCategory) {
         _selectedCategoryId = null;
         _selectedSubcategoryId = null;
       }
 
-      final hasSelectedBase = _basesRaciais.any(
-        (item) => item.id == _selectedBaseRacialId,
-      );
+      final hasSelectedBase = _basesRaciais.any((item) => item.id == _selectedBaseRacialId);
       if (!hasSelectedBase) {
         _selectedBaseRacialId = null;
       }
@@ -161,9 +155,7 @@ class _AnimalFilterSheetState extends State<AnimalFilterSheet> {
       );
     } catch (error) {
       _errorMessage = 'Nao foi possivel carregar os filtros.';
-      AppLogger.error(
-        'ANIMAIS FILTER SHEET: ERRO AO CARREGAR LISTAS MSG=$error',
-      );
+      AppLogger.error('ANIMAIS FILTER SHEET: ERRO AO CARREGAR LISTAS MSG=$error');
     } finally {
       if (mounted) {
         setState(() {
@@ -261,9 +253,7 @@ class _AnimalFilterSheetState extends State<AnimalFilterSheet> {
 
   Widget _buildBody() {
     if (_isLoading) {
-      return const Center(
-        child: CircularProgressIndicator(color: MyColors.colorPrimary),
-      );
+      return const Center(child: CircularProgressIndicator(color: MyColors.colorPrimary));
     }
 
     if ((_errorMessage ?? '').trim().isNotEmpty) {
@@ -274,16 +264,10 @@ class _AnimalFilterSheetState extends State<AnimalFilterSheet> {
             Text(
               _errorMessage!,
               textAlign: TextAlign.center,
-              style: const TextStyle(
-                color: Color(0xFF313131),
-                fontFamily: 'Montserrat',
-              ),
+              style: const TextStyle(color: Color(0xFF313131), fontFamily: 'Montserrat'),
             ),
             const SizedBox(height: 12),
-            TextButton(
-              onPressed: _loadFilterLists,
-              child: const Text('Tentar novamente'),
-            ),
+            TextButton(onPressed: _loadFilterLists, child: const Text('Tentar novamente')),
           ],
         ),
       );
@@ -293,20 +277,14 @@ class _AnimalFilterSheetState extends State<AnimalFilterSheet> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          _buildTextField(
-            label: 'Nome',
-            hint: 'Insira aqui...',
-            controller: _nameController,
-          ),
+          _buildTextField(label: 'Brinco', hint: 'Ex: BR12123', controller: _nameController),
           _buildDropdown<ListCategoryEntity>(
             label: 'Categoria',
             value: _selectedCategoryId,
             items: _categories,
             itemLabel: (item) => item.nome.trim(),
             onChanged: (value) {
-              AppLogger.info(
-                'ANIMAIS FILTER SHEET: CATEGORIA ALTERADA PARA ID=${value ?? 'NULL'}',
-              );
+              AppLogger.info('ANIMAIS FILTER SHEET: CATEGORIA ALTERADA PARA ID=${value ?? 'NULL'}');
               setState(() {
                 _selectedCategoryId = value;
                 _selectedSubcategoryId = null;
@@ -410,10 +388,7 @@ class _AnimalFilterSheetState extends State<AnimalFilterSheet> {
             ),
             filled: true,
             fillColor: const Color(0xFFEBEBEB),
-            contentPadding: const EdgeInsets.symmetric(
-              horizontal: 15,
-              vertical: 16,
-            ),
+            contentPadding: const EdgeInsets.symmetric(horizontal: 15, vertical: 16),
             border: OutlineInputBorder(
               borderRadius: BorderRadius.circular(8),
               borderSide: BorderSide.none,
@@ -451,12 +426,7 @@ class _AnimalFilterSheetState extends State<AnimalFilterSheet> {
           value: effectiveValue,
           placeholder: 'Selecionar',
           options: items
-              .map(
-                (item) => AppSelectOption<int>(
-                  value: item.id,
-                  label: itemLabel(item),
-                ),
-              )
+              .map((item) => AppSelectOption<int>(value: item.id, label: itemLabel(item)))
               .toList(growable: false),
           enabled: items.isNotEmpty,
           onChanged: onChanged,

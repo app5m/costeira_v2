@@ -14,6 +14,7 @@ class AddLotePageController extends ChangeNotifier {
   final TextEditingController nomeController = TextEditingController();
 
   bool get isLoading => _controller.isLoading;
+  bool get hasNome => nomeController.text.trim().isNotEmpty;
 
   Future<PageActionResult> submit() async {
     AppLogger.info('LOTES ADD PAGE CONTROLLER: VALIDANDO FORMULARIO');

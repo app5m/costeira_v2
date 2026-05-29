@@ -32,51 +32,55 @@ class MorteAnimaisPage extends StatelessWidget {
               ),
             ),
           ),
-          body: Column(
-            children: [
-              Padding(
-                padding: const EdgeInsets.fromLTRB(20, 16, 20, 10),
-                child: TextField(
-                  controller: pageController.animalFilterController,
-                  decoration: InputDecoration(
-                    hintText: 'Filtrar por brinco ou peso',
-                    prefixIcon: const Icon(Icons.search),
-                    filled: true,
-                    fillColor: const Color(0xFFEBEBEB),
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(8),
-                      borderSide: BorderSide.none,
+          body: SafeArea(
+            top: false,
+            child: Column(
+              children: [
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(20, 16, 20, 10),
+                  child: TextField(
+                    controller: pageController.animalFilterController,
+                    decoration: InputDecoration(
+                      hintText: 'Filtrar por brinco ou peso',
+                      prefixIcon: const Icon(Icons.search),
+                      filled: true,
+                      fillColor: const Color(0xFFEBEBEB),
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(8),
+                        borderSide: BorderSide.none,
+                      ),
                     ),
                   ),
                 ),
-              ),
-              Expanded(
-                child: pageController.isLoading
-                    ? const Center(child: CircularProgressIndicator())
-                    : animais.isEmpty
-                    ? const Center(child: Text('Nenhum animal encontrado.'))
-                    : RefreshIndicator(
-                        onRefresh: pageController.reloadAnimais,
-                        child: ListView.separated(
-                          padding: const EdgeInsets.fromLTRB(20, 8, 20, 16),
-                          itemCount: animais.length,
-                          separatorBuilder: (_, __) => const SizedBox(height: 10),
-                          itemBuilder: (context, index) {
-                            final animal = animais[index];
-                            return _AnimalTile(
-                              animal: animal,
-                              isSelected: pageController.isAnimalSelected(animal.id),
-                              causa: pageController.animalCausa(animal.id),
-                              onTap: () => _editCausa(context, animal),
-                              onCheckboxChanged: () => _toggleAnimal(context, animal),
-                            );
-                          },
+                Expanded(
+                  child: pageController.isLoading
+                      ? const Center(child: CircularProgressIndicator())
+                      : animais.isEmpty
+                      ? const Center(child: Text('Nenhum animal encontrado.'))
+                      : RefreshIndicator(
+                          onRefresh: pageController.reloadAnimais,
+                          child: ListView.separated(
+                            padding: const EdgeInsets.fromLTRB(20, 8, 20, 16),
+                            itemCount: animais.length,
+                            separatorBuilder: (_, __) =>
+                                const SizedBox(height: 10),
+                            itemBuilder: (context, index) {
+                              final animal = animais[index];
+                              return _AnimalTile(
+                                animal: animal,
+                                isSelected: pageController.isAnimalSelected(
+                                  animal.id,
+                                ),
+                                causa: pageController.animalCausa(animal.id),
+                                onTap: () => _editCausa(context, animal),
+                                onCheckboxChanged: () =>
+                                    _toggleAnimal(context, animal),
+                              );
+                            },
+                          ),
                         ),
-                      ),
-              ),
-              SafeArea(
-                top: false,
-                child: Padding(
+                ),
+                Padding(
                   padding: const EdgeInsets.fromLTRB(20, 8, 20, 16),
                   child: SizedBox(
                     width: double.infinity,
@@ -87,7 +91,9 @@ class MorteAnimaisPage extends StatelessWidget {
                           : () => Navigator.pop(context),
                       style: ElevatedButton.styleFrom(
                         backgroundColor: MyColors.colorPrimary,
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(8),
+                        ),
                       ),
                       child: Text(
                         pageController.selectedAnimais.length == 1
@@ -98,8 +104,8 @@ class MorteAnimaisPage extends StatelessWidget {
                     ),
                   ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
         );
       },
@@ -127,7 +133,8 @@ class MorteAnimaisPage extends StatelessWidget {
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
       ),
-      builder: (_) => _CausaSheet(initialValue: previousCausa),
+      builder: (_) =>
+          SafeArea(top: false, child: _CausaSheet(initialValue: previousCausa)),
     );
     if (causa != null) {
       pageController.setAnimalCausa(animal.id, causa);
@@ -147,77 +154,105 @@ class _CausaSheet extends StatefulWidget {
 class _CausaSheetState extends State<_CausaSheet> {
   late final TextEditingController _controller;
 
+  bool get _hasChanges =>
+      _controller.text.trim() != (widget.initialValue ?? '').trim();
+
   @override
   void initState() {
     super.initState();
     _controller = TextEditingController(text: widget.initialValue ?? '');
+    _controller.addListener(_onChanged);
   }
 
   @override
   void dispose() {
+    _controller.removeListener(_onChanged);
     _controller.dispose();
     super.dispose();
   }
 
+  void _onChanged() {
+    if (mounted) {
+      setState(() {});
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
-    return SafeArea(
-      child: Padding(
-        padding: EdgeInsets.fromLTRB(20, 16, 20, 20 + MediaQuery.of(context).viewInsets.bottom),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Center(
-              child: Container(
-                width: 72,
-                height: 4,
-                decoration: BoxDecoration(
-                  color: const Color(0xFFE2E2E2),
-                  borderRadius: BorderRadius.circular(999),
-                ),
+    return Padding(
+      padding: EdgeInsets.fromLTRB(
+        20,
+        16,
+        20,
+        20 + MediaQuery.of(context).viewInsets.bottom,
+      ),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Center(
+            child: Container(
+              width: 72,
+              height: 4,
+              decoration: BoxDecoration(
+                color: const Color(0xFFE2E2E2),
+                borderRadius: BorderRadius.circular(999),
               ),
             ),
-            const SizedBox(height: 20),
-            const Text(
-              'Causa da morte',
-              style: TextStyle(fontSize: 18, fontFamily: 'Montserrat', fontWeight: FontWeight.w600),
+          ),
+          const SizedBox(height: 20),
+          const Text(
+            'Causa da morte',
+            style: TextStyle(
+              fontSize: 18,
+              fontFamily: 'Montserrat',
+              fontWeight: FontWeight.w600,
             ),
-            const SizedBox(height: 12),
-            TextField(
-              controller: _controller,
-              decoration: InputDecoration(
-                hintText: 'Ex: Doença, acidente, etc.',
-                filled: true,
-                fillColor: const Color(0xFFEBEBEB),
-                border: OutlineInputBorder(
+          ),
+          const SizedBox(height: 12),
+          TextField(
+            controller: _controller,
+            decoration: InputDecoration(
+              hintText: 'Ex: Doença, acidente, etc.',
+              filled: true,
+              fillColor: const Color(0xFFEBEBEB),
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(8),
+                borderSide: BorderSide.none,
+              ),
+            ),
+          ),
+          const SizedBox(height: 16),
+          SizedBox(
+            width: double.infinity,
+            height: 48,
+            child: ElevatedButton(
+              onPressed: _hasChanges
+                  ? () => Navigator.pop(context, _controller.text)
+                  : null,
+              style: ElevatedButton.styleFrom(
+                backgroundColor: MyColors.colorPrimary,
+                shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(8),
-                  borderSide: BorderSide.none,
                 ),
               ),
-            ),
-            const SizedBox(height: 16),
-            SizedBox(
-              width: double.infinity,
-              height: 48,
-              child: ElevatedButton(
-                onPressed: () => Navigator.pop(context, _controller.text),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: MyColors.colorPrimary,
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-                ),
-                child: const Text('Salvar causa', style: TextStyle(color: Colors.white)),
+              child: const Text(
+                'Salvar causa',
+                style: TextStyle(color: Colors.white),
               ),
             ),
-            if ((widget.initialValue ?? '').trim().isNotEmpty)
-              TextButton(
-                onPressed: () => Navigator.pop(context, ''),
-                child: const Text('Remover causa'),
-              )
-            else
-              TextButton(onPressed: () => Navigator.pop(context), child: const Text('Ignorar')),
-          ],
-        ),
+          ),
+          if ((widget.initialValue ?? '').trim().isNotEmpty)
+            TextButton(
+              onPressed: () => Navigator.pop(context, ''),
+              child: const Text('Remover causa'),
+            )
+          else
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: const Text('Ignorar'),
+            ),
+        ],
       ),
     );
   }
@@ -247,7 +282,9 @@ class _AnimalTile extends StatelessWidget {
         padding: const EdgeInsets.all(14),
         decoration: BoxDecoration(
           color: Colors.white,
-          border: Border.all(color: isSelected ? MyColors.colorPrimary : const Color(0xFFEBEBEB)),
+          border: Border.all(
+            color: isSelected ? MyColors.colorPrimary : const Color(0xFFEBEBEB),
+          ),
           borderRadius: BorderRadius.circular(8),
         ),
         child: Row(
@@ -259,7 +296,9 @@ class _AnimalTile extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    animal.brinco?.trim().isNotEmpty == true ? animal.brinco!.trim() : 'Sem brinco',
+                    animal.brinco?.trim().isNotEmpty == true
+                        ? animal.brinco!.trim()
+                        : 'Sem brinco',
                     style: const TextStyle(
                       color: Color(0xFF313131),
                       fontSize: 15,

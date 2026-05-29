@@ -60,6 +60,7 @@ class AbortoFormPageController extends ChangeNotifier {
   int? selectedPotreiroId;
   int? selectedLotId;
   List<AbortoSelectedAnimal> _selectedAnimais = const [];
+  _AbortoFormSnapshot? _initialSnapshot;
 
   bool get isEdit => _editingAborto != null;
   bool get isLoading =>
@@ -128,7 +129,12 @@ class AbortoFormPageController extends ChangeNotifier {
       selectedPotreiroId != null &&
       selectedLotId != null &&
       dataController.text.trim().isNotEmpty &&
-      (isEdit || _selectedAnimais.isNotEmpty);
+      (isEdit || _selectedAnimais.isNotEmpty) &&
+      hasChanges;
+  bool get hasChanges =>
+      !isEdit ||
+      _initialSnapshot == null ||
+      _currentSnapshot() != _initialSnapshot;
 
   Future<void> init({AbortoEntity? aborto}) async {
     _editingAborto = aborto;
@@ -137,6 +143,9 @@ class AbortoFormPageController extends ChangeNotifier {
       obsController.text = aborto.obs ?? '';
       selectedPotreiroId = aborto.appPotreirosId ?? aborto.potreiro?.id;
       selectedLotId = aborto.appAnimaisLotesId ?? aborto.lote?.id;
+      _initialSnapshot = _currentSnapshot();
+    } else {
+      _initialSnapshot = null;
     }
 
     try {
@@ -298,6 +307,15 @@ class AbortoFormPageController extends ChangeNotifier {
     return null;
   }
 
+  _AbortoFormSnapshot _currentSnapshot() {
+    return _AbortoFormSnapshot(
+      data: dataController.text.trim(),
+      obs: _emptyToNull(obsController.text),
+      selectedPotreiroId: selectedPotreiroId,
+      selectedLotId: selectedLotId,
+    );
+  }
+
   String? _emptyToNull(String value) {
     final trimmed = value.trim();
     return trimmed.isEmpty ? null : trimmed;
@@ -319,4 +337,31 @@ class AbortoFormPageController extends ChangeNotifier {
     animalFilterController.dispose();
     super.dispose();
   }
+}
+
+class _AbortoFormSnapshot {
+  const _AbortoFormSnapshot({
+    required this.data,
+    required this.obs,
+    required this.selectedPotreiroId,
+    required this.selectedLotId,
+  });
+
+  final String data;
+  final String? obs;
+  final int? selectedPotreiroId;
+  final int? selectedLotId;
+
+  @override
+  bool operator ==(Object other) {
+    return identical(this, other) ||
+        other is _AbortoFormSnapshot &&
+            other.data == data &&
+            other.obs == obs &&
+            other.selectedPotreiroId == selectedPotreiroId &&
+            other.selectedLotId == selectedLotId;
+  }
+
+  @override
+  int get hashCode => Object.hash(data, obs, selectedPotreiroId, selectedLotId);
 }

@@ -73,11 +73,14 @@ class _TrocaCategoriaFormPageState extends State<TrocaCategoriaFormPage> {
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
       ),
-      builder: (_) => PotreiroSelectionSheet(
-        potreiros: _pageController.potreiros,
-        initialSelectedPotreiroId: _pageController.selectedPotreiroId,
-        isLoading: _pageController.isLoading,
-        errorMessage: _pageController.errorMessage,
+      builder: (_) => SafeArea(
+        top: false,
+        child: PotreiroSelectionSheet(
+          potreiros: _pageController.potreiros,
+          initialSelectedPotreiroId: _pageController.selectedPotreiroId,
+          isLoading: _pageController.isLoading,
+          errorMessage: _pageController.errorMessage,
+        ),
       ),
     );
     if (result == null || result.shouldAddPotreiro) {
@@ -94,11 +97,14 @@ class _TrocaCategoriaFormPageState extends State<TrocaCategoriaFormPage> {
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
       ),
-      builder: (_) => AnimalLotSelectionSheet(
-        lots: _pageController.lotes,
-        initialSelectedLotId: _pageController.selectedLoteId,
-        isLoading: _pageController.isLoading,
-        errorMessage: _pageController.errorMessage,
+      builder: (_) => SafeArea(
+        top: false,
+        child: AnimalLotSelectionSheet(
+          lots: _pageController.lotes,
+          initialSelectedLotId: _pageController.selectedLoteId,
+          isLoading: _pageController.isLoading,
+          errorMessage: _pageController.errorMessage,
+        ),
       ),
     );
     if (result == null || result.shouldAddLot) {
@@ -110,7 +116,10 @@ class _TrocaCategoriaFormPageState extends State<TrocaCategoriaFormPage> {
   Future<void> _openAnimalsSelection() async {
     await Navigator.push(
       context,
-      MaterialPageRoute(builder: (_) => TrocaCategoriaAnimaisPage(pageController: _pageController)),
+      MaterialPageRoute(
+        builder: (_) =>
+            TrocaCategoriaAnimaisPage(pageController: _pageController),
+      ),
     );
   }
 
@@ -118,8 +127,9 @@ class _TrocaCategoriaFormPageState extends State<TrocaCategoriaFormPage> {
     await Navigator.push(
       context,
       MaterialPageRoute(
-        builder: (_) =>
-            TrocaCategoriaAnimaisVinculadosPage(animais: widget.troca?.animais ?? const []),
+        builder: (_) => TrocaCategoriaAnimaisVinculadosPage(
+          animais: widget.troca?.animais ?? const [],
+        ),
       ),
     );
   }
@@ -147,54 +157,57 @@ class _TrocaCategoriaFormPageState extends State<TrocaCategoriaFormPage> {
               ),
             ),
           ),
-          body: SingleChildScrollView(
-            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                _buildTextField(
-                  controller: _pageController.dataController,
-                  label: 'Data da troca',
-                  hint: '00/00/0000',
-                  readOnly: true,
-                  onTap: _selectDate,
-                ),
-                PotreiroSelectorField(
-                  label: 'Potreiro',
-                  value: _pageController.selectedPotreiroLabel,
-                  onTap: _selectPotreiro,
-                  isLoading: _pageController.isLoading,
-                ),
-                AnimalLotSelectorField(
-                  label: 'Lote',
-                  value: _pageController.selectedLoteLabel,
-                  onTap: _selectLote,
-                  isLoading: _pageController.isLoading,
-                ),
-                _buildCategoriaDestinoSelect(),
-                _buildTextField(
-                  controller: _pageController.obsController,
-                  label: 'Observações',
-                  hint: 'Digite observações sobre a troca',
-                  maxLines: 3,
-                ),
-                _buildAnimalsSummary(),
-                if (_pageController.errorMessage != null) ...[
-                  const SizedBox(height: 8),
-                  Text(
-                    _pageController.errorMessage!,
-                    style: const TextStyle(color: Colors.red, fontSize: 12),
+          body: SafeArea(
+            top: false,
+            child: SingleChildScrollView(
+              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  _buildTextField(
+                    controller: _pageController.dataController,
+                    label: 'Data da troca',
+                    hint: '00/00/0000',
+                    readOnly: true,
+                    onTap: _selectDate,
                   ),
+                  PotreiroSelectorField(
+                    label: 'Potreiro',
+                    value: _pageController.selectedPotreiroLabel,
+                    onTap: _selectPotreiro,
+                    isLoading: _pageController.isLoading,
+                  ),
+                  AnimalLotSelectorField(
+                    label: 'Lote',
+                    value: _pageController.selectedLoteLabel,
+                    onTap: _selectLote,
+                    isLoading: _pageController.isLoading,
+                  ),
+                  _buildCategoriaDestinoSelect(),
+                  _buildTextField(
+                    controller: _pageController.obsController,
+                    label: 'Observações',
+                    hint: 'Digite observações sobre a troca',
+                    maxLines: 3,
+                  ),
+                  _buildAnimalsSummary(),
+                  if (_pageController.errorMessage != null) ...[
+                    const SizedBox(height: 8),
+                    Text(
+                      _pageController.errorMessage!,
+                      style: const TextStyle(color: Colors.red, fontSize: 12),
+                    ),
+                  ],
+                  const SizedBox(height: 20),
+                  CustomButton(
+                    onPressed: _submit,
+                    text: _pageController.isEdit ? 'Salvar' : 'Adicionar',
+                    enabled: _pageController.isFormValid,
+                    isLoading: _pageController.isLoading,
+                  ),
+                  const SizedBox(height: 80),
                 ],
-                const SizedBox(height: 20),
-                CustomButton(
-                  onPressed: _submit,
-                  text: _pageController.isEdit ? 'Salvar' : 'Adicionar',
-                  enabled: _pageController.isFormValid,
-                  isLoading: _pageController.isLoading,
-                ),
-                const SizedBox(height: 80),
-              ],
+              ),
             ),
           ),
         );
@@ -220,7 +233,9 @@ class _TrocaCategoriaFormPageState extends State<TrocaCategoriaFormPage> {
         AppSelectOverlay<int>(
           value: _pageController.selectedCategoriaDestinoId,
           placeholder: _pageController.selectedCategoriaDestinoLabel,
-          options: _pageController.categorias.map(_categoryOption).toList(growable: false),
+          options: _pageController.categorias
+              .map(_categoryOption)
+              .toList(growable: false),
           onChanged: _pageController.onCategoriaDestinoChanged,
         ),
         const SizedBox(height: 18),
@@ -233,6 +248,10 @@ class _TrocaCategoriaFormPageState extends State<TrocaCategoriaFormPage> {
   }
 
   Widget _buildAnimalsSummary() {
+    if (_pageController.isEdit && (widget.troca?.animais.isEmpty ?? true)) {
+      return const SizedBox.shrink();
+    }
+
     final count = _pageController.isEdit
         ? (widget.troca?.animais.length ?? 0)
         : _pageController.selectedAnimais.length;
@@ -282,7 +301,10 @@ class _TrocaCategoriaFormPageState extends State<TrocaCategoriaFormPage> {
                   ),
                 ),
                 if (!_pageController.isEdit || count > 0)
-                  const Icon(Icons.keyboard_arrow_right, color: Color(0xFF8C8C8C)),
+                  const Icon(
+                    Icons.keyboard_arrow_right,
+                    color: Color(0xFF8C8C8C),
+                  ),
               ],
             ),
           ),
@@ -341,7 +363,10 @@ class _TrocaCategoriaFormPageState extends State<TrocaCategoriaFormPage> {
             ),
             filled: true,
             fillColor: const Color(0xFFEBEBEB),
-            contentPadding: const EdgeInsets.symmetric(horizontal: 15, vertical: 16),
+            contentPadding: const EdgeInsets.symmetric(
+              horizontal: 15,
+              vertical: 16,
+            ),
             border: OutlineInputBorder(
               borderRadius: BorderRadius.circular(8),
               borderSide: BorderSide.none,

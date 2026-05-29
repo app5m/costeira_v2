@@ -20,7 +20,8 @@ class Mortes extends StatefulWidget {
 }
 
 class _MortesState extends State<Mortes> with SingleTickerProviderStateMixin {
-  final MortesListPageController _listPageController = Modular.get<MortesListPageController>();
+  final MortesListPageController _listPageController =
+      Modular.get<MortesListPageController>();
 
   late TabController _tabController;
   int index = 0;
@@ -93,7 +94,9 @@ class _MortesState extends State<Mortes> with SingleTickerProviderStateMixin {
           backgroundColor: Colors.white,
           floatingActionButton: index == 0
               ? FloatingActionButton(
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(64)),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(64),
+                  ),
                   onPressed: () {
                     Navigator.push(
                       context,
@@ -122,39 +125,42 @@ class _MortesState extends State<Mortes> with SingleTickerProviderStateMixin {
               ),
             ),
           ),
-          body: Column(
-            children: [
-              TabBar(
-                controller: _tabController,
-                tabs: const [
-                  Tab(text: 'Lista'),
-                  Tab(text: 'Gráfico'),
-                ],
-                onTap: (value) {
-                  setState(() {
-                    index = value;
-                  });
-                },
-                automaticIndicatorColorAdjustment: false,
-                indicatorSize: TabBarIndicatorSize.tab,
-                unselectedLabelColor: Colors.grey,
-                labelStyle: const TextStyle(
-                  fontSize: 12,
-                  fontFamily: 'Montserrat',
-                  fontWeight: FontWeight.w600,
+          body: SafeArea(
+            top: false,
+            child: Column(
+              children: [
+                TabBar(
+                  controller: _tabController,
+                  tabs: const [
+                    Tab(text: 'Lista'),
+                    Tab(text: 'Gráfico'),
+                  ],
+                  onTap: (value) {
+                    setState(() {
+                      index = value;
+                    });
+                  },
+                  automaticIndicatorColorAdjustment: false,
+                  indicatorSize: TabBarIndicatorSize.tab,
+                  unselectedLabelColor: Colors.grey,
+                  labelStyle: const TextStyle(
+                    fontSize: 12,
+                    fontFamily: 'Montserrat',
+                    fontWeight: FontWeight.w600,
+                  ),
+                  unselectedLabelStyle: const TextStyle(
+                    fontSize: 12,
+                    fontFamily: 'Montserrat',
+                    fontWeight: FontWeight.w700,
+                  ),
+                  dividerColor: Colors.grey,
+                  labelColor: Colors.black,
+                  indicatorColor: MyColors.colorPrimary2,
                 ),
-                unselectedLabelStyle: const TextStyle(
-                  fontSize: 12,
-                  fontFamily: 'Montserrat',
-                  fontWeight: FontWeight.w700,
-                ),
-                dividerColor: Colors.grey,
-                labelColor: Colors.black,
-                indicatorColor: MyColors.colorPrimary2,
-              ),
-              const SizedBox(height: 16),
-              if (index == 0) _buildListTab() else const GraficosMorte(),
-            ],
+                const SizedBox(height: 16),
+                if (index == 0) _buildListTab() else const GraficosMorte(),
+              ],
+            ),
           ),
         );
       },
@@ -187,7 +193,9 @@ class _MortesState extends State<Mortes> with SingleTickerProviderStateMixin {
               color: hasFilters ? const Color(0x14128977) : Colors.transparent,
               borderRadius: BorderRadius.circular(999),
               border: Border.all(
-                color: hasFilters ? MyColors.colorPrimary : const Color(0xFFE6E6E6),
+                color: hasFilters
+                    ? MyColors.colorPrimary
+                    : const Color(0xFFE6E6E6),
               ),
             ),
             child: Row(
@@ -196,13 +204,17 @@ class _MortesState extends State<Mortes> with SingleTickerProviderStateMixin {
                 Icon(
                   Icons.tune_rounded,
                   size: 16,
-                  color: hasFilters ? MyColors.colorPrimary : const Color(0xFF8C8C8C),
+                  color: hasFilters
+                      ? MyColors.colorPrimary
+                      : const Color(0xFF8C8C8C),
                 ),
                 const SizedBox(width: 6),
                 Text(
                   hasFilters ? 'Filtros ativos' : 'Filtrar',
                   style: TextStyle(
-                    color: hasFilters ? MyColors.colorPrimary : const Color(0xFF8C8C8C),
+                    color: hasFilters
+                        ? MyColors.colorPrimary
+                        : const Color(0xFF8C8C8C),
                     fontSize: 12,
                     fontFamily: 'Montserrat',
                     fontWeight: FontWeight.w600,
@@ -221,13 +233,17 @@ class _MortesState extends State<Mortes> with SingleTickerProviderStateMixin {
       return const Center(child: CircularProgressIndicator());
     }
 
-    if (_listPageController.errorMessage != null && _listPageController.mortes.isEmpty) {
+    if (_listPageController.errorMessage != null &&
+        _listPageController.mortes.isEmpty) {
       return ListView(
         children: [
           const SizedBox(height: 120),
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 24),
-            child: Text(_listPageController.errorMessage!, textAlign: TextAlign.center),
+            child: Text(
+              _listPageController.errorMessage!,
+              textAlign: TextAlign.center,
+            ),
           ),
         ],
       );
@@ -251,7 +267,10 @@ class _MortesState extends State<Mortes> with SingleTickerProviderStateMixin {
           return _MorteCard(
             morte: morte,
             onOpen: () {
-              Navigator.push(context, MaterialPageRoute(builder: (_) => DetailMorte(morte: morte)));
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (_) => DetailMorte(morte: morte)),
+              );
             },
             onEdit: () {
               Navigator.push(
@@ -278,114 +297,127 @@ class _MortesState extends State<Mortes> with SingleTickerProviderStateMixin {
         ),
       ),
       builder: (BuildContext bc) {
-        return Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Container(
-              padding: const EdgeInsets.only(top: 8),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  const SizedBox(height: 8),
-                  Opacity(
-                    opacity: 0.70,
-                    child: Container(
-                      width: 72,
-                      decoration: const ShapeDecoration(
-                        shape: RoundedRectangleBorder(
-                          side: BorderSide(
-                            width: 2,
-                            strokeAlign: BorderSide.strokeAlignCenter,
-                            color: Color(0xFFE2E2E2),
+        return SafeArea(
+          top: false,
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Container(
+                padding: const EdgeInsets.only(top: 8),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    const SizedBox(height: 8),
+                    Opacity(
+                      opacity: 0.70,
+                      child: Container(
+                        width: 72,
+                        decoration: const ShapeDecoration(
+                          shape: RoundedRectangleBorder(
+                            side: BorderSide(
+                              width: 2,
+                              strokeAlign: BorderSide.strokeAlignCenter,
+                              color: Color(0xFFE2E2E2),
+                            ),
                           ),
                         ),
                       ),
                     ),
-                  ),
-                  const SizedBox(height: 8),
-                  Container(
-                    margin: const EdgeInsets.symmetric(horizontal: 20),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.end,
-                      children: [
-                        GestureDetector(
-                          onTap: () => Navigator.of(context).pop(false),
-                          child: const Icon(Icons.close),
-                        ),
-                      ],
-                    ),
-                  ),
-                  const SizedBox(height: 16),
-                  SvgPicture.asset(
-                    'icon/danger-linear.svg',
-                    width: 80,
-                    height: 80,
-                    colorFilter: const ColorFilter.mode(Colors.red, BlendMode.srcIn),
-                  ),
-                  const SizedBox(height: 16),
-                  const Text(
-                    'Excluir morte',
-                    style: TextStyle(
-                      fontFamily: 'Montserrat',
-                      fontWeight: FontWeight.w600,
-                      fontSize: 16,
-                      color: Color(0xff000000),
-                    ),
-                  ),
-                  const SizedBox(height: 8),
-                  const Text(
-                    'Tem certeza que deseja excluir essa\nmorte permanentemente?',
-                    textAlign: TextAlign.center,
-                    style: TextStyle(
-                      fontFamily: 'Montserrat',
-                      fontWeight: FontWeight.w400,
-                      fontSize: 14,
-                      color: Color(0xFF8692A8),
-                    ),
-                  ),
-                  const SizedBox(height: 16),
-                  SizedBox(
-                    width: MediaQuery.of(context).size.width - 40,
-                    height: 50,
-                    child: ElevatedButton(
-                      onPressed: () async {
-                        Navigator.of(context).pop();
-                        final message = await _listPageController.deleteMorte(morte);
-                        if (!mounted || !pageContext.mounted) {
-                          return;
-                        }
-                        AppSnackBar.show(
-                          context: pageContext,
-                          message: message ?? 'Morte excluida com sucesso.',
-                          isError: message != null,
-                        );
-                      },
-                      style: ElevatedButton.styleFrom(
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-                        side: const BorderSide(color: Colors.red),
-                        elevation: 0,
-                        backgroundColor: Colors.transparent,
+                    const SizedBox(height: 8),
+                    Container(
+                      margin: const EdgeInsets.symmetric(horizontal: 20),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.end,
+                        children: [
+                          GestureDetector(
+                            onTap: () => Navigator.of(context).pop(false),
+                            child: const Icon(Icons.close),
+                          ),
+                        ],
                       ),
-                      child: const Text('Excluir', style: TextStyle(color: Colors.red)),
                     ),
-                  ),
-                  TextButton(
-                    onPressed: () => Navigator.of(context).pop(false),
-                    child: Text(
-                      'Cancelar',
+                    const SizedBox(height: 16),
+                    SvgPicture.asset(
+                      'icon/danger-linear.svg',
+                      width: 80,
+                      height: 80,
+                      colorFilter: const ColorFilter.mode(
+                        Colors.red,
+                        BlendMode.srcIn,
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                    const Text(
+                      'Excluir morte',
                       style: TextStyle(
+                        fontFamily: 'Montserrat',
+                        fontWeight: FontWeight.w600,
                         fontSize: 16,
-                        color: MyColors.colorOnPrimary,
-                        decoration: TextDecoration.underline,
-                        decorationColor: MyColors.colorOnPrimary,
+                        color: Color(0xff000000),
                       ),
                     ),
-                  ),
-                  const SizedBox(height: 16),
-                ],
+                    const SizedBox(height: 8),
+                    const Text(
+                      'Tem certeza que deseja excluir essa\nmorte permanentemente?',
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                        fontFamily: 'Montserrat',
+                        fontWeight: FontWeight.w400,
+                        fontSize: 14,
+                        color: Color(0xFF8692A8),
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                    SizedBox(
+                      width: MediaQuery.of(context).size.width - 40,
+                      height: 50,
+                      child: ElevatedButton(
+                        onPressed: () async {
+                          Navigator.of(context).pop();
+                          final message = await _listPageController.deleteMorte(
+                            morte,
+                          );
+                          if (!mounted || !pageContext.mounted) {
+                            return;
+                          }
+                          AppSnackBar.show(
+                            context: pageContext,
+                            message: message ?? 'Morte excluida com sucesso.',
+                            isError: message != null,
+                          );
+                        },
+                        style: ElevatedButton.styleFrom(
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                          side: const BorderSide(color: Colors.red),
+                          elevation: 0,
+                          backgroundColor: Colors.transparent,
+                        ),
+                        child: const Text(
+                          'Excluir',
+                          style: TextStyle(color: Colors.red),
+                        ),
+                      ),
+                    ),
+                    TextButton(
+                      onPressed: () => Navigator.of(context).pop(false),
+                      child: Text(
+                        'Cancelar',
+                        style: TextStyle(
+                          fontSize: 16,
+                          color: MyColors.colorOnPrimary,
+                          decoration: TextDecoration.underline,
+                          decorationColor: MyColors.colorOnPrimary,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                  ],
+                ),
               ),
-            ),
-          ],
+            ],
+          ),
         );
       },
     );
@@ -407,6 +439,8 @@ class _MorteCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final causeLabel = _causeLabel;
+
     return GestureDetector(
       onTap: onOpen,
       child: Container(
@@ -420,7 +454,11 @@ class _MorteCard extends StatelessWidget {
             borderRadius: BorderRadius.circular(12),
           ),
           shadows: const [
-            BoxShadow(color: Color(0x0A000000), blurRadius: 24, offset: Offset(0, 0)),
+            BoxShadow(
+              color: Color(0x0A000000),
+              blurRadius: 24,
+              offset: Offset(0, 0),
+            ),
           ],
         ),
         child: Row(
@@ -435,13 +473,18 @@ class _MorteCard extends StatelessWidget {
                     padding: const EdgeInsets.all(8),
                     decoration: ShapeDecoration(
                       color: const Color(0x198C8C8C),
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(42.67)),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(42.67),
+                      ),
                     ),
                     child: SvgPicture.asset(
                       'icon/skull.svg',
                       width: 16,
                       height: 16,
-                      colorFilter: const ColorFilter.mode(Color(0xFF8C8C8C), BlendMode.srcIn),
+                      colorFilter: const ColorFilter.mode(
+                        Color(0xFF8C8C8C),
+                        BlendMode.srcIn,
+                      ),
                     ),
                   ),
                   const SizedBox(width: 16),
@@ -458,20 +501,20 @@ class _MorteCard extends StatelessWidget {
                             fontWeight: FontWeight.w500,
                           ),
                         ),
-                        const SizedBox(height: 8),
-                        Text(
-                          morte.obs?.trim().isNotEmpty == true
-                              ? morte.obs!.trim()
-                              : 'Causa nao informada',
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                          style: const TextStyle(
-                            color: Color(0xFF8C8C8C),
-                            fontSize: 12,
-                            fontFamily: 'Montserrat',
-                            fontWeight: FontWeight.w500,
+                        if (causeLabel != null) ...[
+                          const SizedBox(height: 8),
+                          Text(
+                            causeLabel,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: const TextStyle(
+                              color: Color(0xFF8C8C8C),
+                              fontSize: 12,
+                              fontFamily: 'Montserrat',
+                              fontWeight: FontWeight.w500,
+                            ),
                           ),
-                        ),
+                        ],
                         const SizedBox(height: 8),
                         Text(
                           morte.data,
@@ -491,9 +534,15 @@ class _MorteCard extends StatelessWidget {
             const SizedBox(width: 8),
             Column(
               children: [
-                GestureDetector(onTap: onDelete, child: SvgPicture.asset('icon/trash.svg')),
+                GestureDetector(
+                  onTap: onDelete,
+                  child: SvgPicture.asset('icon/trash.svg'),
+                ),
                 const SizedBox(height: 12),
-                GestureDetector(onTap: onEdit, child: SvgPicture.asset('icon/square-pen.svg')),
+                GestureDetector(
+                  onTap: onEdit,
+                  child: SvgPicture.asset('icon/square-pen.svg'),
+                ),
               ],
             ),
           ],
@@ -503,9 +552,29 @@ class _MorteCard extends StatelessWidget {
   }
 
   String get _title {
-    final categoria = morte.animais.isNotEmpty ? morte.animais.first.categoria?.nome.trim() : null;
+    final categoria = morte.animais.isNotEmpty
+        ? morte.animais.first.categoria?.nome.trim()
+        : null;
     final label = categoria?.isNotEmpty == true ? ' - $categoria' : '';
-    final count = morte.qtdAnimais == 1 ? '1 animal' : '${morte.qtdAnimais} animais';
+    final count = morte.qtdAnimais == 1
+        ? '1 animal'
+        : '${morte.qtdAnimais} animais';
     return '$count$label';
+  }
+
+  String? get _causeLabel {
+    final causes = morte.animais
+        .map((animal) => animal.causa?.trim())
+        .where((cause) => cause != null && cause.isNotEmpty)
+        .cast<String>()
+        .toSet()
+        .toList(growable: false);
+    if (causes.isEmpty) {
+      return null;
+    }
+    if (causes.length == 1) {
+      return causes.first;
+    }
+    return causes.join(' / ');
   }
 }

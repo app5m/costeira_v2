@@ -31,6 +31,20 @@ class _AddTaskResponsavelState extends State<AddTaskResponsavel> {
 
   bool get _isFormValid => _nomeController.text.trim().isNotEmpty;
 
+  bool get _hasChanges {
+    final responsavel = widget.responsavel;
+    if (responsavel == null) {
+      return true;
+    }
+
+    return _nomeController.text.trim() != responsavel.nome.trim() ||
+        _emailController.text.trim() != responsavel.email.trim() ||
+        taskResponsavelApiPhoneDigits(_celularController.text) !=
+            taskResponsavelApiPhoneDigits(responsavel.celular);
+  }
+
+  bool get _canSubmit => _isFormValid && (!_isEditing || _hasChanges);
+
   @override
   void initState() {
     super.initState();
@@ -51,7 +65,7 @@ class _AddTaskResponsavelState extends State<AddTaskResponsavel> {
   }
 
   Future<void> _submit() async {
-    if (!_isFormValid || _isLoading) {
+    if (!_canSubmit || _isLoading) {
       return;
     }
 
@@ -106,7 +120,7 @@ class _AddTaskResponsavelState extends State<AddTaskResponsavel> {
           child: const Icon(Icons.arrow_back_ios, color: Colors.white),
         ),
         title: Text(
-          _isEditing ? 'Editar responsavel' : 'Adicionar responsavel',
+          _isEditing ? 'Editar responsável' : 'Adicionar responsável',
           style: const TextStyle(
             color: Colors.white,
             fontSize: 16,
@@ -115,37 +129,40 @@ class _AddTaskResponsavelState extends State<AddTaskResponsavel> {
           ),
         ),
       ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            _buildTextField(
-              controller: _nomeController,
-              label: 'Nome',
-              hint: 'Nome do responsavel',
-            ),
-            _buildTextField(
-              controller: _emailController,
-              label: 'E-mail',
-              hint: 'email@dominio.com',
-              keyboardType: TextInputType.emailAddress,
-            ),
-            _buildTextField(
-              controller: _celularController,
-              label: 'Celular',
-              hint: '(99) 99999-9999',
-              keyboardType: TextInputType.phone,
-              inputFormatters: const [_CellPhoneInputFormatter()],
-            ),
-            const SizedBox(height: 2),
-            CustomButton(
-              onPressed: _submit,
-              text: _isEditing ? 'Salvar' : 'Adicionar',
-              enabled: _isFormValid,
-              isLoading: _isLoading,
-            ),
-          ],
+      body: SafeArea(
+        top: false,
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              _buildTextField(
+                controller: _nomeController,
+                label: 'Nome',
+                hint: 'Nome do responsavel',
+              ),
+              _buildTextField(
+                controller: _emailController,
+                label: 'E-mail',
+                hint: 'email@dominio.com',
+                keyboardType: TextInputType.emailAddress,
+              ),
+              _buildTextField(
+                controller: _celularController,
+                label: 'Celular',
+                hint: '(99) 99999-9999',
+                keyboardType: TextInputType.phone,
+                inputFormatters: const [_CellPhoneInputFormatter()],
+              ),
+              const SizedBox(height: 2),
+              CustomButton(
+                onPressed: _submit,
+                text: _isEditing ? 'Salvar' : 'Adicionar',
+                enabled: _canSubmit,
+                isLoading: _isLoading,
+              ),
+            ],
+          ),
         ),
       ),
     );

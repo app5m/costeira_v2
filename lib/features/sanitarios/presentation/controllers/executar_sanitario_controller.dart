@@ -8,10 +8,7 @@ import 'package:costeira/features/sanitarios/domain/usecases/executar_sanitario_
 import 'package:flutter/material.dart';
 
 class ExecutarSanitarioController extends ChangeNotifier {
-  ExecutarSanitarioController(
-    this._executarSanitarioUsecase,
-    this._getInsumosTipoUsecase,
-  ) {
+  ExecutarSanitarioController(this._executarSanitarioUsecase, this._getInsumosTipoUsecase) {
     quantidadeController.addListener(_onQuantidadeChanged);
   }
 
@@ -94,9 +91,7 @@ class ExecutarSanitarioController extends ChangeNotifier {
     final value = _parseDecimal(quantidadeController.text) ?? 0;
     final next = value + 1;
     quantidadeController.text = _formatDecimal(
-      next > quantidadeRestanteSelecionada
-          ? quantidadeRestanteSelecionada
-          : next,
+      next > quantidadeRestanteSelecionada ? quantidadeRestanteSelecionada : next,
     );
   }
 
@@ -120,24 +115,18 @@ class ExecutarSanitarioController extends ChangeNotifier {
 
     if (quantidadeTotal > saldo) {
       _errorMessage =
-          'Quantidade maior que o saldo disponivel (${_formatDecimal(saldo)} ${_unidade(insumo)}).';
+          'Quantidade maior que o saldo disponível (${_formatDecimal(saldo)} ${_unidade(insumo)}).';
       notifyListeners();
       return false;
     }
 
-    final existingIndex = _itens.indexWhere(
-      (item) => item.insumo.id == insumo.id,
-    );
+    final existingIndex = _itens.indexWhere((item) => item.insumo.id == insumo.id);
     final nextItens = [..._itens];
     if (existingIndex >= 0) {
       final current = nextItens[existingIndex];
-      nextItens[existingIndex] = current.copyWith(
-        quantidade: current.quantidade + quantidade,
-      );
+      nextItens[existingIndex] = current.copyWith(quantidade: current.quantidade + quantidade);
     } else {
-      nextItens.add(
-        SanitarioExecucaoItemEntity(insumo: insumo, quantidade: quantidade),
-      );
+      nextItens.add(SanitarioExecucaoItemEntity(insumo: insumo, quantidade: quantidade));
     }
 
     _itens = nextItens;
@@ -153,10 +142,7 @@ class ExecutarSanitarioController extends ChangeNotifier {
     notifyListeners();
   }
 
-  Future<ApiMessage?> submit({
-    required int sanitarioId,
-    required String dataExecucao,
-  }) async {
+  Future<ApiMessage?> submit({required int sanitarioId, required String dataExecucao}) async {
     if (_itens.isEmpty) {
       _errorMessage = 'Adicione ao menos um insumo utilizado.';
       notifyListeners();
@@ -235,14 +221,12 @@ class ExecutarSanitarioController extends ChangeNotifier {
     for (final item in _itens) {
       final current = _insumos.where((insumo) => insumo.id == item.insumo.id);
       if (current.isEmpty) {
-        throw ApiException(
-          'O insumo ${item.insumo.nome} nao esta mais disponivel para execucao.',
-        );
+        throw ApiException('O insumo ${item.insumo.nome} nao esta mais disponível para execucao.');
       }
       final saldo = current.first.qtdTotal ?? 0;
       if (item.quantidade > saldo) {
         throw ApiException(
-          'Saldo insuficiente para ${item.insumo.nome}. Disponivel: ${_formatDecimal(saldo)} ${_unidade(current.first)}.',
+          'Saldo insuficiente para ${item.insumo.nome}. Disponível: ${_formatDecimal(saldo)} ${_unidade(current.first)}.',
         );
       }
     }
@@ -252,9 +236,7 @@ class ExecutarSanitarioController extends ChangeNotifier {
     final maximo = quantidadeRestanteSelecionada;
     final value = _parseDecimal(quantidadeController.text);
     if (value != null && value > maximo) {
-      final selection = TextSelection.collapsed(
-        offset: _formatDecimal(maximo).length,
-      );
+      final selection = TextSelection.collapsed(offset: _formatDecimal(maximo).length);
       quantidadeController.value = TextEditingValue(
         text: _formatDecimal(maximo),
         selection: selection,
@@ -298,18 +280,12 @@ class ExecutarSanitarioController extends ChangeNotifier {
 }
 
 class SanitarioExecucaoItemEntity {
-  const SanitarioExecucaoItemEntity({
-    required this.insumo,
-    required this.quantidade,
-  });
+  const SanitarioExecucaoItemEntity({required this.insumo, required this.quantidade});
 
   final InsumoTipoEntity insumo;
   final double quantidade;
 
   SanitarioExecucaoItemEntity copyWith({double? quantidade}) {
-    return SanitarioExecucaoItemEntity(
-      insumo: insumo,
-      quantidade: quantidade ?? this.quantidade,
-    );
+    return SanitarioExecucaoItemEntity(insumo: insumo, quantidade: quantidade ?? this.quantidade);
   }
 }

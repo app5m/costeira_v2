@@ -4,9 +4,9 @@ import 'package:costeira/core/components/app_buttons.dart';
 import 'package:costeira/core/components/app_form_field.dart';
 import 'package:costeira/core/components/flow_page_scaffold.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_modular/flutter_modular.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:mask_text_input_formatter/mask_text_input_formatter.dart';
 
 class RegisterResponsiblePage extends StatefulWidget {
   const RegisterResponsiblePage({super.key, required this.draft});
@@ -14,7 +14,8 @@ class RegisterResponsiblePage extends StatefulWidget {
   final RegisterDraft draft;
 
   @override
-  State<RegisterResponsiblePage> createState() => _RegisterResponsiblePageState();
+  State<RegisterResponsiblePage> createState() =>
+      _RegisterResponsiblePageState();
 }
 
 class _RegisterResponsiblePageState extends State<RegisterResponsiblePage> {
@@ -22,6 +23,14 @@ class _RegisterResponsiblePageState extends State<RegisterResponsiblePage> {
   final _nameController = TextEditingController();
   final _whatsAppController = TextEditingController();
   final _cpfController = TextEditingController();
+  final _whatsAppMaskFormatter = MaskTextInputFormatter(
+    mask: '(##) #####-####',
+    filter: {'#': RegExp(r'[0-9]')},
+  );
+  final _cpfMaskFormatter = MaskTextInputFormatter(
+    mask: '###.###.###-##',
+    filter: {'#': RegExp(r'[0-9]')},
+  );
 
   @override
   void dispose() {
@@ -47,7 +56,11 @@ class _RegisterResponsiblePageState extends State<RegisterResponsiblePage> {
                   CircleAvatar(
                     radius: 44,
                     backgroundColor: const Color(0xFFEBEBEB),
-                    child: SvgPicture.asset('icon/user-round.svg', width: 44, height: 44),
+                    child: SvgPicture.asset(
+                      'icon/user-round.svg',
+                      width: 44,
+                      height: 44,
+                    ),
                   ),
                   Positioned(
                     bottom: 0,
@@ -55,7 +68,11 @@ class _RegisterResponsiblePageState extends State<RegisterResponsiblePage> {
                     child: CircleAvatar(
                       radius: 16,
                       backgroundColor: const Color(0xFFEBEBEB),
-                      child: SvgPicture.asset('icon/edit-rounded.svg', width: 16, height: 16),
+                      child: SvgPicture.asset(
+                        'icon/edit-rounded.svg',
+                        width: 16,
+                        height: 16,
+                      ),
                     ),
                   ),
                 ],
@@ -74,8 +91,8 @@ class _RegisterResponsiblePageState extends State<RegisterResponsiblePage> {
               hintText: '(00) 00000-0000',
               controller: _whatsAppController,
               keyboardType: TextInputType.phone,
-              inputFormatters: [FilteringTextInputFormatter.digitsOnly],
-              validator: _requiredField,
+              inputFormatters: [_whatsAppMaskFormatter],
+              validator: _validateWhatsApp,
             ),
             const SizedBox(height: 18),
             AppFormField(
@@ -83,13 +100,16 @@ class _RegisterResponsiblePageState extends State<RegisterResponsiblePage> {
               hintText: '000.000.000-00',
               controller: _cpfController,
               keyboardType: TextInputType.number,
-              inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+              inputFormatters: [_cpfMaskFormatter],
               validator: _validateCpf,
             ),
           ],
         ),
       ),
-      footer: PrimaryButton(label: 'Avançar', onPressed: _canSubmit ? _submit : null),
+      footer: PrimaryButton(
+        label: 'Avançar',
+        onPressed: _canSubmit ? _submit : null,
+      ),
     );
   }
 
@@ -102,8 +122,8 @@ class _RegisterResponsiblePageState extends State<RegisterResponsiblePage> {
       AppRoutes.registerCredentials,
       arguments: widget.draft.copyWith(
         nome: _nameController.text.trim(),
-        celular: _whatsAppController.text.trim(),
-        documento: _cpfController.text.trim(),
+        celular: _whatsAppMaskFormatter.getUnmaskedText(),
+        documento: _cpfMaskFormatter.getUnmaskedText(),
       ),
     );
   }
@@ -126,9 +146,20 @@ class _RegisterResponsiblePageState extends State<RegisterResponsiblePage> {
     return null;
   }
 
+  String? _validateWhatsApp(String? value) {
+    final cleanValue = (value ?? '').replaceAll(RegExp(r'\D'), '');
+    if (cleanValue.isEmpty) {
+      return 'Campo obrigatÃ³rio';
+    }
+    if (cleanValue.length != 11) {
+      return 'WhatsApp invÃ¡lido';
+    }
+    return null;
+  }
+
   bool get _canSubmit =>
       _requiredField(_nameController.text) == null &&
-      _requiredField(_whatsAppController.text) == null &&
+      _validateWhatsApp(_whatsAppController.text) == null &&
       _validateCpf(_cpfController.text) == null;
 }
 

@@ -96,17 +96,20 @@ class _DetailTaskResponsavelState extends State<DetailTaskResponsavel> {
           ),
         ),
       ),
-      body: SingleChildScrollView(
-        child: Container(
-          margin: const EdgeInsets.symmetric(horizontal: 20),
-          child: Column(
-            children: [
-              const SizedBox(height: 16),
-              buildTextField('Nome', responsavel.nome),
-              buildTextField('E-mail', email),
-              buildTextField('Celular', celular),
-              const SizedBox(height: 32),
-            ],
+      body: SafeArea(
+        top: false,
+        child: SingleChildScrollView(
+          child: Container(
+            margin: const EdgeInsets.symmetric(horizontal: 20),
+            child: Column(
+              children: [
+                const SizedBox(height: 16),
+                buildTextField('Nome', responsavel.nome),
+                buildTextField('E-mail', email),
+                buildTextField('Celular', celular),
+                const SizedBox(height: 32),
+              ],
+            ),
           ),
         ),
       ),

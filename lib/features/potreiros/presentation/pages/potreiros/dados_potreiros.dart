@@ -72,7 +72,7 @@ class _DadosPotreirosState extends State<DadosPotreiros> {
             child: ListView(
               children: const [
                 SizedBox(height: 120),
-                Center(child: Text('Nenhum dado disponivel ainda.')),
+                Center(child: Text('Nenhum dado disponível ainda.')),
               ],
             ),
           );

@@ -27,22 +27,35 @@ class DetailTransferencia extends StatelessWidget {
           ),
         ),
       ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            _InfoField(label: 'Data', value: transferencia.data),
-            _InfoField(label: 'Tipo', value: _tipoLabel),
-            _InfoField(label: 'Quantidade', value: _quantidadeLabel),
-            _InfoField(label: 'Potreiro destino', value: transferencia.potreiroDestino?.nome),
-            if (transferencia.loteDestino != null)
-              _InfoField(label: 'Lote destino', value: transferencia.loteDestino?.nome),
-            _InfoField(label: 'Peso médio', value: _pesoMedioLabel),
-            _InfoField(label: 'Peso total', value: _pesoTotalLabel),
-            _InfoField(label: 'Observações', value: transferencia.obs, maxLines: 3),
-            const SizedBox(height: 32),
-          ],
+      body: SafeArea(
+        top: false,
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              _InfoField(label: 'Data', value: transferencia.data),
+              _InfoField(label: 'Tipo', value: _tipoLabel),
+              _InfoField(label: 'Quantidade', value: _quantidadeLabel),
+              _InfoField(
+                label: 'Potreiro destino',
+                value: transferencia.potreiroDestino?.nome,
+              ),
+              if (transferencia.loteDestino != null)
+                _InfoField(
+                  label: 'Lote destino',
+                  value: transferencia.loteDestino?.nome,
+                ),
+              _InfoField(label: 'Peso médio', value: _pesoMedioLabel),
+              _InfoField(label: 'Peso total', value: _pesoTotalLabel),
+              _InfoField(
+                label: 'Observações',
+                value: transferencia.obs,
+                maxLines: 3,
+              ),
+              const SizedBox(height: 32),
+            ],
+          ),
         ),
       ),
     );
@@ -69,7 +82,11 @@ class DetailTransferencia extends StatelessWidget {
 }
 
 class _InfoField extends StatelessWidget {
-  const _InfoField({required this.label, required this.value, this.maxLines = 1});
+  const _InfoField({
+    required this.label,
+    required this.value,
+    this.maxLines = 1,
+  });
 
   final String label;
   final String? value;

@@ -31,6 +31,7 @@ class ConsumoFormPageController extends ChangeNotifier {
 
   ConsumoUpsertEntity? _editingConsumo;
   List<AnimalEntity> _selectedAnimais = const [];
+  _ConsumoFormSnapshot? _initialSnapshot;
 
   bool get isEdit => _editingConsumo?.id != null;
   bool get isLoading =>
@@ -62,14 +63,22 @@ class ConsumoFormPageController extends ChangeNotifier {
     if (dataController.text.trim().isEmpty) {
       return false;
     }
-    return isEdit || _selectedAnimais.isNotEmpty;
+    return (isEdit || _selectedAnimais.isNotEmpty) && hasChanges;
   }
+
+  bool get hasChanges =>
+      !isEdit ||
+      _initialSnapshot == null ||
+      _currentSnapshot() != _initialSnapshot;
 
   Future<void> init({ConsumoUpsertEntity? consumo}) async {
     _editingConsumo = consumo;
     if (consumo != null) {
       dataController.text = consumo.data;
       obsController.text = consumo.obs ?? '';
+      _initialSnapshot = _currentSnapshot();
+    } else {
+      _initialSnapshot = null;
     }
 
     if (!isEdit) {
@@ -166,6 +175,13 @@ class ConsumoFormPageController extends ChangeNotifier {
     return null;
   }
 
+  _ConsumoFormSnapshot _currentSnapshot() {
+    return _ConsumoFormSnapshot(
+      data: dataController.text.trim(),
+      obs: _emptyToNull(obsController.text),
+    );
+  }
+
   String? _emptyToNull(String value) {
     final trimmed = value.trim();
     return trimmed.isEmpty ? null : trimmed;
@@ -181,4 +197,20 @@ class ConsumoFormPageController extends ChangeNotifier {
     animalFilterController.dispose();
     super.dispose();
   }
+}
+
+class _ConsumoFormSnapshot {
+  const _ConsumoFormSnapshot({required this.data, required this.obs});
+
+  final String data;
+  final String? obs;
+
+  @override
+  bool operator ==(Object other) {
+    return identical(this, other) ||
+        other is _ConsumoFormSnapshot && other.data == data && other.obs == obs;
+  }
+
+  @override
+  int get hashCode => Object.hash(data, obs);
 }

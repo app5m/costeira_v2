@@ -49,6 +49,14 @@ class ComprasListPageController extends ChangeNotifier {
     }
   }
 
+  Future<CompraEntity> findCompraDetails(CompraEntity compra) async {
+    try {
+      return await _listController.findById(compra.id) ?? compra;
+    } catch (_) {
+      return compra;
+    }
+  }
+
   Future<String?> applyDateFilters({
     required String? dataIn,
     required String? dataOut,

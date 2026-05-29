@@ -17,7 +17,8 @@ class ConsumoFormPage extends StatefulWidget {
 }
 
 class _ConsumoFormPageState extends State<ConsumoFormPage> {
-  final ConsumoFormPageController _pageController = Modular.get<ConsumoFormPageController>();
+  final ConsumoFormPageController _pageController =
+      Modular.get<ConsumoFormPageController>();
 
   @override
   void initState() {
@@ -64,7 +65,9 @@ class _ConsumoFormPageState extends State<ConsumoFormPage> {
     }
     await Navigator.push(
       context,
-      MaterialPageRoute(builder: (_) => ConsumoAnimaisPage(pageController: _pageController)),
+      MaterialPageRoute(
+        builder: (_) => ConsumoAnimaisPage(pageController: _pageController),
+      ),
     );
   }
 
@@ -77,7 +80,9 @@ class _ConsumoFormPageState extends State<ConsumoFormPage> {
           backgroundColor: Colors.white,
           floatingActionButton: !_pageController.isEdit
               ? FloatingActionButton(
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(64)),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(64),
+                  ),
                   onPressed: _openAnimalsPage,
                   child: const Icon(Icons.pets, color: Colors.white),
                 )
@@ -118,7 +123,8 @@ class _ConsumoFormPageState extends State<ConsumoFormPage> {
                 ),
                 if (_pageController.isEdit)
                   const _ReadOnlyHint(
-                    text: 'Os animais vinculados ao consumo nao podem ser alterados nesta edicao.',
+                    text:
+                        'Os animais vinculados ao consumo não podem ser alterados nesta edição.',
                   )
                 else
                   _buildAnimalsSummary(),
@@ -147,7 +153,9 @@ class _ConsumoFormPageState extends State<ConsumoFormPage> {
 
   Widget _buildAnimalsSummary() {
     final count = _pageController.selectedAnimais.length;
-    final label = count == 1 ? '1 animal selecionado' : '$count animais selecionados';
+    final label = count == 1
+        ? '1 animal selecionado'
+        : '$count animais selecionados';
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -184,7 +192,10 @@ class _ConsumoFormPageState extends State<ConsumoFormPage> {
                     ),
                   ),
                 ),
-                const Icon(Icons.keyboard_arrow_right, color: Color(0xFF8C8C8C)),
+                const Icon(
+                  Icons.keyboard_arrow_right,
+                  color: Color(0xFF8C8C8C),
+                ),
               ],
             ),
           ),
@@ -239,7 +250,10 @@ class _ConsumoFormPageState extends State<ConsumoFormPage> {
             ),
             filled: true,
             fillColor: const Color(0xFFEBEBEB),
-            contentPadding: const EdgeInsets.symmetric(horizontal: 15, vertical: 16),
+            contentPadding: const EdgeInsets.symmetric(
+              horizontal: 15,
+              vertical: 16,
+            ),
             border: OutlineInputBorder(
               borderRadius: BorderRadius.circular(8),
               borderSide: BorderSide.none,

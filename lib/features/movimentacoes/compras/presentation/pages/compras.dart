@@ -90,6 +90,32 @@ class _ComprasState extends State<Compras> with SingleTickerProviderStateMixin {
     );
   }
 
+  Future<void> _openDetails(CompraEntity compra) async {
+    final details = await _listPageController.findCompraDetails(compra);
+    if (!mounted) {
+      return;
+    }
+    await Navigator.push(
+      context,
+      MaterialPageRoute(builder: (_) => DetailCompra(compra: details)),
+    );
+  }
+
+  Future<void> _openEdit(CompraEntity compra) async {
+    final details = await _listPageController.findCompraDetails(compra);
+    if (!mounted) {
+      return;
+    }
+    await Navigator.push(
+      context,
+      MaterialPageRoute(builder: (_) => EditCompra(compra: details)),
+    );
+    if (!mounted) {
+      return;
+    }
+    await _listPageController.loadInitialData();
+  }
+
   @override
   Widget build(BuildContext context) {
     return AnimatedBuilder(
@@ -125,38 +151,41 @@ class _ComprasState extends State<Compras> with SingleTickerProviderStateMixin {
               ),
             ),
           ),
-          body: Column(
-            children: [
-              TabBar(
-                controller: _pageController.tabController,
-                tabs: const [
-                  Tab(text: 'Lista'),
-                  Tab(text: 'Gráfico'),
-                ],
-                onTap: _pageController.setTabIndex,
-                automaticIndicatorColorAdjustment: false,
-                indicatorSize: TabBarIndicatorSize.tab,
-                unselectedLabelColor: Colors.grey,
-                labelStyle: const TextStyle(
-                  fontSize: 12,
-                  fontFamily: 'Montserrat',
-                  fontWeight: FontWeight.w600,
+          body: SafeArea(
+            top: false,
+            child: Column(
+              children: [
+                TabBar(
+                  controller: _pageController.tabController,
+                  tabs: const [
+                    Tab(text: 'Lista'),
+                    Tab(text: 'Gráfico'),
+                  ],
+                  onTap: _pageController.setTabIndex,
+                  automaticIndicatorColorAdjustment: false,
+                  indicatorSize: TabBarIndicatorSize.tab,
+                  unselectedLabelColor: Colors.grey,
+                  labelStyle: const TextStyle(
+                    fontSize: 12,
+                    fontFamily: 'Montserrat',
+                    fontWeight: FontWeight.w600,
+                  ),
+                  unselectedLabelStyle: const TextStyle(
+                    fontSize: 12,
+                    fontFamily: 'Montserrat',
+                    fontWeight: FontWeight.w700,
+                  ),
+                  dividerColor: Colors.grey,
+                  labelColor: Colors.black,
+                  indicatorColor: MyColors.colorPrimary2,
                 ),
-                unselectedLabelStyle: const TextStyle(
-                  fontSize: 12,
-                  fontFamily: 'Montserrat',
-                  fontWeight: FontWeight.w700,
-                ),
-                dividerColor: Colors.grey,
-                labelColor: Colors.black,
-                indicatorColor: MyColors.colorPrimary2,
-              ),
-              const SizedBox(height: 16),
-              if (_pageController.tabIndex == 0)
-                _buildListTab()
-              else
-                const GraficosCompras(),
-            ],
+                const SizedBox(height: 16),
+                if (_pageController.tabIndex == 0)
+                  _buildListTab()
+                else
+                  const GraficosCompras(),
+              ],
+            ),
           ),
         );
       },
@@ -268,18 +297,8 @@ class _ComprasState extends State<Compras> with SingleTickerProviderStateMixin {
           final compra = _listPageController.compras[index];
           return _CompraCard(
             compra: compra,
-            onOpen: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(builder: (_) => DetailCompra(compra: compra)),
-              );
-            },
-            onEdit: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(builder: (_) => EditCompra(compra: compra)),
-              ).then((_) => _listPageController.loadInitialData());
-            },
+            onOpen: () => _openDetails(compra),
+            onEdit: () => _openEdit(compra),
             onDelete: () => _showModalBottomSheetExcluir(context, compra),
           );
         },
@@ -299,124 +318,126 @@ class _ComprasState extends State<Compras> with SingleTickerProviderStateMixin {
         ),
       ),
       builder: (BuildContext bc) {
-        return Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Container(
-              padding: const EdgeInsets.only(top: 8),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  const SizedBox(height: 8),
-                  Opacity(
-                    opacity: 0.70,
-                    child: Container(
-                      width: 72,
-                      decoration: const ShapeDecoration(
-                        shape: RoundedRectangleBorder(
-                          side: BorderSide(
-                            width: 2,
-                            strokeAlign: BorderSide.strokeAlignCenter,
-                            color: Color(0xFFE2E2E2),
+        return SafeArea(
+          top: false,
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Container(
+                padding: const EdgeInsets.only(top: 8),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    const SizedBox(height: 8),
+                    Opacity(
+                      opacity: 0.70,
+                      child: Container(
+                        width: 72,
+                        decoration: const ShapeDecoration(
+                          shape: RoundedRectangleBorder(
+                            side: BorderSide(
+                              width: 2,
+                              strokeAlign: BorderSide.strokeAlignCenter,
+                              color: Color(0xFFE2E2E2),
+                            ),
                           ),
                         ),
                       ),
                     ),
-                  ),
-                  const SizedBox(height: 8),
-                  Container(
-                    margin: const EdgeInsets.symmetric(horizontal: 20),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.end,
-                      children: [
-                        GestureDetector(
-                          onTap: () => Navigator.of(context).pop(false),
-                          child: const Icon(Icons.close),
-                        ),
-                      ],
-                    ),
-                  ),
-                  const SizedBox(height: 16),
-                  SvgPicture.asset(
-                    'icon/danger-linear.svg',
-                    width: 80,
-                    height: 80,
-                    colorFilter: const ColorFilter.mode(
-                      Colors.red,
-                      BlendMode.srcIn,
-                    ),
-                  ),
-                  const SizedBox(height: 16),
-                  const Text(
-                    'Excluir compra',
-                    style: TextStyle(
-                      fontFamily: 'Montserrat',
-                      fontWeight: FontWeight.w600,
-                      fontSize: 16,
-                      color: Color(0xff000000),
-                    ),
-                  ),
-                  const SizedBox(height: 8),
-                  const Text(
-                    'Tem certeza que deseja excluir essa\ncompra permanentemente?',
-                    textAlign: TextAlign.center,
-                    style: TextStyle(
-                      fontFamily: 'Montserrat',
-                      fontWeight: FontWeight.w400,
-                      fontSize: 14,
-                      color: Color(0xFF8692A8),
-                    ),
-                  ),
-                  const SizedBox(height: 16),
-                  SizedBox(
-                    width: MediaQuery.of(context).size.width - 40,
-                    height: 50,
-                    child: ElevatedButton(
-                      onPressed: () async {
-                        Navigator.of(context).pop();
-                        final message = await _listPageController.deleteCompra(
-                          compra,
-                        );
-                        if (!mounted || !pageContext.mounted) {
-                          return;
-                        }
-                        AppSnackBar.show(
-                          context: pageContext,
-                          message: message ?? 'Compra excluida com sucesso.',
-                          isError: message != null,
-                        );
-                      },
-                      style: ElevatedButton.styleFrom(
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(8),
-                        ),
-                        side: const BorderSide(color: Colors.red),
-                        elevation: 0,
-                        backgroundColor: Colors.transparent,
-                      ),
-                      child: const Text(
-                        'Excluir',
-                        style: TextStyle(color: Colors.red),
+                    const SizedBox(height: 8),
+                    Container(
+                      margin: const EdgeInsets.symmetric(horizontal: 20),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.end,
+                        children: [
+                          GestureDetector(
+                            onTap: () => Navigator.of(context).pop(false),
+                            child: const Icon(Icons.close),
+                          ),
+                        ],
                       ),
                     ),
-                  ),
-                  TextButton(
-                    onPressed: () => Navigator.of(context).pop(false),
-                    child: Text(
-                      'Cancelar',
+                    const SizedBox(height: 16),
+                    SvgPicture.asset(
+                      'icon/danger-linear.svg',
+                      width: 80,
+                      height: 80,
+                      colorFilter: const ColorFilter.mode(
+                        Colors.red,
+                        BlendMode.srcIn,
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                    const Text(
+                      'Excluir compra',
                       style: TextStyle(
+                        fontFamily: 'Montserrat',
+                        fontWeight: FontWeight.w600,
                         fontSize: 16,
-                        color: MyColors.colorOnPrimary,
-                        decoration: TextDecoration.underline,
-                        decorationColor: MyColors.colorOnPrimary,
+                        color: Color(0xff000000),
                       ),
                     ),
-                  ),
-                  const SizedBox(height: 16),
-                ],
+                    const SizedBox(height: 8),
+                    const Text(
+                      'Tem certeza que deseja excluir essa\ncompra permanentemente?',
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                        fontFamily: 'Montserrat',
+                        fontWeight: FontWeight.w400,
+                        fontSize: 14,
+                        color: Color(0xFF8692A8),
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                    SizedBox(
+                      width: MediaQuery.of(context).size.width - 40,
+                      height: 50,
+                      child: ElevatedButton(
+                        onPressed: () async {
+                          Navigator.of(context).pop();
+                          final message = await _listPageController
+                              .deleteCompra(compra);
+                          if (!mounted || !pageContext.mounted) {
+                            return;
+                          }
+                          AppSnackBar.show(
+                            context: pageContext,
+                            message: message ?? 'Compra excluida com sucesso.',
+                            isError: message != null,
+                          );
+                        },
+                        style: ElevatedButton.styleFrom(
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                          side: const BorderSide(color: Colors.red),
+                          elevation: 0,
+                          backgroundColor: Colors.transparent,
+                        ),
+                        child: const Text(
+                          'Excluir',
+                          style: TextStyle(color: Colors.red),
+                        ),
+                      ),
+                    ),
+                    TextButton(
+                      onPressed: () => Navigator.of(context).pop(false),
+                      child: Text(
+                        'Cancelar',
+                        style: TextStyle(
+                          fontSize: 16,
+                          color: MyColors.colorOnPrimary,
+                          decoration: TextDecoration.underline,
+                          decorationColor: MyColors.colorOnPrimary,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                  ],
+                ),
               ),
-            ),
-          ],
+            ],
+          ),
         );
       },
     );

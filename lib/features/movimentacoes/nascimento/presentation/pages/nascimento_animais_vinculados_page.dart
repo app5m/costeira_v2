@@ -27,17 +27,20 @@ class NascimentoAnimaisVinculadosPage extends StatelessWidget {
           ),
         ),
       ),
-      body: animais.isEmpty
-          ? const Center(child: Text('Nenhum animal vinculado.'))
-          : ListView.separated(
-              padding: const EdgeInsets.fromLTRB(20, 16, 20, 24),
-              itemCount: animais.length,
-              separatorBuilder: (_, __) => const SizedBox(height: 10),
-              itemBuilder: (context, index) {
-                final animal = animais[index];
-                return _LinkedAnimalTile(animal: animal);
-              },
-            ),
+      body: SafeArea(
+        top: false,
+        child: animais.isEmpty
+            ? const Center(child: Text('Nenhum animal vinculado.'))
+            : ListView.separated(
+                padding: const EdgeInsets.fromLTRB(20, 16, 20, 24),
+                itemCount: animais.length,
+                separatorBuilder: (_, __) => const SizedBox(height: 10),
+                itemBuilder: (context, index) {
+                  final animal = animais[index];
+                  return _LinkedAnimalTile(animal: animal);
+                },
+              ),
+      ),
     );
   }
 }

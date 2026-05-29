@@ -1,114 +1,12 @@
+import 'package:costeira/features/pastagem_nutricao_suplemento/domain/entities/manejo.dart';
 import 'package:flutter/material.dart';
 
 import '../../../../../../theme/colors.dart';
 
-class DetailManejo extends StatefulWidget {
-  const DetailManejo({super.key});
+class DetailManejo extends StatelessWidget {
+  const DetailManejo({super.key, required this.manejo});
 
-  @override
-  State<DetailManejo> createState() => _DetailManejoState();
-}
-
-class _DetailManejoState extends State<DetailManejo> {
-  Widget buildTextField(String label, String hint) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          label,
-          style: TextStyle(
-            color: const Color(0xFF313131),
-            fontSize: 14,
-            fontFamily: 'Montserrat',
-            fontWeight: FontWeight.w400,
-            height: 1.50,
-            letterSpacing: 0.10,
-          ),
-        ),
-        const SizedBox(height: 6),
-        TextField(
-          style: TextStyle(
-            color: Color(0xFF313131),
-            fontSize: 14,
-            fontFamily: 'Montserrat',
-            fontWeight: FontWeight.w400,
-            height: 1.50,
-            letterSpacing: 0.10,
-          ),
-          decoration: InputDecoration(
-            hintText: hint,
-            hintStyle: TextStyle(
-              color: Color(0xFF313131),
-              fontSize: 14,
-              fontFamily: 'Montserrat',
-              fontWeight: FontWeight.w400,
-              height: 1.50,
-              letterSpacing: 0.10,
-            ),
-            filled: true,
-            fillColor: Color(0xFFEBEBEB),
-            contentPadding: EdgeInsets.symmetric(horizontal: 15, vertical: 16),
-            border: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(8),
-              borderSide: BorderSide.none,
-            ),
-          ),
-        ),
-        const SizedBox(height: 18),
-      ],
-    );
-  }
-
-  Widget buildTextField5Line(String label, String hint) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          label,
-          style: TextStyle(
-            color: const Color(0xFF313131),
-            fontSize: 14,
-            fontFamily: 'Montserrat',
-            fontWeight: FontWeight.w400,
-            height: 1.50,
-            letterSpacing: 0.10,
-          ),
-        ),
-        const SizedBox(height: 6),
-        TextField(
-          minLines: 3,
-          maxLines: 3,
-          style: TextStyle(
-            color: Color(0xFF313131),
-            fontSize: 14,
-            fontFamily: 'Montserrat',
-            fontWeight: FontWeight.w400,
-            height: 1.50,
-            letterSpacing: 0.10,
-          ),
-          decoration: InputDecoration(
-            hintText: hint,
-            hintStyle: TextStyle(
-              color: Color(0xFF313131),
-              fontSize: 14,
-              fontFamily: 'Montserrat',
-              fontWeight: FontWeight.w400,
-              height: 1.50,
-              letterSpacing: 0.10,
-            ),
-            filled: true,
-            fillColor: Color(0xFFEBEBEB),
-            contentPadding: EdgeInsets.symmetric(horizontal: 15, vertical: 16),
-            border: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(8),
-              borderSide: BorderSide.none,
-            ),
-          ),
-        ),
-        const SizedBox(height: 18),
-      ],
-    );
-  }
+  final Manejo manejo;
 
   @override
   Widget build(BuildContext context) {
@@ -117,12 +15,10 @@ class _DetailManejoState extends State<DetailManejo> {
       appBar: AppBar(
         backgroundColor: MyColors.colorPrimary,
         leading: GestureDetector(
-          onTap: () {
-            Navigator.pop(context);
-          },
-          child: Icon(Icons.arrow_back_ios, color: Colors.white),
+          onTap: () => Navigator.pop(context),
+          child: const Icon(Icons.arrow_back_ios, color: Colors.white),
         ),
-        title: Text(
+        title: const Text(
           'Detalhes do manejo',
           style: TextStyle(
             color: Colors.white,
@@ -132,25 +28,103 @@ class _DetailManejoState extends State<DetailManejo> {
           ),
         ),
       ),
-      body: SingleChildScrollView(
-        child: Container(
-          margin: EdgeInsets.symmetric(horizontal: 20),
+      body: SafeArea(
+        top: false,
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.fromLTRB(20, 16, 20, 32),
           child: Column(
             children: [
-              SizedBox(height: 16),
-              buildTextField("Potreiro", "Selecionar"),
-              buildTextField("Data de", "Selecionar"),
-              buildTextField("Data até", "Selecione"),
-              buildTextField("Lote", "Selecione"),
-              buildTextField("Tipo de manejo", "Selecione"),
-              buildTextField("Quantidade usada", "00 kg"),
-              buildTextField("Observações", "Ex: Roçada realizada p..."),
-
-              const SizedBox(height: 32),
+              _ReadOnlyField(
+                label: 'Potreiro',
+                value: manejo.potreiro?.nome ?? '-',
+              ),
+              _ReadOnlyField(
+                label: 'Data do manejo',
+                value: _emptyToDash(manejo.dataManejo),
+              ),
+              _ReadOnlyField(
+                label: 'Tipo de manejo',
+                value: _emptyToDash(manejo.tipoManejo),
+              ),
+              _ReadOnlyField(
+                label: 'Quantidade usada',
+                value: _quantity(manejo.quantidade, manejo.unidade?.nome),
+              ),
+              _ReadOnlyField(
+                label: 'Unidade',
+                value: manejo.unidade?.nome ?? '-',
+              ),
+              _ReadOnlyField(
+                label: 'Data de cadastro',
+                value: _emptyToDash(manejo.dataCadastro),
+              ),
+              _ReadOnlyField(
+                label: 'Ultima atualizacao',
+                value: _emptyToDash(manejo.updateAt),
+              ),
             ],
           ),
         ),
       ),
     );
   }
+}
+
+class _ReadOnlyField extends StatelessWidget {
+  const _ReadOnlyField({required this.label, required this.value});
+
+  final String label;
+  final String value;
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 18),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            label,
+            style: const TextStyle(
+              color: Color(0xFF313131),
+              fontSize: 14,
+              fontFamily: 'Montserrat',
+              fontWeight: FontWeight.w400,
+            ),
+          ),
+          const SizedBox(height: 6),
+          Container(
+            width: double.infinity,
+            padding: const EdgeInsets.symmetric(horizontal: 15, vertical: 16),
+            decoration: BoxDecoration(
+              color: const Color(0xFFEBEBEB),
+              borderRadius: BorderRadius.circular(8),
+            ),
+            child: Text(
+              value,
+              style: const TextStyle(
+                color: Color(0xFF313131),
+                fontSize: 14,
+                fontFamily: 'Montserrat',
+                fontWeight: FontWeight.w400,
+                height: 1.50,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+String _quantity(double? value, String? unidade) {
+  if (value == null) return '-';
+  final unit = unidade?.trim();
+  final text = value % 1 == 0 ? value.toInt().toString() : value.toString();
+  return unit == null || unit.isEmpty ? text : '$text $unit';
+}
+
+String _emptyToDash(String? value) {
+  final trimmed = value?.trim();
+  return trimmed == null || trimmed.isEmpty ? '-' : trimmed;
 }

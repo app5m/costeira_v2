@@ -43,7 +43,10 @@ class _DetailTaskState extends State<DetailTask> {
           decoration: InputDecoration(
             filled: true,
             fillColor: const Color(0xFFEBEBEB),
-            contentPadding: const EdgeInsets.symmetric(horizontal: 15, vertical: 16),
+            contentPadding: const EdgeInsets.symmetric(
+              horizontal: 15,
+              vertical: 16,
+            ),
             border: OutlineInputBorder(
               borderRadius: BorderRadius.circular(8),
               borderSide: BorderSide.none,
@@ -79,21 +82,27 @@ class _DetailTaskState extends State<DetailTask> {
           ),
         ),
       ),
-      body: SingleChildScrollView(
-        child: Container(
-          margin: const EdgeInsets.symmetric(horizontal: 20),
-          child: Column(
-            children: [
-              const SizedBox(height: 16),
-              buildTextField('O que fazer', task.descricao),
-              buildTextField('Responsável', task.responsavel?.nome ?? '-'),
-              buildTextField('Tipo', task.tipo == 2 ? 'Mensal' : 'Datas'),
-              buildTextField('Urgência', task.urgenciaNome),
-              buildTextField('Status', task.statusNome),
-              buildTextField('Datas', _datesLabel(task)),
-              buildTextField('Observações', task.obs.trim().isEmpty ? '-' : task.obs),
-              const SizedBox(height: 32),
-            ],
+      body: SafeArea(
+        top: false,
+        child: SingleChildScrollView(
+          child: Container(
+            margin: const EdgeInsets.symmetric(horizontal: 20),
+            child: Column(
+              children: [
+                const SizedBox(height: 16),
+                buildTextField('O que fazer', task.descricao),
+                buildTextField('Responsável', task.responsavel?.nome ?? '-'),
+                buildTextField('Tipo', task.tipo == 2 ? 'Mensal' : 'Datas'),
+                buildTextField('Urgência', task.urgenciaNome),
+                buildTextField('Status', task.statusNome),
+                buildTextField('Datas', _datesLabel(task)),
+                buildTextField(
+                  'Observações',
+                  task.obs.trim().isEmpty ? '-' : task.obs,
+                ),
+                const SizedBox(height: 32),
+              ],
+            ),
           ),
         ),
       ),
@@ -104,6 +113,8 @@ class _DetailTaskState extends State<DetailTask> {
     if (task.datas.isEmpty) {
       return '-';
     }
-    return task.datas.map((item) => item.mesAno ?? item.data.split(' ').first).join(', ');
+    return task.datas
+        .map((item) => item.mesAno ?? item.data.split(' ').first)
+        .join(', ');
   }
 }

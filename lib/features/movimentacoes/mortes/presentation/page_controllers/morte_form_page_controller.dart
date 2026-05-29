@@ -52,6 +52,7 @@ class MorteFormPageController extends ChangeNotifier {
   MorteEntity? _editingMorte;
   int? selectedPotreiroId;
   List<MorteSelectedAnimal> _selectedAnimais = const [];
+  _MorteFormSnapshot? _initialSnapshot;
 
   bool get isEdit => _editingMorte != null;
   bool get isLoading =>
@@ -97,13 +98,21 @@ class MorteFormPageController extends ChangeNotifier {
   bool get isFormValid =>
       dataController.text.trim().isNotEmpty &&
       selectedPotreiroId != null &&
-      (isEdit || _selectedAnimais.isNotEmpty);
+      (isEdit || _selectedAnimais.isNotEmpty) &&
+      hasChanges;
+  bool get hasChanges =>
+      !isEdit ||
+      _initialSnapshot == null ||
+      _currentSnapshot() != _initialSnapshot;
 
   Future<void> init({MorteEntity? morte}) async {
     _editingMorte = morte;
     if (morte != null) {
       dataController.text = morte.data;
       selectedPotreiroId = morte.appPotreirosId ?? morte.potreiro?.id;
+      _initialSnapshot = _currentSnapshot();
+    } else {
+      _initialSnapshot = null;
     }
 
     try {
@@ -241,6 +250,13 @@ class MorteFormPageController extends ChangeNotifier {
     return null;
   }
 
+  _MorteFormSnapshot _currentSnapshot() {
+    return _MorteFormSnapshot(
+      data: dataController.text.trim(),
+      selectedPotreiroId: selectedPotreiroId,
+    );
+  }
+
   @override
   void dispose() {
     _addController.removeListener(notifyListeners);
@@ -251,4 +267,25 @@ class MorteFormPageController extends ChangeNotifier {
     animalFilterController.dispose();
     super.dispose();
   }
+}
+
+class _MorteFormSnapshot {
+  const _MorteFormSnapshot({
+    required this.data,
+    required this.selectedPotreiroId,
+  });
+
+  final String data;
+  final int? selectedPotreiroId;
+
+  @override
+  bool operator ==(Object other) {
+    return identical(this, other) ||
+        other is _MorteFormSnapshot &&
+            other.data == data &&
+            other.selectedPotreiroId == selectedPotreiroId;
+  }
+
+  @override
+  int get hashCode => Object.hash(data, selectedPotreiroId);
 }

@@ -13,6 +13,9 @@ class GetSuplementoChartsController extends ChangeNotifier {
   String? _errorMessage;
   SuplementoChartsEntity? _charts;
   DateTime _selectedMonth = DateTime.now();
+  int? _idPotreiro;
+  int? _idLote;
+  int? _idProduto;
 
   bool get isLoading => _isLoading;
   String? get errorMessage => _errorMessage;
@@ -21,7 +24,10 @@ class GetSuplementoChartsController extends ChangeNotifier {
   String get mesAno =>
       '${_selectedMonth.month.toString().padLeft(2, '0')}/${_selectedMonth.year}';
 
-  Future<void> load() async {
+  Future<void> load({int? idPotreiro, int? idLote, int? idProduto}) async {
+    _idPotreiro = idPotreiro;
+    _idLote = idLote;
+    _idProduto = idProduto;
     _setLoading(true);
     _errorMessage = null;
 
@@ -32,7 +38,13 @@ class GetSuplementoChartsController extends ChangeNotifier {
       }
 
       _charts = await _getChartsUsecase(
-        SuplementoChartsFilterEntity(appUsersId: user.id, mesAno: mesAno),
+        SuplementoChartsFilterEntity(
+          appUsersId: user.id,
+          mesAno: mesAno,
+          idPotreiro: _idPotreiro,
+          idLote: _idLote,
+          idProduto: _idProduto,
+        ),
       );
     } on ApiException catch (error) {
       _errorMessage = error.message;
@@ -45,13 +57,13 @@ class GetSuplementoChartsController extends ChangeNotifier {
   Future<void> previousMonth() async {
     _selectedMonth = DateTime(_selectedMonth.year, _selectedMonth.month - 1);
     notifyListeners();
-    await load();
+    await load(idPotreiro: _idPotreiro, idLote: _idLote, idProduto: _idProduto);
   }
 
   Future<void> nextMonth() async {
     _selectedMonth = DateTime(_selectedMonth.year, _selectedMonth.month + 1);
     notifyListeners();
-    await load();
+    await load(idPotreiro: _idPotreiro, idLote: _idLote, idProduto: _idProduto);
   }
 
   void _setLoading(bool value) {

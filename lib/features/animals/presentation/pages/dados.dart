@@ -1,5 +1,6 @@
 import 'package:costeira/core/components/app_snack.dart';
 import 'package:costeira/core/utils/app_logger.dart';
+import 'package:costeira/features/animals/domain/entities/animal_charts_entity.dart';
 import 'package:costeira/features/animals/presentation/controllers/get_animal_charts_controller.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_modular/flutter_modular.dart';
@@ -72,7 +73,7 @@ class _DadosAnimaisState extends State<DadosAnimais> {
         }
 
         final charts = _controller.charts;
-        if (charts == null || charts.quantidadeAnimais == 0) {
+        if (charts == null || !_hasChartData(charts)) {
           return RefreshIndicator(
             onRefresh: _loadCharts,
             child: ListView(
@@ -144,6 +145,14 @@ class _DadosAnimaisState extends State<DadosAnimais> {
       },
     );
   }
+}
+
+bool _hasChartData(AnimalChartsEntity charts) {
+  return charts.quantidadeAnimais > 0 ||
+      charts.porCategoria.any((item) => item.quantidade > 0) ||
+      charts.porSexo.any((item) => item.quantidade > 0) ||
+      charts.distribuicaoCategoria.any((item) => item.quantidade > 0) ||
+      charts.proporcaoSexo.any((item) => item.quantidade > 0);
 }
 
 String _formatDecimal(double value) {
@@ -320,6 +329,7 @@ class _DistributionChart extends StatelessWidget {
     final maxValue = items
         .map((item) => item.quantidade)
         .fold<int>(0, (current, value) => value > current ? value : current);
+    final totalValue = items.fold<int>(0, (sum, item) => sum + item.quantidade);
     final topValue = _calculateChartMax(maxValue);
     final ticks = _buildTicks(topValue);
 
@@ -439,6 +449,9 @@ class _DistributionChart extends StatelessWidget {
           children: List.generate(items.length, (index) {
             final item = items[index];
             final color = colors[index % colors.length];
+            final percentual = item.percentual > 0
+                ? item.percentual
+                : _calculatePercentual(item.quantidade, totalValue);
             return SizedBox(
               width: (MediaQuery.of(context).size.width - 120) / 2,
               child: Row(
@@ -455,7 +468,7 @@ class _DistributionChart extends StatelessWidget {
                   const SizedBox(width: 10),
                   Expanded(
                     child: Text(
-                      '${item.label} (${_formatDecimal(item.percentual)}%)',
+                      '${item.label} (${_formatDecimal(percentual)}%)',
                       overflow: TextOverflow.ellipsis,
                       style: const TextStyle(
                         color: Color(0xFF5C5C5C),
@@ -491,4 +504,11 @@ class _DistributionChart extends StatelessWidget {
       (index) => maxValue - (step * index),
     ).map((value) => value < 0 ? 0 : value).toList(growable: false);
   }
+}
+
+double _calculatePercentual(int value, int total) {
+  if (total <= 0) {
+    return 0;
+  }
+  return (value / total) * 100;
 }

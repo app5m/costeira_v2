@@ -1,9 +1,12 @@
 import 'package:costeira/core/config/ws_constantes.dart';
 import 'package:costeira/core/api/api_client.dart';
+import 'package:costeira/core/api/api_exception.dart';
 import 'package:costeira/core/api/api_response_utils.dart';
 import 'package:costeira/core/models/api_message.dart';
 import 'package:costeira/core/models/user_coordinates.dart';
+import 'package:costeira/core/utils/app_logger.dart';
 import 'package:costeira/features/auth/models/auth_result.dart';
+import 'package:costeira/features/auth/models/cnpj_lookup_result.dart';
 import 'package:costeira/features/auth/models/register_draft.dart';
 import 'package:costeira/features/auth/models/user_session.dart';
 
@@ -12,13 +15,19 @@ class AuthRepository {
 
   final ApiClient _client;
 
-  Future<ApiMessage> validateCnpj(String cnpj) async {
+  Future<CnpjLookupResult> lookupCnpj(String cnpj) async {
     final response = await _client.post(
       WSConstantes.listCnpj,
       data: {'cnpj': cnpj, 'token': WSConstantes.token},
     );
 
-    return ApiMessage.fromResponse(response);
+    final message = ApiMessage.fromResponse(response);
+    final map = responseAsMap(response);
+    if (map['status'] != null && !message.isSuccess) {
+      throw ApiException(message.message);
+    }
+
+    return CnpjLookupResult.fromJson(map);
   }
 
   Future<ApiMessage> sendTwoFactor({
@@ -48,12 +57,19 @@ class AuthRepository {
   }) async {
     final response = await _client.post(
       WSConstantes.login,
-      data: {'email': email, 'password': password, 'codigo': code, 'token': WSConstantes.token},
+      data: {
+        'email': email,
+        'password': password,
+        'codigo': code,
+        'token': WSConstantes.token,
+      },
     );
 
     final message = ApiMessage.fromResponse(response);
     final map = responseAsMap(response);
-    final user = message.isSuccess ? UserSession.fromLoginResponse(map, tipo) : null;
+    final user = message.isSuccess
+        ? UserSession.fromLoginResponse(map, tipo)
+        : null;
 
     return AuthResult(message: message, user: user);
   }
@@ -81,7 +97,38 @@ class AuthRepository {
       },
     );
 
+    final responseMap = responseAsMap(response);
+    AppLogger.success('AUTH CADASTRO: RETORNO BRUTO=$response');
+    AppLogger.success(
+      'AUTH CADASTRO: POSSIVEL USER_ID=${_extractRegisteredUserId(responseMap)} MAP=$responseMap',
+    );
+
     return ApiMessage.fromResponse(response);
+  }
+
+  String _extractRegisteredUserId(Map<String, dynamic> map) {
+    const keys = [
+      'id',
+      'user_id',
+      'app_users_id',
+      'app_user_id',
+      'id_user',
+      'usuarios_id',
+    ];
+
+    for (final key in keys) {
+      final value = map[key];
+      if (value != null && value.toString().trim().isNotEmpty) {
+        return value.toString();
+      }
+    }
+
+    final data = map['data'];
+    if (data is Map) {
+      return _extractRegisteredUserId(Map<String, dynamic>.from(data));
+    }
+
+    return 'nao encontrado';
   }
 
   Future<ApiMessage> recoverPassword(String email) async {

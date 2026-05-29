@@ -28,9 +28,12 @@ class _CompraAnimaisPageState extends State<CompraAnimaisPage> {
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
       ),
-      builder: (_) => _CompraAnimalSheet(
-        pageController: widget.pageController,
-        initialAnimal: editing,
+      builder: (_) => SafeArea(
+        top: false,
+        child: _CompraAnimalSheet(
+          pageController: widget.pageController,
+          initialAnimal: editing,
+        ),
       ),
     );
 
@@ -84,20 +87,24 @@ class _CompraAnimaisPageState extends State<CompraAnimaisPage> {
               ),
             ),
           ),
-          body: widget.pageController.animais.isEmpty
-              ? const Center(child: Text('Nenhum animal adicionado.'))
-              : ListView.builder(
-                  padding: const EdgeInsets.fromLTRB(20, 16, 20, 96),
-                  itemCount: widget.pageController.animais.length,
-                  itemBuilder: (context, index) {
-                    final animal = widget.pageController.animais[index];
-                    return _DraftAnimalCard(
-                      animal: animal,
-                      onEdit: () => _openAnimalForm(index: index),
-                      onRemove: () => widget.pageController.removeAnimal(index),
-                    );
-                  },
-                ),
+          body: SafeArea(
+            top: false,
+            child: widget.pageController.animais.isEmpty
+                ? const Center(child: Text('Nenhum animal adicionado.'))
+                : ListView.builder(
+                    padding: const EdgeInsets.fromLTRB(20, 16, 20, 96),
+                    itemCount: widget.pageController.animais.length,
+                    itemBuilder: (context, index) {
+                      final animal = widget.pageController.animais[index];
+                      return _DraftAnimalCard(
+                        animal: animal,
+                        onEdit: () => _openAnimalForm(index: index),
+                        onRemove: () =>
+                            widget.pageController.removeAnimal(index),
+                      );
+                    },
+                  ),
+          ),
         );
       },
     );

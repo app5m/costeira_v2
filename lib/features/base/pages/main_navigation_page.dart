@@ -3,7 +3,6 @@ import 'package:costeira/core/storage/session_storage.dart';
 import 'package:costeira/features/auth/models/user_session.dart';
 import 'package:costeira/features/animals/presentation/pages/animals_page.dart';
 import 'package:costeira/features/dashboard/presentation/pages/dashboard.dart';
-import 'package:costeira/views/navigationscreen/indicadores/indicadores.dart';
 import 'package:costeira/features/movimentacoes/movimentacoes.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_modular/flutter_modular.dart';
@@ -55,8 +54,6 @@ class _MainNavigationPageState extends State<MainNavigationPage> {
       case 2:
         return 'Movimentações';
       case 3:
-        return 'Indicadores';
-      case 4:
         return 'Menu';
       default:
         return '';
@@ -176,26 +173,22 @@ class _MainNavigationPageState extends State<MainNavigationPage> {
             _selectedIndex = page;
           });
         },
-        children: const [
-          Dashboard(),
-          AnimalsPage(),
-          Movimentacoes(),
-          Indicadores(),
-          Menu(),
-        ],
+        children: const [Dashboard(), AnimalsPage(), Movimentacoes(), Menu()],
       ),
-      bottomNavigationBar: BottomNavigationBar(
-        backgroundColor: Colors.white,
-        currentIndex: _selectedIndex,
-        showSelectedLabels: false,
-        items: [
-          _buildNavBarItem('icon/layout-dashboard.svg', 0),
-          _buildNavBarItem('icon/cow-light.svg', 1),
-          _buildNavBarItem('icon/arrow-left-right.svg', 2),
-          _buildNavBarItem('icon/chart-column.svg', 3),
-          _buildNavBarItem('icon/menu.svg', 4),
-        ],
-        onTap: _onNavItemTapped,
+      bottomNavigationBar: SafeArea(
+        top: false,
+        child: BottomNavigationBar(
+          backgroundColor: Colors.white,
+          currentIndex: _selectedIndex,
+          showSelectedLabels: false,
+          items: [
+            _buildNavBarItem('icon/layout-dashboard.svg', 0),
+            _buildNavBarItem('icon/cow-light.svg', 1),
+            _buildNavBarItem('icon/arrow-left-right.svg', 2),
+            _buildNavBarItem('icon/menu.svg', 3),
+          ],
+          onTap: _onNavItemTapped,
+        ),
       ),
     );
   }

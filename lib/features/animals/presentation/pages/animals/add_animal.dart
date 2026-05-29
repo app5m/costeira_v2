@@ -25,7 +25,8 @@ class AnimalAdd extends StatefulWidget {
 class _AnimalAddState extends State<AnimalAdd> {
   static const _pesoFormatter = FixedTwoDecimalInputFormatter();
 
-  final AnimalAddPageController _pageController = Modular.get<AnimalAddPageController>();
+  final AnimalAddPageController _pageController =
+      Modular.get<AnimalAddPageController>();
 
   @override
   void initState() {
@@ -86,7 +87,9 @@ class _AnimalAddState extends State<AnimalAdd> {
     }
 
     if (result.shouldAddLot) {
-      final created = await Modular.to.pushNamed<Map<String, dynamic>?>(AppRoutes.animalLotsAdd);
+      final created = await Modular.to.pushNamed<Map<String, dynamic>?>(
+        AppRoutes.animalLotsAdd,
+      );
 
       if (!mounted) {
         return;
@@ -95,7 +98,8 @@ class _AnimalAddState extends State<AnimalAdd> {
       if (created?['success'] == true) {
         AppSnackBar.show(
           context: context,
-          message: created?['message']?.toString() ?? 'Lote adicionado com sucesso.',
+          message:
+              created?['message']?.toString() ?? 'Lote adicionado com sucesso.',
           isError: false,
         );
 
@@ -111,7 +115,9 @@ class _AnimalAddState extends State<AnimalAdd> {
           }
           AppSnackBar.show(
             context: context,
-            message: _pageController.errorMessage ?? 'Nao foi possivel recarregar os lotes.',
+            message:
+                _pageController.errorMessage ??
+                'Nao foi possivel recarregar os lotes.',
             isError: true,
           );
         }
@@ -155,7 +161,9 @@ class _AnimalAddState extends State<AnimalAdd> {
     }
 
     if (result.shouldAddPotreiro) {
-      final created = await Modular.to.pushNamed<Map<String, dynamic>?>(AppRoutes.potreirosAdd);
+      final created = await Modular.to.pushNamed<Map<String, dynamic>?>(
+        AppRoutes.potreirosAdd,
+      );
 
       if (!mounted) {
         return;
@@ -164,7 +172,9 @@ class _AnimalAddState extends State<AnimalAdd> {
       if (created?['success'] == true) {
         AppSnackBar.show(
           context: context,
-          message: created?['message']?.toString() ?? 'Potreiro adicionado com sucesso.',
+          message:
+              created?['message']?.toString() ??
+              'Potreiro adicionado com sucesso.',
           isError: false,
         );
 
@@ -180,7 +190,9 @@ class _AnimalAddState extends State<AnimalAdd> {
           }
           AppSnackBar.show(
             context: context,
-            message: _pageController.errorMessage ?? 'Nao foi possivel recarregar os potreiros.',
+            message:
+                _pageController.errorMessage ??
+                'Nao foi possivel recarregar os potreiros.',
             isError: true,
           );
         }
@@ -214,88 +226,92 @@ class _AnimalAddState extends State<AnimalAdd> {
               ),
             ),
           ),
-          body: SingleChildScrollView(
-            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                _buildSexoSelector(),
-                const SizedBox(height: 18),
-                _buildTextField(
-                  controller: _pageController.brincoController,
-                  label: 'Brinco',
-                  hint: 'Ex: BR-005',
-                ),
-                _buildDropdown<ListCategoryEntity>(
-                  label: 'Categoria',
-                  value: _pageController.selectedCategoryId,
-                  items: _pageController.categories,
-                  itemLabel: (item) => item.nome.trim(),
-                  onChanged: _pageController.onCategoryChanged,
-                ),
-                if (_pageController.requiresSubcategory)
-                  _buildDropdown<ListSubcategoryEntity>(
-                    label: 'Subcategoria obrigatória',
-                    value: _pageController.selectedSubcategoryId,
-                    items: _pageController.subcategories,
+          body: SafeArea(
+            child: SingleChildScrollView(
+              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  _buildSexoSelector(),
+                  const SizedBox(height: 18),
+                  _buildTextField(
+                    controller: _pageController.brincoController,
+                    label: 'Brinco',
+                    hint: 'Ex: BR-005',
+                  ),
+                  _buildDropdown<ListCategoryEntity>(
+                    label: 'Categoria',
+                    value: _pageController.selectedCategoryId,
+                    items: _pageController.categories,
                     itemLabel: (item) => item.nome.trim(),
-                    onChanged: _pageController.onSubcategoryChanged,
+                    onChanged: _pageController.onCategoryChanged,
                   ),
-                _buildTextField(
-                  controller: _pageController.pesoController,
-                  label: 'Peso',
-                  hint: '700.50',
-                  keyboardType: const TextInputType.numberWithOptions(decimal: true),
-                  inputFormatters: const [_pesoFormatter],
-                ),
-                _buildDropdown<ListItemEntity>(
-                  label: 'Base racial',
-                  value: _pageController.selectedBaseRacialId,
-                  items: _pageController.basesRaciais,
-                  itemLabel: (item) => item.nome.trim(),
-                  onChanged: _pageController.onBaseRacialChanged,
-                ),
-                AnimalLotSelectorField(
-                  label: 'Lote',
-                  value: _pageController.selectedLotLabel,
-                  onTap: _openLotSelection,
-                  isLoading: _pageController.isLoading,
-                  errorMessage: _pageController.errorMessage,
-                ),
-                PotreiroSelectorField(
-                  label: 'Potreiro',
-                  value: _pageController.selectedPotreiroLabel,
-                  onTap: _openPotreiroSelection,
-                  isLoading: _pageController.isLoading,
-                  errorMessage: _pageController.errorMessage,
-                ),
-                if (_pageController.shouldShowStatusField)
-                  _buildStatusDropdown(
-                    value: _pageController.selectedStatus,
-                    onChanged: _pageController.onStatusChanged,
+                  if (_pageController.requiresSubcategory)
+                    _buildDropdown<ListSubcategoryEntity>(
+                      label: 'Subcategoria obrigatoria',
+                      value: _pageController.selectedSubcategoryId,
+                      items: _pageController.subcategories,
+                      itemLabel: (item) => item.nome.trim(),
+                      onChanged: _pageController.onSubcategoryChanged,
+                    ),
+                  _buildTextField(
+                    controller: _pageController.pesoController,
+                    label: 'Peso',
+                    hint: '700.50',
+                    keyboardType: const TextInputType.numberWithOptions(
+                      decimal: true,
+                    ),
+                    inputFormatters: const [_pesoFormatter],
                   ),
-                _buildTextField(
-                  controller: _pageController.obsController,
-                  label: 'Observações gerais',
-                  hint: 'Animal em observação',
-                  maxLines: 3,
-                ),
-                if (_pageController.errorMessage != null) ...[
-                  const SizedBox(height: 8),
-                  Text(
-                    _pageController.errorMessage!,
-                    style: const TextStyle(color: Colors.red, fontSize: 12),
+                  _buildDropdown<ListItemEntity>(
+                    label: 'Base racial',
+                    value: _pageController.selectedBaseRacialId,
+                    items: _pageController.basesRaciais,
+                    itemLabel: (item) => item.nome.trim(),
+                    onChanged: _pageController.onBaseRacialChanged,
                   ),
+                  AnimalLotSelectorField(
+                    label: 'Lote',
+                    value: _pageController.selectedLotLabel,
+                    onTap: _openLotSelection,
+                    isLoading: _pageController.isLoading,
+                    errorMessage: _pageController.errorMessage,
+                  ),
+                  PotreiroSelectorField(
+                    label: 'Potreiro',
+                    value: _pageController.selectedPotreiroLabel,
+                    onTap: _openPotreiroSelection,
+                    isLoading: _pageController.isLoading,
+                    errorMessage: _pageController.errorMessage,
+                  ),
+                  if (_pageController.shouldShowStatusField)
+                    _buildStatusDropdown(
+                      value: _pageController.selectedStatus,
+                      onChanged: _pageController.onStatusChanged,
+                    ),
+                  _buildTextField(
+                    controller: _pageController.obsController,
+                    label: 'Observações gerais',
+                    hint: 'Animal em observação',
+                    maxLines: 3,
+                  ),
+                  if (_pageController.errorMessage != null) ...[
+                    const SizedBox(height: 8),
+                    Text(
+                      _pageController.errorMessage!,
+                      style: const TextStyle(color: Colors.red, fontSize: 12),
+                    ),
+                  ],
+                  const SizedBox(height: 20),
+                  CustomButton(
+                    onPressed: _submit,
+                    text: 'Adicionar',
+                    enabled: _pageController.isFormValid,
+                    isLoading: _pageController.isLoading,
+                  ),
+                  const SizedBox(height: 32),
                 ],
-                const SizedBox(height: 20),
-                CustomButton(
-                  onPressed: _submit,
-                  text: 'Adicionar',
-                  enabled: _pageController.isFormValid,
-                  isLoading: _pageController.isLoading,
-                ),
-                const SizedBox(height: 32),
-              ],
+              ),
             ),
           ),
         );
@@ -400,7 +416,10 @@ class _AnimalAddState extends State<AnimalAdd> {
             ),
             filled: true,
             fillColor: const Color(0xFFEBEBEB),
-            contentPadding: const EdgeInsets.symmetric(horizontal: 15, vertical: 16),
+            contentPadding: const EdgeInsets.symmetric(
+              horizontal: 15,
+              vertical: 16,
+            ),
             border: OutlineInputBorder(
               borderRadius: BorderRadius.circular(8),
               borderSide: BorderSide.none,
@@ -440,7 +459,12 @@ class _AnimalAddState extends State<AnimalAdd> {
           value: effectiveValue,
           placeholder: 'Selecione',
           options: items
-              .map((item) => AppSelectOption<int>(value: item.id, label: itemLabel(item)))
+              .map(
+                (item) => AppSelectOption<int>(
+                  value: item.id,
+                  label: itemLabel(item),
+                ),
+              )
               .toList(growable: false),
           enabled: items.isNotEmpty,
           onChanged: onChanged,
@@ -454,7 +478,8 @@ class _AnimalAddState extends State<AnimalAdd> {
     required String? value,
     required void Function(String? value) onChanged,
   }) {
-    final effectiveValue = AnimalAddPageController.animalStatuses.contains(value) ? value : null;
+    final effectiveValue =
+        AnimalAddPageController.animalStatuses.contains(value) ? value : null;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -475,7 +500,10 @@ class _AnimalAddState extends State<AnimalAdd> {
           value: effectiveValue,
           placeholder: 'Selecione o status',
           options: AnimalAddPageController.animalStatuses
-              .map((status) => AppSelectOption<String>(value: status, label: status))
+              .map(
+                (status) =>
+                    AppSelectOption<String>(value: status, label: status),
+              )
               .toList(growable: false),
           enabled: AnimalAddPageController.animalStatuses.isNotEmpty,
           onChanged: onChanged,

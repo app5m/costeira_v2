@@ -31,34 +31,39 @@ class DetailAnimal extends StatelessWidget {
           ),
         ),
       ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            _buildReadOnlyField('Sexo', item?.sexo == 1 ? 'Macho' : 'Fêmea'),
-            _buildReadOnlyField('Brinco', item?.brinco ?? '-'),
-            _buildReadOnlyField(
-              'Categoria',
-              item?.categoria?.nome.trim() ?? '-',
-            ),
-            _buildReadOnlyField(
-              'Subcategoria',
-              item?.subcategoria?.nome.trim() ?? '-',
-            ),
-            _buildReadOnlyField(
-              'Peso',
-              item?.peso != null ? '${item!.peso} kg' : '-',
-            ),
-            _buildReadOnlyField(
-              'Base racial',
-              item?.baseRacial?.nome.trim() ?? '-',
-            ),
-            _buildReadOnlyField('Lote', item?.lote?.nome.trim() ?? '-'),
-            _buildReadOnlyField('Potreiro', item?.potreiro?.nome.trim() ?? '-'),
-            _buildReadOnlyField('Status', item?.status ?? '-'),
-            _buildReadOnlyField('Observações gerais', item?.obs ?? '-'),
-          ],
+      body: SafeArea(
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              _buildReadOnlyField('Sexo', item?.sexo == 1 ? 'Macho' : 'Fêmea'),
+              _buildReadOnlyField('Brinco', item?.brinco ?? '-'),
+              _buildReadOnlyField(
+                'Categoria',
+                item?.categoria?.nome.trim() ?? '-',
+              ),
+              _buildReadOnlyField(
+                'Subcategoria',
+                item?.subcategoria?.nome.trim() ?? '-',
+              ),
+              _buildReadOnlyField(
+                'Peso',
+                item?.peso != null ? '${item!.peso} kg' : '-',
+              ),
+              _buildReadOnlyField(
+                'Base racial',
+                item?.baseRacial?.nome.trim() ?? '-',
+              ),
+              _buildReadOnlyField('Lote', item?.lote?.nome.trim() ?? '-'),
+              _buildReadOnlyField(
+                'Potreiro',
+                item?.potreiro?.nome.trim() ?? '-',
+              ),
+              _buildReadOnlyField('Status', item?.status ?? '-'),
+              _buildReadOnlyField('Observações gerais', item?.obs ?? '-'),
+            ],
+          ),
         ),
       ),
     );

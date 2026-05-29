@@ -33,86 +33,89 @@ class TransferenciaLotesPage extends StatelessWidget {
               ),
             ),
           ),
-          body: Column(
-            children: [
-              Padding(
-                padding: const EdgeInsets.fromLTRB(20, 16, 20, 10),
-                child: TextField(
-                  controller: pageController.lotFilterController,
-                  decoration: InputDecoration(
-                    hintText: 'Filtrar por nome',
-                    prefixIcon: const Icon(Icons.search),
-                    filled: true,
-                    fillColor: const Color(0xFFEBEBEB),
-                    contentPadding: const EdgeInsets.symmetric(
-                      horizontal: 15,
-                      vertical: 14,
-                    ),
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(8),
-                      borderSide: BorderSide.none,
-                    ),
-                  ),
-                ),
-              ),
-              Expanded(
-                child: pageController.isLoading
-                    ? const Center(child: CircularProgressIndicator())
-                    : lotes.isEmpty
-                    ? const Center(child: Text('Nenhum lote encontrado.'))
-                    : RefreshIndicator(
-                        onRefresh: pageController.reloadLotes,
-                        child: ListView.separated(
-                          padding: const EdgeInsets.fromLTRB(20, 8, 20, 16),
-                          itemCount: lotes.length,
-                          separatorBuilder: (_, __) =>
-                              const SizedBox(height: 10),
-                          itemBuilder: (context, index) {
-                            final lote = lotes[index];
-                            return _LoteTile(
-                              lote: lote,
-                              isSelected: pageController.isLoteSelected(
-                                lote.id,
-                              ),
-                              onTap: () => pageController.toggleLote(lote),
-                            );
-                          },
-                        ),
+          body: SafeArea(
+            top: false,
+            child: Column(
+              children: [
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(20, 16, 20, 10),
+                  child: TextField(
+                    controller: pageController.lotFilterController,
+                    decoration: InputDecoration(
+                      hintText: 'Filtrar por nome',
+                      prefixIcon: const Icon(Icons.search),
+                      filled: true,
+                      fillColor: const Color(0xFFEBEBEB),
+                      contentPadding: const EdgeInsets.symmetric(
+                        horizontal: 15,
+                        vertical: 14,
                       ),
-              ),
-              SafeArea(
-                top: false,
-                child: Padding(
-                  padding: const EdgeInsets.fromLTRB(20, 8, 20, 16),
-                  child: SizedBox(
-                    width: double.infinity,
-                    height: 50,
-                    child: ElevatedButton(
-                      onPressed: pageController.selectedLotes.isEmpty
-                          ? null
-                          : () => Navigator.pop(context),
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: MyColors.colorPrimary,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(8),
-                        ),
-                      ),
-                      child: Text(
-                        pageController.selectedLotes.length == 1
-                            ? 'Confirmar 1 lote'
-                            : 'Confirmar ${pageController.selectedLotes.length} lotes',
-                        style: const TextStyle(
-                          color: Colors.white,
-                          fontSize: 14,
-                          fontFamily: 'Montserrat',
-                          fontWeight: FontWeight.w600,
-                        ),
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(8),
+                        borderSide: BorderSide.none,
                       ),
                     ),
                   ),
                 ),
-              ),
-            ],
+                Expanded(
+                  child: pageController.isLoading
+                      ? const Center(child: CircularProgressIndicator())
+                      : lotes.isEmpty
+                      ? const Center(child: Text('Nenhum lote encontrado.'))
+                      : RefreshIndicator(
+                          onRefresh: pageController.reloadLotes,
+                          child: ListView.separated(
+                            padding: const EdgeInsets.fromLTRB(20, 8, 20, 16),
+                            itemCount: lotes.length,
+                            separatorBuilder: (_, __) =>
+                                const SizedBox(height: 10),
+                            itemBuilder: (context, index) {
+                              final lote = lotes[index];
+                              return _LoteTile(
+                                lote: lote,
+                                isSelected: pageController.isLoteSelected(
+                                  lote.id,
+                                ),
+                                onTap: () => pageController.toggleLote(lote),
+                              );
+                            },
+                          ),
+                        ),
+                ),
+                SafeArea(
+                  top: false,
+                  child: Padding(
+                    padding: const EdgeInsets.fromLTRB(20, 8, 20, 16),
+                    child: SizedBox(
+                      width: double.infinity,
+                      height: 50,
+                      child: ElevatedButton(
+                        onPressed: pageController.selectedLotes.isEmpty
+                            ? null
+                            : () => Navigator.pop(context),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: MyColors.colorPrimary,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                        ),
+                        child: Text(
+                          pageController.selectedLotes.length == 1
+                              ? 'Confirmar 1 lote'
+                              : 'Confirmar ${pageController.selectedLotes.length} lotes',
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontSize: 14,
+                            fontFamily: 'Montserrat',
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
           ),
         );
       },

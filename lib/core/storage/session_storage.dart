@@ -29,8 +29,16 @@ class SessionStorage {
   }
 
   static Future<void> clearUserSession() async {
+    await clearAuthData();
+  }
+
+  static Future<void> clearAuthData() async {
     final prefs = await SharedPreferences.getInstance();
-    await prefs.remove(_userSessionKey);
+    await Future.wait([
+      prefs.remove(_userSessionKey),
+      prefs.remove(_lastCoordinatesKey),
+      prefs.remove(_pendingPushTokenKey),
+    ]);
   }
 
   static Future<bool> isLoggedIn() async {

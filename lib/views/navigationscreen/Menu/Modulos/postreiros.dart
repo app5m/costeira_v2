@@ -30,11 +30,14 @@ class Potreiros extends StatelessWidget {
             ],
           ),
         ),
-        body: const TabBarView(
-          children: [
-            _DadosTab(),
-            Center(child: Text('Lista')),
-          ],
+        body: const SafeArea(
+          top: false,
+          child: TabBarView(
+            children: [
+              _DadosTab(),
+              Center(child: Text('Lista')),
+            ],
+          ),
         ),
       ),
     );
@@ -415,38 +418,6 @@ class _InfoTable extends StatelessWidget {
             ),
           ],
         ),
-      ),
-    );
-  }
-}
-
-class _HeaderCell extends StatelessWidget {
-  final String text;
-  const _HeaderCell(this.text);
-
-  @override
-  Widget build(BuildContext context) {
-    return Text(
-      text,
-      style: TextStyle(color: Colors.grey.shade600, fontSize: 12),
-    );
-  }
-}
-
-class _DataRow extends StatelessWidget {
-  final String a;
-  final String b;
-  final String c;
-
-  const _DataRow(this.a, this.b, this.c);
-
-  @override
-  Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 6),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [Text(a), Text(b), Text(c)],
       ),
     );
   }

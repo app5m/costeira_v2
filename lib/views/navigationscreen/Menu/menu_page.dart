@@ -124,7 +124,9 @@ class _MenuPageState extends State<MenuPage> {
                 style: OutlinedButton.styleFrom(
                   minimumSize: const Size.fromHeight(48),
                   side: const BorderSide(color: Color(0xFFFF3B30)),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(8),
+                  ),
                 ),
                 child: const Text(
                   'Sair',
@@ -173,7 +175,9 @@ class _MenuPageState extends State<MenuPage> {
           ),
         ),
         Text(
-          _profile?.email.isNotEmpty == true ? _profile!.email : _user?.email ?? '',
+          _profile?.email.isNotEmpty == true
+              ? _profile!.email
+              : _user?.email ?? '',
           style: const TextStyle(
             color: Color(0xFF8C8C8C),
             fontSize: 14,
@@ -188,7 +192,11 @@ class _MenuPageState extends State<MenuPage> {
   Widget _buildProfileAvatar() {
     if (_isLoadingProfile) {
       return const Center(
-        child: SizedBox(width: 24, height: 24, child: CircularProgressIndicator(strokeWidth: 2)),
+        child: SizedBox(
+          width: 24,
+          height: 24,
+          child: CircularProgressIndicator(strokeWidth: 2),
+        ),
       );
     }
 
@@ -222,48 +230,58 @@ class _MenuPageState extends State<MenuPage> {
         ),
       ),
       builder: (context) {
-        return Padding(
-          padding: const EdgeInsets.fromLTRB(20, 16, 20, 32),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              const Text(
-                'Sair do aplicativo?',
-                style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
-              ),
-              const SizedBox(height: 8),
-              const Text(
-                'Tem certeza que deseja sair da sua conta?',
-                textAlign: TextAlign.center,
-                style: TextStyle(color: Color(0xFF8692A8)),
-              ),
-              const SizedBox(height: 16),
-              SizedBox(
-                width: double.infinity,
-                child: ElevatedButton(
-                  onPressed: () {
-                    Navigator.of(context).pop();
-                    Modular.to.navigate(AppRoutes.welcome);
-                  },
-                  style: ElevatedButton.styleFrom(
-                    elevation: 0,
-                    backgroundColor: Colors.transparent,
-                    side: const BorderSide(color: Colors.red),
-                  ),
-                  child: const Text('Sair', style: TextStyle(color: Colors.black)),
+        return SafeArea(
+          top: false,
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(20, 16, 20, 32),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const Text(
+                  'Sair do aplicativo?',
+                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
                 ),
-              ),
-              TextButton(
-                onPressed: () => Navigator.of(context).pop(),
-                child: const Text(
-                  'Cancelar',
-                  style: TextStyle(
-                    color: MyColors.colorOnPrimary,
-                    decoration: TextDecoration.underline,
+                const SizedBox(height: 8),
+                const Text(
+                  'Tem certeza que deseja sair da sua conta?',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(color: Color(0xFF8692A8)),
+                ),
+                const SizedBox(height: 16),
+                SizedBox(
+                  width: double.infinity,
+                  child: ElevatedButton(
+                    onPressed: () async {
+                      Navigator.of(context).pop();
+                      await SessionStorage.clearAuthData();
+                      if (!mounted) {
+                        return;
+                      }
+                      Modular.to.navigate(AppRoutes.welcome);
+                    },
+                    style: ElevatedButton.styleFrom(
+                      elevation: 0,
+                      backgroundColor: Colors.transparent,
+                      side: const BorderSide(color: Colors.red),
+                    ),
+                    child: const Text(
+                      'Sair',
+                      style: TextStyle(color: Colors.black),
+                    ),
                   ),
                 ),
-              ),
-            ],
+                TextButton(
+                  onPressed: () => Navigator.of(context).pop(),
+                  child: const Text(
+                    'Cancelar',
+                    style: TextStyle(
+                      color: MyColors.colorOnPrimary,
+                      decoration: TextDecoration.underline,
+                    ),
+                  ),
+                ),
+              ],
+            ),
           ),
         );
       },
@@ -272,7 +290,11 @@ class _MenuPageState extends State<MenuPage> {
 }
 
 class _MenuCard extends StatelessWidget {
-  const _MenuCard({required this.icon, required this.title, required this.onTap});
+  const _MenuCard({
+    required this.icon,
+    required this.title,
+    required this.onTap,
+  });
 
   final String icon;
   final String title;
@@ -291,7 +313,11 @@ class _MenuCard extends StatelessWidget {
             borderRadius: BorderRadius.circular(12),
           ),
           shadows: const [
-            BoxShadow(color: Color(0x0A000000), blurRadius: 24, offset: Offset(0, 0)),
+            BoxShadow(
+              color: Color(0x0A000000),
+              blurRadius: 24,
+              offset: Offset(0, 0),
+            ),
           ],
         ),
         child: Row(
@@ -303,7 +329,10 @@ class _MenuCard extends StatelessWidget {
                   icon,
                   width: 24,
                   height: 24,
-                  colorFilter: const ColorFilter.mode(Color(0xFF00823A), BlendMode.srcIn),
+                  colorFilter: const ColorFilter.mode(
+                    Color(0xFF00823A),
+                    BlendMode.srcIn,
+                  ),
                 ),
                 const SizedBox(width: 8),
                 Text(

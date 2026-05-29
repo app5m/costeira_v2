@@ -18,9 +18,12 @@ class ClimatePage extends StatefulWidget {
   State<ClimatePage> createState() => _ClimatePageState();
 }
 
-class _ClimatePageState extends State<ClimatePage> with SingleTickerProviderStateMixin {
-  final ClimatePageController _pageController = Modular.get<ClimatePageController>();
-  final ClimateListPageController _listPageController = Modular.get<ClimateListPageController>();
+class _ClimatePageState extends State<ClimatePage>
+    with SingleTickerProviderStateMixin {
+  final ClimatePageController _pageController =
+      Modular.get<ClimatePageController>();
+  final ClimateListPageController _listPageController =
+      Modular.get<ClimateListPageController>();
 
   @override
   void initState() {
@@ -43,7 +46,9 @@ class _ClimatePageState extends State<ClimatePage> with SingleTickerProviderStat
   }
 
   Future<void> _openAdd() async {
-    final result = await Modular.to.pushNamed<Map<String, dynamic>?>(AppRoutes.climateRainAdd);
+    final result = await Modular.to.pushNamed<Map<String, dynamic>?>(
+      AppRoutes.climateRainAdd,
+    );
 
     if (!mounted || result?['success'] != true) {
       return;
@@ -54,7 +59,10 @@ class _ClimatePageState extends State<ClimatePage> with SingleTickerProviderStat
       return;
     }
 
-    _showMessage(result?['message']?.toString() ?? 'Clima salvo com sucesso.', isError: false);
+    _showMessage(
+      result?['message']?.toString() ?? 'Clima salvo com sucesso.',
+      isError: false,
+    );
   }
 
   Future<void> _openEdit(ClimateEntity climate) async {
@@ -112,117 +120,131 @@ class _ClimatePageState extends State<ClimatePage> with SingleTickerProviderStat
         return AnimatedBuilder(
           animation: _listPageController,
           builder: (context, __) {
-            return Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Container(
-                  padding: const EdgeInsets.only(top: 8),
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      const SizedBox(height: 8),
-                      Opacity(
-                        opacity: 0.70,
-                        child: Container(
-                          width: 72,
-                          decoration: ShapeDecoration(
-                            shape: RoundedRectangleBorder(
-                              side: const BorderSide(
-                                width: 2,
-                                strokeAlign: BorderSide.strokeAlignCenter,
-                                color: Color(0xFFE2E2E2),
+            return SafeArea(
+              top: false,
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Container(
+                    padding: const EdgeInsets.only(top: 8),
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        const SizedBox(height: 8),
+                        Opacity(
+                          opacity: 0.70,
+                          child: Container(
+                            width: 72,
+                            decoration: ShapeDecoration(
+                              shape: RoundedRectangleBorder(
+                                side: const BorderSide(
+                                  width: 2,
+                                  strokeAlign: BorderSide.strokeAlignCenter,
+                                  color: Color(0xFFE2E2E2),
+                                ),
                               ),
                             ),
                           ),
                         ),
-                      ),
-                      const SizedBox(height: 8),
-                      Container(
-                        margin: const EdgeInsets.symmetric(horizontal: 20),
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.end,
-                          children: [
-                            GestureDetector(
-                              onTap: () => Modular.to.pop(),
-                              child: const Icon(Icons.close),
-                            ),
-                          ],
-                        ),
-                      ),
-                      const SizedBox(height: 16),
-                      SvgPicture.asset(
-                        'icon/danger-linear.svg',
-                        width: 80,
-                        height: 80,
-                        colorFilter: const ColorFilter.mode(Colors.red, BlendMode.srcIn),
-                      ),
-                      const SizedBox(height: 16),
-                      const Text(
-                        'Excluir chuva',
-                        style: TextStyle(
-                          fontFamily: 'Montserrat',
-                          fontWeight: FontWeight.w600,
-                          fontSize: 16,
-                          color: Color(0xff000000),
-                        ),
-                      ),
-                      const SizedBox(height: 8),
-                      Text(
-                        'Tem certeza que deseja excluir este registro de chuva?',
-                        textAlign: TextAlign.center,
-                        style: const TextStyle(
-                          fontFamily: 'Montserrat',
-                          fontWeight: FontWeight.w400,
-                          fontSize: 14,
-                          color: Color(0xFF8692A8),
-                        ),
-                      ),
-                      const SizedBox(height: 16),
-                      SizedBox(
-                        width: MediaQuery.of(context).size.width - 40,
-                        height: 50,
-                        child: ElevatedButton(
-                          onPressed: _listPageController.isDeleting
-                              ? null
-                              : () async {
-                                  final action = await _listPageController.deleteClimate(climate);
-                                  if (!mounted || !modalContext.mounted) {
-                                    return;
-                                  }
-                                  if (action.isSuccess) {
-                                    Modular.to.pop();
-                                  }
-                                  _showMessage(action.message, isError: !action.isSuccess);
-                                },
-                          style: ElevatedButton.styleFrom(
-                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-                            side: const BorderSide(color: Colors.red),
-                            elevation: 0,
-                            backgroundColor: Colors.transparent,
-                          ),
-                          child: Text(
-                            _listPageController.isDeleting ? 'Excluindo...' : 'Excluir',
-                            style: const TextStyle(color: Colors.red),
+                        const SizedBox(height: 8),
+                        Container(
+                          margin: const EdgeInsets.symmetric(horizontal: 20),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.end,
+                            children: [
+                              GestureDetector(
+                                onTap: () => Modular.to.pop(),
+                                child: const Icon(Icons.close),
+                              ),
+                            ],
                           ),
                         ),
-                      ),
-                      TextButton(
-                        onPressed: () => Modular.to.pop(),
-                        child: Text(
-                          'Cancelar',
+                        const SizedBox(height: 16),
+                        SvgPicture.asset(
+                          'icon/danger-linear.svg',
+                          width: 80,
+                          height: 80,
+                          colorFilter: const ColorFilter.mode(
+                            Colors.red,
+                            BlendMode.srcIn,
+                          ),
+                        ),
+                        const SizedBox(height: 16),
+                        const Text(
+                          'Excluir chuva',
                           style: TextStyle(
+                            fontFamily: 'Montserrat',
+                            fontWeight: FontWeight.w600,
                             fontSize: 16,
-                            color: MyColors.colorOnPrimary,
-                            decoration: TextDecoration.underline,
-                            decorationColor: MyColors.colorOnPrimary,
+                            color: Color(0xff000000),
                           ),
                         ),
-                      ),
-                      const SizedBox(height: 16),
-                    ],
+                        const SizedBox(height: 8),
+                        Text(
+                          'Tem certeza que deseja excluir este registro de chuva?',
+                          textAlign: TextAlign.center,
+                          style: const TextStyle(
+                            fontFamily: 'Montserrat',
+                            fontWeight: FontWeight.w400,
+                            fontSize: 14,
+                            color: Color(0xFF8692A8),
+                          ),
+                        ),
+                        const SizedBox(height: 16),
+                        SizedBox(
+                          width: MediaQuery.of(context).size.width - 40,
+                          height: 50,
+                          child: ElevatedButton(
+                            onPressed: _listPageController.isDeleting
+                                ? null
+                                : () async {
+                                    final action = await _listPageController
+                                        .deleteClimate(climate);
+                                    if (!mounted || !modalContext.mounted) {
+                                      return;
+                                    }
+                                    if (action.isSuccess) {
+                                      Modular.to.pop();
+                                    }
+                                    _showMessage(
+                                      action.message,
+                                      isError: !action.isSuccess,
+                                    );
+                                  },
+                            style: ElevatedButton.styleFrom(
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(8),
+                              ),
+                              side: const BorderSide(color: Colors.red),
+                              elevation: 0,
+                              backgroundColor: Colors.transparent,
+                            ),
+                            child: Text(
+                              _listPageController.isDeleting
+                                  ? 'Excluindo...'
+                                  : 'Excluir',
+                              style: const TextStyle(color: Colors.red),
+                            ),
+                          ),
+                        ),
+                        TextButton(
+                          onPressed: () => Modular.to.pop(),
+                          child: Text(
+                            'Cancelar',
+                            style: TextStyle(
+                              fontSize: 16,
+                              color: MyColors.colorOnPrimary,
+                              decoration: TextDecoration.underline,
+                              decorationColor: MyColors.colorOnPrimary,
+                            ),
+                          ),
+                        ),
+                        const SizedBox(height: 16),
+                      ],
+                    ),
                   ),
-                ),
-              ],
+                ],
+              ),
             );
           },
         );
@@ -243,7 +265,9 @@ class _ClimatePageState extends State<ClimatePage> with SingleTickerProviderStat
           backgroundColor: Colors.white,
           floatingActionButton: _pageController.shouldShowFab
               ? FloatingActionButton(
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(64)),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(64),
+                  ),
                   onPressed: _openAdd,
                   child: const Padding(
                     padding: EdgeInsets.all(12.0),
@@ -257,201 +281,247 @@ class _ClimatePageState extends State<ClimatePage> with SingleTickerProviderStat
               onPressed: () => Modular.to.pop(),
               icon: const Icon(Icons.arrow_back_ios, color: Colors.white),
             ),
-            title: const Text('Clima e Chuvas', style: TextStyle(color: Colors.white)),
+            title: const Text(
+              'Clima e Chuvas',
+              style: TextStyle(color: Colors.white),
+            ),
           ),
-          body: Column(
-            children: [
-              TabBar(
-                controller: _pageController.tabController,
-                tabs: const [
-                  Tab(text: 'Lista'),
-                  Tab(text: 'Dados'),
-                ],
-                onTap: _pageController.setTabIndex,
-                automaticIndicatorColorAdjustment: false,
-                indicatorSize: TabBarIndicatorSize.tab,
-                unselectedLabelColor: Colors.grey,
-                labelStyle: const TextStyle(
-                  fontSize: 12,
-                  fontFamily: 'Montserrat',
-                  fontWeight: FontWeight.w600,
-                ),
-                unselectedLabelStyle: const TextStyle(
-                  fontSize: 12,
-                  fontFamily: 'Montserrat',
-                  fontWeight: FontWeight.w700,
-                ),
-                dividerColor: Colors.grey,
-                labelColor: Colors.black,
-                indicatorColor: MyColors.colorPrimary2,
-              ),
-              const SizedBox(height: 16),
-              if (_pageController.tabIndex == 0) ...[
-                Row(
-                  children: [
-                    const SizedBox(width: 20),
-                    _buildTopPill(
-                      label: _listPageController.hasActiveFilters() ? 'Filtros ativos' : 'Filtrar',
-                      icon: Icon(
-                        Icons.tune_rounded,
-                        size: 16,
-                        color: _listPageController.hasActiveFilters()
-                            ? MyColors.colorPrimary
-                            : const Color(0xFF8C8C8C),
-                      ),
-                      borderColor: _listPageController.hasActiveFilters()
-                          ? MyColors.colorPrimary
-                          : const Color(0xFFE6E6E6),
-                      backgroundColor: _listPageController.hasActiveFilters()
-                          ? const Color(0x14128977)
-                          : Colors.transparent,
-                      textColor: _listPageController.hasActiveFilters()
-                          ? MyColors.colorPrimary
-                          : const Color(0xFF8C8C8C),
-                      onTap: _showFilterSheet,
-                    ),
+          body: SafeArea(
+            top: false,
+            child: Column(
+              children: [
+                TabBar(
+                  controller: _pageController.tabController,
+                  tabs: const [
+                    Tab(text: 'Lista'),
+                    Tab(text: 'Dados'),
                   ],
+                  onTap: _pageController.setTabIndex,
+                  automaticIndicatorColorAdjustment: false,
+                  indicatorSize: TabBarIndicatorSize.tab,
+                  unselectedLabelColor: Colors.grey,
+                  labelStyle: const TextStyle(
+                    fontSize: 12,
+                    fontFamily: 'Montserrat',
+                    fontWeight: FontWeight.w600,
+                  ),
+                  unselectedLabelStyle: const TextStyle(
+                    fontSize: 12,
+                    fontFamily: 'Montserrat',
+                    fontWeight: FontWeight.w700,
+                  ),
+                  dividerColor: Colors.grey,
+                  labelColor: Colors.black,
+                  indicatorColor: MyColors.colorPrimary2,
                 ),
                 const SizedBox(height: 16),
-                Expanded(
-                  child: RefreshIndicator(
-                    onRefresh: () async {
-                      final result = await _listPageController.loadInitialData();
-                      if (!mounted || result == null) {
-                        return;
-                      }
-                      _showMessage(result.message, isError: !result.isSuccess);
-                    },
-                    child: Builder(
-                      builder: (context) {
-                        if (_listPageController.isLoading && _listPageController.climates.isEmpty) {
-                          return const Center(child: CircularProgressIndicator());
+                if (_pageController.tabIndex == 0) ...[
+                  Row(
+                    children: [
+                      const SizedBox(width: 20),
+                      _buildTopPill(
+                        label: _listPageController.hasActiveFilters()
+                            ? 'Filtros ativos'
+                            : 'Filtrar',
+                        icon: Icon(
+                          Icons.tune_rounded,
+                          size: 16,
+                          color: _listPageController.hasActiveFilters()
+                              ? MyColors.colorPrimary
+                              : const Color(0xFF8C8C8C),
+                        ),
+                        borderColor: _listPageController.hasActiveFilters()
+                            ? MyColors.colorPrimary
+                            : const Color(0xFFE6E6E6),
+                        backgroundColor: _listPageController.hasActiveFilters()
+                            ? const Color(0x14128977)
+                            : Colors.transparent,
+                        textColor: _listPageController.hasActiveFilters()
+                            ? MyColors.colorPrimary
+                            : const Color(0xFF8C8C8C),
+                        onTap: _showFilterSheet,
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 16),
+                  Expanded(
+                    child: RefreshIndicator(
+                      onRefresh: () async {
+                        final result = await _listPageController
+                            .loadInitialData();
+                        if (!mounted || result == null) {
+                          return;
                         }
+                        _showMessage(
+                          result.message,
+                          isError: !result.isSuccess,
+                        );
+                      },
+                      child: Builder(
+                        builder: (context) {
+                          if (_listPageController.isLoading &&
+                              _listPageController.climates.isEmpty) {
+                            return const Center(
+                              child: CircularProgressIndicator(),
+                            );
+                          }
 
-                        if (_listPageController.errorMessage != null &&
-                            _listPageController.climates.isEmpty) {
-                          return ListView(
-                            children: [
-                              const SizedBox(height: 120),
-                              Center(
-                                child: Padding(
-                                  padding: const EdgeInsets.symmetric(horizontal: 24),
+                          if (_listPageController.errorMessage != null &&
+                              _listPageController.climates.isEmpty) {
+                            return ListView(
+                              children: [
+                                const SizedBox(height: 120),
+                                Center(
+                                  child: Padding(
+                                    padding: const EdgeInsets.symmetric(
+                                      horizontal: 24,
+                                    ),
+                                    child: Text(
+                                      _listPageController.errorMessage!,
+                                      textAlign: TextAlign.center,
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            );
+                          }
+
+                          if (_listPageController.climates.isEmpty) {
+                            return ListView(
+                              children: const [
+                                SizedBox(height: 120),
+                                Center(
                                   child: Text(
-                                    _listPageController.errorMessage!,
-                                    textAlign: TextAlign.center,
+                                    'Nenhum registro de chuva cadastrado.',
                                   ),
                                 ),
-                              ),
-                            ],
-                          );
-                        }
+                              ],
+                            );
+                          }
 
-                        if (_listPageController.climates.isEmpty) {
-                          return ListView(
-                            children: const [
-                              SizedBox(height: 120),
-                              Center(child: Text('Nenhum registro de chuva cadastrado.')),
-                            ],
-                          );
-                        }
-
-                        return ListView.builder(
-                          itemCount: _listPageController.climates.length,
-                          itemBuilder: (context, index) {
-                            final climate = _listPageController.climates[index];
-                            return Container(
-                              width: MediaQuery.of(context).size.width - 40,
-                              padding: const EdgeInsets.all(16),
-                              margin: const EdgeInsets.only(bottom: 8, left: 20, right: 20),
-                              decoration: ShapeDecoration(
-                                color: Colors.white,
-                                shape: RoundedRectangleBorder(
-                                  side: const BorderSide(width: 1, color: Color(0xFFEBEBEB)),
-                                  borderRadius: BorderRadius.circular(12),
+                          return ListView.builder(
+                            itemCount: _listPageController.climates.length,
+                            itemBuilder: (context, index) {
+                              final climate =
+                                  _listPageController.climates[index];
+                              return Container(
+                                width: MediaQuery.of(context).size.width - 40,
+                                padding: const EdgeInsets.all(16),
+                                margin: const EdgeInsets.only(
+                                  bottom: 8,
+                                  left: 20,
+                                  right: 20,
                                 ),
-                                shadows: const [
-                                  BoxShadow(
-                                    color: Color(0x0A000000),
-                                    blurRadius: 24,
-                                    offset: Offset(0, 0),
+                                decoration: ShapeDecoration(
+                                  color: Colors.white,
+                                  shape: RoundedRectangleBorder(
+                                    side: const BorderSide(
+                                      width: 1,
+                                      color: Color(0xFFEBEBEB),
+                                    ),
+                                    borderRadius: BorderRadius.circular(12),
                                   ),
-                                ],
-                              ),
-                              child: Row(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                children: [
-                                  Expanded(
-                                    child: Row(
-                                      children: [
-                                        Container(
-                                          padding: const EdgeInsets.all(8),
-                                          decoration: ShapeDecoration(
-                                            color: const Color(0x198C8C8C),
-                                            shape: RoundedRectangleBorder(
-                                              borderRadius: BorderRadius.circular(42.67),
+                                  shadows: const [
+                                    BoxShadow(
+                                      color: Color(0x0A000000),
+                                      blurRadius: 24,
+                                      offset: Offset(0, 0),
+                                    ),
+                                  ],
+                                ),
+                                child: Row(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  mainAxisAlignment:
+                                      MainAxisAlignment.spaceBetween,
+                                  children: [
+                                    Expanded(
+                                      child: Row(
+                                        children: [
+                                          Container(
+                                            padding: const EdgeInsets.all(8),
+                                            decoration: ShapeDecoration(
+                                              color: const Color(0x198C8C8C),
+                                              shape: RoundedRectangleBorder(
+                                                borderRadius:
+                                                    BorderRadius.circular(
+                                                      42.67,
+                                                    ),
+                                              ),
+                                            ),
+                                            child: SvgPicture.asset(
+                                              'icon/cloud.svg',
+                                              width: 16,
+                                              height: 16,
+                                              colorFilter:
+                                                  const ColorFilter.mode(
+                                                    Color(0xFF8C8C8C),
+                                                    BlendMode.srcIn,
+                                                  ),
                                             ),
                                           ),
-                                          child: SvgPicture.asset(
-                                            'icon/cloud.svg',
-                                            width: 16,
-                                            height: 16,
-                                            colorFilter: const ColorFilter.mode(
-                                              Color(0xFF8C8C8C),
-                                              BlendMode.srcIn,
+                                          const SizedBox(width: 16),
+                                          Expanded(
+                                            child: Column(
+                                              crossAxisAlignment:
+                                                  CrossAxisAlignment.start,
+                                              children: [
+                                                Text(
+                                                  '${_formatDecimal(climate.quantidade)} mm',
+                                                  style: const TextStyle(
+                                                    color: Color(0xFF313131),
+                                                    fontSize: 14,
+                                                    fontFamily: 'Montserrat',
+                                                    fontWeight: FontWeight.w600,
+                                                  ),
+                                                ),
+                                                const SizedBox(height: 8),
+                                                _infoRow(
+                                                  'Inicio',
+                                                  climate.dataIn,
+                                                ),
+                                                const SizedBox(height: 6),
+                                                _infoRow(
+                                                  'Fim',
+                                                  climate.dataOut,
+                                                ),
+                                              ],
                                             ),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                    Row(
+                                      mainAxisSize: MainAxisSize.min,
+                                      children: [
+                                        GestureDetector(
+                                          onTap: () => _confirmDelete(climate),
+                                          child: SvgPicture.asset(
+                                            'icon/trash.svg',
                                           ),
                                         ),
                                         const SizedBox(width: 16),
-                                        Expanded(
-                                          child: Column(
-                                            crossAxisAlignment: CrossAxisAlignment.start,
-                                            children: [
-                                              Text(
-                                                '${_formatDecimal(climate.quantidade)} mm',
-                                                style: const TextStyle(
-                                                  color: Color(0xFF313131),
-                                                  fontSize: 14,
-                                                  fontFamily: 'Montserrat',
-                                                  fontWeight: FontWeight.w600,
-                                                ),
-                                              ),
-                                              const SizedBox(height: 8),
-                                              _infoRow('Inicio', climate.dataIn),
-                                              const SizedBox(height: 6),
-                                              _infoRow('Fim', climate.dataOut),
-                                            ],
+                                        GestureDetector(
+                                          onTap: () => _openEdit(climate),
+                                          child: SvgPicture.asset(
+                                            'icon/square-pen.svg',
                                           ),
                                         ),
                                       ],
                                     ),
-                                  ),
-                                  Row(
-                                    mainAxisSize: MainAxisSize.min,
-                                    children: [
-                                      GestureDetector(
-                                        onTap: () => _confirmDelete(climate),
-                                        child: SvgPicture.asset('icon/trash.svg'),
-                                      ),
-                                      const SizedBox(width: 16),
-                                      GestureDetector(
-                                        onTap: () => _openEdit(climate),
-                                        child: SvgPicture.asset('icon/square-pen.svg'),
-                                      ),
-                                    ],
-                                  ),
-                                ],
-                              ),
-                            );
-                          },
-                        );
-                      },
+                                  ],
+                                ),
+                              );
+                            },
+                          );
+                        },
+                      ),
                     ),
                   ),
-                ),
+                ],
+                if (_pageController.tabIndex == 1)
+                  const Expanded(child: GraficsClimatePage()),
               ],
-              if (_pageController.tabIndex == 1) const Expanded(child: GraficsClimatePage()),
-            ],
+            ),
           ),
         );
       },

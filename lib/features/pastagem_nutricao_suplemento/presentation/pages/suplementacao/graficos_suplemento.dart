@@ -7,7 +7,16 @@ import 'package:flutter/material.dart';
 import 'package:flutter_modular/flutter_modular.dart';
 
 class GraficosSuplemento extends StatefulWidget {
-  const GraficosSuplemento({super.key});
+  const GraficosSuplemento({
+    super.key,
+    this.idPotreiro,
+    this.idLote,
+    this.idProduto,
+  });
+
+  final int? idPotreiro;
+  final int? idLote;
+  final int? idProduto;
 
   @override
   State<GraficosSuplemento> createState() => _GraficosSuplementoState();
@@ -25,6 +34,16 @@ class _GraficosSuplementoState extends State<GraficosSuplemento> {
   }
 
   @override
+  void didUpdateWidget(covariant GraficosSuplemento oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.idPotreiro != widget.idPotreiro ||
+        oldWidget.idLote != widget.idLote ||
+        oldWidget.idProduto != widget.idProduto) {
+      WidgetsBinding.instance.addPostFrameCallback((_) => _load());
+    }
+  }
+
+  @override
   void dispose() {
     _controller.removeListener(_sync);
     super.dispose();
@@ -36,7 +55,11 @@ class _GraficosSuplementoState extends State<GraficosSuplemento> {
 
   Future<void> _load() async {
     try {
-      await _controller.load();
+      await _controller.load(
+        idPotreiro: widget.idPotreiro,
+        idLote: widget.idLote,
+        idProduto: widget.idProduto,
+      );
     } catch (_) {
       if (!mounted) return;
       AppSnackBar.show(
@@ -116,7 +139,7 @@ class _GraficosSuplementoState extends State<GraficosSuplemento> {
             ),
             const SizedBox(height: 16),
             _LineChartCard(
-              title: 'Consumo diario (kg/animal)',
+              title: 'Consumo diário (kg/animal)',
               points: consumoAnimal,
               suffix: ' kg',
             ),
@@ -318,7 +341,7 @@ class _EmptyChartText extends StatelessWidget {
       padding: EdgeInsets.symmetric(vertical: 40),
       child: Center(
         child: Text(
-          'Sem dados para exibir neste periodo.',
+          'Sem dados para exibir neste período.',
           textAlign: TextAlign.center,
           style: TextStyle(
             color: Color(0xFF8C8C8C),

@@ -1,114 +1,12 @@
+import 'package:costeira/features/pastagem_nutricao_suplemento/domain/entities/suplemento.dart';
 import 'package:flutter/material.dart';
 
 import '../../../../../../theme/colors.dart';
 
-class DetailSuplemento extends StatefulWidget {
-  const DetailSuplemento({super.key});
+class DetailSuplemento extends StatelessWidget {
+  const DetailSuplemento({super.key, required this.suplemento});
 
-  @override
-  State<DetailSuplemento> createState() => _DetailSuplementoState();
-}
-
-class _DetailSuplementoState extends State<DetailSuplemento> {
-  Widget buildTextField(String label, String hint) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          label,
-          style: TextStyle(
-            color: const Color(0xFF313131),
-            fontSize: 14,
-            fontFamily: 'Montserrat',
-            fontWeight: FontWeight.w400,
-            height: 1.50,
-            letterSpacing: 0.10,
-          ),
-        ),
-        const SizedBox(height: 6),
-        TextField(
-          style: TextStyle(
-            color: Color(0xFF313131),
-            fontSize: 14,
-            fontFamily: 'Montserrat',
-            fontWeight: FontWeight.w400,
-            height: 1.50,
-            letterSpacing: 0.10,
-          ),
-          decoration: InputDecoration(
-            hintText: hint,
-            hintStyle: TextStyle(
-              color: Color(0xFF313131),
-              fontSize: 14,
-              fontFamily: 'Montserrat',
-              fontWeight: FontWeight.w400,
-              height: 1.50,
-              letterSpacing: 0.10,
-            ),
-            filled: true,
-            fillColor: Color(0xFFEBEBEB),
-            contentPadding: EdgeInsets.symmetric(horizontal: 15, vertical: 16),
-            border: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(8),
-              borderSide: BorderSide.none,
-            ),
-          ),
-        ),
-        const SizedBox(height: 18),
-      ],
-    );
-  }
-
-  Widget buildTextField5Line(String label, String hint) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          label,
-          style: TextStyle(
-            color: const Color(0xFF313131),
-            fontSize: 14,
-            fontFamily: 'Montserrat',
-            fontWeight: FontWeight.w400,
-            height: 1.50,
-            letterSpacing: 0.10,
-          ),
-        ),
-        const SizedBox(height: 6),
-        TextField(
-          minLines: 3,
-          maxLines: 3,
-          style: TextStyle(
-            color: Color(0xFF313131),
-            fontSize: 14,
-            fontFamily: 'Montserrat',
-            fontWeight: FontWeight.w400,
-            height: 1.50,
-            letterSpacing: 0.10,
-          ),
-          decoration: InputDecoration(
-            hintText: hint,
-            hintStyle: TextStyle(
-              color: Color(0xFF313131),
-              fontSize: 14,
-              fontFamily: 'Montserrat',
-              fontWeight: FontWeight.w400,
-              height: 1.50,
-              letterSpacing: 0.10,
-            ),
-            filled: true,
-            fillColor: Color(0xFFEBEBEB),
-            contentPadding: EdgeInsets.symmetric(horizontal: 15, vertical: 16),
-            border: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(8),
-              borderSide: BorderSide.none,
-            ),
-          ),
-        ),
-        const SizedBox(height: 18),
-      ],
-    );
-  }
+  final Suplemento suplemento;
 
   @override
   Widget build(BuildContext context) {
@@ -117,12 +15,10 @@ class _DetailSuplementoState extends State<DetailSuplemento> {
       appBar: AppBar(
         backgroundColor: MyColors.colorPrimary,
         leading: GestureDetector(
-          onTap: () {
-            Navigator.pop(context);
-          },
-          child: Icon(Icons.arrow_back_ios, color: Colors.white),
+          onTap: () => Navigator.pop(context),
+          child: const Icon(Icons.arrow_back_ios, color: Colors.white),
         ),
-        title: Text(
+        title: const Text(
           'Detalhes do Supl. e Consumo',
           style: TextStyle(
             color: Colors.white,
@@ -132,31 +28,124 @@ class _DetailSuplementoState extends State<DetailSuplemento> {
           ),
         ),
       ),
-      body: SingleChildScrollView(
-        child: Container(
-          margin: EdgeInsets.symmetric(horizontal: 20),
+      body: SafeArea(
+        top: false,
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.fromLTRB(20, 16, 20, 32),
           child: Column(
             children: [
-              SizedBox(height: 16),
-              buildTextField("Potreiro", "Selecionar"),
-              buildTextField("Data de", "Selecionar"),
-              buildTextField("Data até", "Selecione"),
-              buildTextField("Lote", "Selecione"),
-              buildTextField("Piquete", "Selecione"),
-              buildTextField("Produto utilizado", "Insira aqui"),
-              buildTextField("Quantidade ", "00 kg"),
-              buildTextField("Peso médio do lote", "00 kg"),
-              buildTextField("Consumo estimado", "00 kg"),
-              buildTextField("Consumo estimado", "0,0 kg/animal/dia"),
-              buildTextField("Período entre abastecimentos", "0 dias"),
-              buildTextField("Consumo real", "0 kg/animal/dia"),
-              buildTextField("Observações", "Ex: Consumo dentro do espe..."),
-
-              const SizedBox(height: 32),
+              _ReadOnlyField(
+                label: 'Potreiro',
+                value: suplemento.potreiro?.nome ?? '-',
+              ),
+              _ReadOnlyField(
+                label: 'Lote',
+                value: suplemento.lote?.nome ?? '-',
+              ),
+              _ReadOnlyField(
+                label: 'Produto utilizado',
+                value: suplemento.produto?.nome ?? '-',
+              ),
+              _ReadOnlyField(
+                label: 'Data',
+                value: _emptyToDash(suplemento.dataPostagem),
+              ),
+              _ReadOnlyField(
+                label: 'Quantidade atual',
+                value: _kg(suplemento.quantidadeAtual),
+              ),
+              _ReadOnlyField(
+                label: 'Peso medio do lote',
+                value: _kg(suplemento.pesoMedio),
+              ),
+              _ReadOnlyField(
+                label: 'Quantidade de animais',
+                value: suplemento.quantidadeAnimais?.toString() ?? '-',
+              ),
+              _ReadOnlyField(
+                label: 'Periodo entre abastecimentos',
+                value:
+                    '${suplemento.consumoReal?.intervaloDias?.toString() ?? '-'} dias',
+              ),
+              _ReadOnlyField(
+                label: 'Quantidade consumida no periodo',
+                value: _kg(suplemento.consumoReal?.quantidadeConsumidaPeriodo),
+              ),
+              _ReadOnlyField(
+                label: 'Consumo real do lote',
+                value: _consumo(suplemento.consumoReal?.consumoRealDiaLote),
+              ),
+              _ReadOnlyField(
+                label: 'Consumo real por animal',
+                value: _consumo(suplemento.consumoReal?.consumoRealAnimalDia),
+              ),
             ],
           ),
         ),
       ),
     );
   }
+}
+
+class _ReadOnlyField extends StatelessWidget {
+  const _ReadOnlyField({required this.label, required this.value});
+
+  final String label;
+  final String value;
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 18),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            label,
+            style: const TextStyle(
+              color: Color(0xFF313131),
+              fontSize: 14,
+              fontFamily: 'Montserrat',
+              fontWeight: FontWeight.w400,
+            ),
+          ),
+          const SizedBox(height: 6),
+          Container(
+            width: double.infinity,
+            padding: const EdgeInsets.symmetric(horizontal: 15, vertical: 16),
+            decoration: BoxDecoration(
+              color: const Color(0xFFEBEBEB),
+              borderRadius: BorderRadius.circular(8),
+            ),
+            child: Text(
+              value,
+              style: const TextStyle(
+                color: Color(0xFF313131),
+                fontSize: 14,
+                fontFamily: 'Montserrat',
+                fontWeight: FontWeight.w400,
+                height: 1.50,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+String _kg(double? value) {
+  if (value == null) return '-';
+  return '${value.toStringAsFixed(2)} kg';
+}
+
+String _consumo(String? value) {
+  final trimmed = value?.trim();
+  if (trimmed == null || trimmed.isEmpty) return '-';
+  return '$trimmed kg/animal/dia';
+}
+
+String _emptyToDash(String? value) {
+  final trimmed = value?.trim();
+  return trimmed == null || trimmed.isEmpty ? '-' : trimmed;
 }

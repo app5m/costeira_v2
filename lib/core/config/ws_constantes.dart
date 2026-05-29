@@ -3,7 +3,7 @@ class WSConstantes {
   static const String token = 'Q0NW47kj';
 
   static const String doisFatores = '/usuarios/doisFatores';
-  static const String listCnpj = '/usuarios/listCnpj/';
+  static const String listCnpj = '/usuarios/listCnpj';
   static const String login = '/usuarios/login';
   static const String cadastroApp = '/usuarios/cadastroapp';
   static const String recuperarSenha = '/usuarios/recuperarsenha/';

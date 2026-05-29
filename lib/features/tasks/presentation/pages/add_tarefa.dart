@@ -30,7 +30,7 @@ class _AddTaskState extends State<AddTask> {
   static const _urgencies = [
     AppSelectOption<int>(value: 1, label: 'Muito urgente'),
     AppSelectOption<int>(value: 2, label: 'Urgente'),
-    AppSelectOption<int>(value: 3, label: 'Nao tao urgente'),
+    AppSelectOption<int>(value: 3, label: 'Não tão urgente'),
   ];
   static const _months = [
     _MonthOption('01', 'Janeiro'),
@@ -51,7 +51,8 @@ class _AddTaskState extends State<AddTask> {
   final _obsController = TextEditingController();
   final ListTaskResponsaveisController _responsaveisController =
       Modular.get<ListTaskResponsaveisController>();
-  final SaveTaskController _saveTaskController = Modular.get<SaveTaskController>();
+  final SaveTaskController _saveTaskController =
+      Modular.get<SaveTaskController>();
 
   int? _selectedType;
   int? _selectedUrgency;
@@ -66,7 +67,18 @@ class _AddTaskState extends State<AddTask> {
   bool get _isFormValid {
     return _selectedType != null &&
         _descricaoController.text.trim().isNotEmpty &&
-        _selectedUrgency != null;
+        _selectedUrgency != null &&
+        _hasRequiredSchedule;
+  }
+
+  bool get _hasRequiredSchedule {
+    if (_selectedType == 1) {
+      return _startDate != null && _endDate != null;
+    }
+    if (_selectedType == 2) {
+      return _selectedMonths.isNotEmpty;
+    }
+    return false;
   }
 
   @override
@@ -108,7 +120,8 @@ class _AddTaskState extends State<AddTask> {
           .map((item) {
             final mesAno = item.mesAno ?? item.data;
             final month = _months.firstWhere(
-              (option) => mesAno.toLowerCase().startsWith(option.label.toLowerCase()),
+              (option) =>
+                  mesAno.toLowerCase().startsWith(option.label.toLowerCase()),
               orElse: () => const _MonthOption('', ''),
             );
             return month.value;
@@ -123,21 +136,19 @@ class _AddTaskState extends State<AddTask> {
 
   Future<void> _submit() async {
     if (!_isFormValid || _isLoading) {
+      if (!_hasRequiredSchedule) {
+        AppSnackBar.show(
+          context: context,
+          message: _selectedType == 1
+              ? 'Informe a data inicial e final.'
+              : 'Selecione ao menos um mes.',
+          isError: true,
+        );
+      }
       return;
     }
 
     final datas = _buildDatasPayload();
-    if ((_selectedType == 1 || _selectedType == 2) && datas.isEmpty) {
-      AppSnackBar.show(
-        context: context,
-        message: _selectedType == 1
-            ? 'Informe a data inicial e final.'
-            : 'Selecione ao menos um mes.',
-        isError: true,
-      );
-      return;
-    }
-
     setState(() => _isLoading = true);
 
     try {
@@ -155,7 +166,11 @@ class _AddTaskState extends State<AddTask> {
         return;
       }
 
-      AppSnackBar.show(context: context, message: message.message, isError: false);
+      AppSnackBar.show(
+        context: context,
+        message: message.message,
+        isError: false,
+      );
       Navigator.pop(context);
     } catch (error) {
       if (!mounted) {
@@ -163,7 +178,9 @@ class _AddTaskState extends State<AddTask> {
       }
       AppSnackBar.show(
         context: context,
-        message: error is ApiException ? error.message : 'Nao foi possivel salvar a tarefa.',
+        message: error is ApiException
+            ? error.message
+            : 'Nao foi possivel salvar a tarefa.',
         isError: true,
       );
     } finally {
@@ -184,13 +201,9 @@ class _AddTaskState extends State<AddTask> {
   }
 
   Future<void> _openResponsavelSelection() async {
-    if (_responsaveisController.responsaveis.isEmpty) {
-      await Navigator.push(context, MaterialPageRoute(builder: (_) => const AddTaskResponsavel()));
+    if (_responsaveisController.responsaveis.isEmpty &&
+        !_responsaveisController.isLoading) {
       await _responsaveisController.load().catchError((_) {});
-      if (mounted && _responsaveisController.responsaveis.isNotEmpty) {
-        await _openResponsavelSelection();
-      }
-      return;
     }
 
     if (!mounted) {
@@ -204,9 +217,16 @@ class _AddTaskState extends State<AddTask> {
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
       ),
-      builder: (_) => _ResponsavelSelectionSheet(
-        responsaveis: _responsaveisController.responsaveis,
-        initialSelectedId: _selectedResponsavelId,
+      builder: (_) => AnimatedBuilder(
+        animation: _responsaveisController,
+        builder: (context, _) {
+          return _ResponsavelSelectionSheet(
+            responsaveis: _responsaveisController.responsaveis,
+            initialSelectedId: _selectedResponsavelId,
+            isLoading: _responsaveisController.isLoading,
+            errorMessage: _responsaveisController.errorMessage,
+          );
+        },
       ),
     );
 
@@ -215,9 +235,12 @@ class _AddTaskState extends State<AddTask> {
     }
 
     if (result.shouldAdd) {
-      await Navigator.push(context, MaterialPageRoute(builder: (_) => const AddTaskResponsavel()));
+      await Navigator.push(
+        context,
+        MaterialPageRoute(builder: (_) => const AddTaskResponsavel()),
+      );
       await _responsaveisController.load().catchError((_) {});
-      if (mounted && _responsaveisController.responsaveis.isNotEmpty) {
+      if (mounted) {
         await _openResponsavelSelection();
       }
       return;
@@ -227,7 +250,8 @@ class _AddTaskState extends State<AddTask> {
   }
 
   Future<void> _pickDate({required bool isStart}) async {
-    final initialDate = (isStart ? _startDate : _endDate) ?? _startDate ?? DateTime.now();
+    final initialDate =
+        (isStart ? _startDate : _endDate) ?? _startDate ?? DateTime.now();
     final picked = await showDatePicker(
       context: context,
       initialDate: initialDate,
@@ -287,75 +311,82 @@ class _AddTaskState extends State<AddTask> {
           ),
         ),
       ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            _buildTextField(
-              controller: _descricaoController,
-              label: 'O que fazer',
-              hint: 'Descrição da tarefa',
-            ),
-            _buildSelectField(
-              label: 'Responsável',
-              value: _selectedResponsavelName,
-              placeholder: 'Selecionar responsável',
-              onTap: _openResponsavelSelection,
-            ),
-            _buildDropdown(
-              label: 'Tipo',
-              value: _selectedType,
-              options: _taskTypes,
-              onChanged: (value) {
-                setState(() {
-                  _selectedType = value;
-                  _startDate = null;
-                  _endDate = null;
-                  _selectedMonths = [];
-                });
-              },
-            ),
-            if (_selectedType == 1) ...[
-              _buildDateField(
-                label: 'Data inicial',
-                value: _startDate == null ? 'Selecionar data' : formatTaskDate(_startDate!),
-                onTap: () => _pickDate(isStart: true),
+      body: SafeArea(
+        top: false,
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              _buildTextField(
+                controller: _descricaoController,
+                label: 'O que fazer',
+                hint: 'Descrição da tarefa',
               ),
-              _buildDateField(
-                label: 'Data final',
-                value: _endDate == null ? 'Selecionar data' : formatTaskDate(_endDate!),
-                onTap: () => _pickDate(isStart: false),
-              ),
-            ],
-            if (_selectedType == 2)
               _buildSelectField(
-                label: 'Meses',
-                value: _selectedMonthsLabel,
-                placeholder: 'Selecionar meses',
-                onTap: _openMonthSelection,
+                label: 'Responsável',
+                value: _selectedResponsavelName,
+                placeholder: 'Selecionar responsável',
+                onTap: _openResponsavelSelection,
               ),
-            _buildDropdown(
-              label: 'Urgência',
-              value: _selectedUrgency,
-              options: _urgencies,
-              onChanged: (value) => setState(() => _selectedUrgency = value),
-            ),
-            _buildTextField(
-              controller: _obsController,
-              label: 'Observações',
-              hint: 'Observações da tarefa',
-              maxLines: 3,
-            ),
-            const SizedBox(height: 16),
-            CustomButton(
-              onPressed: _submit,
-              text: _isEditing ? 'Salvar' : 'Adicionar',
-              enabled: _isFormValid,
-              isLoading: _isLoading,
-            ),
-            const SizedBox(height: 32),
-          ],
+              _buildDropdown(
+                label: 'Tipo',
+                value: _selectedType,
+                options: _taskTypes,
+                onChanged: (value) {
+                  setState(() {
+                    _selectedType = value;
+                    _startDate = null;
+                    _endDate = null;
+                    _selectedMonths = [];
+                  });
+                },
+              ),
+              if (_selectedType == 1) ...[
+                _buildDateField(
+                  label: 'Data inicial',
+                  value: _startDate == null
+                      ? 'Selecionar data'
+                      : formatTaskDate(_startDate!),
+                  onTap: () => _pickDate(isStart: true),
+                ),
+                _buildDateField(
+                  label: 'Data final',
+                  value: _endDate == null
+                      ? 'Selecionar data'
+                      : formatTaskDate(_endDate!),
+                  onTap: () => _pickDate(isStart: false),
+                ),
+              ],
+              if (_selectedType == 2)
+                _buildSelectField(
+                  label: 'Meses',
+                  value: _selectedMonthsLabel,
+                  placeholder: 'Selecionar meses',
+                  onTap: _openMonthSelection,
+                ),
+              _buildDropdown(
+                label: 'Urgência',
+                value: _selectedUrgency,
+                options: _urgencies,
+                onChanged: (value) => setState(() => _selectedUrgency = value),
+              ),
+              _buildTextField(
+                controller: _obsController,
+                label: 'Observações',
+                hint: 'Observações da tarefa',
+                maxLines: 3,
+              ),
+              const SizedBox(height: 16),
+              CustomButton(
+                onPressed: _submit,
+                text: _isEditing ? 'Salvar' : 'Adicionar',
+                enabled: _isFormValid,
+                isLoading: _isLoading,
+              ),
+              const SizedBox(height: 32),
+            ],
+          ),
         ),
       ),
     );
@@ -458,14 +489,19 @@ class _AddTaskState extends State<AddTask> {
                     maxLines: 2,
                     overflow: TextOverflow.ellipsis,
                     style: TextStyle(
-                      color: value.isEmpty ? const Color(0xFF8C8C8C) : const Color(0xFF313131),
+                      color: value.isEmpty
+                          ? const Color(0xFF8C8C8C)
+                          : const Color(0xFF313131),
                       fontSize: 14,
                       fontFamily: 'Montserrat',
                       fontWeight: FontWeight.w400,
                     ),
                   ),
                 ),
-                const Icon(Icons.keyboard_arrow_right, color: Color(0xFF8C8C8C)),
+                const Icon(
+                  Icons.keyboard_arrow_right,
+                  color: Color(0xFF8C8C8C),
+                ),
               ],
             ),
           ),
@@ -532,17 +568,62 @@ class _ResponsavelSelectionResult {
 }
 
 class _ResponsavelSelectionSheet extends StatefulWidget {
-  const _ResponsavelSelectionSheet({required this.responsaveis, required this.initialSelectedId});
+  const _ResponsavelSelectionSheet({
+    required this.responsaveis,
+    required this.initialSelectedId,
+    this.isLoading = false,
+    this.errorMessage,
+  });
 
   final List<TaskResponsavelEntity> responsaveis;
   final int? initialSelectedId;
+  final bool isLoading;
+  final String? errorMessage;
 
   @override
-  State<_ResponsavelSelectionSheet> createState() => _ResponsavelSelectionSheetState();
+  State<_ResponsavelSelectionSheet> createState() =>
+      _ResponsavelSelectionSheetState();
 }
 
-class _ResponsavelSelectionSheetState extends State<_ResponsavelSelectionSheet> {
+class _ResponsavelSelectionSheetState
+    extends State<_ResponsavelSelectionSheet> {
   late int? _selectedId = widget.initialSelectedId;
+  final TextEditingController _searchController = TextEditingController();
+  String _search = '';
+
+  @override
+  void initState() {
+    super.initState();
+    _searchController.addListener(_onSearchChanged);
+  }
+
+  @override
+  void dispose() {
+    _searchController.removeListener(_onSearchChanged);
+    _searchController.dispose();
+    super.dispose();
+  }
+
+  List<TaskResponsavelEntity> get _filteredResponsaveis {
+    final query = _normalize(_search);
+    if (query.isEmpty) {
+      return widget.responsaveis;
+    }
+
+    return widget.responsaveis
+        .where((responsavel) {
+          return _normalize(responsavel.nome).contains(query) ||
+              _normalize(responsavel.email).contains(query) ||
+              _normalize(responsavel.celular).contains(query);
+        })
+        .toList(growable: false);
+  }
+
+  void _onSearchChanged() {
+    setState(() {
+      _search = _searchController.text;
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -578,60 +659,33 @@ class _ResponsavelSelectionSheetState extends State<_ResponsavelSelectionSheet> 
                 fontWeight: FontWeight.w600,
               ),
             ),
-            const SizedBox(height: 20),
-            Flexible(
-              child: ListView.separated(
-                shrinkWrap: true,
-                itemCount: widget.responsaveis.length,
-                separatorBuilder: (_, __) => const SizedBox(height: 12),
-                itemBuilder: (context, index) {
-                  final responsavel = widget.responsaveis[index];
-                  final isSelected = _selectedId == responsavel.id;
-                  return InkWell(
-                    borderRadius: BorderRadius.circular(16),
-                    onTap: () {
-                      setState(() {
-                        _selectedId = isSelected ? null : responsavel.id;
-                      });
-                    },
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-                      decoration: BoxDecoration(
-                        color: isSelected ? MyColors.colorPrimary : Colors.white,
-                        borderRadius: BorderRadius.circular(16),
-                        border: Border.all(color: const Color(0xFFEBEBEB)),
-                        boxShadow: const [BoxShadow(color: Color(0x0A000000), blurRadius: 24)],
-                      ),
-                      child: Row(
-                        children: [
-                          Expanded(
-                            child: Text(
-                              responsavel.nome,
-                              style: TextStyle(
-                                color: isSelected ? Colors.white : const Color(0xFF313131),
-                                fontSize: 14,
-                                fontFamily: 'Montserrat',
-                                fontWeight: FontWeight.w500,
-                              ),
-                            ),
-                          ),
-                          Icon(
-                            isSelected ? Icons.check_circle : Icons.radio_button_unchecked,
-                            color: isSelected ? Colors.white : const Color(0xFF8C8C8C),
-                          ),
-                        ],
-                      ),
-                    ),
-                  );
-                },
+            const SizedBox(height: 6),
+            const Text(
+              'Escolha um responsavel ja cadastrado ou adicione um novo.',
+              style: TextStyle(
+                color: Color(0xFF8C8C8C),
+                fontSize: 14,
+                fontFamily: 'Montserrat',
+                fontWeight: FontWeight.w400,
               ),
             ),
+            const SizedBox(height: 20),
+            if (!widget.isLoading &&
+                (widget.errorMessage ?? '').trim().isEmpty &&
+                widget.responsaveis.isNotEmpty) ...[
+              _buildSearchField(),
+              const SizedBox(height: 16),
+            ],
+            Flexible(child: _buildBody()),
             const SizedBox(height: 20),
             SizedBox(
               width: double.infinity,
               child: OutlinedButton.icon(
                 onPressed: () {
-                  Navigator.pop(context, const _ResponsavelSelectionResult(shouldAdd: true));
+                  Navigator.pop(
+                    context,
+                    const _ResponsavelSelectionResult(shouldAdd: true),
+                  );
                 },
                 icon: const Icon(Icons.add_circle_outline),
                 label: const Text('Adicionar responsavel'),
@@ -639,21 +693,167 @@ class _ResponsavelSelectionSheetState extends State<_ResponsavelSelectionSheet> 
                   foregroundColor: MyColors.colorPrimary,
                   side: const BorderSide(color: MyColors.colorPrimary),
                   minimumSize: const Size(double.infinity, 48),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(8),
+                  ),
                 ),
               ),
             ),
-            const SizedBox(height: 12),
-            CustomButton(
-              onPressed: () {
-                Navigator.pop(context, _ResponsavelSelectionResult(selectedId: _selectedId));
-              },
-              text: 'Confirmar',
-            ),
+            if (widget.responsaveis.isNotEmpty) ...[
+              const SizedBox(height: 12),
+              CustomButton(
+                onPressed: () {
+                  Navigator.pop(
+                    context,
+                    _ResponsavelSelectionResult(selectedId: _selectedId),
+                  );
+                },
+                text: 'Confirmar',
+              ),
+            ],
           ],
         ),
       ),
     );
+  }
+
+  Widget _buildBody() {
+    if (widget.isLoading) {
+      return const Center(
+        child: CircularProgressIndicator(color: MyColors.colorPrimary),
+      );
+    }
+
+    if ((widget.errorMessage ?? '').trim().isNotEmpty) {
+      return Center(
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 12),
+          child: Text(widget.errorMessage!, textAlign: TextAlign.center),
+        ),
+      );
+    }
+
+    if (widget.responsaveis.isEmpty) {
+      return const Center(
+        child: Text(
+          'Voce ainda nao possui responsaveis cadastrados.',
+          textAlign: TextAlign.center,
+        ),
+      );
+    }
+
+    final responsaveis = _filteredResponsaveis;
+    if (responsaveis.isEmpty) {
+      return const Center(
+        child: Text(
+          'Nenhum responsavel encontrado.',
+          textAlign: TextAlign.center,
+        ),
+      );
+    }
+
+    return ListView.separated(
+      shrinkWrap: true,
+      itemCount: responsaveis.length,
+      separatorBuilder: (_, __) => const SizedBox(height: 12),
+      itemBuilder: (context, index) {
+        final responsavel = responsaveis[index];
+        final isSelected = _selectedId == responsavel.id;
+
+        return InkWell(
+          borderRadius: BorderRadius.circular(16),
+          onTap: () {
+            setState(() {
+              _selectedId = isSelected ? null : responsavel.id;
+            });
+          },
+          child: Container(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+            decoration: BoxDecoration(
+              color: isSelected ? MyColors.colorPrimary : Colors.white,
+              borderRadius: BorderRadius.circular(16),
+              border: Border.all(color: const Color(0xFFEBEBEB)),
+              boxShadow: const [
+                BoxShadow(color: Color(0x0A000000), blurRadius: 24),
+              ],
+            ),
+            child: Row(
+              children: [
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        responsavel.nome,
+                        style: TextStyle(
+                          color: isSelected
+                              ? Colors.white
+                              : const Color(0xFF313131),
+                          fontSize: 14,
+                          fontFamily: 'Montserrat',
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                      if (responsavel.celular.trim().isNotEmpty) ...[
+                        const SizedBox(height: 6),
+                        Text(
+                          formatTaskResponsavelPhone(responsavel.celular),
+                          style: TextStyle(
+                            color: isSelected
+                                ? Colors.white70
+                                : const Color(0xFF8C8C8C),
+                            fontSize: 12,
+                            fontFamily: 'Montserrat',
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                      ],
+                    ],
+                  ),
+                ),
+                Icon(
+                  isSelected
+                      ? Icons.check_circle
+                      : Icons.radio_button_unchecked,
+                  color: isSelected ? Colors.white : const Color(0xFF8C8C8C),
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _buildSearchField() {
+    return TextField(
+      controller: _searchController,
+      textInputAction: TextInputAction.search,
+      decoration: InputDecoration(
+        hintText: 'Buscar responsavel',
+        prefixIcon: const Icon(Icons.search, color: Color(0xFF8C8C8C)),
+        suffixIcon: _search.trim().isEmpty
+            ? null
+            : IconButton(
+                onPressed: _searchController.clear,
+                icon: const Icon(Icons.close, color: Color(0xFF8C8C8C)),
+              ),
+        filled: true,
+        fillColor: const Color(0xFFEBEBEB),
+        contentPadding: const EdgeInsets.symmetric(
+          horizontal: 15,
+          vertical: 14,
+        ),
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(8),
+          borderSide: BorderSide.none,
+        ),
+      ),
+    );
+  }
+
+  String _normalize(String value) {
+    return value.trim().toLowerCase();
   }
 }
 
@@ -713,7 +913,9 @@ class _MonthSelectionSheetState extends State<_MonthSelectionSheet> {
                     controlAffinity: ListTileControlAffinity.trailing,
                     onChanged: (_) {
                       setState(() {
-                        isSelected ? _selected.remove(month.value) : _selected.add(month.value);
+                        isSelected
+                            ? _selected.remove(month.value)
+                            : _selected.add(month.value);
                       });
                     },
                   );

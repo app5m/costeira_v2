@@ -1,8 +1,7 @@
-import 'dart:math' as math;
-
 import 'package:costeira/core/api/api_exception.dart';
 import 'package:costeira/core/components/app_snack.dart';
 import 'package:costeira/features/movimentacoes/domain/entities/troca_categoria_charts_entity.dart';
+import 'package:costeira/features/movimentacoes/presentation/widgets/monthly_bar_chart_card.dart';
 import 'package:costeira/features/movimentacoes/troca_categoria/presentation/controllers/get_troca_categoria_charts_controller.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_modular/flutter_modular.dart';
@@ -71,15 +70,20 @@ class _GraficosTrocaCategoriaState extends State<GraficosTrocaCategoria> {
     final error = _controller.errorMessage;
 
     if (isLoading && charts == null) {
-      return const Expanded(child: Center(child: CircularProgressIndicator()));
+      return const Expanded(
+        child: SafeArea(top: false, child: Center(child: CircularProgressIndicator())),
+      );
     }
 
     if (error != null && charts == null) {
       return Expanded(
-        child: Center(
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 24),
-            child: Text(error, textAlign: TextAlign.center),
+        child: SafeArea(
+          top: false,
+          child: Center(
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 24),
+              child: Text(error, textAlign: TextAlign.center),
+            ),
           ),
         ),
       );
@@ -87,23 +91,36 @@ class _GraficosTrocaCategoriaState extends State<GraficosTrocaCategoria> {
 
     final data = charts ?? TrocaCategoriaChartsEntity.empty;
     return Expanded(
-      child: RefreshIndicator(
-        onRefresh: _load,
-        child: ListView(
-          physics: const AlwaysScrollableScrollPhysics(),
-          padding: const EdgeInsets.fromLTRB(20, 0, 20, 24),
-          children: [
-            _MonthSelector(
-              month: _controller.month,
-              isLoading: isLoading,
-              onPrevious: _previousMonth,
-              onNext: _nextMonth,
-            ),
-            const SizedBox(height: 16),
-            _TotalCard(value: data.quantidadeTrocas),
-            const SizedBox(height: 16),
-            _TrocaChartCard(points: data.mesAMes),
-          ],
+      child: SafeArea(
+        top: false,
+        child: RefreshIndicator(
+          onRefresh: _load,
+          child: ListView(
+            physics: const AlwaysScrollableScrollPhysics(),
+            padding: const EdgeInsets.fromLTRB(20, 0, 20, 24),
+            children: [
+              _MonthSelector(
+                month: _controller.month,
+                isLoading: isLoading,
+                onPrevious: _previousMonth,
+                onNext: _nextMonth,
+              ),
+              const SizedBox(height: 16),
+              _TotalCard(value: data.quantidadeTrocas),
+              const SizedBox(height: 16),
+              MonthlyBarChartCard(
+                title: 'Trocas por mês',
+                points: data.mesAMes
+                    .map(
+                      (point) => MonthlyBarChartPoint(
+                        month: point.month,
+                        value: point.quantity.toDouble(),
+                      ),
+                    )
+                    .toList(),
+              ),
+            ],
+          ),
         ),
       ),
     );
@@ -111,19 +128,15 @@ class _GraficosTrocaCategoriaState extends State<GraficosTrocaCategoria> {
 }
 
 class _BaseCard extends StatelessWidget {
-  const _BaseCard({
-    required this.child,
-    this.padding = const EdgeInsets.all(16),
-  });
+  const _BaseCard({required this.child});
 
   final Widget child;
-  final EdgeInsets padding;
 
   @override
   Widget build(BuildContext context) {
     return Container(
       width: double.infinity,
-      padding: padding,
+      padding: const EdgeInsets.all(16),
       decoration: ShapeDecoration(
         color: Colors.white,
         shape: RoundedRectangleBorder(
@@ -215,143 +228,8 @@ class _TotalCard extends StatelessWidget {
   }
 }
 
-class _TrocaChartCard extends StatelessWidget {
-  const _TrocaChartCard({required this.points});
-
-  final List<TrocaCategoriaMonthlyEntity> points;
-
-  @override
-  Widget build(BuildContext context) {
-    return _BaseCard(
-      padding: const EdgeInsets.fromLTRB(16, 16, 16, 12),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          const Text(
-            'Trocas por mes',
-            style: TextStyle(
-              color: Color(0xFF313131),
-              fontSize: 16,
-              fontFamily: 'Montserrat',
-              fontWeight: FontWeight.w600,
-            ),
-          ),
-          const SizedBox(height: 16),
-          SizedBox(
-            height: 260,
-            child: points.isEmpty
-                ? const Center(child: Text('Sem dados para o periodo.'))
-                : CustomPaint(
-                    painter: _TrocaBarPainter(points: points),
-                    child: const SizedBox.expand(),
-                  ),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class _TrocaBarPainter extends CustomPainter {
-  _TrocaBarPainter({required this.points});
-
-  final List<TrocaCategoriaMonthlyEntity> points;
-
-  @override
-  void paint(Canvas canvas, Size size) {
-    const left = 54.0;
-    const bottom = 34.0;
-    const top = 12.0;
-    const right = 12.0;
-    final chartWidth = size.width - left - right;
-    final chartHeight = size.height - top - bottom;
-    final maxValue = _niceMax(
-      points.map((item) => item.quantity.toDouble()).fold<double>(0, math.max),
-    );
-
-    final gridPaint = Paint()
-      ..color = const Color(0xFFECECEC)
-      ..strokeWidth = 1;
-    final barPaint = Paint()
-      ..color = const Color(0xFF008B42)
-      ..strokeCap = StrokeCap.round
-      ..strokeWidth = math.min(14, chartWidth / (points.length * 3));
-    final textPainter = TextPainter(textDirection: TextDirection.ltr);
-
-    for (var i = 0; i <= 4; i++) {
-      final ratio = i / 4;
-      final y = top + chartHeight * ratio;
-      canvas.drawLine(
-        Offset(left, y),
-        Offset(size.width - right, y),
-        gridPaint,
-      );
-      final value = maxValue * (1 - ratio);
-      textPainter.text = TextSpan(
-        text: value.toStringAsFixed(0),
-        style: const TextStyle(
-          color: Color(0xFF9E9E9E),
-          fontSize: 12,
-          fontFamily: 'Montserrat',
-        ),
-      );
-      textPainter.layout(maxWidth: left - 8);
-      textPainter.paint(canvas, Offset(0, y - textPainter.height / 2));
-    }
-
-    final step = chartWidth / points.length;
-    for (var i = 0; i < points.length; i++) {
-      final point = points[i];
-      final x = left + step * i + step / 2;
-      final barHeight = maxValue <= 0
-          ? 0
-          : chartHeight * (point.quantity / maxValue);
-      final yBottom = top + chartHeight;
-      final yTop = yBottom - barHeight;
-      canvas.drawLine(Offset(x, yBottom), Offset(x, yTop), barPaint);
-
-      textPainter.text = TextSpan(
-        text: _monthShortName(point.month),
-        style: const TextStyle(
-          color: Color(0xFF8C8C8C),
-          fontSize: 12,
-          fontFamily: 'Montserrat',
-        ),
-      );
-      textPainter.layout(maxWidth: step);
-      textPainter.paint(
-        canvas,
-        Offset(x - textPainter.width / 2, size.height - bottom + 12),
-      );
-    }
-  }
-
-  @override
-  bool shouldRepaint(covariant _TrocaBarPainter oldDelegate) {
-    return oldDelegate.points != points;
-  }
-}
-
-double _niceMax(double value) {
-  if (value <= 0) {
-    return 1;
-  }
-  if (value <= 5) {
-    return value.ceilToDouble();
-  }
-  final exponent = math.pow(10, value.toStringAsFixed(0).length - 1).toDouble();
-  return (value / exponent).ceil() * exponent;
-}
-
 String _formatMonth(DateTime date) {
   return '${_monthNames[date.month - 1]} ${date.year}';
-}
-
-String _monthShortName(int month) {
-  if (month < 1 || month > 12) {
-    return '-';
-  }
-  return _shortMonthNames[month - 1];
 }
 
 const _monthNames = [
@@ -367,19 +245,4 @@ const _monthNames = [
   'Outubro',
   'Novembro',
   'Dezembro',
-];
-
-const _shortMonthNames = [
-  'Jan',
-  'Fev',
-  'Mar',
-  'Abr',
-  'Mai',
-  'Jun',
-  'Jul',
-  'Ago',
-  'Set',
-  'Out',
-  'Nov',
-  'Dez',
 ];

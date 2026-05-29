@@ -21,6 +21,7 @@ class ListSanitariosController extends ChangeNotifier {
   List<SanitarioEntity> get sanitarios => _result.lista;
   List<SanitarioEntity> get planejados => _result.byStatus('planejado');
   List<SanitarioEntity> get executados => _result.byStatus('executado');
+  SanitariosFilterEntity? get currentFilter => _currentFilter;
 
   Future<void> load({
     int? id,

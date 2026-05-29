@@ -64,103 +64,106 @@ class _PotreiroAddState extends State<PotreiroAdd> {
               ),
             ),
           ),
-          body: SingleChildScrollView(
-            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
-            child: Column(
-              children: [
-                _buildTextField(
-                  _pageController.nomeController,
-                  'Nome',
-                  'Nome do potreiro',
-                ),
-                _buildTextField(
-                  _pageController.areaTotalController,
-                  'Área total',
-                  '0.00',
-                  keyboardType: const TextInputType.numberWithOptions(
-                    decimal: true,
+          body: SafeArea(
+            top: false,
+            child: SingleChildScrollView(
+              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+              child: Column(
+                children: [
+                  _buildTextField(
+                    _pageController.nomeController,
+                    'Nome',
+                    'Nome do potreiro',
                   ),
-                  inputFormatters: const [_decimalFormatter],
-                ),
-                _buildTextField(
-                  _pageController.areaUtilController,
-                  'Área utilizável',
-                  '0.00',
-                  keyboardType: const TextInputType.numberWithOptions(
-                    decimal: true,
+                  _buildTextField(
+                    _pageController.areaTotalController,
+                    'Área total',
+                    '0.00',
+                    keyboardType: const TextInputType.numberWithOptions(
+                      decimal: true,
+                    ),
+                    inputFormatters: const [_decimalFormatter],
                   ),
-                  inputFormatters: const [_decimalFormatter],
-                ),
-                _buildDropdown(
-                  'Status atual do potreiro',
-                  _pageController.selectedStatusAtual,
-                  PotreiroAddPageController.statusOptions,
-                  _pageController.onStatusAtualChanged,
-                ),
-                _buildTextField(
-                  _pageController.tipoForragemController,
-                  'Tipo forragem',
-                  'Tipo da forragem presente no potreiro',
-                ),
-                _buildDropdown(
-                  'Acesso a água',
-                  _pageController.selectedAcessoAgua,
-                  PotreiroAddPageController.acessoOptions,
-                  _pageController.onAcessoAguaChanged,
-                ),
-                _buildDropdown(
-                  'Acesso a sombra',
-                  _pageController.selectedAcessoSombra,
-                  PotreiroAddPageController.acessoOptions,
-                  _pageController.onAcessoSombraChanged,
-                ),
-                _buildTextField(
-                  _pageController.lotacaoMediaController,
-                  'Lotação média',
-                  '0.00',
-                  keyboardType: const TextInputType.numberWithOptions(
-                    decimal: true,
+                  _buildTextField(
+                    _pageController.areaUtilController,
+                    'Área utilizável',
+                    '0.00',
+                    keyboardType: const TextInputType.numberWithOptions(
+                      decimal: true,
+                    ),
+                    inputFormatters: const [_decimalFormatter],
                   ),
-                  inputFormatters: const [_decimalFormatter],
-                ),
-                _buildTextField(
-                  _pageController.obsController,
-                  'Observações',
-                  'Ex: Área com pastagem bem formada...',
-                  minLines: 3,
-                  maxLines: 3,
-                ),
-                const SizedBox(height: 16),
-                SizedBox(
-                  width: double.infinity,
-                  height: 50,
-                  child: ElevatedButton(
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: MyColors.colorPrimary,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(8),
+                  _buildDropdown(
+                    'Status atual do potreiro',
+                    _pageController.selectedStatusAtual,
+                    PotreiroAddPageController.statusOptions,
+                    _pageController.onStatusAtualChanged,
+                  ),
+                  _buildTextField(
+                    _pageController.tipoForragemController,
+                    'Tipo forragem',
+                    'Tipo da forragem presente no potreiro',
+                  ),
+                  _buildDropdown(
+                    'Acesso a água',
+                    _pageController.selectedAcessoAgua,
+                    PotreiroAddPageController.acessoOptions,
+                    _pageController.onAcessoAguaChanged,
+                  ),
+                  _buildDropdown(
+                    'Acesso a sombra',
+                    _pageController.selectedAcessoSombra,
+                    PotreiroAddPageController.acessoOptions,
+                    _pageController.onAcessoSombraChanged,
+                  ),
+                  _buildTextField(
+                    _pageController.lotacaoMediaController,
+                    'Lotação média',
+                    '0.00',
+                    keyboardType: const TextInputType.numberWithOptions(
+                      decimal: true,
+                    ),
+                    inputFormatters: const [_decimalFormatter],
+                  ),
+                  _buildTextField(
+                    _pageController.obsController,
+                    'Observações',
+                    'Ex: Área com pastagem bem formada...',
+                    minLines: 3,
+                    maxLines: 3,
+                  ),
+                  const SizedBox(height: 16),
+                  SizedBox(
+                    width: double.infinity,
+                    height: 50,
+                    child: ElevatedButton(
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: MyColors.colorPrimary,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                      ),
+                      onPressed:
+                          _pageController.isLoading ||
+                              !_pageController.isFormValid
+                          ? null
+                          : _submit,
+                      child: Text(
+                        _pageController.isLoading ? 'Salvando...' : 'Salvar',
+                        textAlign: TextAlign.center,
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 14,
+                          fontFamily: 'Montserrat',
+                          fontWeight: FontWeight.w600,
+                          height: 1.29,
+                        ),
                       ),
                     ),
-                    onPressed:
-                        _pageController.isLoading ||
-                            !_pageController.isFormValid
-                        ? null
-                        : _submit,
-                    child: Text(
-                      _pageController.isLoading ? 'Salvando...' : 'Salvar',
-                      textAlign: TextAlign.center,
-                      style: const TextStyle(
-                        color: Colors.white,
-                        fontSize: 14,
-                        fontFamily: 'Montserrat',
-                        fontWeight: FontWeight.w600,
-                        height: 1.29,
-                      ),
-                    ),
                   ),
-                ),
-                const SizedBox(height: 32),
-              ],
+                  const SizedBox(height: 32),
+                ],
+              ),
             ),
           ),
         );

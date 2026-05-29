@@ -108,72 +108,75 @@ class _VendaFormPageState extends State<VendaFormPage> {
               ),
             ),
           ),
-          body: SingleChildScrollView(
-            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                _buildTextField(
-                  controller: _pageController.dataController,
-                  label: 'Data da venda',
-                  hint: '00/00/0000',
-                  readOnly: true,
-                  onTap: _selectDate,
-                ),
-                _buildTextField(
-                  controller: _pageController.valorUnitarioController,
-                  label: 'Valor unitário',
-                  hint: '3000,00',
-                  keyboardType: const TextInputType.numberWithOptions(
-                    decimal: true,
+          body: SafeArea(
+            top: false,
+            child: SingleChildScrollView(
+              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  _buildTextField(
+                    controller: _pageController.dataController,
+                    label: 'Data da venda',
+                    hint: '00/00/0000',
+                    readOnly: true,
+                    onTap: _selectDate,
                   ),
-                  inputFormatters: const [_moneyFormatter],
-                ),
-                _buildTextField(
-                  controller: _pageController.compradorController,
-                  label: 'Comprador',
-                  hint: 'Digite o nome do comprador',
-                ),
-                _buildTextField(
-                  controller: _pageController.municipioController,
-                  label: 'Município',
-                  hint: 'Digite o município da venda',
-                ),
-                _buildDestinoSelect(
-                  label: 'Abate',
-                  value: _pageController.selectedTipoAbate,
-                  options: VendaFormPageController.tiposAbate,
-                  onChanged: _pageController.onTipoAbateChanged,
-                ),
-                _buildDestinoSelect(
-                  label: 'Reposição',
-                  value: _pageController.selectedTipoReposicao,
-                  options: VendaFormPageController.tiposReposicao,
-                  onChanged: _pageController.onTipoReposicaoChanged,
-                ),
-                _buildTextField(
-                  controller: _pageController.obsController,
-                  label: 'Observações',
-                  hint: 'Digite observações sobre a venda',
-                  maxLines: 3,
-                ),
-                _buildAnimalsSummary(),
-                if (_pageController.errorMessage != null) ...[
-                  const SizedBox(height: 8),
-                  Text(
-                    _pageController.errorMessage!,
-                    style: const TextStyle(color: Colors.red, fontSize: 12),
+                  _buildTextField(
+                    controller: _pageController.valorUnitarioController,
+                    label: 'Valor unitário',
+                    hint: '3000,00',
+                    keyboardType: const TextInputType.numberWithOptions(
+                      decimal: true,
+                    ),
+                    inputFormatters: const [_moneyFormatter],
                   ),
+                  _buildTextField(
+                    controller: _pageController.compradorController,
+                    label: 'Comprador',
+                    hint: 'Digite o nome do comprador',
+                  ),
+                  _buildTextField(
+                    controller: _pageController.municipioController,
+                    label: 'Município',
+                    hint: 'Digite o município da venda',
+                  ),
+                  _buildDestinoSelect(
+                    label: 'Abate',
+                    value: _pageController.selectedTipoAbate,
+                    options: VendaFormPageController.tiposAbate,
+                    onChanged: _pageController.onTipoAbateChanged,
+                  ),
+                  _buildDestinoSelect(
+                    label: 'Reposição',
+                    value: _pageController.selectedTipoReposicao,
+                    options: VendaFormPageController.tiposReposicao,
+                    onChanged: _pageController.onTipoReposicaoChanged,
+                  ),
+                  _buildTextField(
+                    controller: _pageController.obsController,
+                    label: 'Observações',
+                    hint: 'Digite observações sobre a venda',
+                    maxLines: 3,
+                  ),
+                  _buildAnimalsSummary(),
+                  if (_pageController.errorMessage != null) ...[
+                    const SizedBox(height: 8),
+                    Text(
+                      _pageController.errorMessage!,
+                      style: const TextStyle(color: Colors.red, fontSize: 12),
+                    ),
+                  ],
+                  const SizedBox(height: 20),
+                  CustomButton(
+                    onPressed: _submit,
+                    text: _pageController.isEdit ? 'Salvar' : 'Adicionar',
+                    enabled: _pageController.isFormValid,
+                    isLoading: _pageController.isLoading,
+                  ),
+                  const SizedBox(height: 80),
                 ],
-                const SizedBox(height: 20),
-                CustomButton(
-                  onPressed: _submit,
-                  text: _pageController.isEdit ? 'Salvar' : 'Adicionar',
-                  enabled: _pageController.isFormValid,
-                  isLoading: _pageController.isLoading,
-                ),
-                const SizedBox(height: 80),
-              ],
+              ),
             ),
           ),
         );
@@ -215,8 +218,10 @@ class _VendaFormPageState extends State<VendaFormPage> {
   }
 
   Widget _buildAnimalsSummary() {
+    final venda = widget.venda;
+    final hasLinkedAnimals = venda?.animais.isNotEmpty == true;
     final count = _pageController.isEdit
-        ? (widget.venda?.animais.length ?? 0)
+        ? (venda?.qtdAnimais ?? venda?.animais.length ?? 0)
         : _pageController.selectedAnimais.length;
     final label = count == 1 ? '1 animal' : '$count animais';
 
@@ -236,9 +241,9 @@ class _VendaFormPageState extends State<VendaFormPage> {
         InkWell(
           borderRadius: BorderRadius.circular(8),
           onTap: _pageController.isEdit
-              ? count == 0
-                    ? null
-                    : _openLinkedAnimals
+              ? hasLinkedAnimals
+                    ? _openLinkedAnimals
+                    : null
               : _openAnimalsSelection,
           child: Ink(
             padding: const EdgeInsets.all(16),
@@ -263,7 +268,7 @@ class _VendaFormPageState extends State<VendaFormPage> {
                     ),
                   ),
                 ),
-                if (!_pageController.isEdit || count > 0)
+                if (!_pageController.isEdit || hasLinkedAnimals)
                   const Icon(
                     Icons.keyboard_arrow_right,
                     color: Color(0xFF8C8C8C),

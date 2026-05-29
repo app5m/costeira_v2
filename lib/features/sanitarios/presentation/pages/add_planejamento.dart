@@ -18,7 +18,7 @@ class AddPlanejamento extends StatefulWidget {
 }
 
 class _AddPlanejamentoState extends State<AddPlanejamento> {
-  static const _carrapaticidaManejo = 'aplicação de carrapaticida';
+  static const _carrapaticidaManejo = 'Aplicação de carrapaticida';
 
   final _formKey = GlobalKey<FormState>();
   final _obsController = TextEditingController();
@@ -33,12 +33,52 @@ class _AddPlanejamentoState extends State<AddPlanejamento> {
 
   bool get _isEditing => widget.sanitario != null;
   bool get _requiresCarrapaticida => _tipoManejo == _carrapaticidaManejo;
+  bool get _hasRequiredData {
+    return (_tipoManejo?.trim().isNotEmpty ?? false) &&
+        (!_requiresCarrapaticida ||
+            (_tipoCarrapaticida?.trim().isNotEmpty ?? false)) &&
+        _dataPlanejada != null &&
+        !_isBeforeToday(_dataPlanejada!) &&
+        _categoriaIds.isNotEmpty &&
+        _loteIds.isNotEmpty;
+  }
+
+  bool get _hasChanges {
+    final sanitario = widget.sanitario;
+    if (sanitario == null) {
+      return true;
+    }
+
+    final initialCategorias = sanitario.categorias
+        .map((item) => item.appAnimaisCategoriasId ?? item.id)
+        .where((id) => id > 0)
+        .toSet();
+    final initialLotes = sanitario.lotes
+        .map((item) => item.appAnimaisLotesId ?? item.id)
+        .where((id) => id > 0)
+        .toSet();
+
+    return _tipoManejo != sanitario.tipoManejo ||
+        (_requiresCarrapaticida ? _tipoCarrapaticida : null) !=
+            sanitario.tipoCarrapaticida ||
+        _formatNullableDate(_dataPlanejada) !=
+            _formatNullableDate(_parseApiDate(sanitario.dataPlanejada)) ||
+        _obsController.text.trim() != (sanitario.obs ?? '').trim() ||
+        !_setEquals(_categoriaIds, initialCategorias) ||
+        !_setEquals(_loteIds, initialLotes);
+  }
+
+  bool get _canSubmit =>
+      _hasRequiredData &&
+      !_formController.isLoading &&
+      (!_isEditing || _hasChanges);
 
   @override
   void initState() {
     super.initState();
     _listController = Modular.get<ListSanitariosController>();
     _formController = Modular.get<SanitarioFormController>();
+    _obsController.addListener(_onFieldChanged);
     _fillInitialValues();
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (_listController.result.tiposManejos.isEmpty) {
@@ -49,8 +89,15 @@ class _AddPlanejamentoState extends State<AddPlanejamento> {
 
   @override
   void dispose() {
+    _obsController.removeListener(_onFieldChanged);
     _obsController.dispose();
     super.dispose();
+  }
+
+  void _onFieldChanged() {
+    if (mounted) {
+      setState(() {});
+    }
   }
 
   void _fillInitialValues() {
@@ -93,121 +140,125 @@ class _AddPlanejamentoState extends State<AddPlanejamento> {
           ),
         ),
       ),
-      body: AnimatedBuilder(
-        animation: Listenable.merge([_listController, _formController]),
-        builder: (context, _) {
-          return Form(
-            key: _formKey,
-            child: SingleChildScrollView(
-              padding: const EdgeInsets.fromLTRB(20, 16, 20, 32),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  _SelectField<String>(
-                    label: 'Tipo de manejo',
-                    value: _tipoManejo,
-                    placeholder: 'Selecione',
-                    options: _listController.result.tiposManejos
-                        .map(
-                          (item) => AppSelectOption<String>(
-                            value: item.id,
-                            label: item.nome,
-                          ),
-                        )
-                        .toList(growable: false),
-                    onChanged: (value) {
-                      setState(() {
-                        _tipoManejo = value;
-                        if (!_requiresCarrapaticida) {
-                          _tipoCarrapaticida = null;
-                        }
-                      });
-                    },
-                    validator: (_) => _tipoManejo == null
-                        ? 'Selecione o tipo de manejo.'
-                        : null,
-                  ),
-                  if (_requiresCarrapaticida)
+      body: SafeArea(
+        top: false,
+        child: AnimatedBuilder(
+          animation: Listenable.merge([_listController, _formController]),
+          builder: (context, _) {
+            return Form(
+              key: _formKey,
+              child: SingleChildScrollView(
+                padding: const EdgeInsets.fromLTRB(20, 16, 20, 32),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
                     _SelectField<String>(
-                      label: 'Tipo de carrapaticida',
-                      value: _tipoCarrapaticida,
+                      label: 'Tipo de manejo',
+                      value: _tipoManejo,
                       placeholder: 'Selecione',
-                      options: _carrapaticidaOptions,
+                      options: _listController.result.tiposManejos
+                          .map(
+                            (item) => AppSelectOption<String>(
+                              value: item.id,
+                              label: item.nome,
+                            ),
+                          )
+                          .toList(growable: false),
                       onChanged: (value) {
-                        setState(() => _tipoCarrapaticida = value);
+                        setState(() {
+                          _tipoManejo = value;
+                          if (!_requiresCarrapaticida) {
+                            _tipoCarrapaticida = null;
+                          }
+                        });
                       },
-                      validator: (_) => _tipoCarrapaticida == null
-                          ? 'Selecione o tipo de carrapaticida.'
+                      validator: (_) => _tipoManejo == null
+                          ? 'Selecione o tipo de manejo.'
                           : null,
                     ),
-                  _DateField(
-                    label: 'Data planejada',
-                    value: _dataPlanejada == null
-                        ? '00/00/0000'
-                        : _formatDate(_dataPlanejada!),
-                    onTap: _selectDate,
-                    validator: (_) {
-                      if (_dataPlanejada == null) {
-                        return 'Selecione a data planejada.';
-                      }
-                      if (_isBeforeToday(_dataPlanejada!)) {
-                        return 'Selecione hoje ou uma data futura.';
-                      }
-                      return null;
-                    },
-                  ),
-                  _MultiSelectField(
-                    label: 'Categoria',
-                    value: _selectedCategoriasText,
-                    onTap: () => _selectCategorias(context),
-                    validator: (_) => _categoriaIds.isEmpty
-                        ? 'Selecione ao menos uma categoria.'
-                        : null,
-                  ),
-                  _MultiSelectField(
-                    label: 'Lote envolvido',
-                    value: _selectedLotesText,
-                    onTap: () => _selectLotes(context),
-                    validator: (_) =>
-                        _loteIds.isEmpty ? 'Selecione ao menos um lote.' : null,
-                  ),
-                  _ObsField(controller: _obsController),
-                  const SizedBox(height: 16),
-                  SizedBox(
-                    height: 50,
-                    child: ElevatedButton(
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: MyColors.colorPrimary,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(8),
-                        ),
+                    if (_requiresCarrapaticida)
+                      _SelectField<String>(
+                        label: 'Tipo de carrapaticida',
+                        value: _tipoCarrapaticida,
+                        placeholder: 'Selecione',
+                        options: _carrapaticidaOptions,
+                        onChanged: (value) {
+                          setState(() => _tipoCarrapaticida = value);
+                        },
+                        validator: (_) => _tipoCarrapaticida == null
+                            ? 'Selecione o tipo de carrapaticida.'
+                            : null,
                       ),
-                      onPressed: _formController.isLoading ? null : _submit,
-                      child: _formController.isLoading
-                          ? const SizedBox(
-                              width: 20,
-                              height: 20,
-                              child: CircularProgressIndicator(
-                                strokeWidth: 2,
-                                color: Colors.white,
-                              ),
-                            )
-                          : const Text(
-                              'Salvar',
-                              style: TextStyle(
-                                color: Colors.white,
-                                fontSize: 14,
-                                fontFamily: 'Montserrat',
-                                fontWeight: FontWeight.w600,
-                              ),
-                            ),
+                    _DateField(
+                      label: 'Data planejada',
+                      value: _dataPlanejada == null
+                          ? '00/00/0000'
+                          : _formatDate(_dataPlanejada!),
+                      onTap: _selectDate,
+                      validator: (_) {
+                        if (_dataPlanejada == null) {
+                          return 'Selecione a data planejada.';
+                        }
+                        if (_isBeforeToday(_dataPlanejada!)) {
+                          return 'Selecione hoje ou uma data futura.';
+                        }
+                        return null;
+                      },
                     ),
-                  ),
-                ],
+                    _MultiSelectField(
+                      label: 'Categoria',
+                      value: _selectedCategoriasText,
+                      onTap: () => _selectCategorias(context),
+                      validator: (_) => _categoriaIds.isEmpty
+                          ? 'Selecione ao menos uma categoria.'
+                          : null,
+                    ),
+                    _MultiSelectField(
+                      label: 'Lote envolvido',
+                      value: _selectedLotesText,
+                      onTap: () => _selectLotes(context),
+                      validator: (_) => _loteIds.isEmpty
+                          ? 'Selecione ao menos um lote.'
+                          : null,
+                    ),
+                    _ObsField(controller: _obsController),
+                    const SizedBox(height: 16),
+                    SizedBox(
+                      height: 50,
+                      child: ElevatedButton(
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: MyColors.colorPrimary,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                        ),
+                        onPressed: _canSubmit ? _submit : null,
+                        child: _formController.isLoading
+                            ? const SizedBox(
+                                width: 20,
+                                height: 20,
+                                child: CircularProgressIndicator(
+                                  strokeWidth: 2,
+                                  color: Colors.white,
+                                ),
+                              )
+                            : const Text(
+                                'Salvar',
+                                style: TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 14,
+                                  fontFamily: 'Montserrat',
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                      ),
+                    ),
+                  ],
+                ),
               ),
-            ),
-          );
-        },
+            );
+          },
+        ),
       ),
     );
   }
@@ -374,11 +425,19 @@ class _AddPlanejamentoState extends State<AddPlanejamento> {
         '${date.year}';
   }
 
+  String? _formatNullableDate(DateTime? date) {
+    return date == null ? null : _formatDate(date);
+  }
+
   bool _isBeforeToday(DateTime date) {
     final now = DateTime.now();
     final today = DateTime(now.year, now.month, now.day);
     final normalized = DateTime(date.year, date.month, date.day);
     return normalized.isBefore(today);
+  }
+
+  bool _setEquals(Set<int> a, Set<int> b) {
+    return a.length == b.length && a.every(b.contains);
   }
 }
 

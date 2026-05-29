@@ -47,7 +47,10 @@ class _ExecucoesState extends State<Execucoes> {
           ),
         ),
       ),
-      body: SanitariosExecucoesList(controller: _controller),
+      body: SafeArea(
+        top: false,
+        child: SanitariosExecucoesList(controller: _controller),
+      ),
     );
   }
 }
@@ -97,7 +100,10 @@ class SanitariosExecucoesList extends StatelessWidget {
     );
   }
 
-  Future<void> _confirmDelete(BuildContext context, SanitarioEntity sanitario) async {
+  Future<void> _confirmDelete(
+    BuildContext context,
+    SanitarioEntity sanitario,
+  ) async {
     final confirmed = await showModalBottomSheet<bool>(
       backgroundColor: Colors.white,
       context: context,
@@ -108,66 +114,77 @@ class SanitariosExecucoesList extends StatelessWidget {
         ),
       ),
       builder: (BuildContext bc) {
-        return Padding(
-          padding: const EdgeInsets.fromLTRB(20, 16, 20, 24),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              const SizedBox(height: 8),
-              Container(width: 72, height: 2, color: const Color(0xFFE2E2E2)),
-              const SizedBox(height: 24),
-              SvgPicture.asset(
-                'icon/danger-linear.svg',
-                width: 80,
-                height: 80,
-                colorFilter: const ColorFilter.mode(Colors.red, BlendMode.srcIn),
-              ),
-              const SizedBox(height: 16),
-              const Text(
-                'Excluir execução',
-                style: TextStyle(
-                  fontFamily: 'Montserrat',
-                  fontWeight: FontWeight.w600,
-                  fontSize: 16,
-                ),
-              ),
-              const SizedBox(height: 8),
-              const Text(
-                'Tem certeza que deseja excluir essa\nexecução permanentemente?',
-                textAlign: TextAlign.center,
-                style: TextStyle(
-                  fontFamily: 'Montserrat',
-                  fontWeight: FontWeight.w400,
-                  fontSize: 14,
-                  color: Color(0xFF8692A8),
-                ),
-              ),
-              const SizedBox(height: 16),
-              SizedBox(
-                width: double.infinity,
-                height: 50,
-                child: OutlinedButton(
-                  onPressed: () => Navigator.of(context).pop(true),
-                  style: OutlinedButton.styleFrom(
-                    side: const BorderSide(color: Colors.red),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+        return SafeArea(
+          top: false,
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(20, 16, 20, 24),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const SizedBox(height: 8),
+                Container(width: 72, height: 2, color: const Color(0xFFE2E2E2)),
+                const SizedBox(height: 24),
+                SvgPicture.asset(
+                  'icon/danger-linear.svg',
+                  width: 80,
+                  height: 80,
+                  colorFilter: const ColorFilter.mode(
+                    Colors.red,
+                    BlendMode.srcIn,
                   ),
-                  child: const Text('Excluir', style: TextStyle(color: Colors.red)),
                 ),
-              ),
-              TextButton(
-                onPressed: () => Navigator.of(context).pop(false),
-                child: Text(
-                  'Cancelar',
+                const SizedBox(height: 16),
+                const Text(
+                  'Excluir execução',
                   style: TextStyle(
+                    fontFamily: 'Montserrat',
+                    fontWeight: FontWeight.w600,
                     fontSize: 16,
-                    color: MyColors.colorOnPrimary,
-                    decoration: TextDecoration.underline,
-                    decorationColor: MyColors.colorOnPrimary,
                   ),
                 ),
-              ),
-            ],
+                const SizedBox(height: 8),
+                const Text(
+                  'Tem certeza que deseja excluir essa\nexecução permanentemente?',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    fontFamily: 'Montserrat',
+                    fontWeight: FontWeight.w400,
+                    fontSize: 14,
+                    color: Color(0xFF8692A8),
+                  ),
+                ),
+                const SizedBox(height: 16),
+                SizedBox(
+                  width: double.infinity,
+                  height: 50,
+                  child: OutlinedButton(
+                    onPressed: () => Navigator.of(context).pop(true),
+                    style: OutlinedButton.styleFrom(
+                      side: const BorderSide(color: Colors.red),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                    ),
+                    child: const Text(
+                      'Excluir',
+                      style: TextStyle(color: Colors.red),
+                    ),
+                  ),
+                ),
+                TextButton(
+                  onPressed: () => Navigator.of(context).pop(false),
+                  child: Text(
+                    'Cancelar',
+                    style: TextStyle(
+                      fontSize: 16,
+                      color: MyColors.colorOnPrimary,
+                      decoration: TextDecoration.underline,
+                      decorationColor: MyColors.colorOnPrimary,
+                    ),
+                  ),
+                ),
+              ],
+            ),
           ),
         );
       },
@@ -192,7 +209,11 @@ class SanitariosExecucoesList extends StatelessWidget {
 }
 
 class _ExecucaoCard extends StatelessWidget {
-  const _ExecucaoCard({required this.sanitario, required this.onDelete, required this.onSaved});
+  const _ExecucaoCard({
+    required this.sanitario,
+    required this.onDelete,
+    required this.onSaved,
+  });
 
   final SanitarioEntity sanitario;
   final VoidCallback onDelete;
@@ -202,7 +223,12 @@ class _ExecucaoCard extends StatelessWidget {
   Widget build(BuildContext context) {
     return GestureDetector(
       onTap: () {
-        Navigator.push(context, MaterialPageRoute(builder: (_) => const DetailExecucao()));
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (_) => DetailExecucao(sanitario: sanitario),
+          ),
+        );
       },
       child: Container(
         width: MediaQuery.of(context).size.width - 40,
@@ -231,20 +257,28 @@ class _ExecucaoCard extends StatelessWidget {
                   const SizedBox(height: 8),
                   Text(_insumos, style: _secondaryStyle),
                   const SizedBox(height: 8),
-                  Text('Realizado em ${sanitario.dataExecucao ?? '-'}', style: _secondaryStyle),
+                  Text(
+                    'Realizado em ${sanitario.dataExecucao ?? '-'}',
+                    style: _secondaryStyle,
+                  ),
                 ],
               ),
             ),
             const SizedBox(width: 8),
             Column(
               children: [
-                GestureDetector(onTap: onDelete, child: SvgPicture.asset('icon/trash.svg')),
+                GestureDetector(
+                  onTap: onDelete,
+                  child: SvgPicture.asset('icon/trash.svg'),
+                ),
                 const SizedBox(height: 12),
                 GestureDetector(
                   onTap: () {
                     Navigator.push<bool>(
                       context,
-                      MaterialPageRoute(builder: (_) => AddPlanejamento(sanitario: sanitario)),
+                      MaterialPageRoute(
+                        builder: (_) => AddPlanejamento(sanitario: sanitario),
+                      ),
                     ).then((saved) {
                       if (saved == true) {
                         onSaved();
@@ -262,7 +296,9 @@ class _ExecucaoCard extends StatelessWidget {
   }
 
   String get _targets {
-    final lotes = sanitario.lotes.map((item) => item.nome.trim()).where((item) => item.isNotEmpty);
+    final lotes = sanitario.lotes
+        .map((item) => item.nome.trim())
+        .where((item) => item.isNotEmpty);
     final categorias = sanitario.categorias
         .map((item) => item.nome.trim())
         .where((item) => item.isNotEmpty);
@@ -313,7 +349,11 @@ class _IconBadge extends StatelessWidget {
 }
 
 class _FeedbackState extends StatelessWidget {
-  const _FeedbackState({required this.message, this.actionLabel, this.onAction});
+  const _FeedbackState({
+    required this.message,
+    this.actionLabel,
+    this.onAction,
+  });
 
   final String message;
   final String? actionLabel;

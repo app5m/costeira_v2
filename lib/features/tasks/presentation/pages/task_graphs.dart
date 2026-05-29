@@ -206,7 +206,7 @@ class _ExecucaoCard extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           const Text(
-            'Execucao',
+            'Execução',
             style: TextStyle(
               color: Color(0xFF313131),
               fontSize: 14,
@@ -319,7 +319,7 @@ class _RankingCard extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           const Text(
-            'Ranking de execucao por funcionario',
+            'Ranking de execução por funcionário',
             style: TextStyle(
               color: Color(0xFF313131),
               fontSize: 14,

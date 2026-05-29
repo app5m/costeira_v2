@@ -44,6 +44,7 @@ class VendaFormPageController extends ChangeNotifier {
   List<AnimalEntity> _selectedAnimais = const [];
   String? selectedTipoAbate;
   String? selectedTipoReposicao;
+  _VendaFormSnapshot? _initialSnapshot;
 
   bool get isEdit => _editingVenda != null;
   bool get isLoading =>
@@ -77,7 +78,12 @@ class VendaFormPageController extends ChangeNotifier {
       valorUnitarioController.text.trim().isNotEmpty &&
       selectedTipoAbate != null &&
       selectedTipoReposicao != null &&
-      (isEdit || _selectedAnimais.isNotEmpty);
+      (isEdit || _selectedAnimais.isNotEmpty) &&
+      hasChanges;
+  bool get hasChanges =>
+      !isEdit ||
+      _initialSnapshot == null ||
+      _currentSnapshot() != _initialSnapshot;
 
   Future<void> init({VendaEntity? venda}) async {
     _editingVenda = venda;
@@ -90,6 +96,9 @@ class VendaFormPageController extends ChangeNotifier {
       obsController.text = venda.obs ?? '';
       selectedTipoAbate = _destinoTipo(venda, 1);
       selectedTipoReposicao = _destinoTipo(venda, 2);
+      _initialSnapshot = _currentSnapshot();
+    } else {
+      _initialSnapshot = null;
     }
 
     if (!isEdit) {
@@ -193,7 +202,7 @@ class VendaFormPageController extends ChangeNotifier {
     if (valorUnitarioController.text.trim().isEmpty) {
       return const PageActionResult(
         isSuccess: false,
-        message: 'Informe o valor unitario.',
+        message: 'Informe o valor unitário.',
       );
     }
     if (selectedTipoAbate == null) {
@@ -230,6 +239,27 @@ class VendaFormPageController extends ChangeNotifier {
     return trimmed.isEmpty ? null : trimmed;
   }
 
+  _VendaFormSnapshot _currentSnapshot() {
+    return _VendaFormSnapshot(
+      data: dataController.text.trim(),
+      valorUnitario: _normalizeMoney(valorUnitarioController.text),
+      comprador: _normalizeOptionalText(compradorController.text),
+      municipio: _normalizeOptionalText(municipioController.text),
+      obs: _normalizeOptionalText(obsController.text),
+      selectedTipoAbate: selectedTipoAbate,
+      selectedTipoReposicao: selectedTipoReposicao,
+    );
+  }
+
+  String _normalizeMoney(String value) {
+    return value.replaceAll('R\$', '').trim();
+  }
+
+  String? _normalizeOptionalText(String value) {
+    final trimmed = value.trim();
+    return trimmed.isEmpty ? null : trimmed;
+  }
+
   @override
   void dispose() {
     _addController.removeListener(notifyListeners);
@@ -243,4 +273,48 @@ class VendaFormPageController extends ChangeNotifier {
     animalFilterController.dispose();
     super.dispose();
   }
+}
+
+class _VendaFormSnapshot {
+  const _VendaFormSnapshot({
+    required this.data,
+    required this.valorUnitario,
+    required this.comprador,
+    required this.municipio,
+    required this.obs,
+    required this.selectedTipoAbate,
+    required this.selectedTipoReposicao,
+  });
+
+  final String data;
+  final String valorUnitario;
+  final String? comprador;
+  final String? municipio;
+  final String? obs;
+  final String? selectedTipoAbate;
+  final String? selectedTipoReposicao;
+
+  @override
+  bool operator ==(Object other) {
+    return identical(this, other) ||
+        other is _VendaFormSnapshot &&
+            other.data == data &&
+            other.valorUnitario == valorUnitario &&
+            other.comprador == comprador &&
+            other.municipio == municipio &&
+            other.obs == obs &&
+            other.selectedTipoAbate == selectedTipoAbate &&
+            other.selectedTipoReposicao == selectedTipoReposicao;
+  }
+
+  @override
+  int get hashCode => Object.hash(
+    data,
+    valorUnitario,
+    comprador,
+    municipio,
+    obs,
+    selectedTipoAbate,
+    selectedTipoReposicao,
+  );
 }

@@ -59,6 +59,17 @@ class _InsumosState extends State<Insumos> with SingleTickerProviderStateMixin {
     }
   }
 
+  Future<void> _openEditInsumo(InsumoEntity insumo) async {
+    final result = await Navigator.push<Map<String, dynamic>?>(
+      context,
+      MaterialPageRoute(builder: (_) => AddInsumo(insumo: insumo)),
+    );
+    if (!mounted || result?['success'] != true) {
+      return;
+    }
+    await _listController.reload();
+  }
+
   Future<void> _showTipoFilter() async {
     final selected = await showModalBottomSheet<String?>(
       context: context,
@@ -159,14 +170,7 @@ class _InsumosState extends State<Insumos> with SingleTickerProviderStateMixin {
                 SpeedDialChild(
                   shape: const CircleBorder(),
                   child: Icon(Icons.add_rounded, color: MyColors.colorPrimary2),
-                  label: 'Novo insumo',
-                  labelStyle: TextStyle(
-                    color: MyColors.colorPrimary2,
-                    fontSize: 14,
-                    fontFamily: 'Montserrat',
-                    fontWeight: FontWeight.w700,
-                    height: 1.29,
-                  ),
+                  labelWidget: const _SpeedDialLabel('Novo insumo'),
                   onTap: () async {
                     final result = await Navigator.push<Map<String, dynamic>?>(
                       context,
@@ -181,14 +185,7 @@ class _InsumosState extends State<Insumos> with SingleTickerProviderStateMixin {
                 SpeedDialChild(
                   shape: const CircleBorder(),
                   child: Icon(Icons.add_rounded, color: MyColors.colorPrimary2),
-                  label: 'Registro de compra',
-                  labelStyle: TextStyle(
-                    color: MyColors.colorPrimary2,
-                    fontSize: 14,
-                    fontFamily: 'Montserrat',
-                    fontWeight: FontWeight.w700,
-                    height: 1.29,
-                  ),
+                  labelWidget: const _SpeedDialLabel('Registro de compra'),
                   onTap: () async {
                     final result = await Navigator.push<Map<String, dynamic>?>(
                       context,
@@ -205,14 +202,7 @@ class _InsumosState extends State<Insumos> with SingleTickerProviderStateMixin {
                 SpeedDialChild(
                   shape: const CircleBorder(),
                   child: Icon(Icons.add_rounded, color: MyColors.colorPrimary2),
-                  label: 'Registro de utilização',
-                  labelStyle: TextStyle(
-                    color: MyColors.colorPrimary2,
-                    fontSize: 14,
-                    fontFamily: 'Montserrat',
-                    fontWeight: FontWeight.w700,
-                    height: 1.29,
-                  ),
+                  labelWidget: const _SpeedDialLabel('Registro de utilização'),
                   onTap: () async {
                     final result = await Navigator.push<Map<String, dynamic>?>(
                       context,
@@ -227,7 +217,6 @@ class _InsumosState extends State<Insumos> with SingleTickerProviderStateMixin {
                   },
                 ),
               ],
-              buttonSize: const Size(180, 48),
             )
           : null,
       appBar: AppBar(
@@ -246,59 +235,62 @@ class _InsumosState extends State<Insumos> with SingleTickerProviderStateMixin {
           ),
         ),
       ),
-      body: Column(
-        children: [
-          TabBar(
-            controller: _tabController,
-            tabs: const [
-              Tab(text: 'Lista'),
-              Tab(text: 'Registros'),
-              Tab(text: 'Gráficos'),
-            ],
-            onTap: (int inde) {
-              setState(() {
-                index = inde;
-              });
-            },
-            automaticIndicatorColorAdjustment: false,
-            indicatorSize: TabBarIndicatorSize.tab,
-            unselectedLabelColor: Colors.grey,
-            labelStyle: const TextStyle(
-              fontSize: 12,
-              fontFamily: 'Montserrat',
-              fontWeight: FontWeight.w600,
-            ),
-            unselectedLabelStyle: const TextStyle(
-              fontSize: 12,
-              fontFamily: 'Montserrat',
-              fontWeight: FontWeight.w700,
-            ),
-            dividerColor: Colors.grey,
-            labelColor: Colors.black,
-            indicatorColor: MyColors.colorPrimary2,
-          ),
-          const SizedBox(height: 16),
-          if (index == 0)
-            AnimatedBuilder(
-              animation: _listController,
-              builder: (context, _) {
-                final hasFilters = _listController.hasActiveFilters();
-                return _FilterSelector(
-                  label: hasFilters
-                      ? _listController.tipoLabel(
-                          _listController.currentFilter!.tipoInsumo!,
-                        )
-                      : 'Filtrar por tipo',
-                  isActive: hasFilters,
-                  onTap: _showTipoFilter,
-                );
+      body: SafeArea(
+        top: false,
+        child: Column(
+          children: [
+            TabBar(
+              controller: _tabController,
+              tabs: const [
+                Tab(text: 'Lista'),
+                Tab(text: 'Registros'),
+                Tab(text: 'Gráficos'),
+              ],
+              onTap: (int inde) {
+                setState(() {
+                  index = inde;
+                });
               },
+              automaticIndicatorColorAdjustment: false,
+              indicatorSize: TabBarIndicatorSize.tab,
+              unselectedLabelColor: Colors.grey,
+              labelStyle: const TextStyle(
+                fontSize: 12,
+                fontFamily: 'Montserrat',
+                fontWeight: FontWeight.w600,
+              ),
+              unselectedLabelStyle: const TextStyle(
+                fontSize: 12,
+                fontFamily: 'Montserrat',
+                fontWeight: FontWeight.w700,
+              ),
+              dividerColor: Colors.grey,
+              labelColor: Colors.black,
+              indicatorColor: MyColors.colorPrimary2,
             ),
-          if (index == 0) const SizedBox(height: 16),
-          if (index == 0) Expanded(child: _buildList()),
-          if (index == 1) Expanded(child: _buildRegistrosList()),
-          if (index == 2) const GraficosInsumo(),
-        ],
+            const SizedBox(height: 16),
+            if (index == 0)
+              AnimatedBuilder(
+                animation: _listController,
+                builder: (context, _) {
+                  final hasFilters = _listController.hasActiveFilters();
+                  return _FilterSelector(
+                    label: hasFilters
+                        ? _listController.tipoLabel(
+                            _listController.currentFilter!.tipoInsumo!,
+                          )
+                        : 'Filtrar por tipo',
+                    isActive: hasFilters,
+                    onTap: _showTipoFilter,
+                  );
+                },
+              ),
+            if (index == 0) const SizedBox(height: 16),
+            if (index == 0) Expanded(child: _buildList()),
+            if (index == 1) Expanded(child: _buildRegistrosList()),
+            if (index == 2) const GraficosInsumo(),
+          ],
+        ),
       ),
     );
   }
@@ -314,6 +306,7 @@ class _InsumosState extends State<Insumos> with SingleTickerProviderStateMixin {
         if (_listController.errorMessage != null &&
             _listController.insumos.isEmpty) {
           return ListView(
+            padding: const EdgeInsets.only(bottom: 64),
             children: [
               const SizedBox(height: 120),
               Center(
@@ -331,6 +324,7 @@ class _InsumosState extends State<Insumos> with SingleTickerProviderStateMixin {
 
         if (_listController.insumos.isEmpty) {
           return ListView(
+            padding: const EdgeInsets.only(bottom: 64),
             children: const [
               SizedBox(height: 120),
               Center(child: Text('Nenhum insumo cadastrado.')),
@@ -341,9 +335,11 @@ class _InsumosState extends State<Insumos> with SingleTickerProviderStateMixin {
         return RefreshIndicator(
           onRefresh: _listController.reload,
           child: ListView.builder(
+            padding: const EdgeInsets.only(bottom: 64),
             itemCount: _listController.insumos.length,
             itemBuilder: (context, index) {
               final insumo = _listController.insumos[index];
+
               return _InsumoCard(
                 insumo: insumo,
                 tipoLabel: _listController.tipoLabel(insumo.tipoInsumo),
@@ -352,9 +348,15 @@ class _InsumosState extends State<Insumos> with SingleTickerProviderStateMixin {
                 onTap: () {
                   Navigator.push(
                     context,
-                    MaterialPageRoute(builder: (_) => const DetailInsumo()),
+                    MaterialPageRoute(
+                      builder: (_) => DetailInsumo(
+                        insumo: insumo,
+                        tipoLabel: _listController.tipoLabel(insumo.tipoInsumo),
+                      ),
+                    ),
                   );
                 },
+                onEdit: () => _openEditInsumo(insumo),
                 onDelete: () => _confirmDeleteInsumo(insumo),
               );
             },
@@ -375,6 +377,7 @@ class _InsumosState extends State<Insumos> with SingleTickerProviderStateMixin {
         if (_listController.errorMessage != null &&
             _listController.registros.isEmpty) {
           return ListView(
+            padding: const EdgeInsets.only(bottom: 64),
             children: [
               const SizedBox(height: 120),
               Center(
@@ -392,6 +395,7 @@ class _InsumosState extends State<Insumos> with SingleTickerProviderStateMixin {
 
         if (_listController.registros.isEmpty) {
           return ListView(
+            padding: const EdgeInsets.only(bottom: 64),
             children: const [
               SizedBox(height: 120),
               Center(child: Text('Nenhum registro cadastrado.')),
@@ -402,9 +406,11 @@ class _InsumosState extends State<Insumos> with SingleTickerProviderStateMixin {
         return RefreshIndicator(
           onRefresh: _listController.reload,
           child: ListView.builder(
+            padding: const EdgeInsets.only(bottom: 64),
             itemCount: _listController.registros.length,
             itemBuilder: (context, index) {
               final registro = _listController.registros[index];
+
               return _RegistroCard(
                 registro: registro,
                 tipoLabel: _listController.tipoLabel(registro.tipoInsumo),
@@ -470,148 +476,190 @@ class _InsumosState extends State<Insumos> with SingleTickerProviderStateMixin {
         return AnimatedBuilder(
           animation: _deleteController,
           builder: (context, _) {
-            return Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Container(
-                  padding: const EdgeInsets.only(top: 8),
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      const SizedBox(height: 8),
-                      Opacity(
-                        opacity: 0.70,
-                        child: Container(
-                          width: 72,
-                          decoration: const ShapeDecoration(
-                            shape: RoundedRectangleBorder(
-                              side: BorderSide(
-                                width: 2,
-                                strokeAlign: BorderSide.strokeAlignCenter,
-                                color: Color(0xFFE2E2E2),
+            return SafeArea(
+              top: false,
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Container(
+                    padding: const EdgeInsets.only(top: 8),
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        const SizedBox(height: 8),
+                        Opacity(
+                          opacity: 0.70,
+                          child: Container(
+                            width: 72,
+                            decoration: const ShapeDecoration(
+                              shape: RoundedRectangleBorder(
+                                side: BorderSide(
+                                  width: 2,
+                                  strokeAlign: BorderSide.strokeAlignCenter,
+                                  color: Color(0xFFE2E2E2),
+                                ),
                               ),
                             ),
                           ),
                         ),
-                      ),
-                      const SizedBox(height: 8),
-                      Container(
-                        margin: const EdgeInsets.symmetric(horizontal: 20),
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.end,
-                          children: [
-                            GestureDetector(
-                              onTap: () => Navigator.of(context).pop(false),
-                              child: const Icon(Icons.close),
-                            ),
-                          ],
+                        const SizedBox(height: 8),
+                        Container(
+                          margin: const EdgeInsets.symmetric(horizontal: 20),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.end,
+                            children: [
+                              GestureDetector(
+                                onTap: () => Navigator.of(context).pop(false),
+                                child: const Icon(Icons.close),
+                              ),
+                            ],
+                          ),
                         ),
-                      ),
-                      const SizedBox(height: 16),
-                      SvgPicture.asset(
-                        'icon/danger-linear.svg',
-                        width: 80,
-                        height: 80,
-                        colorFilter: const ColorFilter.mode(
-                          Colors.red,
-                          BlendMode.srcIn,
+                        const SizedBox(height: 16),
+                        SvgPicture.asset(
+                          'icon/danger-linear.svg',
+                          width: 80,
+                          height: 80,
+                          colorFilter: const ColorFilter.mode(
+                            Colors.red,
+                            BlendMode.srcIn,
+                          ),
                         ),
-                      ),
-                      const SizedBox(height: 16),
-                      Text(
-                        title,
-                        style: const TextStyle(
-                          fontFamily: 'Montserrat',
-                          fontWeight: FontWeight.w600,
-                          fontSize: 16,
-                          color: Color(0xff000000),
-                        ),
-                      ),
-                      const SizedBox(height: 8),
-                      Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 24),
-                        child: Text(
-                          message,
-                          textAlign: TextAlign.center,
+                        const SizedBox(height: 16),
+                        Text(
+                          title,
                           style: const TextStyle(
                             fontFamily: 'Montserrat',
-                            fontWeight: FontWeight.w400,
-                            fontSize: 14,
-                            color: Color(0xFF8692A8),
+                            fontWeight: FontWeight.w600,
+                            fontSize: 16,
+                            color: Color(0xff000000),
                           ),
                         ),
-                      ),
-                      const SizedBox(height: 16),
-                      SizedBox(
-                        width: MediaQuery.of(context).size.width - 40,
-                        height: 50,
-                        child: ElevatedButton(
+                        const SizedBox(height: 8),
+                        Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 24),
+                          child: Text(
+                            message,
+                            textAlign: TextAlign.center,
+                            style: const TextStyle(
+                              fontFamily: 'Montserrat',
+                              fontWeight: FontWeight.w400,
+                              fontSize: 14,
+                              color: Color(0xFF8692A8),
+                            ),
+                          ),
+                        ),
+                        const SizedBox(height: 16),
+                        SizedBox(
+                          width: MediaQuery.of(context).size.width - 40,
+                          height: 50,
+                          child: ElevatedButton(
+                            onPressed: _deleteController.isLoading
+                                ? null
+                                : () async {
+                                    try {
+                                      final successMessage = await onConfirm();
+                                      if (!mounted || !context.mounted) {
+                                        return;
+                                      }
+                                      Navigator.of(context).pop(false);
+                                      AppSnackBar.show(
+                                        context: this.context,
+                                        message: successMessage,
+                                        isError: false,
+                                      );
+                                    } catch (_) {
+                                      if (!mounted) {
+                                        return;
+                                      }
+                                      AppSnackBar.show(
+                                        context: this.context,
+                                        message:
+                                            _deleteController.errorMessage ??
+                                            'Nao foi possivel excluir.',
+                                        isError: true,
+                                      );
+                                    }
+                                  },
+                            style: ElevatedButton.styleFrom(
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(8),
+                              ),
+                              side: const BorderSide(color: Colors.red),
+                              elevation: 0,
+                              backgroundColor: Colors.transparent,
+                            ),
+                            child: Text(
+                              _deleteController.isLoading
+                                  ? 'Excluindo...'
+                                  : 'Excluir',
+                              style: const TextStyle(color: Colors.red),
+                            ),
+                          ),
+                        ),
+                        TextButton(
                           onPressed: _deleteController.isLoading
                               ? null
-                              : () async {
-                                  try {
-                                    final successMessage = await onConfirm();
-                                    if (!mounted || !context.mounted) {
-                                      return;
-                                    }
-                                    Navigator.of(context).pop(false);
-                                    AppSnackBar.show(
-                                      context: this.context,
-                                      message: successMessage,
-                                      isError: false,
-                                    );
-                                  } catch (_) {
-                                    if (!mounted) {
-                                      return;
-                                    }
-                                    AppSnackBar.show(
-                                      context: this.context,
-                                      message:
-                                          _deleteController.errorMessage ??
-                                          'Nao foi possivel excluir.',
-                                      isError: true,
-                                    );
-                                  }
-                                },
-                          style: ElevatedButton.styleFrom(
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(8),
-                            ),
-                            side: const BorderSide(color: Colors.red),
-                            elevation: 0,
-                            backgroundColor: Colors.transparent,
-                          ),
+                              : () => Navigator.of(context).pop(false),
                           child: Text(
-                            _deleteController.isLoading
-                                ? 'Excluindo...'
-                                : 'Excluir',
-                            style: const TextStyle(color: Colors.red),
+                            'Cancelar',
+                            style: TextStyle(
+                              fontSize: 16,
+                              color: MyColors.colorOnPrimary,
+                              decoration: TextDecoration.underline,
+                              decorationColor: MyColors.colorOnPrimary,
+                            ),
                           ),
                         ),
-                      ),
-                      TextButton(
-                        onPressed: _deleteController.isLoading
-                            ? null
-                            : () => Navigator.of(context).pop(false),
-                        child: Text(
-                          'Cancelar',
-                          style: TextStyle(
-                            fontSize: 16,
-                            color: MyColors.colorOnPrimary,
-                            decoration: TextDecoration.underline,
-                            decorationColor: MyColors.colorOnPrimary,
-                          ),
-                        ),
-                      ),
-                      const SizedBox(height: 16),
-                    ],
+                        const SizedBox(height: 16),
+                      ],
+                    ),
                   ),
-                ),
-              ],
+                ],
+              ),
             );
           },
         );
       },
+    );
+  }
+}
+
+class _SpeedDialLabel extends StatelessWidget {
+  const _SpeedDialLabel(this.text);
+
+  final String text;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      constraints: BoxConstraints(
+        maxWidth: MediaQuery.of(context).size.width - 112,
+      ),
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(8),
+        boxShadow: const [
+          BoxShadow(
+            color: Color(0x26000000),
+            blurRadius: 8,
+            offset: Offset(0, 2),
+          ),
+        ],
+      ),
+      child: Text(
+        text,
+        maxLines: 1,
+        overflow: TextOverflow.ellipsis,
+        style: TextStyle(
+          color: MyColors.colorPrimary2,
+          fontSize: 14,
+          fontFamily: 'Montserrat',
+          fontWeight: FontWeight.w700,
+          height: 1.29,
+        ),
+      ),
     );
   }
 }
@@ -623,6 +671,7 @@ class _InsumoCard extends StatelessWidget {
     required this.description,
     required this.quantity,
     required this.onTap,
+    required this.onEdit,
     required this.onDelete,
   });
 
@@ -631,6 +680,7 @@ class _InsumoCard extends StatelessWidget {
   final String description;
   final String quantity;
   final VoidCallback onTap;
+  final VoidCallback onEdit;
   final VoidCallback onDelete;
 
   @override
@@ -727,7 +777,7 @@ class _InsumoCard extends StatelessWidget {
                 ),
                 const SizedBox(height: 12),
                 GestureDetector(
-                  onTap: () {},
+                  onTap: onEdit,
                   child: SvgPicture.asset('icon/square-pen.svg'),
                 ),
               ],

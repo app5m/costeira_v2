@@ -82,7 +82,6 @@ class _ValidationCodePageState extends State<ValidationCodePage> {
           ),
           SafeArea(
             top: false,
-            bottom: false,
             child: SingleChildScrollView(
               reverse: true,
               child: ConstrainedBox(

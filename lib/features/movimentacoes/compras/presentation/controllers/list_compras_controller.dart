@@ -80,6 +80,29 @@ class ListComprasController extends ChangeNotifier {
     }
   }
 
+  Future<CompraEntity?> findById(int compraId) async {
+    try {
+      final user = await SessionStorage.getUserSession();
+      if (user == null) {
+        throw ApiException('Usuario nao autenticado.');
+      }
+
+      final result = await _getComprasUsecase(
+        MovimentacaoFilterEntity(appUsersId: user.id, id: compraId),
+      );
+      return result.data.cast<CompraEntity?>().firstWhere(
+        (item) => item?.id == compraId,
+        orElse: () => null,
+      );
+    } on ApiException catch (error) {
+      _errorMessage = error.message;
+      AppLogger.error(
+        'COMPRAS LIST CONTROLLER: ERRO AO BUSCAR COMPRA MSG=${error.message}',
+      );
+      rethrow;
+    }
+  }
+
   void removeById(int compraId) {
     _compras = _compras.where((item) => item.id != compraId).toList();
     _rows = _compras.length;

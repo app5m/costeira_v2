@@ -229,46 +229,49 @@ class _ManejosState extends State<Manejos> with SingleTickerProviderStateMixin {
           ),
         ),
       ),
-      body: Column(
-        children: [
-          TabBar(
-            controller: _tabController,
-            tabs: const [
-              Tab(text: 'Dados'),
-              Tab(text: 'Gráficos'),
-            ],
-            onTap: (int tabIndex) {
-              setState(() => index = tabIndex);
-            },
-            automaticIndicatorColorAdjustment: false,
-            indicatorSize: TabBarIndicatorSize.tab,
-            unselectedLabelColor: Colors.grey,
-            labelStyle: const TextStyle(
-              fontSize: 12,
-              fontFamily: 'Montserrat',
-              fontWeight: FontWeight.w600,
+      body: SafeArea(
+        top: false,
+        child: Column(
+          children: [
+            TabBar(
+              controller: _tabController,
+              tabs: const [
+                Tab(text: 'Dados'),
+                Tab(text: 'Gráficos'),
+              ],
+              onTap: (int tabIndex) {
+                setState(() => index = tabIndex);
+              },
+              automaticIndicatorColorAdjustment: false,
+              indicatorSize: TabBarIndicatorSize.tab,
+              unselectedLabelColor: Colors.grey,
+              labelStyle: const TextStyle(
+                fontSize: 12,
+                fontFamily: 'Montserrat',
+                fontWeight: FontWeight.w600,
+              ),
+              unselectedLabelStyle: const TextStyle(
+                fontSize: 12,
+                fontFamily: 'Montserrat',
+                fontWeight: FontWeight.w700,
+              ),
+              dividerColor: Colors.grey,
+              labelColor: Colors.black,
+              indicatorColor: MyColors.colorPrimary2,
             ),
-            unselectedLabelStyle: const TextStyle(
-              fontSize: 12,
-              fontFamily: 'Montserrat',
-              fontWeight: FontWeight.w700,
-            ),
-            dividerColor: Colors.grey,
-            labelColor: Colors.black,
-            indicatorColor: MyColors.colorPrimary2,
-          ),
-          const SizedBox(height: 16),
-          if (index == 0)
-            _FilterSelector(
-              label: _selectedPotreiroLabel(),
-              isActive: _selectedPotreiroId != null,
-              isLoading: _potreirosController.isLoading,
-              onTap: _showPotreiroFilter,
-            ),
-          if (index == 0) const SizedBox(height: 16),
-          if (index == 0) Expanded(child: _buildManejosList()),
-          if (index == 1) const GraficosManejo(),
-        ],
+            const SizedBox(height: 16),
+            if (index == 0)
+              _FilterSelector(
+                label: _selectedPotreiroLabel(),
+                isActive: _selectedPotreiroId != null,
+                isLoading: _potreirosController.isLoading,
+                onTap: _showPotreiroFilter,
+              ),
+            if (index == 0) const SizedBox(height: 16),
+            if (index == 0) Expanded(child: _buildManejosList()),
+            if (index == 1) const GraficosManejo(),
+          ],
+        ),
       ),
     );
   }
@@ -300,7 +303,7 @@ class _ManejosState extends State<Manejos> with SingleTickerProviderStateMixin {
           onTap: () {
             Navigator.push(
               context,
-              MaterialPageRoute(builder: (_) => const DetailManejo()),
+              MaterialPageRoute(builder: (_) => DetailManejo(manejo: manejo)),
             );
           },
           onEdit: () => _openEditManejo(manejo),
@@ -343,82 +346,89 @@ class _ManejosState extends State<Manejos> with SingleTickerProviderStateMixin {
         ),
       ),
       builder: (BuildContext bc) {
-        return Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            const SizedBox(height: 16),
-            Container(
-              width: 72,
-              decoration: const ShapeDecoration(
-                shape: RoundedRectangleBorder(
-                  side: BorderSide(width: 2, color: Color(0xFFE2E2E2)),
-                ),
-              ),
-            ),
-            const SizedBox(height: 24),
-            SvgPicture.asset(
-              'icon/danger-linear.svg',
-              width: 80,
-              height: 80,
-              color: Colors.red,
-            ),
-            const SizedBox(height: 16),
-            const Text(
-              'Excluir manejo',
-              style: TextStyle(
-                fontFamily: 'Montserrat',
-                fontWeight: FontWeight.w600,
-                fontSize: 16,
-                color: Color(0xff000000),
-              ),
-            ),
-            const SizedBox(height: 8),
-            const Text(
-              'Tem certeza que deseja excluir esse\nmanejo permanentemente?',
-              textAlign: TextAlign.center,
-              style: TextStyle(
-                fontFamily: 'Montserrat',
-                fontWeight: FontWeight.w400,
-                fontSize: 14,
-                color: Color(0xFF8692A8),
-              ),
-            ),
-            const SizedBox(height: 16),
-            SizedBox(
-              width: MediaQuery.of(context).size.width - 40,
-              height: 50,
-              child: ElevatedButton(
-                onPressed: _deleteController.isLoading
-                    ? null
-                    : () => _deleteManejo(manejo),
-                style: ElevatedButton.styleFrom(
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(8),
+        return SafeArea(
+          top: false,
+          child: SizedBox(
+            width: double.infinity,
+            child: Padding(
+              padding: const EdgeInsets.fromLTRB(20, 16, 20, 16),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Container(
+                    width: 72,
+                    decoration: const ShapeDecoration(
+                      shape: RoundedRectangleBorder(
+                        side: BorderSide(width: 2, color: Color(0xFFE2E2E2)),
+                      ),
+                    ),
                   ),
-                  side: const BorderSide(color: Colors.red),
-                  elevation: 0,
-                  backgroundColor: Colors.transparent,
-                ),
-                child: const Text(
-                  'Excluir',
-                  style: TextStyle(color: Colors.red),
-                ),
+                  const SizedBox(height: 24),
+                  SvgPicture.asset(
+                    'icon/danger-linear.svg',
+                    width: 80,
+                    height: 80,
+                    color: Colors.red,
+                  ),
+                  const SizedBox(height: 16),
+                  const Text(
+                    'Excluir manejo',
+                    style: TextStyle(
+                      fontFamily: 'Montserrat',
+                      fontWeight: FontWeight.w600,
+                      fontSize: 16,
+                      color: Color(0xff000000),
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  const Text(
+                    'Tem certeza que deseja excluir esse\nmanejo permanentemente?',
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                      fontFamily: 'Montserrat',
+                      fontWeight: FontWeight.w400,
+                      fontSize: 14,
+                      color: Color(0xFF8692A8),
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  SizedBox(
+                    width: double.infinity,
+                    height: 50,
+                    child: ElevatedButton(
+                      onPressed: _deleteController.isLoading
+                          ? null
+                          : () => _deleteManejo(manejo),
+                      style: ElevatedButton.styleFrom(
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        side: const BorderSide(color: Colors.red),
+                        elevation: 0,
+                        backgroundColor: Colors.transparent,
+                      ),
+                      child: const Text(
+                        'Excluir',
+                        style: TextStyle(color: Colors.red),
+                      ),
+                    ),
+                  ),
+                  TextButton(
+                    onPressed: () => Navigator.of(context).pop(false),
+                    child: Text(
+                      'Cancelar',
+                      style: TextStyle(
+                        fontSize: 16,
+                        color: MyColors.colorOnPrimary,
+                        decoration: TextDecoration.underline,
+                        decorationColor: MyColors.colorOnPrimary,
+                      ),
+                    ),
+                  ),
+                ],
               ),
             ),
-            TextButton(
-              onPressed: () => Navigator.of(context).pop(false),
-              child: Text(
-                'Cancelar',
-                style: TextStyle(
-                  fontSize: 16,
-                  color: MyColors.colorOnPrimary,
-                  decoration: TextDecoration.underline,
-                  decorationColor: MyColors.colorOnPrimary,
-                ),
-              ),
-            ),
-            const SizedBox(height: 16),
-          ],
+          ),
         );
       },
     );

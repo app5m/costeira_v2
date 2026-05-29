@@ -15,7 +15,6 @@ class PendingApprovalPage extends StatelessWidget {
     return Scaffold(
       backgroundColor: MyColors.colorPrimary,
       body: SafeArea(
-        bottom: false,
         child: Column(
           children: [
             const SizedBox(height: 24),
@@ -36,7 +35,10 @@ class PendingApprovalPage extends StatelessWidget {
                     Align(
                       alignment: Alignment.centerLeft,
                       child: Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 12,
+                          vertical: 6,
+                        ),
                         decoration: BoxDecoration(
                           color: const Color(0x1900823A),
                           borderRadius: BorderRadius.circular(999),
@@ -127,12 +129,20 @@ class PendingApprovalPage extends StatelessWidget {
                           const SizedBox(height: 12),
                           const Text(
                             'O administrador vai validar o seu cadastro antes da liberação.',
-                            style: TextStyle(color: Color(0xFF6C7278), fontSize: 13, height: 1.5),
+                            style: TextStyle(
+                              color: Color(0xFF6C7278),
+                              fontSize: 13,
+                              height: 1.5,
+                            ),
                           ),
                           const SizedBox(height: 8),
                           const Text(
                             'Assim que o acesso for aprovado, você poderá entrar normalmente com seus dados.',
-                            style: TextStyle(color: Color(0xFF6C7278), fontSize: 13, height: 1.5),
+                            style: TextStyle(
+                              color: Color(0xFF6C7278),
+                              fontSize: 13,
+                              height: 1.5,
+                            ),
                           ),
                           if ((email ?? '').isNotEmpty) ...[
                             const SizedBox(height: 12),

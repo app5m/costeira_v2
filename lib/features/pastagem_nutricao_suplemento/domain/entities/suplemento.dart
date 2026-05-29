@@ -166,10 +166,16 @@ class SuplementoChartsFilterEntity {
   const SuplementoChartsFilterEntity({
     required this.appUsersId,
     required this.mesAno,
+    this.idPotreiro,
+    this.idLote,
+    this.idProduto,
   });
 
   final int appUsersId;
   final String mesAno;
+  final int? idPotreiro;
+  final int? idLote;
+  final int? idProduto;
 }
 
 class SuplementoChartsEntity {

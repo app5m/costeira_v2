@@ -73,11 +73,14 @@ class _TransferenciaFormPageState extends State<TransferenciaFormPage> {
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
       ),
-      builder: (_) => PotreiroSelectionSheet(
-        potreiros: _pageController.potreiros,
-        initialSelectedPotreiroId: _pageController.selectedPotreiroDestinoId,
-        isLoading: _pageController.isLoading,
-        errorMessage: _pageController.errorMessage,
+      builder: (_) => SafeArea(
+        top: false,
+        child: PotreiroSelectionSheet(
+          potreiros: _pageController.potreiros,
+          initialSelectedPotreiroId: _pageController.selectedPotreiroDestinoId,
+          isLoading: _pageController.isLoading,
+          errorMessage: _pageController.errorMessage,
+        ),
       ),
     );
 
@@ -86,7 +89,9 @@ class _TransferenciaFormPageState extends State<TransferenciaFormPage> {
     }
 
     if (result.shouldAddPotreiro) {
-      final created = await Modular.to.pushNamed<Map<String, dynamic>?>(AppRoutes.potreirosAdd);
+      final created = await Modular.to.pushNamed<Map<String, dynamic>?>(
+        AppRoutes.potreirosAdd,
+      );
       if (created?['success'] == true) {
         await _pageController.reloadPotreiros();
         if (mounted) {
@@ -106,11 +111,14 @@ class _TransferenciaFormPageState extends State<TransferenciaFormPage> {
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
       ),
-      builder: (_) => AnimalLotSelectionSheet(
-        lots: _pageController.lots,
-        initialSelectedLotId: _pageController.selectedLoteDestinoId,
-        isLoading: _pageController.isLoading,
-        errorMessage: _pageController.errorMessage,
+      builder: (_) => SafeArea(
+        top: false,
+        child: AnimalLotSelectionSheet(
+          lots: _pageController.lots,
+          initialSelectedLotId: _pageController.selectedLoteDestinoId,
+          isLoading: _pageController.isLoading,
+          errorMessage: _pageController.errorMessage,
+        ),
       ),
     );
 
@@ -119,7 +127,9 @@ class _TransferenciaFormPageState extends State<TransferenciaFormPage> {
     }
 
     if (result.shouldAddLot) {
-      final created = await Modular.to.pushNamed<Map<String, dynamic>?>(AppRoutes.animalLotsAdd);
+      final created = await Modular.to.pushNamed<Map<String, dynamic>?>(
+        AppRoutes.animalLotsAdd,
+      );
       if (created?['success'] == true) {
         await _pageController.reloadLotes();
         if (mounted) {
@@ -149,12 +159,17 @@ class _TransferenciaFormPageState extends State<TransferenciaFormPage> {
       builder: (context, _) {
         return Scaffold(
           backgroundColor: Colors.white,
-          floatingActionButton: !_pageController.isEdit
+          floatingActionButton:
+              !_pageController.isEdit && _pageController.hasSelectedTipo
               ? FloatingActionButton(
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(64)),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(64),
+                  ),
                   onPressed: _openSelectionPage,
                   child: Icon(
-                    _pageController.isTipoAnimais ? Icons.pets : Icons.inventory_2_outlined,
+                    _pageController.isTipoAnimais
+                        ? Icons.pets
+                        : Icons.inventory_2_outlined,
                     color: Colors.white,
                   ),
                 )
@@ -166,7 +181,9 @@ class _TransferenciaFormPageState extends State<TransferenciaFormPage> {
               icon: const Icon(Icons.arrow_back_ios, color: Colors.white),
             ),
             title: Text(
-              _pageController.isEdit ? 'Editar transferencia' : 'Adicionar transferencia',
+              _pageController.isEdit
+                  ? 'Editar transferencia'
+                  : 'Adicionar transferencia',
               style: const TextStyle(
                 color: Colors.white,
                 fontSize: 16,
@@ -175,57 +192,62 @@ class _TransferenciaFormPageState extends State<TransferenciaFormPage> {
               ),
             ),
           ),
-          body: SingleChildScrollView(
-            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                _buildTextField(
-                  controller: _pageController.dataController,
-                  label: 'Data da transferencia',
-                  hint: '00/00/0000',
-                  readOnly: true,
-                  onTap: _selectDate,
-                ),
-                _buildTipo(),
-                PotreiroSelectorField(
-                  label: 'Potreiro destino',
-                  value: _pageController.selectedPotreiroDestinoLabel,
-                  onTap: _openPotreiroDestinoSelection,
-                  isLoading: _pageController.isLoading,
-                  errorMessage: _pageController.errorMessage,
-                ),
-                if (_pageController.isTipoLotes)
-                  AnimalLotSelectorField(
-                    label: 'Lote destino',
-                    value: _pageController.selectedLoteDestinoLabel,
-                    onTap: _openLoteDestinoSelection,
-                    isLoading: _pageController.isLoading,
-                    errorMessage: _pageController.errorMessage,
-                  ),
-                _buildTextField(
-                  controller: _pageController.obsController,
-                  label: 'Observações',
-                  hint: 'Digite observações sobre a transferência',
-                  maxLines: 3,
-                ),
-                if (!_pageController.isEdit) _buildSelectionSummary(),
-                if (_pageController.errorMessage != null) ...[
-                  const SizedBox(height: 8),
-                  Text(
-                    _pageController.errorMessage!,
-                    style: const TextStyle(color: Colors.red, fontSize: 12),
-                  ),
+          body: SafeArea(
+            top: false,
+            child: SingleChildScrollView(
+              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  _buildTipo(),
+                  if (_pageController.hasSelectedTipo) ...[
+                    _buildTextField(
+                      controller: _pageController.dataController,
+                      label: 'Data da transferencia',
+                      hint: '00/00/0000',
+                      readOnly: true,
+                      onTap: _selectDate,
+                    ),
+                    PotreiroSelectorField(
+                      label: 'Potreiro destino',
+                      value: _pageController.selectedPotreiroDestinoLabel,
+                      onTap: _openPotreiroDestinoSelection,
+                      isLoading: _pageController.isLoading,
+                      errorMessage: _pageController.errorMessage,
+                    ),
+                    if (_pageController.isTipoLotes)
+                      AnimalLotSelectorField(
+                        label: 'Lote destino',
+                        value: _pageController.selectedLoteDestinoLabel,
+                        onTap: _openLoteDestinoSelection,
+                        isLoading: _pageController.isLoading,
+                        errorMessage: _pageController.errorMessage,
+                      ),
+                    _buildTextField(
+                      controller: _pageController.obsController,
+                      label: 'Observações',
+                      hint: 'Digite observações sobre a transferência',
+                      maxLines: 3,
+                    ),
+                    if (!_pageController.isEdit) _buildSelectionSummary(),
+                    if (_pageController.errorMessage != null) ...[
+                      const SizedBox(height: 8),
+                      Text(
+                        _pageController.errorMessage!,
+                        style: const TextStyle(color: Colors.red, fontSize: 12),
+                      ),
+                    ],
+                    const SizedBox(height: 20),
+                    CustomButton(
+                      onPressed: _submit,
+                      text: _pageController.isEdit ? 'Salvar' : 'Adicionar',
+                      enabled: _pageController.isFormValid,
+                      isLoading: _pageController.isLoading,
+                    ),
+                  ],
+                  const SizedBox(height: 80),
                 ],
-                const SizedBox(height: 20),
-                CustomButton(
-                  onPressed: _submit,
-                  text: _pageController.isEdit ? 'Salvar' : 'Adicionar',
-                  enabled: _pageController.isFormValid,
-                  isLoading: _pageController.isLoading,
-                ),
-                const SizedBox(height: 80),
-              ],
+              ),
             ),
           ),
         );
@@ -280,7 +302,9 @@ class _TransferenciaFormPageState extends State<TransferenciaFormPage> {
         : _pageController.selectedLotes.length;
     final singular = _pageController.isTipoAnimais ? 'animal' : 'lote';
     final plural = _pageController.isTipoAnimais ? 'animais' : 'lotes';
-    final label = count == 1 ? '1 $singular selecionado' : '$count $plural selecionados';
+    final label = count == 1
+        ? '1 $singular selecionado'
+        : '$count $plural selecionados';
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -321,7 +345,10 @@ class _TransferenciaFormPageState extends State<TransferenciaFormPage> {
                     ),
                   ),
                 ),
-                const Icon(Icons.keyboard_arrow_right, color: Color(0xFF8C8C8C)),
+                const Icon(
+                  Icons.keyboard_arrow_right,
+                  color: Color(0xFF8C8C8C),
+                ),
               ],
             ),
           ),
@@ -380,7 +407,10 @@ class _TransferenciaFormPageState extends State<TransferenciaFormPage> {
             ),
             filled: true,
             fillColor: const Color(0xFFEBEBEB),
-            contentPadding: const EdgeInsets.symmetric(horizontal: 15, vertical: 16),
+            contentPadding: const EdgeInsets.symmetric(
+              horizontal: 15,
+              vertical: 16,
+            ),
             border: OutlineInputBorder(
               borderRadius: BorderRadius.circular(8),
               borderSide: BorderSide.none,

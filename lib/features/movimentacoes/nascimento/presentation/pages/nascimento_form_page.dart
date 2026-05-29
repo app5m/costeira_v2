@@ -25,7 +25,8 @@ class NascimentoFormPage extends StatefulWidget {
 class _NascimentoFormPageState extends State<NascimentoFormPage> {
   static const _pesoFormatter = FixedTwoDecimalInputFormatter();
 
-  final NascimentoFormPageController _pageController = Modular.get<NascimentoFormPageController>();
+  final NascimentoFormPageController _pageController =
+      Modular.get<NascimentoFormPageController>();
 
   @override
   void initState() {
@@ -74,11 +75,14 @@ class _NascimentoFormPageState extends State<NascimentoFormPage> {
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
       ),
-      builder: (_) => PotreiroSelectionSheet(
-        potreiros: _pageController.potreiros,
-        initialSelectedPotreiroId: _pageController.selectedPotreiroId,
-        isLoading: _pageController.isLoading,
-        errorMessage: _pageController.errorMessage,
+      builder: (_) => SafeArea(
+        top: false,
+        child: PotreiroSelectionSheet(
+          potreiros: _pageController.potreiros,
+          initialSelectedPotreiroId: _pageController.selectedPotreiroId,
+          isLoading: _pageController.isLoading,
+          errorMessage: _pageController.errorMessage,
+        ),
       ),
     );
 
@@ -87,7 +91,9 @@ class _NascimentoFormPageState extends State<NascimentoFormPage> {
     }
 
     if (result.shouldAddPotreiro) {
-      final created = await Modular.to.pushNamed<Map<String, dynamic>?>(AppRoutes.potreirosAdd);
+      final created = await Modular.to.pushNamed<Map<String, dynamic>?>(
+        AppRoutes.potreirosAdd,
+      );
       if (created?['success'] == true) {
         await _pageController.reloadPotreiros();
         if (mounted) {
@@ -107,11 +113,14 @@ class _NascimentoFormPageState extends State<NascimentoFormPage> {
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
       ),
-      builder: (_) => AnimalLotSelectionSheet(
-        lots: _pageController.lots,
-        initialSelectedLotId: _pageController.selectedLotId,
-        isLoading: _pageController.isLoading,
-        errorMessage: _pageController.errorMessage,
+      builder: (_) => SafeArea(
+        top: false,
+        child: AnimalLotSelectionSheet(
+          lots: _pageController.lots,
+          initialSelectedLotId: _pageController.selectedLotId,
+          isLoading: _pageController.isLoading,
+          errorMessage: _pageController.errorMessage,
+        ),
       ),
     );
 
@@ -120,7 +129,9 @@ class _NascimentoFormPageState extends State<NascimentoFormPage> {
     }
 
     if (result.shouldAddLot) {
-      final created = await Modular.to.pushNamed<Map<String, dynamic>?>(AppRoutes.animalLotsAdd);
+      final created = await Modular.to.pushNamed<Map<String, dynamic>?>(
+        AppRoutes.animalLotsAdd,
+      );
       if (created?['success'] == true) {
         await _pageController.reloadLots();
         if (mounted) {
@@ -136,7 +147,8 @@ class _NascimentoFormPageState extends State<NascimentoFormPage> {
     await Navigator.push(
       context,
       MaterialPageRoute(
-        builder: (_) => NascimentoAnimaisPage(pageController: _pageController, type: type),
+        builder: (_) =>
+            NascimentoAnimaisPage(pageController: _pageController, type: type),
       ),
     );
     _pageController.animalFilterController.clear();
@@ -146,8 +158,9 @@ class _NascimentoFormPageState extends State<NascimentoFormPage> {
     await Navigator.push(
       context,
       MaterialPageRoute(
-        builder: (_) =>
-            NascimentoAnimaisVinculadosPage(animais: widget.nascimento?.animais ?? const []),
+        builder: (_) => NascimentoAnimaisVinculadosPage(
+          animais: widget.nascimento?.animais ?? const [],
+        ),
       ),
     );
   }
@@ -166,7 +179,9 @@ class _NascimentoFormPageState extends State<NascimentoFormPage> {
               icon: const Icon(Icons.arrow_back_ios, color: Colors.white),
             ),
             title: Text(
-              _pageController.isEdit ? 'Editar nascimento' : 'Adicionar nascimento',
+              _pageController.isEdit
+                  ? 'Editar nascimento'
+                  : 'Adicionar nascimento',
               style: const TextStyle(
                 color: Colors.white,
                 fontSize: 16,
@@ -175,62 +190,67 @@ class _NascimentoFormPageState extends State<NascimentoFormPage> {
               ),
             ),
           ),
-          body: SingleChildScrollView(
-            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                PotreiroSelectorField(
-                  label: 'Potreiro',
-                  value: _pageController.selectedPotreiroLabel,
-                  onTap: _openPotreiroSelection,
-                  isLoading: _pageController.isLoading,
-                  errorMessage: _pageController.errorMessage,
-                ),
-                AnimalLotSelectorField(
-                  label: 'Lote',
-                  value: _pageController.selectedLotLabel,
-                  onTap: _openLotSelection,
-                  isLoading: _pageController.isLoading,
-                  errorMessage: _pageController.errorMessage,
-                ),
-                _buildTextField(
-                  controller: _pageController.dataController,
-                  label: 'Data do nascimento',
-                  hint: '00/00/0000',
-                  readOnly: true,
-                  onTap: _selectDate,
-                ),
-                _buildTextField(
-                  controller: _pageController.pesoController,
-                  label: 'Peso do terneiro',
-                  hint: '35,50',
-                  keyboardType: const TextInputType.numberWithOptions(decimal: true),
-                  inputFormatters: const [_pesoFormatter],
-                ),
-                _buildTextField(
-                  controller: _pageController.obsController,
-                  label: 'Observações',
-                  hint: 'Digite observações sobre o nascimento',
-                  maxLines: 3,
-                ),
-                _buildAnimalsSummary(),
-                if (_pageController.errorMessage != null) ...[
-                  const SizedBox(height: 8),
-                  Text(
-                    _pageController.errorMessage!,
-                    style: const TextStyle(color: Colors.red, fontSize: 12),
+          body: SafeArea(
+            top: false,
+            child: SingleChildScrollView(
+              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  PotreiroSelectorField(
+                    label: 'Potreiro',
+                    value: _pageController.selectedPotreiroLabel,
+                    onTap: _openPotreiroSelection,
+                    isLoading: _pageController.isLoading,
+                    errorMessage: _pageController.errorMessage,
                   ),
+                  AnimalLotSelectorField(
+                    label: 'Lote',
+                    value: _pageController.selectedLotLabel,
+                    onTap: _openLotSelection,
+                    isLoading: _pageController.isLoading,
+                    errorMessage: _pageController.errorMessage,
+                  ),
+                  _buildTextField(
+                    controller: _pageController.dataController,
+                    label: 'Data do nascimento',
+                    hint: '00/00/0000',
+                    readOnly: true,
+                    onTap: _selectDate,
+                  ),
+                  _buildTextField(
+                    controller: _pageController.pesoController,
+                    label: 'Peso do terneiro',
+                    hint: '35,50',
+                    keyboardType: const TextInputType.numberWithOptions(
+                      decimal: true,
+                    ),
+                    inputFormatters: const [_pesoFormatter],
+                  ),
+                  _buildTextField(
+                    controller: _pageController.obsController,
+                    label: 'Observações',
+                    hint: 'Digite observações sobre o nascimento',
+                    maxLines: 3,
+                  ),
+                  _buildAnimalsSummary(),
+                  if (_pageController.errorMessage != null) ...[
+                    const SizedBox(height: 8),
+                    Text(
+                      _pageController.errorMessage!,
+                      style: const TextStyle(color: Colors.red, fontSize: 12),
+                    ),
+                  ],
+                  const SizedBox(height: 20),
+                  CustomButton(
+                    onPressed: _submit,
+                    text: _pageController.isEdit ? 'Salvar' : 'Adicionar',
+                    enabled: _pageController.isFormValid,
+                    isLoading: _pageController.isLoading,
+                  ),
+                  const SizedBox(height: 80),
                 ],
-                const SizedBox(height: 20),
-                CustomButton(
-                  onPressed: _submit,
-                  text: _pageController.isEdit ? 'Salvar' : 'Adicionar',
-                  enabled: _pageController.isFormValid,
-                  isLoading: _pageController.isLoading,
-                ),
-                const SizedBox(height: 80),
-              ],
+              ),
             ),
           ),
         );
@@ -241,7 +261,9 @@ class _NascimentoFormPageState extends State<NascimentoFormPage> {
   Widget _buildAnimalsSummary() {
     if (_pageController.isEdit) {
       final count = widget.nascimento?.animais.length ?? 0;
-      final label = count == 1 ? '1 animal vinculado' : '$count animais vinculados';
+      final label = count == 1
+          ? '1 animal vinculado'
+          : '$count animais vinculados';
       return _buildSelectionTile(
         label: 'Animais',
         value: label,
@@ -255,12 +277,14 @@ class _NascimentoFormPageState extends State<NascimentoFormPage> {
         _buildSelectionTile(
           label: 'Matriz',
           value: _pageController.selectedMatrizLabel,
-          onTap: () => _openAnimalSelection(NascimentoAnimalSelectionType.matriz),
+          onTap: () =>
+              _openAnimalSelection(NascimentoAnimalSelectionType.matriz),
         ),
         _buildSelectionTile(
           label: 'Terneiro',
           value: _pageController.selectedTerneiroLabel,
-          onTap: () => _openAnimalSelection(NascimentoAnimalSelectionType.terneiro),
+          onTap: () =>
+              _openAnimalSelection(NascimentoAnimalSelectionType.terneiro),
         ),
       ],
     );
@@ -307,7 +331,11 @@ class _NascimentoFormPageState extends State<NascimentoFormPage> {
                     ),
                   ),
                 ),
-                if (enabled) const Icon(Icons.keyboard_arrow_right, color: Color(0xFF8C8C8C)),
+                if (enabled)
+                  const Icon(
+                    Icons.keyboard_arrow_right,
+                    color: Color(0xFF8C8C8C),
+                  ),
               ],
             ),
           ),
@@ -366,7 +394,10 @@ class _NascimentoFormPageState extends State<NascimentoFormPage> {
             ),
             filled: true,
             fillColor: const Color(0xFFEBEBEB),
-            contentPadding: const EdgeInsets.symmetric(horizontal: 15, vertical: 16),
+            contentPadding: const EdgeInsets.symmetric(
+              horizontal: 15,
+              vertical: 16,
+            ),
             border: OutlineInputBorder(
               borderRadius: BorderRadius.circular(8),
               borderSide: BorderSide.none,

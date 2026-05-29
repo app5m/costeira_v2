@@ -42,72 +42,75 @@ class NascimentoAnimaisPage extends StatelessWidget {
               ),
             ),
           ),
-          body: Column(
-            children: [
-              Padding(
-                padding: const EdgeInsets.fromLTRB(20, 16, 20, 10),
-                child: TextField(
-                  controller: pageController.animalFilterController,
-                  keyboardType: TextInputType.text,
-                  decoration: InputDecoration(
-                    hintText: 'Filtrar por brinco',
-                    prefixIcon: const Icon(Icons.search),
-                    filled: true,
-                    fillColor: const Color(0xFFEBEBEB),
-                    contentPadding: const EdgeInsets.symmetric(
-                      horizontal: 15,
-                      vertical: 14,
-                    ),
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(8),
-                      borderSide: BorderSide.none,
-                    ),
-                  ),
-                ),
-              ),
-              if (pageController.errorMessage != null)
+          body: SafeArea(
+            top: false,
+            child: Column(
+              children: [
                 Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 20),
-                  child: Text(
-                    pageController.errorMessage!,
-                    style: const TextStyle(color: Colors.red, fontSize: 12),
+                  padding: const EdgeInsets.fromLTRB(20, 16, 20, 10),
+                  child: TextField(
+                    controller: pageController.animalFilterController,
+                    keyboardType: TextInputType.text,
+                    decoration: InputDecoration(
+                      hintText: 'Filtrar por brinco',
+                      prefixIcon: const Icon(Icons.search),
+                      filled: true,
+                      fillColor: const Color(0xFFEBEBEB),
+                      contentPadding: const EdgeInsets.symmetric(
+                        horizontal: 15,
+                        vertical: 14,
+                      ),
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(8),
+                        borderSide: BorderSide.none,
+                      ),
+                    ),
                   ),
                 ),
-              Expanded(
-                child: pageController.isLoading
-                    ? const Center(child: CircularProgressIndicator())
-                    : animais.isEmpty
-                    ? const Center(child: Text('Nenhum animal encontrado.'))
-                    : RefreshIndicator(
-                        onRefresh: pageController.reloadAnimais,
-                        child: ListView.separated(
-                          padding: const EdgeInsets.fromLTRB(20, 8, 20, 16),
-                          itemCount: animais.length,
-                          separatorBuilder: (_, __) =>
-                              const SizedBox(height: 10),
-                          itemBuilder: (context, index) {
-                            final animal = animais[index];
-                            return _AnimalSelectableTile(
-                              animal: animal,
-                              isSelected: isMatriz
-                                  ? pageController.isMatrizSelected(animal.id)
-                                  : pageController.isTerneiroSelected(
-                                      animal.id,
-                                    ),
-                              onTap: () {
-                                if (isMatriz) {
-                                  pageController.selectMatriz(animal);
-                                } else {
-                                  pageController.selectTerneiro(animal);
-                                }
-                                Navigator.pop(context);
-                              },
-                            );
-                          },
+                if (pageController.errorMessage != null)
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 20),
+                    child: Text(
+                      pageController.errorMessage!,
+                      style: const TextStyle(color: Colors.red, fontSize: 12),
+                    ),
+                  ),
+                Expanded(
+                  child: pageController.isLoading
+                      ? const Center(child: CircularProgressIndicator())
+                      : animais.isEmpty
+                      ? const Center(child: Text('Nenhum animal encontrado.'))
+                      : RefreshIndicator(
+                          onRefresh: pageController.reloadAnimais,
+                          child: ListView.separated(
+                            padding: const EdgeInsets.fromLTRB(20, 8, 20, 16),
+                            itemCount: animais.length,
+                            separatorBuilder: (_, __) =>
+                                const SizedBox(height: 10),
+                            itemBuilder: (context, index) {
+                              final animal = animais[index];
+                              return _AnimalSelectableTile(
+                                animal: animal,
+                                isSelected: isMatriz
+                                    ? pageController.isMatrizSelected(animal.id)
+                                    : pageController.isTerneiroSelected(
+                                        animal.id,
+                                      ),
+                                onTap: () {
+                                  if (isMatriz) {
+                                    pageController.selectMatriz(animal);
+                                  } else {
+                                    pageController.selectTerneiro(animal);
+                                  }
+                                  Navigator.pop(context);
+                                },
+                              );
+                            },
+                          ),
                         ),
-                      ),
-              ),
-            ],
+                ),
+              ],
+            ),
           ),
         );
       },

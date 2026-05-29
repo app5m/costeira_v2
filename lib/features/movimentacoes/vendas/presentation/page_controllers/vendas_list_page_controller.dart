@@ -49,6 +49,14 @@ class VendasListPageController extends ChangeNotifier {
     }
   }
 
+  Future<VendaEntity> findVendaDetails(VendaEntity venda) async {
+    try {
+      return await _listController.findById(venda.id) ?? venda;
+    } catch (_) {
+      return venda;
+    }
+  }
+
   Future<String?> applyDateFilters({
     required String? dataIn,
     required String? dataOut,

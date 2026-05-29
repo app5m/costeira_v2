@@ -5,10 +5,15 @@ import 'package:costeira/core/utils/app_logger.dart';
 import 'package:costeira/features/insumos/domain/entities/insumos.dart';
 import 'package:costeira/features/insumos/domain/usecases/create_insumo_usecase.dart';
 import 'package:costeira/features/insumos/domain/usecases/get_insumos_usecase.dart';
+import 'package:costeira/features/insumos/domain/usecases/update_insumo_usecase.dart';
 import 'package:flutter/material.dart';
 
 class AddInsumoController extends ChangeNotifier {
-  AddInsumoController(this._createInsumoUsecase, this._getInsumosUsecase) {
+  AddInsumoController(
+    this._createInsumoUsecase,
+    this._getInsumosUsecase,
+    this._updateInsumoUsecase,
+  ) {
     nomeController.addListener(notifyListeners);
     valorUnidadeController.addListener(notifyListeners);
     qtdTotalController.addListener(notifyListeners);
@@ -18,6 +23,7 @@ class AddInsumoController extends ChangeNotifier {
 
   final CreateInsumoUsecase _createInsumoUsecase;
   final GetInsumosUsecase _getInsumosUsecase;
+  final UpdateInsumoUsecase _updateInsumoUsecase;
 
   final nomeController = TextEditingController();
   final valorUnidadeController = TextEditingController();
@@ -28,6 +34,7 @@ class AddInsumoController extends ChangeNotifier {
   bool _isLoading = false;
   String? _errorMessage;
   int? _currentUserId;
+  InsumoEntity? _editingInsumo;
   String? _selectedTipoInsumo;
   int? _selectedUnidadeId;
   int? _selectedSuplementoId;
@@ -36,6 +43,7 @@ class AddInsumoController extends ChangeNotifier {
   List<InsumoReferenceEntity> _suplementos = const [];
 
   bool get isLoading => _isLoading;
+  bool get isEditing => _editingInsumo != null;
   String? get errorMessage => _errorMessage;
   String? get selectedTipoInsumo => _selectedTipoInsumo;
   int? get selectedUnidadeId => _selectedUnidadeId;
@@ -53,8 +61,13 @@ class AddInsumoController extends ChangeNotifier {
         _parseDecimal(qtdTotalController.text) != null;
   }
 
-  Future<void> init() async {
+  Future<void> init({InsumoEntity? insumo}) async {
     AppLogger.info('INSUMOS ADD CONTROLLER: INICIANDO');
+    _editingInsumo = insumo;
+    _clearForm();
+    if (insumo != null) {
+      _fillForm(insumo);
+    }
     _setLoading(true);
     _errorMessage = null;
 
@@ -118,6 +131,7 @@ class AddInsumoController extends ChangeNotifier {
       }
 
       final insumo = InsumoUpsertEntity(
+        id: _editingInsumo?.id,
         appUsersId: _currentUserId,
         tipoInsumo: _selectedTipoInsumo!,
         appEstoquesInsumosSuplementosId: _selectedSuplementoId,
@@ -129,7 +143,9 @@ class AddInsumoController extends ChangeNotifier {
         dataValidade: _emptyToNull(dataValidadeController.text),
       );
 
-      final result = await _createInsumoUsecase(insumo);
+      final result = isEditing
+          ? await _updateInsumoUsecase(insumo)
+          : await _createInsumoUsecase(insumo);
       AppLogger.success(
         'INSUMOS ADD CONTROLLER: INSUMO SALVO STATUS=${result.status} MSG=${result.message}',
       );
@@ -158,6 +174,48 @@ class AddInsumoController extends ChangeNotifier {
   void _setLoading(bool value) {
     _isLoading = value;
     notifyListeners();
+  }
+
+  void _clearForm() {
+    _selectedTipoInsumo = null;
+    _selectedUnidadeId = null;
+    _selectedSuplementoId = null;
+    nomeController.clear();
+    valorUnidadeController.clear();
+    qtdTotalController.clear();
+    obsController.clear();
+    dataValidadeController.clear();
+  }
+
+  void _fillForm(InsumoEntity insumo) {
+    _selectedTipoInsumo = insumo.tipoInsumo;
+    _selectedUnidadeId = insumo.appEstoquesInsumosUnidadesId;
+    _selectedSuplementoId = insumo.appEstoquesInsumosSuplementosId;
+    nomeController.text = insumo.nome;
+    valorUnidadeController.text =
+        _formatDecimal(insumo.valorUnidadeRaw) ??
+        _formatDisplayValue(insumo.valorUnidade);
+    qtdTotalController.text = _formatDecimal(insumo.qtdTotal) ?? '';
+    obsController.text = insumo.obs ?? '';
+    dataValidadeController.text = insumo.dataValidade ?? '';
+  }
+
+  String? _formatDecimal(double? value) {
+    if (value == null) {
+      return null;
+    }
+    if (value % 1 == 0) {
+      return value.toInt().toString();
+    }
+    return value.toStringAsFixed(2).replaceAll('.', ',');
+  }
+
+  String _formatDisplayValue(String? value) {
+    final text = value?.trim() ?? '';
+    if (text.isEmpty) {
+      return '';
+    }
+    return text.replaceAll(RegExp(r'[^0-9,.]'), '').replaceAll('.', ',');
   }
 
   @override

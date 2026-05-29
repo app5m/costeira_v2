@@ -22,11 +22,10 @@ class _MovimentacoesState extends State<Movimentacoes> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.white,
-      body: Container(
-        margin: EdgeInsets.symmetric(horizontal: 20),
-        child: Column(
+      body: SafeArea(
+        child: ListView(
+          padding: const EdgeInsets.fromLTRB(20, 16, 20, 24),
           children: [
-            SizedBox(height: 16),
             GestureDetector(
               onTap: () {
                 Navigator.push(
@@ -36,7 +35,7 @@ class _MovimentacoesState extends State<Movimentacoes> {
               },
               child: buttonMotivetion('Compras'),
             ),
-            SizedBox(height: 16),
+            const SizedBox(height: 16),
             GestureDetector(
               onTap: () {
                 Navigator.push(
@@ -46,7 +45,7 @@ class _MovimentacoesState extends State<Movimentacoes> {
               },
               child: buttonMotivetion('Vendas'),
             ),
-            SizedBox(height: 16),
+            const SizedBox(height: 16),
             GestureDetector(
               onTap: () {
                 Navigator.push(
@@ -56,7 +55,7 @@ class _MovimentacoesState extends State<Movimentacoes> {
               },
               child: buttonMotivetion('Mortes'),
             ),
-            SizedBox(height: 16),
+            const SizedBox(height: 16),
             GestureDetector(
               onTap: () {
                 Navigator.push(
@@ -66,7 +65,7 @@ class _MovimentacoesState extends State<Movimentacoes> {
               },
               child: buttonMotivetion('Nascimentos'),
             ),
-            SizedBox(height: 16),
+            const SizedBox(height: 16),
             GestureDetector(
               onTap: () {
                 Navigator.push(
@@ -76,7 +75,7 @@ class _MovimentacoesState extends State<Movimentacoes> {
               },
               child: buttonMotivetion('Trocas de categoria'),
             ),
-            SizedBox(height: 16),
+            const SizedBox(height: 16),
             GestureDetector(
               onTap: () {
                 Navigator.push(
@@ -86,7 +85,7 @@ class _MovimentacoesState extends State<Movimentacoes> {
               },
               child: buttonMotivetion('Abigeatos'),
             ),
-            SizedBox(height: 16),
+            const SizedBox(height: 16),
             GestureDetector(
               onTap: () {
                 Navigator.push(
@@ -96,7 +95,7 @@ class _MovimentacoesState extends State<Movimentacoes> {
               },
               child: buttonMotivetion('Abortos'),
             ),
-            SizedBox(height: 16),
+            const SizedBox(height: 16),
             GestureDetector(
               onTap: () {
                 Navigator.push(
@@ -106,7 +105,7 @@ class _MovimentacoesState extends State<Movimentacoes> {
               },
               child: buttonMotivetion('Consumo (carnear)'),
             ),
-            SizedBox(height: 16),
+            const SizedBox(height: 16),
             GestureDetector(
               onTap: () {
                 Navigator.push(

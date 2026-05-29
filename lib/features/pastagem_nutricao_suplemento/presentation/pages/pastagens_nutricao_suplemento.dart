@@ -2,6 +2,7 @@ import 'package:costeira/features/pastagem_nutricao_suplemento/presentation/page
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 
+import 'package:costeira/core/storage/session_storage.dart';
 import '../../../../../theme/colors.dart';
 import '../../../../../features/auth/presentation/pages/welcome_page.dart';
 import 'manejo/manejos.dart';
@@ -10,10 +11,12 @@ class PastagensNutricaoSuplemento extends StatefulWidget {
   const PastagensNutricaoSuplemento({super.key});
 
   @override
-  State<PastagensNutricaoSuplemento> createState() => _PastagensNutricaoSuplementoState();
+  State<PastagensNutricaoSuplemento> createState() =>
+      _PastagensNutricaoSuplementoState();
 }
 
-class _PastagensNutricaoSuplementoState extends State<PastagensNutricaoSuplemento> {
+class _PastagensNutricaoSuplementoState
+    extends State<PastagensNutricaoSuplemento> {
   void _showModalBottomSheetDesative(BuildContext context) {
     showModalBottomSheet(
       backgroundColor: Colors.white,
@@ -108,7 +111,10 @@ class _PastagensNutricaoSuplementoState extends State<PastagensNutricaoSuplement
                             elevation: 0,
                             backgroundColor: Colors.transparent,
                           ),
-                          child: Text("Sair", style: TextStyle(color: Colors.black)),
+                          child: Text(
+                            "Sair",
+                            style: TextStyle(color: Colors.black),
+                          ),
                         ),
                       ),
                       SizedBox(width: 8),
@@ -148,112 +154,129 @@ class _PastagensNutricaoSuplementoState extends State<PastagensNutricaoSuplement
         ),
       ),
       builder: (BuildContext bc) {
-        return Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Container(
-              padding: EdgeInsets.only(top: 8),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  SizedBox(height: 8),
-                  Opacity(
-                    opacity: 0.70,
-                    child: Container(
-                      width: 72,
-                      decoration: ShapeDecoration(
-                        shape: RoundedRectangleBorder(
-                          side: BorderSide(
-                            width: 2,
-                            strokeAlign: BorderSide.strokeAlignCenter,
-                            color: Color(0xFFE2E2E2),
+        return SafeArea(
+          top: false,
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Container(
+                padding: EdgeInsets.only(top: 8),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    SizedBox(height: 8),
+                    Opacity(
+                      opacity: 0.70,
+                      child: Container(
+                        width: 72,
+                        decoration: ShapeDecoration(
+                          shape: RoundedRectangleBorder(
+                            side: BorderSide(
+                              width: 2,
+                              strokeAlign: BorderSide.strokeAlignCenter,
+                              color: Color(0xFFE2E2E2),
+                            ),
                           ),
                         ),
                       ),
                     ),
-                  ),
-                  SizedBox(height: 8),
-                  Container(
-                    margin: EdgeInsets.symmetric(horizontal: 20),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.end,
-                      children: [Icon(Icons.close)],
+                    SizedBox(height: 8),
+                    Container(
+                      margin: EdgeInsets.symmetric(horizontal: 20),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.end,
+                        children: [Icon(Icons.close)],
+                      ),
                     ),
-                  ),
-                  SizedBox(height: 16),
-                  SvgPicture.asset('icon/Logout.svg', width: 80, height: 80, color: Colors.red),
-                  SizedBox(height: 16),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Text(
-                        "Sair do Aplicativo?",
+                    SizedBox(height: 16),
+                    SvgPicture.asset(
+                      'icon/Logout.svg',
+                      width: 80,
+                      height: 80,
+                      color: Colors.red,
+                    ),
+                    SizedBox(height: 16),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Text(
+                          "Sair do Aplicativo?",
+                          style: TextStyle(
+                            fontFamily: 'Montserrat',
+                            fontWeight: FontWeight.w600,
+                            fontSize: 16,
+                            color: Color(0xff000000),
+                          ),
+                        ),
+                      ],
+                    ),
+                    SizedBox(height: 8),
+                    Padding(
+                      padding: const EdgeInsets.all(0.0),
+                      child: Text(
+                        "Tem certeza que deseja \nsair da sua conta?",
+                        textAlign: TextAlign.center,
                         style: TextStyle(
                           fontFamily: 'Montserrat',
-                          fontWeight: FontWeight.w600,
-                          fontSize: 16,
-                          color: Color(0xff000000),
+                          fontWeight: FontWeight.w400,
+                          fontSize: 14,
+                          color: Color(0xFF8692A8),
                         ),
-                      ),
-                    ],
-                  ),
-                  SizedBox(height: 8),
-                  Padding(
-                    padding: const EdgeInsets.all(0.0),
-                    child: Text(
-                      "Tem certeza que deseja \nsair da sua conta?",
-                      textAlign: TextAlign.center,
-                      style: TextStyle(
-                        fontFamily: 'Montserrat',
-                        fontWeight: FontWeight.w400,
-                        fontSize: 14,
-                        color: Color(0xFF8692A8),
                       ),
                     ),
-                  ),
-                  SizedBox(height: 16),
-                  Column(
-                    children: [
-                      SizedBox(
-                        width: MediaQuery.of(context).size.width - 40,
-                        height: 50,
-                        child: ElevatedButton(
-                          onPressed: () async {
-                            Navigator.pushAndRemoveUntil(
-                              context,
-                              MaterialPageRoute(builder: (context) => Teladeinicio()),
-                              (Route<dynamic> route) => false,
-                            );
-                          },
-                          style: ElevatedButton.styleFrom(
-                            side: BorderSide(color: Colors.red),
-                            elevation: 0,
-                            backgroundColor: Colors.transparent,
-                          ),
-                          child: Text("Sair", style: TextStyle(color: Colors.black)),
-                        ),
-                      ),
-                      SizedBox(width: 8),
-                      TextButton(
-                        onPressed: () => Navigator.of(context).pop(false),
-                        child: Text(
-                          "Cancelar",
-                          style: TextStyle(
-                            fontSize: 16,
-                            color: MyColors.colorOnPrimary,
-                            decoration: TextDecoration.underline,
-                            decorationColor: MyColors.colorOnPrimary,
+                    SizedBox(height: 16),
+                    Column(
+                      children: [
+                        SizedBox(
+                          width: MediaQuery.of(context).size.width - 40,
+                          height: 50,
+                          child: ElevatedButton(
+                            onPressed: () async {
+                              await SessionStorage.clearAuthData();
+                              if (!context.mounted) {
+                                return;
+                              }
+                              Navigator.pushAndRemoveUntil(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) => Teladeinicio(),
+                                ),
+                                (Route<dynamic> route) => false,
+                              );
+                            },
+                            style: ElevatedButton.styleFrom(
+                              side: BorderSide(color: Colors.red),
+                              elevation: 0,
+                              backgroundColor: Colors.transparent,
+                            ),
+                            child: Text(
+                              "Sair",
+                              style: TextStyle(color: Colors.black),
+                            ),
                           ),
                         ),
-                      ),
-                      SizedBox(width: 8),
-                    ],
-                  ),
-                  SizedBox(height: 16),
-                ],
+                        SizedBox(width: 8),
+                        TextButton(
+                          onPressed: () => Navigator.of(context).pop(false),
+                          child: Text(
+                            "Cancelar",
+                            style: TextStyle(
+                              fontSize: 16,
+                              color: MyColors.colorOnPrimary,
+                              decoration: TextDecoration.underline,
+                              decorationColor: MyColors.colorOnPrimary,
+                            ),
+                          ),
+                        ),
+                        SizedBox(width: 8),
+                      ],
+                    ),
+                    SizedBox(height: 16),
+                  ],
+                ),
               ),
-            ),
-          ],
+            ],
+          ),
         );
       },
     );
@@ -311,11 +334,18 @@ class _PastagensNutricaoSuplementoState extends State<PastagensNutricaoSuplement
                       decoration: ShapeDecoration(
                         color: Colors.white,
                         shape: RoundedRectangleBorder(
-                          side: const BorderSide(width: 1, color: Color(0xFFEBEBEB)),
+                          side: const BorderSide(
+                            width: 1,
+                            color: Color(0xFFEBEBEB),
+                          ),
                           borderRadius: BorderRadius.circular(12),
                         ),
                         shadows: const [
-                          BoxShadow(color: Color(0x0A000000), blurRadius: 24, offset: Offset(0, 0)),
+                          BoxShadow(
+                            color: Color(0x0A000000),
+                            blurRadius: 24,
+                            offset: Offset(0, 0),
+                          ),
                         ],
                       ),
                       child: Row(
@@ -336,7 +366,11 @@ class _PastagensNutricaoSuplementoState extends State<PastagensNutricaoSuplement
                               ),
                             ],
                           ),
-                          SvgPicture.asset('icon/Arrow.svg', width: 24, height: 24),
+                          SvgPicture.asset(
+                            'icon/Arrow.svg',
+                            width: 24,
+                            height: 24,
+                          ),
                         ],
                       ),
                     ),
@@ -422,7 +456,10 @@ class _PastagensNutricaoSuplementoState extends State<PastagensNutricaoSuplement
                   SizedBox(height: 16),
                   GestureDetector(
                     onTap: () {
-                      Navigator.push(context, MaterialPageRoute(builder: (context) => Manejos()));
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (context) => Manejos()),
+                      );
                     },
                     child: Container(
                       width: MediaQuery.of(context).size.width - 60,
@@ -430,11 +467,18 @@ class _PastagensNutricaoSuplementoState extends State<PastagensNutricaoSuplement
                       decoration: ShapeDecoration(
                         color: Colors.white,
                         shape: RoundedRectangleBorder(
-                          side: const BorderSide(width: 1, color: Color(0xFFEBEBEB)),
+                          side: const BorderSide(
+                            width: 1,
+                            color: Color(0xFFEBEBEB),
+                          ),
                           borderRadius: BorderRadius.circular(12),
                         ),
                         shadows: const [
-                          BoxShadow(color: Color(0x0A000000), blurRadius: 24, offset: Offset(0, 0)),
+                          BoxShadow(
+                            color: Color(0x0A000000),
+                            blurRadius: 24,
+                            offset: Offset(0, 0),
+                          ),
                         ],
                       ),
                       child: Row(
@@ -455,7 +499,11 @@ class _PastagensNutricaoSuplementoState extends State<PastagensNutricaoSuplement
                               ),
                             ],
                           ),
-                          SvgPicture.asset('icon/Arrow.svg', width: 24, height: 24),
+                          SvgPicture.asset(
+                            'icon/Arrow.svg',
+                            width: 24,
+                            height: 24,
+                          ),
                         ],
                       ),
                     ),

@@ -29,41 +29,44 @@ class PoteiroDetail extends StatelessWidget {
           ),
         ),
       ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
-        child: Column(
-          children: [
-            _buildReadOnlyField('Nome', potreiro.nome),
-            _buildReadOnlyField(
-              'Área total',
-              _formatMeasure(potreiro.areaTotal),
-            ),
-            _buildReadOnlyField(
-              'Área utilizável',
-              _formatMeasure(potreiro.areaUtil),
-            ),
-            _buildReadOnlyField(
-              'Status atual',
-              _displayOrDash(potreiro.statusAtual),
-            ),
-            _buildReadOnlyField(
-              'Tipo forragem',
-              _displayOrDash(potreiro.tipoForragem),
-            ),
-            _buildReadOnlyField(
-              'Acesso a água',
-              _displayOrDash(potreiro.acessoAgua),
-            ),
-            _buildReadOnlyField(
-              'Acesso a sombra',
-              _displayOrDash(potreiro.acessoSombra),
-            ),
-            _buildReadOnlyField(
-              'Lotação média',
-              _formatValue(potreiro.lotacaoMedia),
-            ),
-            _buildReadOnlyField('Observações', _displayOrDash(potreiro.obs)),
-          ],
+      body: SafeArea(
+        top: false,
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+          child: Column(
+            children: [
+              _buildReadOnlyField('Nome', potreiro.nome),
+              _buildReadOnlyField(
+                'Área total',
+                _formatMeasure(potreiro.areaTotal),
+              ),
+              _buildReadOnlyField(
+                'Área utilizável',
+                _formatMeasure(potreiro.areaUtil),
+              ),
+              _buildReadOnlyField(
+                'Status atual',
+                _displayOrDash(potreiro.statusAtual),
+              ),
+              _buildReadOnlyField(
+                'Tipo forragem',
+                _displayOrDash(potreiro.tipoForragem),
+              ),
+              _buildReadOnlyField(
+                'Acesso a água',
+                _displayOrDash(potreiro.acessoAgua),
+              ),
+              _buildReadOnlyField(
+                'Acesso a sombra',
+                _displayOrDash(potreiro.acessoSombra),
+              ),
+              _buildReadOnlyField(
+                'Lotação média',
+                _formatValue(potreiro.lotacaoMedia),
+              ),
+              _buildReadOnlyField('Observações', _displayOrDash(potreiro.obs)),
+            ],
+          ),
         ),
       ),
     );
