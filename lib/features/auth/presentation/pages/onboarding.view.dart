@@ -27,27 +27,38 @@ class _OnboardingPageState extends State<OnboardingPage> {
       image: 'images/Onboarding1.png',
       tag: 'Bem-vindo',
       title: 'Conheça o Costeira',
-      subtitle: 'Reúna todos os dados operacionais,\n financeiros e de produção.',
+      subtitle:
+          'Reúna todos os dados operacionais,\n financeiros e de produção.',
       buttonText: 'Avançar',
       iconTitle: 'icon/circle-star.svg',
       tipo: 2,
-      textOneRow: 'Reúna todos os dados operacionais,\n financeiros e de produção.',
+      textOneRow:
+          'Reúna todos os dados operacionais,\n financeiros e de produção.',
       iconOneRow: 'icon/hand-coins.svg',
-      textTwoRow: 'Acompanhe o trabalho da sua\n equipe técnica e dos produtores.',
+      textTwoRow:
+          'Acompanhe o trabalho da sua\n equipe técnica e dos produtores.',
       iconTwoRow: 'icon/workflow.svg',
-      textThreeRow: 'Facilite a tomada de decisão com\n base em dados e análises\n inteligentes.',
+      textThreeRow:
+          'Facilite a tomada de decisão com\n base em dados e análises\n inteligentes.',
       iconThreeRow: 'icon/chart-area.svg',
     ),
     _OnboardingData(
       image: 'images/Onboarding Screen2.png',
       tag: 'Não perca nada',
       title: 'Notificações',
-      subtitle: 'Para garantir que você esteja sempre atualizado, permita as notificações.',
+      subtitle:
+          'Para garantir que você esteja sempre atualizado, permita as notificações.',
       buttonText: 'Avançar',
       iconTitle: '',
       tipo: 1,
     ),
   ];
+
+  @override
+  void dispose() {
+    _pageController.dispose();
+    super.dispose();
+  }
 
   Future<void> _onNext() async {
     if (_currentPage < onboardingPages.length - 1) {
@@ -82,7 +93,10 @@ class _OnboardingPageState extends State<OnboardingPage> {
                 });
               },
               itemBuilder: (context, index) {
-                return _OnboardingStep(data: onboardingPages[index], onNext: _onNext);
+                return _OnboardingStep(
+                  data: onboardingPages[index],
+                  onNext: _onNext,
+                );
               },
             ),
           ],
@@ -100,89 +114,93 @@ class _OnboardingStep extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return SafeArea(
-      top: false,
-      bottom: false,
-      child: Stack(
-        children: [
-          Positioned(
-            top: 0,
-            left: 0,
-            right: 0,
-            child: ClipRRect(
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final bottomPadding = MediaQuery.viewPaddingOf(context).bottom;
+        final panelHeightFactor = data.tipo == 2 ? 0.52 : 0.38;
+        final panelMinHeight = constraints.maxHeight * panelHeightFactor;
+
+        return Stack(
+          children: [
+            Positioned.fill(
               child: Image.asset(
                 data.image,
                 width: double.infinity,
-                height:
-                    MediaQuery.of(context).size.height - MediaQuery.of(context).size.height * 0.10,
+                height: double.infinity,
                 fit: BoxFit.cover,
               ),
             ),
-          ),
-          Positioned(
-            top: data.tipo != 2
-                ? MediaQuery.of(context).size.height * 0.7
-                : MediaQuery.of(context).size.height * 0.55,
-            left: 0,
-            right: 0,
-            bottom: 0,
-            child: Container(
-              width: 360,
-              height: 437,
-              padding: const EdgeInsets.symmetric(horizontal: 24),
-              decoration: const BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.vertical(top: Radius.circular(32)),
-              ),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  const SizedBox(height: 16),
-                  _buildTag(),
-                  const SizedBox(height: 16),
-                  Text(
-                    data.title,
-                    style: const TextStyle(
-                      color: Color(0xFF313131),
-                      fontSize: 24,
-                      fontFamily: 'Montserrat',
-                      fontWeight: FontWeight.w500,
-                      height: 1.50,
-                    ),
-                    textAlign: TextAlign.center,
-                  ),
-                  const SizedBox(height: 16),
-                  data.tipo != 2 ? _buildSubtitle() : _buildFeatureList(),
-                  const SizedBox(height: 28),
-                  SizedBox(
-                    height: 48,
-                    width: MediaQuery.of(context).size.width - 40,
-                    child: ElevatedButton(
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: MyColors.colorPrimary,
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-                        padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 50),
-                      ),
-                      onPressed: onNext,
-                      child: Text(
-                        data.buttonText,
-                        textAlign: TextAlign.center,
+            Positioned(
+              left: 0,
+              right: 0,
+              bottom: 0,
+              child: Container(
+                constraints: BoxConstraints(
+                  minHeight: panelMinHeight,
+                  maxHeight: constraints.maxHeight,
+                ),
+                padding: EdgeInsets.fromLTRB(24, 16, 24, 16 + bottomPadding),
+                decoration: const BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.vertical(top: Radius.circular(32)),
+                ),
+                child: SingleChildScrollView(
+                  physics: const ClampingScrollPhysics(),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      _buildTag(),
+                      const SizedBox(height: 16),
+                      Text(
+                        data.title,
                         style: const TextStyle(
-                          color: Colors.white,
-                          fontSize: 12,
+                          color: Color(0xFF313131),
+                          fontSize: 24,
                           fontFamily: 'Montserrat',
-                          fontWeight: FontWeight.w600,
+                          fontWeight: FontWeight.w500,
                           height: 1.50,
                         ),
+                        textAlign: TextAlign.center,
                       ),
-                    ),
+                      const SizedBox(height: 16),
+                      data.tipo != 2 ? _buildSubtitle() : _buildFeatureList(),
+                      const SizedBox(height: 24),
+                      SizedBox(
+                        height: 48,
+                        width: double.infinity,
+                        child: ElevatedButton(
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: MyColors.colorPrimary,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                            padding: const EdgeInsets.symmetric(
+                              vertical: 14,
+                              horizontal: 50,
+                            ),
+                          ),
+                          onPressed: onNext,
+                          child: Text(
+                            data.buttonText,
+                            textAlign: TextAlign.center,
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontSize: 12,
+                              fontFamily: 'Montserrat',
+                              fontWeight: FontWeight.w600,
+                              height: 1.50,
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
                   ),
-                ],
+                ),
               ),
             ),
-          ),
-        ],
-      ),
+          ],
+        );
+      },
     );
   }
 
