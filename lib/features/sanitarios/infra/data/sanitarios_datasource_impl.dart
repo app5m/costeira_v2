@@ -3,15 +3,19 @@ import 'package:costeira/core/api/api_exception.dart';
 import 'package:costeira/core/api/api_response_utils.dart';
 import 'package:costeira/core/config/ws_constantes.dart';
 import 'package:costeira/core/models/api_message.dart';
+import 'package:costeira/core/offline/offline_api_service.dart';
+import 'package:costeira/core/offline/sync/sync_operation.dart';
+import 'package:costeira/core/offline/sync/sync_priority.dart';
 import 'package:costeira/core/utils/app_logger.dart';
 import 'package:costeira/features/sanitarios/domain/entities/sanitario.dart';
 import 'package:costeira/features/sanitarios/domain/repository/sanitarios_datasource.dart';
 import 'package:costeira/features/sanitarios/infra/models/sanitario_models.dart';
 
 class SanitariosDatasourceImpl implements SanitariosDatasource {
-  const SanitariosDatasourceImpl(this._apiClient);
+  const SanitariosDatasourceImpl(this._apiClient, this._offlineApiService);
 
   final ApiClient _apiClient;
+  final OfflineApiService _offlineApiService;
 
   @override
   Future<SanitariosListEntity> getSanitarios(
@@ -20,64 +24,66 @@ class SanitariosDatasourceImpl implements SanitariosDatasource {
     final payload = SanitariosFilterRequestModel.fromEntity(filter).data;
     AppLogger.info('SANITARIOS DATASOURCE: LIST PAYLOAD=$payload');
 
-    final response = await _apiClient.post(
-      WSConstantes.sanitariosListar,
-      data: payload,
+    return _offlineApiService.postCached<SanitariosListEntity>(
+      endpoint: WSConstantes.sanitariosListar,
+      payload: payload,
+      userId: filter.appUsersId,
+      parser: _parseSanitariosList,
+      missingCacheMessage: 'Sem conexao e sem dados salvos para sanitarios.',
+      rawResponseLog: 'SANITARIOS DATASOURCE: LIST RAW RESPONSE',
     );
-    AppLogger.success('SANITARIOS DATASOURCE: LIST RAW RESPONSE=$response');
-
-    final wrappers = responseAsList(response);
-    if (wrappers.isEmpty) {
-      return const SanitariosListEntity(rows: 0, lista: []);
-    }
-
-    return SanitariosListResponseModel.fromWrapper(wrappers.first);
   }
 
   @override
   Future<ApiMessage> createSanitario(SanitarioUpsertEntity sanitario) async {
     if (sanitario.appUsersId == null) {
-      throw ApiException('Usuário não autenticado para cadastrar sanitário.');
+      throw ApiException('Usuario nao autenticado para cadastrar sanitario.');
     }
 
     final payload = SanitarioUpsertRequestModel.create(sanitario).data;
     AppLogger.info('SANITARIOS DATASOURCE: CREATE PAYLOAD=$payload');
 
-    final response = await _apiClient.post(
-      WSConstantes.sanitariosAdicionar,
-      data: payload,
-    );
-    AppLogger.success('SANITARIOS DATASOURCE: CREATE RAW RESPONSE=$response');
-
-    return _parseMutationResponse(
-      response,
-      operationName: 'CREATE SANITARIO',
-      expectedSuccessMessage: 'Sanitário cadastrado com sucesso',
+    return _offlineApiService.postOrEnqueue(
+      module: 'sanitarios',
+      action: SyncOperation.create,
+      endpoint: WSConstantes.sanitariosAdicionar,
+      payload: payload,
+      priority: SyncPriority.sanitarios,
+      pendingMessage: 'Sanitario salvo localmente para sincronizar.',
+      rawResponseLog: 'SANITARIOS DATASOURCE: CREATE RAW RESPONSE',
+      parseResponse: (response) => _parseMutationResponse(
+        response,
+        operationName: 'CREATE SANITARIO',
+        expectedSuccessMessage: 'Sanitario cadastrado com sucesso',
+      ),
     );
   }
 
   @override
   Future<ApiMessage> updateSanitario(SanitarioUpsertEntity sanitario) async {
     if (sanitario.id == null) {
-      throw ApiException('Informe o id do sanitário para atualizar.');
+      throw ApiException('Informe o id do sanitario para atualizar.');
     }
     if (sanitario.appUsersId == null) {
-      throw ApiException('Usuário não autenticado para atualizar sanitário.');
+      throw ApiException('Usuario nao autenticado para atualizar sanitario.');
     }
 
     final payload = SanitarioUpsertRequestModel.update(sanitario).data;
     AppLogger.info('SANITARIOS DATASOURCE: UPDATE PAYLOAD=$payload');
 
-    final response = await _apiClient.post(
-      WSConstantes.sanitariosAdicionar,
-      data: payload,
-    );
-    AppLogger.success('SANITARIOS DATASOURCE: UPDATE RAW RESPONSE=$response');
-
-    return _parseMutationResponse(
-      response,
-      operationName: 'UPDATE SANITARIO',
-      expectedSuccessMessage: 'Sanitário atualizada com sucesso',
+    return _offlineApiService.postOrEnqueue(
+      module: 'sanitarios',
+      action: SyncOperation.update,
+      endpoint: WSConstantes.sanitariosAdicionar,
+      payload: payload,
+      priority: SyncPriority.sanitarios,
+      pendingMessage: 'Alteracao do sanitario salva para sincronizar.',
+      rawResponseLog: 'SANITARIOS DATASOURCE: UPDATE RAW RESPONSE',
+      parseResponse: (response) => _parseMutationResponse(
+        response,
+        operationName: 'UPDATE SANITARIO',
+        expectedSuccessMessage: 'Sanitario atualizado com sucesso',
+      ),
     );
   }
 
@@ -86,16 +92,19 @@ class SanitariosDatasourceImpl implements SanitariosDatasource {
     final payload = DeleteSanitarioRequestModel.fromEntity(sanitario).data;
     AppLogger.info('SANITARIOS DATASOURCE: DELETE PAYLOAD=$payload');
 
-    final response = await _apiClient.post(
-      WSConstantes.sanitariosExcluir,
-      data: payload,
-    );
-    AppLogger.success('SANITARIOS DATASOURCE: DELETE RAW RESPONSE=$response');
-
-    return _parseMutationResponse(
-      response,
-      operationName: 'DELETE SANITARIO',
-      expectedSuccessMessage: 'Sanitario excluido com sucesso',
+    return _offlineApiService.postOrEnqueue(
+      module: 'sanitarios',
+      action: SyncOperation.delete,
+      endpoint: WSConstantes.sanitariosExcluir,
+      payload: payload,
+      priority: SyncPriority.sanitarios,
+      pendingMessage: 'Exclusao do sanitario salva para sincronizar.',
+      rawResponseLog: 'SANITARIOS DATASOURCE: DELETE RAW RESPONSE',
+      parseResponse: (response) => _parseMutationResponse(
+        response,
+        operationName: 'DELETE SANITARIO',
+        expectedSuccessMessage: 'Sanitario excluido com sucesso',
+      ),
     );
   }
 
@@ -111,16 +120,19 @@ class SanitariosDatasourceImpl implements SanitariosDatasource {
     final payload = SanitarioExecucaoRequestModel.fromEntity(execucao).data;
     AppLogger.info('SANITARIOS DATASOURCE: EXECUTAR PAYLOAD=$payload');
 
-    final response = await _apiClient.post(
-      WSConstantes.sanitariosSetExecutar,
-      data: payload,
-    );
-    AppLogger.success('SANITARIOS DATASOURCE: EXECUTAR RAW RESPONSE=$response');
-
-    return _parseMutationResponse(
-      response,
-      operationName: 'EXECUTAR SANITARIO',
-      expectedSuccessMessage: 'Sanitario executado com sucesso',
+    return _offlineApiService.postOrEnqueue(
+      module: 'sanitarios',
+      action: SyncOperation.update,
+      endpoint: WSConstantes.sanitariosSetExecutar,
+      payload: payload,
+      priority: SyncPriority.sanitarios,
+      pendingMessage: 'Execucao do sanitario salva para sincronizar.',
+      rawResponseLog: 'SANITARIOS DATASOURCE: EXECUTAR RAW RESPONSE',
+      parseResponse: (response) => _parseMutationResponse(
+        response,
+        operationName: 'EXECUTAR SANITARIO',
+        expectedSuccessMessage: 'Sanitario executado com sucesso',
+      ),
     );
   }
 
@@ -143,6 +155,15 @@ class SanitariosDatasourceImpl implements SanitariosDatasource {
     }
 
     return SanitarioChartsResponseModel.fromWrapper(wrappers.first);
+  }
+
+  SanitariosListEntity _parseSanitariosList(dynamic response) {
+    final wrappers = responseAsList(response);
+    if (wrappers.isEmpty) {
+      return const SanitariosListEntity(rows: 0, lista: []);
+    }
+
+    return SanitariosListResponseModel.fromWrapper(wrappers.first);
   }
 
   ApiMessage _parseMutationResponse(

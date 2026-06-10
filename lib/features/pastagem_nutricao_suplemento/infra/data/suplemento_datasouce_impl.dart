@@ -3,6 +3,9 @@ import 'package:costeira/core/api/api_exception.dart';
 import 'package:costeira/core/api/api_response_utils.dart';
 import 'package:costeira/core/config/ws_constantes.dart';
 import 'package:costeira/core/models/api_message.dart';
+import 'package:costeira/core/offline/offline_api_service.dart';
+import 'package:costeira/core/offline/sync/sync_operation.dart';
+import 'package:costeira/core/offline/sync/sync_priority.dart';
 import 'package:costeira/core/utils/app_logger.dart';
 import 'package:costeira/features/pastagem_nutricao_suplemento/domain/entities/suplemento.dart';
 import 'package:costeira/features/pastagem_nutricao_suplemento/domain/entities/suplemento_filter.dart';
@@ -18,9 +21,10 @@ import 'package:costeira/features/pastagem_nutricao_suplemento/infra/models/supl
 import 'package:costeira/features/pastagem_nutricao_suplemento/infra/models/suplementos_list_response_model.dart';
 
 class SuplementoDatasouceImpl implements SuplementoDatasource {
-  const SuplementoDatasouceImpl(this._apiClient);
+  const SuplementoDatasouceImpl(this._apiClient, this._offlineApiService);
 
   final ApiClient _apiClient;
+  final OfflineApiService _offlineApiService;
 
   @override
   Future<SuplementosListEntity> getSuplementos(
@@ -29,13 +33,15 @@ class SuplementoDatasouceImpl implements SuplementoDatasource {
     final payload = SuplementoFilterRequestModel.fromEntity(filter).data;
     AppLogger.info('SUPLEMENTACAO DATASOURCE: LIST PAYLOAD=$payload');
 
-    final response = await _apiClient.post(
-      WSConstantes.suplementacaoListar,
-      data: payload,
+    return _offlineApiService.postCached<SuplementosListEntity>(
+      endpoint: WSConstantes.suplementacaoListar,
+      payload: payload,
+      userId: filter.appUsersId,
+      parser: (response) =>
+          SuplementosListResponseModel.fromJson(responseAsMap(response)),
+      missingCacheMessage: 'Sem conexao e sem dados salvos para suplementacao.',
+      rawResponseLog: 'SUPLEMENTACAO DATASOURCE: LIST RAW RESPONSE',
     );
-    AppLogger.success('SUPLEMENTACAO DATASOURCE: LIST RAW RESPONSE=$response');
-
-    return SuplementosListResponseModel.fromJson(responseAsMap(response));
   }
 
   @override
@@ -47,14 +53,12 @@ class SuplementoDatasouceImpl implements SuplementoDatasource {
     final payload = SuplementoUpsertRequestModel.fromEntity(suplemento).data;
     AppLogger.info('SUPLEMENTACAO DATASOURCE: CREATE PAYLOAD=$payload');
 
-    final response = await _apiClient.post(
-      WSConstantes.suplementacaoAdicionar,
-      data: payload,
-    );
-    AppLogger.success('SUPLEMENTACAO DATASOURCE: CREATE RESPONSE=$response');
-
-    return _parseMutationResponse(
-      response,
+    return _mutation(
+      action: SyncOperation.create,
+      endpoint: WSConstantes.suplementacaoAdicionar,
+      payload: payload,
+      pendingMessage: 'Suplementacao salva localmente para sincronizar.',
+      rawResponseLog: 'SUPLEMENTACAO DATASOURCE: CREATE RESPONSE',
       operationName: 'CREATE SUPLEMENTACAO',
       expectedSuccessMessage: 'Suplementacao cadastrada com sucesso',
     );
@@ -72,14 +76,12 @@ class SuplementoDatasouceImpl implements SuplementoDatasource {
     final payload = SuplementoUpsertRequestModel.fromEntity(suplemento).data;
     AppLogger.info('SUPLEMENTACAO DATASOURCE: UPDATE PAYLOAD=$payload');
 
-    final response = await _apiClient.post(
-      WSConstantes.suplementacaoAdicionar,
-      data: payload,
-    );
-    AppLogger.success('SUPLEMENTACAO DATASOURCE: UPDATE RESPONSE=$response');
-
-    return _parseMutationResponse(
-      response,
+    return _mutation(
+      action: SyncOperation.update,
+      endpoint: WSConstantes.suplementacaoAdicionar,
+      payload: payload,
+      pendingMessage: 'Alteracao da suplementacao salva para sincronizar.',
+      rawResponseLog: 'SUPLEMENTACAO DATASOURCE: UPDATE RESPONSE',
       operationName: 'UPDATE SUPLEMENTACAO',
       expectedSuccessMessage: 'Suplementacao atualizada com sucesso',
     );
@@ -98,14 +100,13 @@ class SuplementoDatasouceImpl implements SuplementoDatasource {
     ).data;
     AppLogger.info('SUPLEMENTACAO REGISTRO: CREATE PAYLOAD=$payload');
 
-    final response = await _apiClient.post(
-      WSConstantes.suplementacaoAdicionarRegistro,
-      data: payload,
-    );
-    AppLogger.success('SUPLEMENTACAO REGISTRO: CREATE RESPONSE=$response');
-
-    return _parseMutationResponse(
-      response,
+    return _mutation(
+      action: SyncOperation.create,
+      endpoint: WSConstantes.suplementacaoAdicionarRegistro,
+      payload: payload,
+      pendingMessage:
+          'Registro de suplementacao salvo localmente para sincronizar.',
+      rawResponseLog: 'SUPLEMENTACAO REGISTRO: CREATE RESPONSE',
       operationName: 'CREATE REGISTRO SUPLEMENTACAO',
       expectedSuccessMessage: 'Registro cadastrado com sucesso',
     );
@@ -127,14 +128,13 @@ class SuplementoDatasouceImpl implements SuplementoDatasource {
     ).data;
     AppLogger.info('SUPLEMENTACAO REGISTRO: UPDATE PAYLOAD=$payload');
 
-    final response = await _apiClient.post(
-      WSConstantes.suplementacaoAdicionarRegistro,
-      data: payload,
-    );
-    AppLogger.success('SUPLEMENTACAO REGISTRO: UPDATE RESPONSE=$response');
-
-    return _parseMutationResponse(
-      response,
+    return _mutation(
+      action: SyncOperation.update,
+      endpoint: WSConstantes.suplementacaoAdicionarRegistro,
+      payload: payload,
+      pendingMessage:
+          'Alteracao do registro de suplementacao salva para sincronizar.',
+      rawResponseLog: 'SUPLEMENTACAO REGISTRO: UPDATE RESPONSE',
       operationName: 'UPDATE REGISTRO SUPLEMENTACAO',
       expectedSuccessMessage: 'Registro atualizado com sucesso',
     );
@@ -145,14 +145,12 @@ class SuplementoDatasouceImpl implements SuplementoDatasource {
     final payload = DeleteSuplementoRequestModel.fromEntity(suplemento).data;
     AppLogger.info('SUPLEMENTACAO DATASOURCE: DELETE PAYLOAD=$payload');
 
-    final response = await _apiClient.post(
-      WSConstantes.suplementacaoExcluir,
-      data: payload,
-    );
-    AppLogger.success('SUPLEMENTACAO DATASOURCE: DELETE RESPONSE=$response');
-
-    return _parseMutationResponse(
-      response,
+    return _mutation(
+      action: SyncOperation.delete,
+      endpoint: WSConstantes.suplementacaoExcluir,
+      payload: payload,
+      pendingMessage: 'Exclusao da suplementacao salva para sincronizar.',
+      rawResponseLog: 'SUPLEMENTACAO DATASOURCE: DELETE RESPONSE',
       operationName: 'DELETE SUPLEMENTACAO',
       expectedSuccessMessage: 'Suplementacao excluida com sucesso',
     );
@@ -167,14 +165,13 @@ class SuplementoDatasouceImpl implements SuplementoDatasource {
     ).data;
     AppLogger.info('SUPLEMENTACAO REGISTRO: DELETE PAYLOAD=$payload');
 
-    final response = await _apiClient.post(
-      WSConstantes.suplementacaoExcluirRegistro,
-      data: payload,
-    );
-    AppLogger.success('SUPLEMENTACAO REGISTRO: DELETE RESPONSE=$response');
-
-    return _parseMutationResponse(
-      response,
+    return _mutation(
+      action: SyncOperation.delete,
+      endpoint: WSConstantes.suplementacaoExcluirRegistro,
+      payload: payload,
+      pendingMessage:
+          'Exclusao do registro de suplementacao salva para sincronizar.',
+      rawResponseLog: 'SUPLEMENTACAO REGISTRO: DELETE RESPONSE',
       operationName: 'DELETE REGISTRO SUPLEMENTACAO',
       expectedSuccessMessage: 'Registro excluido com sucesso',
     );
@@ -203,6 +200,31 @@ class SuplementoDatasouceImpl implements SuplementoDatasource {
 
     return SuplementoChartsResponseModel.fromJson(
       Map<String, dynamic>.from(first),
+    );
+  }
+
+  Future<ApiMessage> _mutation({
+    required String action,
+    required String endpoint,
+    required Map<String, dynamic> payload,
+    required String pendingMessage,
+    required String rawResponseLog,
+    required String operationName,
+    required String expectedSuccessMessage,
+  }) {
+    return _offlineApiService.postOrEnqueue(
+      module: 'pastagem_nutricao_suplemento',
+      action: action,
+      endpoint: endpoint,
+      payload: payload,
+      priority: SyncPriority.pastagemNutricaoSuplemento,
+      pendingMessage: pendingMessage,
+      rawResponseLog: rawResponseLog,
+      parseResponse: (response) => _parseMutationResponse(
+        response,
+        operationName: operationName,
+        expectedSuccessMessage: expectedSuccessMessage,
+      ),
     );
   }
 

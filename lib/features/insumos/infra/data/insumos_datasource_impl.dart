@@ -3,6 +3,9 @@ import 'package:costeira/core/api/api_exception.dart';
 import 'package:costeira/core/api/api_response_utils.dart';
 import 'package:costeira/core/config/ws_constantes.dart';
 import 'package:costeira/core/models/api_message.dart';
+import 'package:costeira/core/offline/offline_api_service.dart';
+import 'package:costeira/core/offline/sync/sync_operation.dart';
+import 'package:costeira/core/offline/sync/sync_priority.dart';
 import 'package:costeira/core/utils/app_logger.dart';
 import 'package:costeira/features/insumos/domain/entities/insumos.dart';
 import 'package:costeira/features/insumos/domain/repository/insumos_datasource.dart';
@@ -17,22 +20,25 @@ import 'package:costeira/features/insumos/infra/models/insumos_tipo_filter_reque
 import 'package:costeira/features/insumos/infra/models/insumos_tipo_list_response_model.dart';
 
 class InsumosDatasourceImpl implements InsumosDatasource {
-  const InsumosDatasourceImpl(this._apiClient);
+  const InsumosDatasourceImpl(this._apiClient, this._offlineApiService);
 
   final ApiClient _apiClient;
+  final OfflineApiService _offlineApiService;
 
   @override
   Future<InsumosListEntity> getInsumos(InsumosFilterEntity filter) async {
     final payload = InsumosFilterRequestModel.fromEntity(filter).data;
     AppLogger.info('INSUMOS DATASOURCE: LIST PAYLOAD=$payload');
 
-    final response = await _apiClient.post(
-      WSConstantes.insumosListar,
-      data: payload,
+    return _offlineApiService.postCached<InsumosListEntity>(
+      endpoint: WSConstantes.insumosListar,
+      payload: payload,
+      userId: filter.appUsersId,
+      parser: (response) =>
+          InsumosListResponseModel.fromJson(responseAsMap(response)),
+      missingCacheMessage: 'Sem conexao e sem dados salvos para insumos.',
+      rawResponseLog: 'INSUMOS DATASOURCE: LIST RAW RESPONSE',
     );
-
-    AppLogger.success('INSUMOS DATASOURCE: LIST RAW RESPONSE=$response');
-    return InsumosListResponseModel.fromJson(responseAsMap(response));
   }
 
   @override
@@ -58,13 +64,16 @@ class InsumosDatasourceImpl implements InsumosDatasource {
     final payload = InsumosTipoFilterRequestModel.fromEntity(filter).data;
     AppLogger.info('INSUMOS DATASOURCE: LIST TIPO PAYLOAD=$payload');
 
-    final response = await _apiClient.post(
-      WSConstantes.insumosListarTipo,
-      data: payload,
+    return _offlineApiService.postCached<InsumosTipoListEntity>(
+      endpoint: WSConstantes.insumosListarTipo,
+      payload: payload,
+      userId: filter.appUsersId,
+      parser: (response) =>
+          InsumosTipoListResponseModel.fromJson(responseAsMap(response)),
+      missingCacheMessage:
+          'Sem conexao e sem dados salvos para tipos de insumos.',
+      rawResponseLog: 'INSUMOS DATASOURCE: LIST TIPO RAW RESPONSE',
     );
-
-    AppLogger.success('INSUMOS DATASOURCE: LIST TIPO RAW RESPONSE=$response');
-    return InsumosTipoListResponseModel.fromJson(responseAsMap(response));
   }
 
   @override
@@ -72,16 +81,19 @@ class InsumosDatasourceImpl implements InsumosDatasource {
     final payload = InsumoUpsertRequestModel.fromEntity(insumo).data;
     AppLogger.info('INSUMOS DATASOURCE: CREATE PAYLOAD=$payload');
 
-    final response = await _apiClient.post(
-      WSConstantes.insumosAdicionar,
-      data: payload,
-    );
-
-    AppLogger.success('INSUMOS DATASOURCE: CREATE RAW RESPONSE=$response');
-    return _parseMutationResponse(
-      response,
-      operationName: 'CREATE INSUMO',
-      expectedSuccessMessage: 'Insumo cadastrado com sucesso',
+    return _offlineApiService.postOrEnqueue(
+      module: 'insumos',
+      action: SyncOperation.create,
+      endpoint: WSConstantes.insumosAdicionar,
+      payload: payload,
+      priority: SyncPriority.insumos,
+      pendingMessage: 'Insumo salvo localmente para sincronizar.',
+      rawResponseLog: 'INSUMOS DATASOURCE: CREATE RAW RESPONSE',
+      parseResponse: (response) => _parseMutationResponse(
+        response,
+        operationName: 'CREATE INSUMO',
+        expectedSuccessMessage: 'Insumo cadastrado com sucesso',
+      ),
     );
   }
 
@@ -94,16 +106,19 @@ class InsumosDatasourceImpl implements InsumosDatasource {
     final payload = InsumoUpsertRequestModel.fromEntity(insumo).data;
     AppLogger.info('INSUMOS DATASOURCE: UPDATE PAYLOAD=$payload');
 
-    final response = await _apiClient.post(
-      WSConstantes.insumosAdicionar,
-      data: payload,
-    );
-
-    AppLogger.success('INSUMOS DATASOURCE: UPDATE RAW RESPONSE=$response');
-    return _parseMutationResponse(
-      response,
-      operationName: 'UPDATE INSUMO',
-      expectedSuccessMessage: 'Insumo atualizado com sucesso',
+    return _offlineApiService.postOrEnqueue(
+      module: 'insumos',
+      action: SyncOperation.update,
+      endpoint: WSConstantes.insumosAdicionar,
+      payload: payload,
+      priority: SyncPriority.insumos,
+      pendingMessage: 'Alteracao do insumo salva para sincronizar.',
+      rawResponseLog: 'INSUMOS DATASOURCE: UPDATE RAW RESPONSE',
+      parseResponse: (response) => _parseMutationResponse(
+        response,
+        operationName: 'UPDATE INSUMO',
+        expectedSuccessMessage: 'Insumo atualizado com sucesso',
+      ),
     );
   }
 
@@ -114,18 +129,19 @@ class InsumosDatasourceImpl implements InsumosDatasource {
     final payload = InsumoRegistroUpsertRequestModel.fromEntity(registro).data;
     AppLogger.info('INSUMOS DATASOURCE: CREATE REGISTRO PAYLOAD=$payload');
 
-    final response = await _apiClient.post(
-      WSConstantes.insumosAdicionarRegistro,
-      data: payload,
-    );
-
-    AppLogger.success(
-      'INSUMOS DATASOURCE: CREATE REGISTRO RAW RESPONSE=$response',
-    );
-    return _parseMutationResponse(
-      response,
-      operationName: 'CREATE INSUMO REGISTRO',
-      expectedSuccessMessage: 'Registro cadastrado com sucesso',
+    return _offlineApiService.postOrEnqueue(
+      module: 'insumos',
+      action: SyncOperation.create,
+      endpoint: WSConstantes.insumosAdicionarRegistro,
+      payload: payload,
+      priority: SyncPriority.insumos,
+      pendingMessage: 'Registro de insumo salvo localmente para sincronizar.',
+      rawResponseLog: 'INSUMOS DATASOURCE: CREATE REGISTRO RAW RESPONSE',
+      parseResponse: (response) => _parseMutationResponse(
+        response,
+        operationName: 'CREATE INSUMO REGISTRO',
+        expectedSuccessMessage: 'Registro cadastrado com sucesso',
+      ),
     );
   }
 
@@ -140,18 +156,19 @@ class InsumosDatasourceImpl implements InsumosDatasource {
     final payload = InsumoRegistroUpsertRequestModel.fromEntity(registro).data;
     AppLogger.info('INSUMOS DATASOURCE: UPDATE REGISTRO PAYLOAD=$payload');
 
-    final response = await _apiClient.post(
-      WSConstantes.insumosAdicionarRegistro,
-      data: payload,
-    );
-
-    AppLogger.success(
-      'INSUMOS DATASOURCE: UPDATE REGISTRO RAW RESPONSE=$response',
-    );
-    return _parseMutationResponse(
-      response,
-      operationName: 'UPDATE INSUMO REGISTRO',
-      expectedSuccessMessage: 'Registro atualizado com sucesso',
+    return _offlineApiService.postOrEnqueue(
+      module: 'insumos',
+      action: SyncOperation.update,
+      endpoint: WSConstantes.insumosAdicionarRegistro,
+      payload: payload,
+      priority: SyncPriority.insumos,
+      pendingMessage: 'Alteracao do registro de insumo salva para sincronizar.',
+      rawResponseLog: 'INSUMOS DATASOURCE: UPDATE REGISTRO RAW RESPONSE',
+      parseResponse: (response) => _parseMutationResponse(
+        response,
+        operationName: 'UPDATE INSUMO REGISTRO',
+        expectedSuccessMessage: 'Registro atualizado com sucesso',
+      ),
     );
   }
 
@@ -160,16 +177,19 @@ class InsumosDatasourceImpl implements InsumosDatasource {
     final payload = DeleteInsumoRequestModel.fromEntity(insumo).data;
     AppLogger.info('INSUMOS DATASOURCE: DELETE PAYLOAD=$payload');
 
-    final response = await _apiClient.post(
-      WSConstantes.insumosExcluir,
-      data: payload,
-    );
-
-    AppLogger.success('INSUMOS DATASOURCE: DELETE RAW RESPONSE=$response');
-    return _parseMutationResponse(
-      response,
-      operationName: 'DELETE INSUMO',
-      expectedSuccessMessage: 'Insumo excluido com sucesso',
+    return _offlineApiService.postOrEnqueue(
+      module: 'insumos',
+      action: SyncOperation.delete,
+      endpoint: WSConstantes.insumosExcluir,
+      payload: payload,
+      priority: SyncPriority.insumos,
+      pendingMessage: 'Exclusao do insumo salva para sincronizar.',
+      rawResponseLog: 'INSUMOS DATASOURCE: DELETE RAW RESPONSE',
+      parseResponse: (response) => _parseMutationResponse(
+        response,
+        operationName: 'DELETE INSUMO',
+        expectedSuccessMessage: 'Insumo excluido com sucesso',
+      ),
     );
   }
 
@@ -178,18 +198,19 @@ class InsumosDatasourceImpl implements InsumosDatasource {
     final payload = DeleteInsumoRequestModel.fromEntity(registro).data;
     AppLogger.info('INSUMOS DATASOURCE: DELETE REGISTRO PAYLOAD=$payload');
 
-    final response = await _apiClient.post(
-      WSConstantes.insumosExcluirRegistro,
-      data: payload,
-    );
-
-    AppLogger.success(
-      'INSUMOS DATASOURCE: DELETE REGISTRO RAW RESPONSE=$response',
-    );
-    return _parseMutationResponse(
-      response,
-      operationName: 'DELETE INSUMO REGISTRO',
-      expectedSuccessMessage: 'Registro excluido com sucesso',
+    return _offlineApiService.postOrEnqueue(
+      module: 'insumos',
+      action: SyncOperation.delete,
+      endpoint: WSConstantes.insumosExcluirRegistro,
+      payload: payload,
+      priority: SyncPriority.insumos,
+      pendingMessage: 'Exclusao do registro de insumo salva para sincronizar.',
+      rawResponseLog: 'INSUMOS DATASOURCE: DELETE REGISTRO RAW RESPONSE',
+      parseResponse: (response) => _parseMutationResponse(
+        response,
+        operationName: 'DELETE INSUMO REGISTRO',
+        expectedSuccessMessage: 'Registro excluido com sucesso',
+      ),
     );
   }
 

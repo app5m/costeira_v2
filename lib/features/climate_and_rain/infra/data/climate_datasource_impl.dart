@@ -3,6 +3,9 @@ import 'package:costeira/core/api/api_exception.dart';
 import 'package:costeira/core/api/api_response_utils.dart';
 import 'package:costeira/core/config/ws_constantes.dart';
 import 'package:costeira/core/models/api_message.dart';
+import 'package:costeira/core/offline/offline_api_service.dart';
+import 'package:costeira/core/offline/sync/sync_operation.dart';
+import 'package:costeira/core/offline/sync/sync_priority.dart';
 import 'package:costeira/core/utils/app_logger.dart';
 import 'package:costeira/features/climate_and_rain/domain/entities/climate_charts_entity.dart';
 import 'package:costeira/features/climate_and_rain/domain/entities/climate_charts_filter_entity.dart';
@@ -19,22 +22,25 @@ import 'package:costeira/features/climate_and_rain/infra/models/climate_upsert_r
 import 'package:costeira/features/climate_and_rain/infra/models/delete_climate_request_model.dart';
 
 class ClimateDatasourceImpl implements ClimateDatasource {
-  const ClimateDatasourceImpl(this._apiClient);
+  const ClimateDatasourceImpl(this._apiClient, this._offlineApiService);
 
   final ApiClient _apiClient;
+  final OfflineApiService _offlineApiService;
 
   @override
   Future<ClimateListEntity> getClimates(ClimateFilterEntity filter) async {
     final payload = ClimateFilterRequestModel.fromEntity(filter).data;
     AppLogger.info('CLIMATE DATASOURCE: LIST PAYLOAD=$payload');
 
-    final response = await _apiClient.post(
-      WSConstantes.climasListar,
-      data: payload,
+    return _offlineApiService.postCached<ClimateListEntity>(
+      endpoint: WSConstantes.climasListar,
+      payload: payload,
+      userId: filter.appUsersId,
+      parser: (response) =>
+          ClimateListResponseModel.fromJson(responseAsMap(response)),
+      missingCacheMessage: 'Sem conexao e sem dados salvos para clima.',
+      rawResponseLog: 'CLIMATE DATASOURCE: LIST RAW RESPONSE',
     );
-    AppLogger.success('CLIMATE DATASOURCE: LIST RAW RESPONSE=$response');
-
-    return ClimateListResponseModel.fromJson(responseAsMap(response));
   }
 
   @override
@@ -46,16 +52,19 @@ class ClimateDatasourceImpl implements ClimateDatasource {
     final payload = ClimateUpsertRequestModel.create(climate).data;
     AppLogger.info('CLIMATE DATASOURCE: CREATE PAYLOAD=$payload');
 
-    final response = await _apiClient.post(
-      WSConstantes.climasAdd,
-      data: payload,
-    );
-    AppLogger.success('CLIMATE DATASOURCE: CREATE RAW RESPONSE=$response');
-
-    return _parseMutationResponse(
-      response,
-      operationName: 'CREATE CLIMATE',
-      expectedSuccessMessage: 'Clima cadastrado com sucesso',
+    return _offlineApiService.postOrEnqueue(
+      module: 'climate_and_rain',
+      action: SyncOperation.create,
+      endpoint: WSConstantes.climasAdd,
+      payload: payload,
+      priority: SyncPriority.climateAndRain,
+      pendingMessage: 'Clima salvo localmente para sincronizar.',
+      rawResponseLog: 'CLIMATE DATASOURCE: CREATE RAW RESPONSE',
+      parseResponse: (response) => _parseMutationResponse(
+        response,
+        operationName: 'CREATE CLIMATE',
+        expectedSuccessMessage: 'Clima cadastrado com sucesso',
+      ),
     );
   }
 
@@ -71,16 +80,19 @@ class ClimateDatasourceImpl implements ClimateDatasource {
     final payload = ClimateUpsertRequestModel.update(climate).data;
     AppLogger.info('CLIMATE DATASOURCE: UPDATE PAYLOAD=$payload');
 
-    final response = await _apiClient.post(
-      WSConstantes.climasAdd,
-      data: payload,
-    );
-    AppLogger.success('CLIMATE DATASOURCE: UPDATE RAW RESPONSE=$response');
-
-    return _parseMutationResponse(
-      response,
-      operationName: 'UPDATE CLIMATE',
-      expectedSuccessMessage: 'Clima atualizado com sucesso',
+    return _offlineApiService.postOrEnqueue(
+      module: 'climate_and_rain',
+      action: SyncOperation.update,
+      endpoint: WSConstantes.climasAdd,
+      payload: payload,
+      priority: SyncPriority.climateAndRain,
+      pendingMessage: 'Alteracao do clima salva para sincronizar.',
+      rawResponseLog: 'CLIMATE DATASOURCE: UPDATE RAW RESPONSE',
+      parseResponse: (response) => _parseMutationResponse(
+        response,
+        operationName: 'UPDATE CLIMATE',
+        expectedSuccessMessage: 'Clima atualizado com sucesso',
+      ),
     );
   }
 
@@ -89,16 +101,19 @@ class ClimateDatasourceImpl implements ClimateDatasource {
     final payload = DeleteClimateRequestModel.fromEntity(climate).data;
     AppLogger.info('CLIMATE DATASOURCE: DELETE PAYLOAD=$payload');
 
-    final response = await _apiClient.post(
-      WSConstantes.climasExcluir,
-      data: payload,
-    );
-    AppLogger.success('CLIMATE DATASOURCE: DELETE RAW RESPONSE=$response');
-
-    return _parseMutationResponse(
-      response,
-      operationName: 'DELETE CLIMATE',
-      expectedSuccessMessage: 'Clima excluido com sucesso',
+    return _offlineApiService.postOrEnqueue(
+      module: 'climate_and_rain',
+      action: SyncOperation.delete,
+      endpoint: WSConstantes.climasExcluir,
+      payload: payload,
+      priority: SyncPriority.climateAndRain,
+      pendingMessage: 'Exclusao do clima salva para sincronizar.',
+      rawResponseLog: 'CLIMATE DATASOURCE: DELETE RAW RESPONSE',
+      parseResponse: (response) => _parseMutationResponse(
+        response,
+        operationName: 'DELETE CLIMATE',
+        expectedSuccessMessage: 'Clima excluido com sucesso',
+      ),
     );
   }
 

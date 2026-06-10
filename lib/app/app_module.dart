@@ -2,6 +2,13 @@ import 'package:costeira/app/app_route_data.dart';
 import 'package:costeira/app/app_routes.dart';
 import 'package:costeira/core/api/api_client.dart';
 import 'package:costeira/core/common/get_list/get_list_binds.dart';
+import 'package:costeira/core/offline/offline_api_service.dart';
+import 'package:costeira/core/offline/cache/api_cache_service.dart';
+import 'package:costeira/core/offline/cache/api_cache_storage.dart';
+import 'package:costeira/core/offline/network/network_status_service.dart';
+import 'package:costeira/core/offline/sync/sync_queue_service.dart';
+import 'package:costeira/core/offline/sync/sync_queue_storage.dart';
+import 'package:costeira/core/offline/sync/sync_service.dart';
 import 'package:costeira/core/services/image_picker_service.dart';
 import 'package:costeira/core/services/location_service.dart';
 import 'package:costeira/core/services/notification_permission_service.dart';
@@ -71,6 +78,13 @@ class AppModule extends Module {
       NotificationPermissionService.new,
     );
     i.addLazySingleton<ImagePickerService>(ImagePickerService.new);
+    i.addLazySingleton<NetworkStatusService>(NetworkStatusService.new);
+    i.addLazySingleton<ApiCacheStorage>(ApiCacheStorage.new);
+    i.addLazySingleton<ApiCacheService>(ApiCacheService.new);
+    i.addLazySingleton<SyncQueueStorage>(SyncQueueStorage.new);
+    i.addLazySingleton<SyncQueueService>(SyncQueueService.new);
+    i.addLazySingleton<SyncService>(SyncService.new);
+    i.addLazySingleton<OfflineApiService>(OfflineApiService.new);
 
     i.addLazySingleton<AuthRepository>(
       () => AuthRepository(client: Modular.get<ApiClient>()),

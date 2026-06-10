@@ -3,6 +3,9 @@ import 'package:costeira/core/api/api_exception.dart';
 import 'package:costeira/core/api/api_response_utils.dart';
 import 'package:costeira/core/config/ws_constantes.dart';
 import 'package:costeira/core/models/api_message.dart';
+import 'package:costeira/core/offline/offline_api_service.dart';
+import 'package:costeira/core/offline/sync/sync_operation.dart';
+import 'package:costeira/core/offline/sync/sync_priority.dart';
 import 'package:costeira/core/utils/app_logger.dart';
 import 'package:costeira/features/tasks/domain/entities/delete_task_entity.dart';
 import 'package:costeira/features/tasks/domain/entities/delete_task_responsavel_entity.dart';
@@ -25,19 +28,25 @@ import 'package:costeira/features/tasks/infra/models/task_charts_response_model.
 import 'package:costeira/features/tasks/infra/models/tasks_list_response_model.dart';
 
 class TasksDatasourceImpl implements TasksDatasource {
-  const TasksDatasourceImpl(this._apiClient);
+  const TasksDatasourceImpl(this._apiClient, this._offlineApiService);
 
   final ApiClient _apiClient;
+  final OfflineApiService _offlineApiService;
 
   @override
   Future<TasksListEntity> getTasks(TaskFilterEntity filter) async {
     final payload = TaskFilterRequestDto.fromEntity(filter).data;
     AppLogger.info('TASKS DATASOURCE: LIST PAYLOAD=$payload');
 
-    final response = await _apiClient.post(WSConstantes.tarefasListar, data: payload);
-
-    AppLogger.success('TASKS DATASOURCE: LIST RAW RESPONSE=$response');
-    return TasksListResponseModel.fromJson(responseAsMap(response));
+    return _offlineApiService.postCached<TasksListEntity>(
+      endpoint: WSConstantes.tarefasListar,
+      payload: payload,
+      userId: filter.appUsersId,
+      parser: (response) =>
+          TasksListResponseModel.fromJson(responseAsMap(response)),
+      missingCacheMessage: 'Sem conexao e sem dados salvos para tarefas.',
+      rawResponseLog: 'TASKS DATASOURCE: LIST RAW RESPONSE',
+    );
   }
 
   @override
@@ -45,11 +54,14 @@ class TasksDatasourceImpl implements TasksDatasource {
     final payload = TaskUpsertRequestDto.fromEntity(task).data;
     AppLogger.info('TASKS DATASOURCE: SAVE PAYLOAD=$payload');
 
-    final response = await _apiClient.post(WSConstantes.tarefasAdicionar, data: payload);
-
-    AppLogger.success('TASKS DATASOURCE: SAVE RAW RESPONSE=$response');
-    return _parseMutationResponse(
-      response,
+    return _mutation(
+      action: payload['id'] == null
+          ? SyncOperation.create
+          : SyncOperation.update,
+      endpoint: WSConstantes.tarefasAdicionar,
+      payload: payload,
+      pendingMessage: 'Tarefa salva localmente para sincronizar.',
+      rawResponseLog: 'TASKS DATASOURCE: SAVE RAW RESPONSE',
       operationName: 'SAVE TASK',
       expectedSuccessMessage: 'Tarefa salva com sucesso.',
     );
@@ -60,11 +72,12 @@ class TasksDatasourceImpl implements TasksDatasource {
     final payload = DeleteTaskRequestDto.fromEntity(task).data;
     AppLogger.info('TASKS DATASOURCE: DELETE PAYLOAD=$payload');
 
-    final response = await _apiClient.post(WSConstantes.tarefasExcluir, data: payload);
-
-    AppLogger.success('TASKS DATASOURCE: DELETE RAW RESPONSE=$response');
-    return _parseMutationResponse(
-      response,
+    return _mutation(
+      action: SyncOperation.delete,
+      endpoint: WSConstantes.tarefasExcluir,
+      payload: payload,
+      pendingMessage: 'Exclusao da tarefa salva para sincronizar.',
+      rawResponseLog: 'TASKS DATASOURCE: DELETE RAW RESPONSE',
       operationName: 'DELETE TASK',
       expectedSuccessMessage: 'Tarefa excluida com sucesso.',
     );
@@ -75,41 +88,54 @@ class TasksDatasourceImpl implements TasksDatasource {
     final payload = TaskStatusRequestDto.fromEntity(task).data;
     AppLogger.info('TASKS DATASOURCE: SET DONE PAYLOAD=$payload');
 
-    final response = await _apiClient.post(WSConstantes.tarefasSetStatus, data: payload);
-
-    AppLogger.success('TASKS DATASOURCE: SET DONE RAW RESPONSE=$response');
-    return _parseMutationResponse(
-      response,
+    return _mutation(
+      action: SyncOperation.update,
+      endpoint: WSConstantes.tarefasSetStatus,
+      payload: payload,
+      pendingMessage: 'Status da tarefa salvo para sincronizar.',
+      rawResponseLog: 'TASKS DATASOURCE: SET DONE RAW RESPONSE',
       operationName: 'SET TASK DONE',
       expectedSuccessMessage: 'Tarefa concluida com sucesso.',
     );
   }
 
   @override
-  Future<ApiMessage> saveResponsavel(TaskResponsavelUpsertEntity responsavel) async {
-    final payload = TaskResponsavelUpsertRequestDto.fromEntity(responsavel).data;
+  Future<ApiMessage> saveResponsavel(
+    TaskResponsavelUpsertEntity responsavel,
+  ) async {
+    final payload = TaskResponsavelUpsertRequestDto.fromEntity(
+      responsavel,
+    ).data;
     AppLogger.info('TASKS DATASOURCE: SAVE RESPONSAVEL PAYLOAD=$payload');
 
-    final response = await _apiClient.post(WSConstantes.tarefasAdicionarResponsavel, data: payload);
-
-    AppLogger.success('TASKS DATASOURCE: SAVE RESPONSAVEL RAW RESPONSE=$response');
-    return _parseMutationResponse(
-      response,
+    return _mutation(
+      action: payload['id'] == null
+          ? SyncOperation.create
+          : SyncOperation.update,
+      endpoint: WSConstantes.tarefasAdicionarResponsavel,
+      payload: payload,
+      pendingMessage: 'Responsavel da tarefa salvo para sincronizar.',
+      rawResponseLog: 'TASKS DATASOURCE: SAVE RESPONSAVEL RAW RESPONSE',
       operationName: 'SAVE RESPONSAVEL',
       expectedSuccessMessage: 'Responsavel salvo com sucesso.',
     );
   }
 
   @override
-  Future<ApiMessage> deleteResponsavel(DeleteTaskResponsavelEntity responsavel) async {
-    final payload = DeleteTaskResponsavelRequestDto.fromEntity(responsavel).data;
+  Future<ApiMessage> deleteResponsavel(
+    DeleteTaskResponsavelEntity responsavel,
+  ) async {
+    final payload = DeleteTaskResponsavelRequestDto.fromEntity(
+      responsavel,
+    ).data;
     AppLogger.info('TASKS DATASOURCE: DELETE RESPONSAVEL PAYLOAD=$payload');
 
-    final response = await _apiClient.post(WSConstantes.tarefasExcluirResponsavel, data: payload);
-
-    AppLogger.success('TASKS DATASOURCE: DELETE RESPONSAVEL RAW RESPONSE=$response');
-    return _parseMutationResponse(
-      response,
+    return _mutation(
+      action: SyncOperation.delete,
+      endpoint: WSConstantes.tarefasExcluirResponsavel,
+      payload: payload,
+      pendingMessage: 'Exclusao do responsavel salva para sincronizar.',
+      rawResponseLog: 'TASKS DATASOURCE: DELETE RESPONSAVEL RAW RESPONSE',
       operationName: 'DELETE RESPONSAVEL',
       expectedSuccessMessage: 'Responsavel excluido com sucesso.',
     );
@@ -120,7 +146,10 @@ class TasksDatasourceImpl implements TasksDatasource {
     final payload = TaskChartsFilterRequestDto.fromEntity(filter).data;
     AppLogger.info('TASKS DATASOURCE: CHARTS PAYLOAD=$payload');
 
-    final response = await _apiClient.post(WSConstantes.tarefasGraficos, data: payload);
+    final response = await _apiClient.post(
+      WSConstantes.tarefasGraficos,
+      data: payload,
+    );
 
     AppLogger.success('TASKS DATASOURCE: CHARTS RAW RESPONSE=$response');
 
@@ -135,17 +164,47 @@ class TasksDatasourceImpl implements TasksDatasource {
     return TaskChartsResponseModel.fromJson(Map<String, dynamic>.from(first));
   }
 
+  Future<ApiMessage> _mutation({
+    required String action,
+    required String endpoint,
+    required Map<String, dynamic> payload,
+    required String pendingMessage,
+    required String rawResponseLog,
+    required String operationName,
+    required String expectedSuccessMessage,
+  }) {
+    return _offlineApiService.postOrEnqueue(
+      module: 'tasks',
+      action: action,
+      endpoint: endpoint,
+      payload: payload,
+      priority: SyncPriority.tasks,
+      pendingMessage: pendingMessage,
+      rawResponseLog: rawResponseLog,
+      parseResponse: (response) => _parseMutationResponse(
+        response,
+        operationName: operationName,
+        expectedSuccessMessage: expectedSuccessMessage,
+      ),
+    );
+  }
+
   ApiMessage _parseMutationResponse(
     dynamic response, {
     required String operationName,
     required String expectedSuccessMessage,
   }) {
     final map = responseAsMap(response);
-    final hasMutationContract = map.containsKey('status') || map.containsKey('msg');
+    final hasMutationContract =
+        map.containsKey('status') || map.containsKey('msg');
 
     if (!hasMutationContract) {
-      AppLogger.error('TASKS DATASOURCE: $operationName RETORNOU CONTRATO INVALIDO RAW=$response');
-      throw ApiException('Resposta inesperada da API ao executar $operationName.');
+      AppLogger.error(
+        'TASKS DATASOURCE: $operationName RETORNOU CONTRATO INVALIDO RAW=$response',
+      );
+      throw ApiException(
+        'Resposta inesperada da API ao executar $operationName.',
+      );
     }
 
     final message = ApiMessage.fromResponse(response);
@@ -154,7 +213,10 @@ class TasksDatasourceImpl implements TasksDatasource {
     }
 
     if (message.message.trim().isEmpty) {
-      return ApiMessage(status: message.status, message: expectedSuccessMessage);
+      return ApiMessage(
+        status: message.status,
+        message: expectedSuccessMessage,
+      );
     }
 
     return message;

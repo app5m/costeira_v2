@@ -3,6 +3,9 @@ import 'package:costeira/core/api/api_exception.dart';
 import 'package:costeira/core/api/api_response_utils.dart';
 import 'package:costeira/core/config/ws_constantes.dart';
 import 'package:costeira/core/models/api_message.dart';
+import 'package:costeira/core/offline/offline_api_service.dart';
+import 'package:costeira/core/offline/sync/sync_operation.dart';
+import 'package:costeira/core/offline/sync/sync_priority.dart';
 import 'package:costeira/core/utils/app_logger.dart';
 import 'package:costeira/features/pastagem_nutricao_suplemento/domain/entities/manejo.dart';
 import 'package:costeira/features/pastagem_nutricao_suplemento/domain/entities/manejo_filter.dart';
@@ -16,22 +19,25 @@ import 'package:costeira/features/pastagem_nutricao_suplemento/infra/models/mane
 import 'package:costeira/features/pastagem_nutricao_suplemento/infra/models/manejos_list_response_model.dart';
 
 class ManejoDataSourceImpl implements ManejoDataSource {
-  const ManejoDataSourceImpl(this._apiClient);
+  const ManejoDataSourceImpl(this._apiClient, this._offlineApiService);
 
   final ApiClient _apiClient;
+  final OfflineApiService _offlineApiService;
 
   @override
   Future<ManejosListEntity> getManejos(ManejoFilterEntity filter) async {
     final payload = ManejoFilterRequestModel.fromEntity(filter).data;
     AppLogger.info('MANEJO DATASOURCE: LIST PAYLOAD=$payload');
 
-    final response = await _apiClient.post(
-      WSConstantes.pastagensListar,
-      data: payload,
+    return _offlineApiService.postCached<ManejosListEntity>(
+      endpoint: WSConstantes.pastagensListar,
+      payload: payload,
+      userId: filter.appUsersId,
+      parser: (response) =>
+          ManejosListResponseModel.fromJson(responseAsMap(response)),
+      missingCacheMessage: 'Sem conexao e sem dados salvos para pastagens.',
+      rawResponseLog: 'MANEJO DATASOURCE: LIST RAW RESPONSE',
     );
-    AppLogger.success('MANEJO DATASOURCE: LIST RAW RESPONSE=$response');
-
-    return ManejosListResponseModel.fromJson(responseAsMap(response));
   }
 
   @override
@@ -43,14 +49,12 @@ class ManejoDataSourceImpl implements ManejoDataSource {
     final payload = ManejoUpsertRequestModel.fromEntity(manejo).data;
     AppLogger.info('MANEJO DATASOURCE: CREATE PAYLOAD=$payload');
 
-    final response = await _apiClient.post(
-      WSConstantes.pastagensAdicionar,
-      data: payload,
-    );
-    AppLogger.success('MANEJO DATASOURCE: CREATE RESPONSE=$response');
-
-    return _parseMutationResponse(
-      response,
+    return _mutation(
+      action: SyncOperation.create,
+      endpoint: WSConstantes.pastagensAdicionar,
+      payload: payload,
+      pendingMessage: 'Pastagem salva localmente para sincronizar.',
+      rawResponseLog: 'MANEJO DATASOURCE: CREATE RESPONSE',
       operationName: 'CREATE MANEJO',
       expectedSuccessMessage: 'Pastagem cadastrada com sucesso',
     );
@@ -68,14 +72,12 @@ class ManejoDataSourceImpl implements ManejoDataSource {
     final payload = ManejoUpsertRequestModel.fromEntity(manejo).data;
     AppLogger.info('MANEJO DATASOURCE: UPDATE PAYLOAD=$payload');
 
-    final response = await _apiClient.post(
-      WSConstantes.pastagensAdicionar,
-      data: payload,
-    );
-    AppLogger.success('MANEJO DATASOURCE: UPDATE RESPONSE=$response');
-
-    return _parseMutationResponse(
-      response,
+    return _mutation(
+      action: SyncOperation.update,
+      endpoint: WSConstantes.pastagensAdicionar,
+      payload: payload,
+      pendingMessage: 'Alteracao da pastagem salva para sincronizar.',
+      rawResponseLog: 'MANEJO DATASOURCE: UPDATE RESPONSE',
       operationName: 'UPDATE MANEJO',
       expectedSuccessMessage: 'Pastagem atualizada com sucesso',
     );
@@ -86,14 +88,12 @@ class ManejoDataSourceImpl implements ManejoDataSource {
     final payload = DeleteManejoRequestModel.fromEntity(manejo).data;
     AppLogger.info('MANEJO DATASOURCE: DELETE PAYLOAD=$payload');
 
-    final response = await _apiClient.post(
-      WSConstantes.pastagensExcluir,
-      data: payload,
-    );
-    AppLogger.success('MANEJO DATASOURCE: DELETE RESPONSE=$response');
-
-    return _parseMutationResponse(
-      response,
+    return _mutation(
+      action: SyncOperation.delete,
+      endpoint: WSConstantes.pastagensExcluir,
+      payload: payload,
+      pendingMessage: 'Exclusao da pastagem salva para sincronizar.',
+      rawResponseLog: 'MANEJO DATASOURCE: DELETE RESPONSE',
       operationName: 'DELETE MANEJO',
       expectedSuccessMessage: 'Pastagem excluida com sucesso',
     );
@@ -119,6 +119,31 @@ class ManejoDataSourceImpl implements ManejoDataSource {
     }
 
     return ManejoChartsResponseModel.fromJson(Map<String, dynamic>.from(first));
+  }
+
+  Future<ApiMessage> _mutation({
+    required String action,
+    required String endpoint,
+    required Map<String, dynamic> payload,
+    required String pendingMessage,
+    required String rawResponseLog,
+    required String operationName,
+    required String expectedSuccessMessage,
+  }) {
+    return _offlineApiService.postOrEnqueue(
+      module: 'pastagem_nutricao_suplemento',
+      action: action,
+      endpoint: endpoint,
+      payload: payload,
+      priority: SyncPriority.pastagemNutricaoSuplemento,
+      pendingMessage: pendingMessage,
+      rawResponseLog: rawResponseLog,
+      parseResponse: (response) => _parseMutationResponse(
+        response,
+        operationName: operationName,
+        expectedSuccessMessage: expectedSuccessMessage,
+      ),
+    );
   }
 
   ApiMessage _parseMutationResponse(
