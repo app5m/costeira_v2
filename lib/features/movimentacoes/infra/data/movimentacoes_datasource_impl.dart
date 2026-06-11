@@ -1,6 +1,7 @@
 import 'package:costeira/core/api/api_client.dart';
 import 'package:costeira/core/api/api_response_utils.dart';
 import 'package:costeira/core/config/ws_constantes.dart';
+import 'package:costeira/core/offline/offline_api_service.dart';
 import 'package:costeira/core/utils/app_logger.dart';
 import 'package:costeira/features/movimentacoes/domain/entities/aborto_charts_entity.dart';
 import 'package:costeira/features/movimentacoes/domain/entities/abigeato_charts_entity.dart';
@@ -29,54 +30,46 @@ import 'package:costeira/features/movimentacoes/infra/models/transferencia_chart
 import 'package:costeira/features/movimentacoes/infra/models/venda_charts_response_model.dart';
 
 class MovimentacoesDatasourceImpl implements MovimentacoesDatasource {
-  const MovimentacoesDatasourceImpl(this._apiClient);
+  const MovimentacoesDatasourceImpl(this._apiClient, this._offlineApiService);
 
   final ApiClient _apiClient;
+  final OfflineApiService _offlineApiService;
 
   @override
-  Future<MovimentacoesListEntity> getMovimentacoes(
-    MovimentacaoFilterEntity filter,
-  ) async {
+  Future<MovimentacoesListEntity> getMovimentacoes(MovimentacaoFilterEntity filter) async {
     final payload = MovimentacaoFilterRequestModel.fromEntity(filter).data;
     AppLogger.info('MOVIMENTACOES DATASOURCE: LIST PAYLOAD=$payload');
 
-    final response = await _apiClient.post(
-      WSConstantes.movimentacoesListar,
-      data: payload,
+    return _offlineApiService.postCached<MovimentacoesListEntity>(
+      endpoint: WSConstantes.movimentacoesListar,
+      payload: payload,
+      userId: filter.appUsersId,
+      parser: (response) => MovimentacoesListResponseModel.fromJson(responseAsMap(response)),
+      missingCacheMessage: 'Sem conexão e sem dados salvos para movimentacoes.',
+      rawResponseLog: 'MOVIMENTACOES DATASOURCE: LIST RAW RESPONSE',
     );
-
-    AppLogger.success('MOVIMENTACOES DATASOURCE: LIST RAW RESPONSE=$response');
-    return MovimentacoesListResponseModel.fromJson(responseAsMap(response));
   }
 
   @override
-  Future<CompraChartsEntity> getCompraCharts(
-    MovimentacaoChartsFilterEntity filter,
-  ) async {
+  Future<CompraChartsEntity> getCompraCharts(MovimentacaoChartsFilterEntity filter) async {
     final response = await _getChartsResponse(filter);
     return CompraChartsResponseModel.fromJson(response);
   }
 
   @override
-  Future<VendaChartsEntity> getVendaCharts(
-    MovimentacaoChartsFilterEntity filter,
-  ) async {
+  Future<VendaChartsEntity> getVendaCharts(MovimentacaoChartsFilterEntity filter) async {
     final response = await _getChartsResponse(filter);
     return VendaChartsResponseModel.fromJson(response);
   }
 
   @override
-  Future<MorteChartsEntity> getMorteCharts(
-    MovimentacaoChartsFilterEntity filter,
-  ) async {
+  Future<MorteChartsEntity> getMorteCharts(MovimentacaoChartsFilterEntity filter) async {
     final response = await _getChartsResponse(filter);
     return MorteChartsResponseModel.fromJson(response);
   }
 
   @override
-  Future<NascimentoChartsEntity> getNascimentoCharts(
-    MovimentacaoChartsFilterEntity filter,
-  ) async {
+  Future<NascimentoChartsEntity> getNascimentoCharts(MovimentacaoChartsFilterEntity filter) async {
     final response = await _getChartsResponse(filter);
     return NascimentoChartsResponseModel.fromJson(response);
   }
@@ -90,25 +83,19 @@ class MovimentacoesDatasourceImpl implements MovimentacoesDatasource {
   }
 
   @override
-  Future<AbigeatoChartsEntity> getAbigeatoCharts(
-    MovimentacaoChartsFilterEntity filter,
-  ) async {
+  Future<AbigeatoChartsEntity> getAbigeatoCharts(MovimentacaoChartsFilterEntity filter) async {
     final response = await _getChartsResponse(filter);
     return AbigeatoChartsResponseModel.fromJson(response);
   }
 
   @override
-  Future<AbortoChartsEntity> getAbortoCharts(
-    MovimentacaoChartsFilterEntity filter,
-  ) async {
+  Future<AbortoChartsEntity> getAbortoCharts(MovimentacaoChartsFilterEntity filter) async {
     final response = await _getChartsResponse(filter);
     return AbortoChartsResponseModel.fromJson(response);
   }
 
   @override
-  Future<ConsumoChartsEntity> getConsumoCharts(
-    MovimentacaoChartsFilterEntity filter,
-  ) async {
+  Future<ConsumoChartsEntity> getConsumoCharts(MovimentacaoChartsFilterEntity filter) async {
     final response = await _getChartsResponse(filter);
     return ConsumoChartsResponseModel.fromJson(response);
   }
@@ -121,22 +108,13 @@ class MovimentacoesDatasourceImpl implements MovimentacoesDatasource {
     return TransferenciaChartsResponseModel.fromJson(response);
   }
 
-  Future<Map<String, dynamic>> _getChartsResponse(
-    MovimentacaoChartsFilterEntity filter,
-  ) async {
-    final payload = MovimentacaoChartsFilterRequestModel.fromEntity(
-      filter,
-    ).data;
+  Future<Map<String, dynamic>> _getChartsResponse(MovimentacaoChartsFilterEntity filter) async {
+    final payload = MovimentacaoChartsFilterRequestModel.fromEntity(filter).data;
     AppLogger.info('MOVIMENTACOES DATASOURCE: CHARTS PAYLOAD=$payload');
 
-    final response = await _apiClient.post(
-      WSConstantes.movimentacoesGraficos,
-      data: payload,
-    );
+    final response = await _apiClient.post(WSConstantes.movimentacoesGraficos, data: payload);
 
-    AppLogger.success(
-      'MOVIMENTACOES DATASOURCE: CHARTS RAW RESPONSE=$response',
-    );
+    AppLogger.success('MOVIMENTACOES DATASOURCE: CHARTS RAW RESPONSE=$response');
     return responseAsMap(response);
   }
 }

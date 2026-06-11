@@ -1,4 +1,8 @@
+import 'dart:async';
+
 import 'package:costeira/app/app_routes.dart';
+import 'package:costeira/core/offline/cache/form_dependencies_cache_service.dart';
+import 'package:costeira/core/offline/presentation/pages/sync_page.dart';
 import 'package:costeira/core/storage/session_storage.dart';
 import 'package:costeira/features/auth/models/user_session.dart';
 import 'package:costeira/features/animals/presentation/pages/animals_page.dart';
@@ -37,6 +41,10 @@ class _MainNavigationPageState extends State<MainNavigationPage> {
     setState(() {
       _user = user;
     });
+
+    if (user != null) {
+      unawaited(Modular.get<FormDependenciesCacheService>().preloadEssentialLists());
+    }
   }
 
   @override
@@ -54,6 +62,8 @@ class _MainNavigationPageState extends State<MainNavigationPage> {
       case 2:
         return 'Movimentações';
       case 3:
+        return 'Sincronização';
+      case 4:
         return 'Menu';
       default:
         return '';
@@ -94,9 +104,7 @@ class _MainNavigationPageState extends State<MainNavigationPage> {
                 ),
                 children: [
                   TextSpan(
-                    text: _user?.name.isNotEmpty == true
-                        ? _user!.name
-                        : 'Usuário',
+                    text: _user?.name.isNotEmpty == true ? _user!.name : 'Usuário',
                     style: const TextStyle(fontWeight: FontWeight.w700),
                   ),
                 ],
@@ -116,10 +124,7 @@ class _MainNavigationPageState extends State<MainNavigationPage> {
           IconButton(
             icon: SvgPicture.asset(
               'icon/noti.svg',
-              colorFilter: const ColorFilter.mode(
-                Colors.white,
-                BlendMode.srcIn,
-              ),
+              colorFilter: const ColorFilter.mode(Colors.white, BlendMode.srcIn),
             ),
             onPressed: () {
               Modular.to.pushNamed(AppRoutes.notifications);
@@ -141,11 +146,7 @@ class _MainNavigationPageState extends State<MainNavigationPage> {
         padding: const EdgeInsets.only(left: 16.0),
         child: Text(
           _title,
-          style: const TextStyle(
-            color: Colors.white,
-            fontSize: 16,
-            fontWeight: FontWeight.w600,
-          ),
+          style: const TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.w600),
         ),
       ),
       actions: [
@@ -173,19 +174,21 @@ class _MainNavigationPageState extends State<MainNavigationPage> {
             _selectedIndex = page;
           });
         },
-        children: const [Dashboard(), AnimalsPage(), Movimentacoes(), Menu()],
+        children: const [Dashboard(), AnimalsPage(), Movimentacoes(), SyncPage(), Menu()],
       ),
       bottomNavigationBar: SafeArea(
         top: false,
         child: BottomNavigationBar(
           backgroundColor: Colors.white,
           currentIndex: _selectedIndex,
+          type: BottomNavigationBarType.fixed,
           showSelectedLabels: false,
           items: [
             _buildNavBarItem('icon/layout-dashboard.svg', 0),
             _buildNavBarItem('icon/cow-light.svg', 1),
             _buildNavBarItem('icon/arrow-left-right.svg', 2),
-            _buildNavBarItem('icon/menu.svg', 3),
+            _buildNavBarItem('icon/cloud-sync.svg', 3),
+            _buildNavBarItem('icon/menu.svg', 4),
           ],
           onTap: _onNavItemTapped,
         ),

@@ -235,11 +235,14 @@ class _AddTaskState extends State<AddTask> {
     }
 
     if (result.shouldAdd) {
-      await Navigator.push(
+      final created = await Navigator.push<TaskResponsavelSaveResult?>(
         context,
         MaterialPageRoute(builder: (_) => const AddTaskResponsavel()),
       );
       await _responsaveisController.load().catchError((_) {});
+      if (created != null) {
+        _selectCreatedResponsavel(created);
+      }
       if (mounted) {
         await _openResponsavelSelection();
       }
@@ -247,6 +250,29 @@ class _AddTaskState extends State<AddTask> {
     }
 
     setState(() => _selectedResponsavelId = result.selectedId);
+  }
+
+  void _selectCreatedResponsavel(TaskResponsavelSaveResult result) {
+    final created = result.responsavel;
+    final fromList = _responsaveisController.responsaveis
+        .where(
+          (item) =>
+              item.id == created.id ||
+              (item.nome.trim() == created.nome.trim() &&
+                  item.email.trim() == created.email.trim() &&
+                  item.celular.trim() == created.celular.trim()),
+        )
+        .firstOrNull;
+
+    if (fromList != null) {
+      setState(() => _selectedResponsavelId = fromList.id);
+      return;
+    }
+
+    if (result.isPendingSync || created.id == null) {
+      _responsaveisController.upsert(created, null);
+      setState(() => _selectedResponsavelId = created.id);
+    }
   }
 
   Future<void> _pickDate({required bool isStart}) async {
@@ -651,7 +677,7 @@ class _ResponsavelSelectionSheetState
             ),
             const SizedBox(height: 24),
             const Text(
-              'Selecionar responsavel',
+              'Selecionar responsável',
               style: TextStyle(
                 color: Color(0xFF313131),
                 fontSize: 20,
@@ -661,7 +687,7 @@ class _ResponsavelSelectionSheetState
             ),
             const SizedBox(height: 6),
             const Text(
-              'Escolha um responsavel ja cadastrado ou adicione um novo.',
+              'Escolha um responsável já cadastrado ou adicione um novo.',
               style: TextStyle(
                 color: Color(0xFF8C8C8C),
                 fontSize: 14,
@@ -688,7 +714,7 @@ class _ResponsavelSelectionSheetState
                   );
                 },
                 icon: const Icon(Icons.add_circle_outline),
-                label: const Text('Adicionar responsavel'),
+                label: const Text('Adicionar responsável'),
                 style: OutlinedButton.styleFrom(
                   foregroundColor: MyColors.colorPrimary,
                   side: const BorderSide(color: MyColors.colorPrimary),
@@ -736,7 +762,7 @@ class _ResponsavelSelectionSheetState
     if (widget.responsaveis.isEmpty) {
       return const Center(
         child: Text(
-          'Voce ainda nao possui responsaveis cadastrados.',
+          'Voce ainda não possuí responsáveis cadastrados.',
           textAlign: TextAlign.center,
         ),
       );
@@ -746,7 +772,7 @@ class _ResponsavelSelectionSheetState
     if (responsaveis.isEmpty) {
       return const Center(
         child: Text(
-          'Nenhum responsavel encontrado.',
+          'Nenhum responsável encontrado.',
           textAlign: TextAlign.center,
         ),
       );

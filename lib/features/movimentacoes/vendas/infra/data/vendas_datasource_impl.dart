@@ -1,8 +1,10 @@
-import 'package:costeira/core/api/api_client.dart';
 import 'package:costeira/core/api/api_exception.dart';
 import 'package:costeira/core/api/api_response_utils.dart';
 import 'package:costeira/core/config/ws_constantes.dart';
 import 'package:costeira/core/models/api_message.dart';
+import 'package:costeira/core/offline/offline_api_service.dart';
+import 'package:costeira/core/offline/sync/sync_operation.dart';
+import 'package:costeira/core/offline/sync/sync_priority.dart';
 import 'package:costeira/core/utils/app_logger.dart';
 import 'package:costeira/features/movimentacoes/vendas/domain/entities/delete_venda_entity.dart';
 import 'package:costeira/features/movimentacoes/vendas/domain/entities/venda_upsert_entity.dart';
@@ -11,9 +13,9 @@ import 'package:costeira/features/movimentacoes/vendas/infra/models/delete_venda
 import 'package:costeira/features/movimentacoes/vendas/infra/models/venda_upsert_request_model.dart';
 
 class VendasDatasourceImpl implements VendasDatasource {
-  const VendasDatasourceImpl(this._apiClient);
+  const VendasDatasourceImpl(this._offlineApiService);
 
-  final ApiClient _apiClient;
+  final OfflineApiService _offlineApiService;
 
   @override
   Future<ApiMessage> createVenda(VendaUpsertEntity venda) async {
@@ -24,16 +26,19 @@ class VendasDatasourceImpl implements VendasDatasource {
     final payload = VendaUpsertRequestModel.create(venda).data;
     AppLogger.info('VENDAS DATASOURCE: CREATE PAYLOAD=$payload');
 
-    final response = await _apiClient.post(
-      WSConstantes.movimentacoesAdicionarVenda,
-      data: payload,
-    );
-
-    AppLogger.success('VENDAS DATASOURCE: CREATE RAW RESPONSE=$response');
-    return _parseMutationResponse(
-      response,
-      operationName: 'CREATE VENDA',
-      expectedSuccessMessage: 'Venda executada com sucesso',
+    return _offlineApiService.postOrEnqueue(
+      module: 'movimentacoes',
+      action: SyncOperation.create,
+      endpoint: WSConstantes.movimentacoesAdicionarVenda,
+      payload: payload,
+      priority: SyncPriority.movimentacoes,
+      pendingMessage: 'Venda salva localmente para sincronizar.',
+      rawResponseLog: 'VENDAS DATASOURCE: CREATE RAW RESPONSE',
+      parseResponse: (response) => _parseMutationResponse(
+        response,
+        operationName: 'CREATE VENDA',
+        expectedSuccessMessage: 'Venda executada com sucesso',
+      ),
     );
   }
 
@@ -49,16 +54,19 @@ class VendasDatasourceImpl implements VendasDatasource {
     final payload = VendaUpsertRequestModel.update(venda).data;
     AppLogger.info('VENDAS DATASOURCE: UPDATE PAYLOAD=$payload');
 
-    final response = await _apiClient.post(
-      WSConstantes.movimentacoesAdicionarVenda,
-      data: payload,
-    );
-
-    AppLogger.success('VENDAS DATASOURCE: UPDATE RAW RESPONSE=$response');
-    return _parseMutationResponse(
-      response,
-      operationName: 'UPDATE VENDA',
-      expectedSuccessMessage: 'Venda atualizada com sucesso',
+    return _offlineApiService.postOrEnqueue(
+      module: 'movimentacoes',
+      action: SyncOperation.update,
+      endpoint: WSConstantes.movimentacoesAdicionarVenda,
+      payload: payload,
+      priority: SyncPriority.movimentacoes,
+      pendingMessage: 'Alteração da venda salva para sincronizar.',
+      rawResponseLog: 'VENDAS DATASOURCE: UPDATE RAW RESPONSE',
+      parseResponse: (response) => _parseMutationResponse(
+        response,
+        operationName: 'UPDATE VENDA',
+        expectedSuccessMessage: 'Venda atualizada com sucesso',
+      ),
     );
   }
 
@@ -67,16 +75,19 @@ class VendasDatasourceImpl implements VendasDatasource {
     final payload = DeleteVendaRequestModel.fromEntity(venda).data;
     AppLogger.info('VENDAS DATASOURCE: DELETE PAYLOAD=$payload');
 
-    final response = await _apiClient.post(
-      WSConstantes.movimentacoesExcluirVenda,
-      data: payload,
-    );
-
-    AppLogger.success('VENDAS DATASOURCE: DELETE RAW RESPONSE=$response');
-    return _parseMutationResponse(
-      response,
-      operationName: 'DELETE VENDA',
-      expectedSuccessMessage: 'Venda excluida com sucesso',
+    return _offlineApiService.postOrEnqueue(
+      module: 'movimentacoes',
+      action: SyncOperation.delete,
+      endpoint: WSConstantes.movimentacoesExcluirVenda,
+      payload: payload,
+      priority: SyncPriority.movimentacoes,
+      pendingMessage: 'Exclusao da venda salva para sincronizar.',
+      rawResponseLog: 'VENDAS DATASOURCE: DELETE RAW RESPONSE',
+      parseResponse: (response) => _parseMutationResponse(
+        response,
+        operationName: 'DELETE VENDA',
+        expectedSuccessMessage: 'Venda excluida com sucesso',
+      ),
     );
   }
 
@@ -86,16 +97,11 @@ class VendasDatasourceImpl implements VendasDatasource {
     required String expectedSuccessMessage,
   }) {
     final map = responseAsMap(response);
-    final hasMutationContract =
-        map.containsKey('status') || map.containsKey('msg');
+    final hasMutationContract = map.containsKey('status') || map.containsKey('msg');
 
     if (!hasMutationContract) {
-      AppLogger.error(
-        'VENDAS DATASOURCE: $operationName RETORNOU CONTRATO INVALIDO RAW=$response',
-      );
-      throw ApiException(
-        'Resposta inesperada da API ao executar $operationName.',
-      );
+      AppLogger.error('VENDAS DATASOURCE: $operationName RETORNOU CONTRATO INVALIDO RAW=$response');
+      throw ApiException('Resposta inesperada da API ao executar $operationName.');
     }
 
     final message = ApiMessage.fromResponse(response);
@@ -104,10 +110,7 @@ class VendasDatasourceImpl implements VendasDatasource {
     }
 
     if (message.message.trim().isEmpty) {
-      return ApiMessage(
-        status: message.status,
-        message: expectedSuccessMessage,
-      );
+      return ApiMessage(status: message.status, message: expectedSuccessMessage);
     }
 
     return message;

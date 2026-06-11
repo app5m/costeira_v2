@@ -1,6 +1,8 @@
 import 'package:costeira/core/api/api_exception.dart';
 import 'package:costeira/core/models/api_message.dart';
+import 'package:costeira/core/offline/cache/form_dependencies_cache_service.dart';
 import 'package:costeira/core/storage/session_storage.dart';
+import 'package:costeira/core/utils/app_logger.dart';
 import 'package:costeira/features/animals/domain/entities/animal_lot_entity.dart';
 import 'package:costeira/features/animals/domain/entities/animal_lots_filter_entity.dart';
 import 'package:costeira/features/animals/domain/usecases/get_animal_lots_usecase.dart';
@@ -21,6 +23,7 @@ class SuplementoFormController extends ChangeNotifier {
     this._getPotreirosUsecase,
     this._getAnimalLotsUsecase,
     this._getInsumosTipoUsecase,
+    this._formDependenciesCacheService,
   ) {
     dataController.addListener(notifyListeners);
     quantidadeController.addListener(notifyListeners);
@@ -31,6 +34,7 @@ class SuplementoFormController extends ChangeNotifier {
   final GetPotreirosUsecase _getPotreirosUsecase;
   final GetAnimalLotsUsecase _getAnimalLotsUsecase;
   final GetInsumosTipoUsecase _getInsumosTipoUsecase;
+  final FormDependenciesCacheService _formDependenciesCacheService;
 
   final dataController = TextEditingController();
   final quantidadeController = TextEditingController();
@@ -95,29 +99,73 @@ class SuplementoFormController extends ChangeNotifier {
         throw ApiException('Usuario nao autenticado.');
       }
 
-      final results = await Future.wait([
-        _getPotreirosUsecase(
-          PotreirosFilterEntity(appUsersId: _currentUserId!),
-        ),
-        _getAnimalLotsUsecase(
-          AnimalLotsFilterEntity(appUsersId: _currentUserId!),
-        ),
-        _getInsumosTipoUsecase(
-          InsumosTipoFilterEntity(
-            appUsersId: _currentUserId!,
-            tipo: 'suplementos',
-          ),
-        ),
-      ]);
-
-      _potreiros = (results[0] as dynamic).data as List<PotreiroEntity>;
-      _lotes = (results[1] as dynamic).data as List<AnimalLotEntity>;
-      _produtos = (results[2] as InsumosTipoListEntity).data;
+      await _formDependenciesCacheService.preloadSuplementoFormDependencies();
+      await _loadPotreiros(_currentUserId!);
+      await _loadLotes(_currentUserId!);
+      await _loadProdutos(_currentUserId!);
     } on ApiException catch (error) {
       _errorMessage = error.message;
     } finally {
       _setLoading(false);
     }
+  }
+
+  Future<void> _loadPotreiros(int userId) async {
+    try {
+      final result = await _getPotreirosUsecase(
+        PotreirosFilterEntity(appUsersId: userId),
+      );
+      _potreiros = result.data;
+    } on ApiException catch (error) {
+      AppLogger.warning(
+        'SUPLEMENTO FORM CONTROLLER: falha ao carregar potreiros MSG=${error.message}',
+      );
+      if (_potreiros.isEmpty) rethrow;
+    }
+  }
+
+  Future<void> _loadLotes(int userId) async {
+    try {
+      final result = await _getAnimalLotsUsecase(
+        AnimalLotsFilterEntity(appUsersId: userId),
+      );
+      _lotes = result.data;
+    } on ApiException catch (error) {
+      AppLogger.warning(
+        'SUPLEMENTO FORM CONTROLLER: falha ao carregar lotes MSG=${error.message}',
+      );
+      if (_lotes.isEmpty) rethrow;
+    }
+  }
+
+  Future<void> _loadProdutos(int userId) async {
+    ApiException? lastError;
+    for (final tipo in const ['suplementos', 'suplemento']) {
+      try {
+        final result = await _getInsumosTipoUsecase(
+          InsumosTipoFilterEntity(appUsersId: userId, tipo: tipo),
+        );
+        AppLogger.info(
+          'SUPLEMENTO FORM CONTROLLER: produtos tipo=$tipo carregados=${result.data.length}',
+        );
+        if (result.data.isNotEmpty || tipo == 'suplemento') {
+          _produtos = result.data;
+          return;
+        }
+      } on ApiException catch (error) {
+        lastError = error;
+        AppLogger.warning(
+          'SUPLEMENTO FORM CONTROLLER: falha ao carregar produtos tipo=$tipo MSG=${error.message}',
+        );
+      }
+    }
+
+    if (_produtos.isNotEmpty) {
+      return;
+    }
+
+    throw lastError ??
+        ApiException('Sem conexao e sem dados salvos para suplementos.');
   }
 
   void onPotreiroChanged(int? value) {

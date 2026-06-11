@@ -1,6 +1,7 @@
 import 'package:costeira/core/offline/cache/api_cache_storage.dart';
 import 'package:costeira/core/offline/cache/cache_entry.dart';
 import 'package:costeira/core/offline/cache/cache_key_builder.dart';
+import 'package:costeira/core/utils/app_logger.dart';
 
 class ApiCacheService {
   ApiCacheService(this._storage);
@@ -28,6 +29,9 @@ class ApiCacheService {
     );
 
     await _storage.save(key, entry.toJson());
+    AppLogger.success(
+      'API CACHE: SAVE endpoint=$endpoint userId=${userId ?? 'anonymous'} key=$key payload=$requestPayload',
+    );
     return entry;
   }
 
@@ -42,7 +46,30 @@ class ApiCacheService {
       userId: userId,
     );
     final data = _storage.read(key);
+    AppLogger.info(
+      'API CACHE: ${data == null ? 'MISS' : 'HIT'} endpoint=$endpoint userId=${userId ?? 'anonymous'} key=$key payload=$requestPayload',
+    );
     return data == null ? null : CacheEntry.fromJson(data);
+  }
+
+  CacheEntry? getLatestCacheForEndpoint({
+    required String endpoint,
+    int? userId,
+  }) {
+    final entries =
+        _storage
+            .readAll()
+            .map(CacheEntry.fromJson)
+            .where((entry) => entry.endpoint == endpoint)
+            .where((entry) => userId == null || entry.userId == userId)
+            .toList(growable: false)
+          ..sort((left, right) => right.updatedAt.compareTo(left.updatedAt));
+
+    final entry = entries.isEmpty ? null : entries.first;
+    AppLogger.info(
+      'API CACHE: ${entry == null ? 'MISS' : 'HIT'} latest endpoint=$endpoint userId=${userId ?? 'anonymous'} key=${entry?.key}',
+    );
+    return entry;
   }
 
   Future<void> removeCache({

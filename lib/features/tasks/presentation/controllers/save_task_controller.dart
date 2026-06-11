@@ -31,7 +31,9 @@ class SaveTaskController extends ChangeNotifier {
         TaskUpsertEntity(
           id: task?.id,
           appUsersId: userId,
-          responsavelId: responsavelId,
+          responsavelId: responsavelId != null && responsavelId > 0
+              ? responsavelId
+              : null,
           tipo: tipo,
           descricao: descricao,
           obs: obs,

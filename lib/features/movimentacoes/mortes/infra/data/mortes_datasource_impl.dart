@@ -1,8 +1,10 @@
-import 'package:costeira/core/api/api_client.dart';
 import 'package:costeira/core/api/api_exception.dart';
 import 'package:costeira/core/api/api_response_utils.dart';
 import 'package:costeira/core/config/ws_constantes.dart';
 import 'package:costeira/core/models/api_message.dart';
+import 'package:costeira/core/offline/offline_api_service.dart';
+import 'package:costeira/core/offline/sync/sync_operation.dart';
+import 'package:costeira/core/offline/sync/sync_priority.dart';
 import 'package:costeira/core/utils/app_logger.dart';
 import 'package:costeira/features/movimentacoes/mortes/domain/entities/delete_morte_entity.dart';
 import 'package:costeira/features/movimentacoes/mortes/domain/entities/morte_upsert_entity.dart';
@@ -11,9 +13,9 @@ import 'package:costeira/features/movimentacoes/mortes/infra/models/delete_morte
 import 'package:costeira/features/movimentacoes/mortes/infra/models/morte_upsert_request_model.dart';
 
 class MortesDatasourceImpl implements MortesDatasource {
-  const MortesDatasourceImpl(this._apiClient);
+  const MortesDatasourceImpl(this._offlineApiService);
 
-  final ApiClient _apiClient;
+  final OfflineApiService _offlineApiService;
 
   @override
   Future<ApiMessage> createMorte(MorteUpsertEntity morte) async {
@@ -24,16 +26,19 @@ class MortesDatasourceImpl implements MortesDatasource {
     final payload = MorteUpsertRequestModel.create(morte).data;
     AppLogger.info('MORTES DATASOURCE: CREATE PAYLOAD=$payload');
 
-    final response = await _apiClient.post(
-      WSConstantes.movimentacoesAdicionarMorte,
-      data: payload,
-    );
-
-    AppLogger.success('MORTES DATASOURCE: CREATE RAW RESPONSE=$response');
-    return _parseMutationResponse(
-      response,
-      operationName: 'CREATE MORTE',
-      expectedSuccessMessage: 'Morte cadastrada com sucesso',
+    return _offlineApiService.postOrEnqueue(
+      module: 'movimentacoes',
+      action: SyncOperation.create,
+      endpoint: WSConstantes.movimentacoesAdicionarMorte,
+      payload: payload,
+      priority: SyncPriority.movimentacoes,
+      pendingMessage: 'Morte salva localmente para sincronizar.',
+      rawResponseLog: 'MORTES DATASOURCE: CREATE RAW RESPONSE',
+      parseResponse: (response) => _parseMutationResponse(
+        response,
+        operationName: 'CREATE MORTE',
+        expectedSuccessMessage: 'Morte cadastrada com sucesso',
+      ),
     );
   }
 
@@ -49,16 +54,19 @@ class MortesDatasourceImpl implements MortesDatasource {
     final payload = MorteUpsertRequestModel.update(morte).data;
     AppLogger.info('MORTES DATASOURCE: UPDATE PAYLOAD=$payload');
 
-    final response = await _apiClient.post(
-      WSConstantes.movimentacoesAdicionarMorte,
-      data: payload,
-    );
-
-    AppLogger.success('MORTES DATASOURCE: UPDATE RAW RESPONSE=$response');
-    return _parseMutationResponse(
-      response,
-      operationName: 'UPDATE MORTE',
-      expectedSuccessMessage: 'Morte atualizada com sucesso',
+    return _offlineApiService.postOrEnqueue(
+      module: 'movimentacoes',
+      action: SyncOperation.update,
+      endpoint: WSConstantes.movimentacoesAdicionarMorte,
+      payload: payload,
+      priority: SyncPriority.movimentacoes,
+      pendingMessage: 'Alteração da morte salva para sincronizar.',
+      rawResponseLog: 'MORTES DATASOURCE: UPDATE RAW RESPONSE',
+      parseResponse: (response) => _parseMutationResponse(
+        response,
+        operationName: 'UPDATE MORTE',
+        expectedSuccessMessage: 'Morte atualizada com sucesso',
+      ),
     );
   }
 
@@ -67,16 +75,19 @@ class MortesDatasourceImpl implements MortesDatasource {
     final payload = DeleteMorteRequestModel.fromEntity(morte).data;
     AppLogger.info('MORTES DATASOURCE: DELETE PAYLOAD=$payload');
 
-    final response = await _apiClient.post(
-      WSConstantes.movimentacoesExcluirMorte,
-      data: payload,
-    );
-
-    AppLogger.success('MORTES DATASOURCE: DELETE RAW RESPONSE=$response');
-    return _parseMutationResponse(
-      response,
-      operationName: 'DELETE MORTE',
-      expectedSuccessMessage: 'Morte excluida com sucesso',
+    return _offlineApiService.postOrEnqueue(
+      module: 'movimentacoes',
+      action: SyncOperation.delete,
+      endpoint: WSConstantes.movimentacoesExcluirMorte,
+      payload: payload,
+      priority: SyncPriority.movimentacoes,
+      pendingMessage: 'Exclusao da morte salva para sincronizar.',
+      rawResponseLog: 'MORTES DATASOURCE: DELETE RAW RESPONSE',
+      parseResponse: (response) => _parseMutationResponse(
+        response,
+        operationName: 'DELETE MORTE',
+        expectedSuccessMessage: 'Morte excluida com sucesso',
+      ),
     );
   }
 
@@ -86,13 +97,10 @@ class MortesDatasourceImpl implements MortesDatasource {
     required String expectedSuccessMessage,
   }) {
     final map = responseAsMap(response);
-    final hasMutationContract =
-        map.containsKey('status') || map.containsKey('msg');
+    final hasMutationContract = map.containsKey('status') || map.containsKey('msg');
 
     if (!hasMutationContract) {
-      throw ApiException(
-        'Resposta inesperada da API ao executar $operationName.',
-      );
+      throw ApiException('Resposta inesperada da API ao executar $operationName.');
     }
 
     final message = ApiMessage.fromResponse(response);
@@ -101,10 +109,7 @@ class MortesDatasourceImpl implements MortesDatasource {
     }
 
     if (message.message.trim().isEmpty) {
-      return ApiMessage(
-        status: message.status,
-        message: expectedSuccessMessage,
-      );
+      return ApiMessage(status: message.status, message: expectedSuccessMessage);
     }
 
     return message;

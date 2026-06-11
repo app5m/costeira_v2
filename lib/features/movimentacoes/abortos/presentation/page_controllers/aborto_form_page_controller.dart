@@ -3,6 +3,8 @@ import 'package:costeira/features/animals/domain/entities/animal_lot_entity.dart
 import 'package:costeira/features/animals/presentation/controllers/list_animal_lots_controller.dart';
 import 'package:costeira/features/animals/presentation/controllers/list_animals_controller.dart';
 import 'package:costeira/features/animals/presentation/page_controllers/page_action_result.dart';
+import 'package:costeira/core/offline/cache/form_dependencies_cache_service.dart';
+import 'package:costeira/core/utils/app_logger.dart';
 import 'package:costeira/features/movimentacoes/abortos/domain/entities/aborto_upsert_animal_entity.dart';
 import 'package:costeira/features/movimentacoes/abortos/domain/entities/aborto_upsert_entity.dart';
 import 'package:costeira/features/movimentacoes/abortos/presentation/controllers/add_aborto_controller.dart';
@@ -35,6 +37,7 @@ class AbortoFormPageController extends ChangeNotifier {
     this._animalsController,
     this._lotsController,
     this._potreirosController,
+    this._formDependenciesCacheService,
   ) {
     _addController.addListener(notifyListeners);
     _editController.addListener(notifyListeners);
@@ -51,6 +54,7 @@ class AbortoFormPageController extends ChangeNotifier {
   final ListAnimalsController _animalsController;
   final ListAnimalLotsController _lotsController;
   final ListPotreirosController _potreirosController;
+  final FormDependenciesCacheService _formDependenciesCacheService;
 
   final TextEditingController dataController = TextEditingController();
   final TextEditingController obsController = TextEditingController();
@@ -105,11 +109,7 @@ class AbortoFormPageController extends ChangeNotifier {
 
   List<AnimalEntity> get filteredAnimais {
     final filter = animalFilterController.text.trim().toLowerCase();
-    final animaisDoLote = selectedLotId == null
-        ? animais
-        : animais
-              .where((animal) => _animalLotId(animal) == selectedLotId)
-              .toList(growable: false);
+    final animaisDoLote = _animalsForSelectedLot();
     if (filter.isEmpty) {
       return animaisDoLote;
     }
@@ -149,6 +149,7 @@ class AbortoFormPageController extends ChangeNotifier {
     }
 
     try {
+      await _formDependenciesCacheService.preloadAbortoFormDependencies();
       await Future.wait([
         _lotsController.load(),
         _potreirosController.load(),
@@ -169,9 +170,12 @@ class AbortoFormPageController extends ChangeNotifier {
 
   Future<void> onLotChanged(int? value) async {
     selectedLotId = value;
-    _selectedAnimais = _selectedAnimais
+    final matchingSelected = _selectedAnimais
         .where((item) => _animalLotId(item.animal) == value)
         .toList(growable: false);
+    if (matchingSelected.isNotEmpty || _selectedAnimais.isEmpty) {
+      _selectedAnimais = matchingSelected;
+    }
     notifyListeners();
     if (_animalsController.currentFilter == null) {
       try {
@@ -230,6 +234,9 @@ class AbortoFormPageController extends ChangeNotifier {
   Future<PageActionResult> submit() async {
     final validation = _validateForm();
     if (validation != null) {
+      AppLogger.warning(
+        'ABORTO FORM PAGE CONTROLLER: FORM INVALIDO $formValidationDebug',
+      );
       return validation;
     }
 
@@ -307,6 +314,17 @@ class AbortoFormPageController extends ChangeNotifier {
     return null;
   }
 
+  String get formValidationDebug =>
+      'potreiro=$selectedPotreiroId '
+      'lote=$selectedLotId '
+      'data="${dataController.text.trim()}" '
+      'animaisSelecionados=${_selectedAnimais.length} '
+      'animaisCarregados=${animais.length} '
+      'animaisFiltrados=${filteredAnimais.length} '
+      'isEdit=$isEdit '
+      'hasChanges=$hasChanges '
+      'isFormValid=$isFormValid';
+
   _AbortoFormSnapshot _currentSnapshot() {
     return _AbortoFormSnapshot(
       data: dataController.text.trim(),
@@ -323,6 +341,26 @@ class AbortoFormPageController extends ChangeNotifier {
 
   int? _animalLotId(AnimalEntity animal) {
     return animal.appAnimaisLotesId ?? animal.lote?.id;
+  }
+
+  List<AnimalEntity> _animalsForSelectedLot() {
+    final lotId = selectedLotId;
+    if (lotId == null) {
+      return animais;
+    }
+
+    final filtered = animais
+        .where((animal) => _animalLotId(animal) == lotId)
+        .toList(growable: false);
+
+    if (filtered.isNotEmpty || animais.isEmpty) {
+      return filtered;
+    }
+
+    AppLogger.warning(
+      'ABORTO FORM PAGE CONTROLLER: nenhum animal encontrado para lote=$lotId, exibindo todos os animais carregados=${animais.length}',
+    );
+    return animais;
   }
 
   @override

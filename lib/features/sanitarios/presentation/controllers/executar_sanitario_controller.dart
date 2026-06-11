@@ -1,6 +1,7 @@
 import 'package:costeira/core/api/api_exception.dart';
 import 'package:costeira/core/models/api_message.dart';
 import 'package:costeira/core/storage/session_storage.dart';
+import 'package:costeira/core/utils/app_logger.dart';
 import 'package:costeira/features/insumos/domain/entities/insumos.dart';
 import 'package:costeira/features/insumos/domain/usecases/get_insumos_tipo_usecase.dart';
 import 'package:costeira/features/sanitarios/domain/entities/sanitario.dart';
@@ -158,7 +159,16 @@ class ExecutarSanitarioController extends ChangeNotifier {
         throw ApiException('Usuario nao autenticado.');
       }
 
-      await _loadMedicamentos();
+      try {
+        await _loadMedicamentos();
+      } on ApiException catch (error) {
+        if (_insumos.isEmpty) {
+          rethrow;
+        }
+        AppLogger.warning(
+          'EXECUTAR SANITARIO CONTROLLER: mantendo insumos ja carregados apos falha ao recarregar MSG=${error.message}',
+        );
+      }
       _validateItensWithCurrentStock();
 
       final execucao = SanitarioExecucaoEntity(
@@ -206,15 +216,32 @@ class ExecutarSanitarioController extends ChangeNotifier {
       throw ApiException('Usuario nao autenticado.');
     }
 
+    ApiException? lastError;
     for (final tipo in const ['medicamentos', 'medicamento']) {
-      final result = await _getInsumosTipoUsecase(
-        InsumosTipoFilterEntity(appUsersId: userId, tipo: tipo),
-      );
-      if (result.data.isNotEmpty || tipo == 'medicamento') {
-        _insumos = result.data;
-        return;
+      try {
+        final result = await _getInsumosTipoUsecase(
+          InsumosTipoFilterEntity(appUsersId: userId, tipo: tipo),
+        );
+        AppLogger.info(
+          'EXECUTAR SANITARIO CONTROLLER: medicamentos tipo=$tipo carregados=${result.data.length}',
+        );
+        if (result.data.isNotEmpty || tipo == 'medicamento') {
+          _insumos = result.data;
+          return;
+        }
+      } on ApiException catch (error) {
+        lastError = error;
+        AppLogger.warning(
+          'EXECUTAR SANITARIO CONTROLLER: falha ao carregar tipo=$tipo MSG=${error.message}',
+        );
       }
     }
+
+    if (_insumos.isNotEmpty) {
+      return;
+    }
+
+    throw lastError ?? ApiException('Sem conexão e sem dados salvos para medicamentos.');
   }
 
   void _validateItensWithCurrentStock() {

@@ -28,6 +28,7 @@ class OfflineApiService {
     required String missingCacheMessage,
     required String rawResponseLog,
     int? userId,
+    bool useLatestCacheFallback = false,
   }) async {
     if (!await _networkStatusService.hasConnection()) {
       return _getCachedOrThrow(
@@ -36,6 +37,7 @@ class OfflineApiService {
         userId: userId,
         parser: parser,
         missingCacheMessage: missingCacheMessage,
+        useLatestFallback: useLatestCacheFallback,
       );
     }
 
@@ -117,12 +119,14 @@ class OfflineApiService {
     required int? userId,
     required T Function(dynamic response) parser,
     required String missingCacheMessage,
+    bool useLatestFallback = false,
   }) {
     final cached = _getCached(
       endpoint: endpoint,
       payload: payload,
       userId: userId,
       parser: parser,
+      useLatestFallback: useLatestFallback,
     );
     if (cached != null) {
       return cached;
@@ -137,6 +141,7 @@ class OfflineApiService {
     required Map<String, dynamic> payload,
     required int? userId,
     required T Function(dynamic response) parser,
+    bool useLatestFallback = false,
   }) {
     final cache = _apiCacheService.getCache(
       endpoint: endpoint,
@@ -145,6 +150,21 @@ class OfflineApiService {
     );
 
     if (cache == null) {
+      if (!useLatestFallback) {
+        return null;
+      }
+
+      final latestCache = _apiCacheService.getLatestCacheForEndpoint(
+        endpoint: endpoint,
+        userId: userId,
+      );
+      if (latestCache != null) {
+        AppLogger.success(
+          'OFFLINE API SERVICE: USANDO ULTIMO CACHE DO ENDPOINT KEY=${latestCache.key}',
+        );
+        return parser(latestCache.response);
+      }
+
       return null;
     }
 

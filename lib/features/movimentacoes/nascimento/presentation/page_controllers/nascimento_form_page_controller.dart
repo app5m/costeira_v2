@@ -3,6 +3,8 @@ import 'package:costeira/features/animals/domain/entities/animal_lot_entity.dart
 import 'package:costeira/features/animals/presentation/controllers/list_animal_lots_controller.dart';
 import 'package:costeira/features/animals/presentation/controllers/list_animals_controller.dart';
 import 'package:costeira/features/animals/presentation/page_controllers/page_action_result.dart';
+import 'package:costeira/core/utils/app_logger.dart';
+import 'package:costeira/core/offline/cache/form_dependencies_cache_service.dart';
 import 'package:costeira/features/movimentacoes/domain/entities/nascimento_entity.dart';
 import 'package:costeira/features/movimentacoes/nascimento/domain/entities/nascimento_upsert_animal_entity.dart';
 import 'package:costeira/features/movimentacoes/nascimento/domain/entities/nascimento_upsert_entity.dart';
@@ -19,6 +21,7 @@ class NascimentoFormPageController extends ChangeNotifier {
     this._animalsController,
     this._lotsController,
     this._potreirosController,
+    this._formDependenciesCacheService,
   ) {
     _addController.addListener(notifyListeners);
     _editController.addListener(notifyListeners);
@@ -39,6 +42,7 @@ class NascimentoFormPageController extends ChangeNotifier {
   final ListAnimalsController _animalsController;
   final ListAnimalLotsController _lotsController;
   final ListPotreirosController _potreirosController;
+  final FormDependenciesCacheService _formDependenciesCacheService;
 
   final TextEditingController dataController = TextEditingController();
   final TextEditingController pesoController = TextEditingController();
@@ -115,12 +119,27 @@ class NascimentoFormPageController extends ChangeNotifier {
       ? 'Selecionar terneiro'
       : _animalLabel(_selectedTerneiro!);
 
-  bool get isFormValid =>
+  bool get hasRequiredFields =>
       selectedPotreiroId != null &&
       selectedLotId != null &&
-      dataController.text.trim().isNotEmpty &&
+      dataController.text.trim().isNotEmpty;
+
+  bool get canSelectAnimals => hasRequiredFields && !isLoading;
+
+  bool get isFormValid =>
+      hasRequiredFields &&
       (isEdit || (_selectedMatriz != null && _selectedTerneiro != null)) &&
       hasChanges;
+
+  String get formValidationDebug =>
+      'potreiro=$selectedPotreiroId '
+      'lote=$selectedLotId '
+      'data="${dataController.text.trim()}" '
+      'matriz=${_selectedMatriz?.id} '
+      'terneiro=${_selectedTerneiro?.id} '
+      'isEdit=$isEdit '
+      'hasChanges=$hasChanges '
+      'isFormValid=$isFormValid';
   bool get hasChanges =>
       !isEdit ||
       _initialSnapshot == null ||
@@ -140,6 +159,7 @@ class NascimentoFormPageController extends ChangeNotifier {
     }
 
     try {
+      await _formDependenciesCacheService.preloadNascimentoFormDependencies();
       await Future.wait([
         _lotsController.load(),
         _potreirosController.load(),
@@ -191,6 +211,9 @@ class NascimentoFormPageController extends ChangeNotifier {
   Future<PageActionResult> submit() async {
     final validation = _validateForm();
     if (validation != null) {
+      AppLogger.warning(
+        'NASCIMENTO FORM PAGE CONTROLLER: FORM INVALIDO $formValidationDebug',
+      );
       return validation;
     }
 

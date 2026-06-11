@@ -1,8 +1,10 @@
-import 'package:costeira/core/api/api_client.dart';
 import 'package:costeira/core/api/api_exception.dart';
 import 'package:costeira/core/api/api_response_utils.dart';
 import 'package:costeira/core/config/ws_constantes.dart';
 import 'package:costeira/core/models/api_message.dart';
+import 'package:costeira/core/offline/offline_api_service.dart';
+import 'package:costeira/core/offline/sync/sync_operation.dart';
+import 'package:costeira/core/offline/sync/sync_priority.dart';
 import 'package:costeira/core/utils/app_logger.dart';
 import 'package:costeira/features/movimentacoes/nascimento/domain/entities/delete_nascimento_entity.dart';
 import 'package:costeira/features/movimentacoes/nascimento/domain/entities/nascimento_upsert_entity.dart';
@@ -11,9 +13,9 @@ import 'package:costeira/features/movimentacoes/nascimento/infra/models/delete_n
 import 'package:costeira/features/movimentacoes/nascimento/infra/models/nascimento_upsert_request_model.dart';
 
 class NascimentosDatasourceImpl implements NascimentosDatasource {
-  const NascimentosDatasourceImpl(this._apiClient);
+  const NascimentosDatasourceImpl(this._offlineApiService);
 
-  final ApiClient _apiClient;
+  final OfflineApiService _offlineApiService;
 
   @override
   Future<ApiMessage> createNascimento(NascimentoUpsertEntity nascimento) async {
@@ -27,16 +29,19 @@ class NascimentosDatasourceImpl implements NascimentosDatasource {
     final payload = NascimentoUpsertRequestModel.create(nascimento).data;
     AppLogger.info('NASCIMENTOS DATASOURCE: CREATE PAYLOAD=$payload');
 
-    final response = await _apiClient.post(
-      WSConstantes.movimentacoesAdicionarNascimento,
-      data: payload,
-    );
-
-    AppLogger.success('NASCIMENTOS DATASOURCE: CREATE RAW RESPONSE=$response');
-    return _parseMutationResponse(
-      response,
-      operationName: 'CREATE NASCIMENTO',
-      expectedSuccessMessage: 'Nascimento cadastrado com sucesso',
+    return _offlineApiService.postOrEnqueue(
+      module: 'movimentacoes',
+      action: SyncOperation.create,
+      endpoint: WSConstantes.movimentacoesAdicionarNascimento,
+      payload: payload,
+      priority: SyncPriority.movimentacoes,
+      pendingMessage: 'Nascimento salvo localmente para sincronizar.',
+      rawResponseLog: 'NASCIMENTOS DATASOURCE: CREATE RAW RESPONSE',
+      parseResponse: (response) => _parseMutationResponse(
+        response,
+        operationName: 'CREATE NASCIMENTO',
+        expectedSuccessMessage: 'Nascimento cadastrado com sucesso',
+      ),
     );
   }
 
@@ -52,16 +57,19 @@ class NascimentosDatasourceImpl implements NascimentosDatasource {
     final payload = NascimentoUpsertRequestModel.update(nascimento).data;
     AppLogger.info('NASCIMENTOS DATASOURCE: UPDATE PAYLOAD=$payload');
 
-    final response = await _apiClient.post(
-      WSConstantes.movimentacoesAdicionarNascimento,
-      data: payload,
-    );
-
-    AppLogger.success('NASCIMENTOS DATASOURCE: UPDATE RAW RESPONSE=$response');
-    return _parseMutationResponse(
-      response,
-      operationName: 'UPDATE NASCIMENTO',
-      expectedSuccessMessage: 'Nascimento atualizado com sucesso',
+    return _offlineApiService.postOrEnqueue(
+      module: 'movimentacoes',
+      action: SyncOperation.update,
+      endpoint: WSConstantes.movimentacoesAdicionarNascimento,
+      payload: payload,
+      priority: SyncPriority.movimentacoes,
+      pendingMessage: 'Alteração do nascimento salva para sincronizar.',
+      rawResponseLog: 'NASCIMENTOS DATASOURCE: UPDATE RAW RESPONSE',
+      parseResponse: (response) => _parseMutationResponse(
+        response,
+        operationName: 'UPDATE NASCIMENTO',
+        expectedSuccessMessage: 'Nascimento atualizado com sucesso',
+      ),
     );
   }
 
@@ -70,16 +78,19 @@ class NascimentosDatasourceImpl implements NascimentosDatasource {
     final payload = DeleteNascimentoRequestModel.fromEntity(nascimento).data;
     AppLogger.info('NASCIMENTOS DATASOURCE: DELETE PAYLOAD=$payload');
 
-    final response = await _apiClient.post(
-      WSConstantes.movimentacoesExcluirNascimento,
-      data: payload,
-    );
-
-    AppLogger.success('NASCIMENTOS DATASOURCE: DELETE RAW RESPONSE=$response');
-    return _parseMutationResponse(
-      response,
-      operationName: 'DELETE NASCIMENTO',
-      expectedSuccessMessage: 'Nascimento excluido com sucesso',
+    return _offlineApiService.postOrEnqueue(
+      module: 'movimentacoes',
+      action: SyncOperation.delete,
+      endpoint: WSConstantes.movimentacoesExcluirNascimento,
+      payload: payload,
+      priority: SyncPriority.movimentacoes,
+      pendingMessage: 'Exclusao do nascimento salva para sincronizar.',
+      rawResponseLog: 'NASCIMENTOS DATASOURCE: DELETE RAW RESPONSE',
+      parseResponse: (response) => _parseMutationResponse(
+        response,
+        operationName: 'DELETE NASCIMENTO',
+        expectedSuccessMessage: 'Nascimento excluido com sucesso',
+      ),
     );
   }
 
@@ -89,16 +100,13 @@ class NascimentosDatasourceImpl implements NascimentosDatasource {
     required String expectedSuccessMessage,
   }) {
     final map = responseAsMap(response);
-    final hasMutationContract =
-        map.containsKey('status') || map.containsKey('msg');
+    final hasMutationContract = map.containsKey('status') || map.containsKey('msg');
 
     if (!hasMutationContract) {
       AppLogger.error(
         'NASCIMENTOS DATASOURCE: $operationName RETORNOU CONTRATO INVALIDO RAW=$response',
       );
-      throw ApiException(
-        'Resposta inesperada da API ao executar $operationName.',
-      );
+      throw ApiException('Resposta inesperada da API ao executar $operationName.');
     }
 
     final message = ApiMessage.fromResponse(response);
@@ -107,10 +115,7 @@ class NascimentosDatasourceImpl implements NascimentosDatasource {
     }
 
     if (message.message.trim().isEmpty) {
-      return ApiMessage(
-        status: message.status,
-        message: expectedSuccessMessage,
-      );
+      return ApiMessage(status: message.status, message: expectedSuccessMessage);
     }
 
     return message;

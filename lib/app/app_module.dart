@@ -5,7 +5,11 @@ import 'package:costeira/core/common/get_list/get_list_binds.dart';
 import 'package:costeira/core/offline/offline_api_service.dart';
 import 'package:costeira/core/offline/cache/api_cache_service.dart';
 import 'package:costeira/core/offline/cache/api_cache_storage.dart';
+import 'package:costeira/core/offline/cache/form_dependencies_cache_service.dart';
 import 'package:costeira/core/offline/network/network_status_service.dart';
+import 'package:costeira/core/offline/presentation/controllers/sync_controller.dart';
+import 'package:costeira/core/offline/presentation/pages/sync_page.dart';
+import 'package:costeira/core/offline/sync/post_sync_cache_refresh_service.dart';
 import 'package:costeira/core/offline/sync/sync_queue_service.dart';
 import 'package:costeira/core/offline/sync/sync_queue_storage.dart';
 import 'package:costeira/core/offline/sync/sync_service.dart';
@@ -83,7 +87,6 @@ class AppModule extends Module {
     i.addLazySingleton<ApiCacheService>(ApiCacheService.new);
     i.addLazySingleton<SyncQueueStorage>(SyncQueueStorage.new);
     i.addLazySingleton<SyncQueueService>(SyncQueueService.new);
-    i.addLazySingleton<SyncService>(SyncService.new);
     i.addLazySingleton<OfflineApiService>(OfflineApiService.new);
 
     i.addLazySingleton<AuthRepository>(
@@ -96,7 +99,10 @@ class AppModule extends Module {
       () => NotificationsRepository(client: Modular.get<ApiClient>()),
     );
     i.addLazySingleton<UtilsRepository>(
-      () => UtilsRepository(client: Modular.get<ApiClient>()),
+      () => UtilsRepository(
+        client: Modular.get<ApiClient>(),
+        offlineApiService: Modular.get<OfflineApiService>(),
+      ),
     );
     GetListBinds.register(i);
     ClimateAndRainBinds.register(i);
@@ -108,6 +114,14 @@ class AppModule extends Module {
     PastagemNutricaoSuplementoBinds.register(i);
     SanitariosBinds.register(i);
     TasksBinds.register(i);
+    i.addLazySingleton<PostSyncCacheRefreshService>(
+      PostSyncCacheRefreshService.new,
+    );
+    i.addLazySingleton<FormDependenciesCacheService>(
+      FormDependenciesCacheService.new,
+    );
+    i.addLazySingleton<SyncService>(SyncService.new);
+    i.add<SyncController>(SyncController.new);
   }
 
   @override
@@ -166,6 +180,7 @@ class AppModule extends Module {
     r.child(AppRoutes.updatePassword, child: (_) => const UpdatePasswordPage());
     r.child(AppRoutes.modules, child: (_) => const ModulesPage());
     r.child(AppRoutes.extras, child: (_) => const Extras());
+    r.child(AppRoutes.sync, child: (_) => const SyncPage());
     r.child(AppRoutes.climateRain, child: (_) => const ClimatePage());
     r.child(AppRoutes.climateRainAdd, child: (_) => const ClimateAdd());
     r.child(

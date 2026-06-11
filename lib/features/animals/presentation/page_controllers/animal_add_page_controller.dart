@@ -2,6 +2,7 @@ import 'package:costeira/core/common/get_list/domain/entities/list_category_enti
 import 'package:costeira/core/common/get_list/domain/entities/list_item_entity.dart';
 import 'package:costeira/core/common/get_list/domain/entities/list_subcategory_entity.dart';
 import 'package:costeira/core/common/get_list/presentation/controllers/get_list_controller.dart';
+import 'package:costeira/core/offline/cache/form_dependencies_cache_service.dart';
 import 'package:costeira/core/utils/app_logger.dart';
 import 'package:costeira/features/animals/domain/entities/animal_lot_entity.dart';
 import 'package:costeira/features/animals/domain/entities/animal_upsert_entity.dart';
@@ -18,6 +19,7 @@ class AnimalAddPageController extends ChangeNotifier {
     this._getListController,
     this._lotsController,
     this._potreirosController,
+    this._formDependenciesCacheService,
   ) {
     _controller.addListener(notifyListeners);
     _getListController.addListener(notifyListeners);
@@ -41,6 +43,7 @@ class AnimalAddPageController extends ChangeNotifier {
   final GetListController _getListController;
   final ListAnimalLotsController _lotsController;
   final ListPotreirosController _potreirosController;
+  final FormDependenciesCacheService _formDependenciesCacheService;
 
   final TextEditingController brincoController = TextEditingController();
   final TextEditingController pesoController = TextEditingController();
@@ -114,6 +117,7 @@ class AnimalAddPageController extends ChangeNotifier {
     );
     _getListController.clear();
     try {
+      await _formDependenciesCacheService.preloadAnimalFormDependencies();
       await Future.wait([_lotsController.load(), _potreirosController.load()]);
       notifyListeners();
     } catch (_) {

@@ -19,6 +19,13 @@ class ApiCacheStorage {
     return null;
   }
 
+  List<Map<String, dynamic>> readAll() {
+    return _box.values
+        .whereType<Map>()
+        .map((value) => Map<String, dynamic>.from(value))
+        .toList(growable: false);
+  }
+
   Future<void> remove(String key) async {
     await _box.delete(key);
   }

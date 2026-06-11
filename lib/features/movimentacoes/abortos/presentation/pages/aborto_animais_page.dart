@@ -53,26 +53,41 @@ class AbortoAnimaisPage extends StatelessWidget {
               Expanded(
                 child: pageController.isLoading
                     ? const Center(child: CircularProgressIndicator())
-                    : animais.isEmpty
-                    ? const Center(child: Text('Nenhum animal encontrado.'))
-                    : RefreshIndicator(
+                    : animais.isNotEmpty
+                    ? RefreshIndicator(
                         onRefresh: pageController.reloadAnimais,
                         child: ListView.separated(
                           padding: const EdgeInsets.fromLTRB(20, 8, 20, 16),
                           itemCount: animais.length,
-                          separatorBuilder: (_, __) => const SizedBox(height: 10),
+                          separatorBuilder: (_, __) =>
+                              const SizedBox(height: 10),
                           itemBuilder: (context, index) {
                             final animal = animais[index];
                             return _AnimalTile(
                               animal: animal,
-                              isSelected: pageController.isAnimalSelected(animal.id),
+                              isSelected: pageController.isAnimalSelected(
+                                animal.id,
+                              ),
                               causa: pageController.animalCausa(animal.id),
                               onTap: () => _editCausa(context, animal),
-                              onCheckboxChanged: () => _toggleAnimal(context, animal),
+                              onCheckboxChanged: () =>
+                                  _toggleAnimal(context, animal),
                             );
                           },
                         ),
-                      ),
+                      )
+                    : pageController.errorMessage != null
+                    ? Center(
+                        child: Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 20),
+                          child: Text(
+                            pageController.errorMessage!,
+                            textAlign: TextAlign.center,
+                            style: const TextStyle(color: Colors.red),
+                          ),
+                        ),
+                      )
+                    : const Center(child: Text('Nenhum animal encontrado.')),
               ),
               SafeArea(
                 top: false,
@@ -87,7 +102,9 @@ class AbortoAnimaisPage extends StatelessWidget {
                           : () => Navigator.pop(context),
                       style: ElevatedButton.styleFrom(
                         backgroundColor: MyColors.colorPrimary,
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(8),
+                        ),
                       ),
                       child: Text(
                         pageController.selectedAnimais.length == 1
@@ -163,7 +180,12 @@ class _CausaSheetState extends State<_CausaSheet> {
   Widget build(BuildContext context) {
     return SafeArea(
       child: Padding(
-        padding: EdgeInsets.fromLTRB(20, 16, 20, 20 + MediaQuery.of(context).viewInsets.bottom),
+        padding: EdgeInsets.fromLTRB(
+          20,
+          16,
+          20,
+          20 + MediaQuery.of(context).viewInsets.bottom,
+        ),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -181,7 +203,11 @@ class _CausaSheetState extends State<_CausaSheet> {
             const SizedBox(height: 20),
             const Text(
               'Causa do aborto',
-              style: TextStyle(fontSize: 18, fontFamily: 'Montserrat', fontWeight: FontWeight.w600),
+              style: TextStyle(
+                fontSize: 18,
+                fontFamily: 'Montserrat',
+                fontWeight: FontWeight.w600,
+              ),
             ),
             const SizedBox(height: 12),
             TextField(
@@ -204,9 +230,14 @@ class _CausaSheetState extends State<_CausaSheet> {
                 onPressed: () => Navigator.pop(context, _controller.text),
                 style: ElevatedButton.styleFrom(
                   backgroundColor: MyColors.colorPrimary,
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(8),
+                  ),
                 ),
-                child: const Text('Salvar causa', style: TextStyle(color: Colors.white)),
+                child: const Text(
+                  'Salvar causa',
+                  style: TextStyle(color: Colors.white),
+                ),
               ),
             ),
             if ((widget.initialValue ?? '').trim().isNotEmpty)
@@ -215,7 +246,10 @@ class _CausaSheetState extends State<_CausaSheet> {
                 child: const Text('Remover causa'),
               )
             else
-              TextButton(onPressed: () => Navigator.pop(context), child: const Text('Ignorar')),
+              TextButton(
+                onPressed: () => Navigator.pop(context),
+                child: const Text('Ignorar'),
+              ),
           ],
         ),
       ),
@@ -247,7 +281,9 @@ class _AnimalTile extends StatelessWidget {
         padding: const EdgeInsets.all(14),
         decoration: BoxDecoration(
           color: Colors.white,
-          border: Border.all(color: isSelected ? MyColors.colorPrimary : const Color(0xFFEBEBEB)),
+          border: Border.all(
+            color: isSelected ? MyColors.colorPrimary : const Color(0xFFEBEBEB),
+          ),
           borderRadius: BorderRadius.circular(8),
         ),
         child: Row(
@@ -259,7 +295,9 @@ class _AnimalTile extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    animal.brinco?.trim().isNotEmpty == true ? animal.brinco!.trim() : 'Sem brinco',
+                    animal.brinco?.trim().isNotEmpty == true
+                        ? animal.brinco!.trim()
+                        : 'Sem brinco',
                     style: const TextStyle(
                       color: Color(0xFF313131),
                       fontSize: 15,

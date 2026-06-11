@@ -1,8 +1,10 @@
-import 'package:costeira/core/api/api_client.dart';
 import 'package:costeira/core/api/api_exception.dart';
 import 'package:costeira/core/api/api_response_utils.dart';
 import 'package:costeira/core/config/ws_constantes.dart';
 import 'package:costeira/core/models/api_message.dart';
+import 'package:costeira/core/offline/offline_api_service.dart';
+import 'package:costeira/core/offline/sync/sync_operation.dart';
+import 'package:costeira/core/offline/sync/sync_priority.dart';
 import 'package:costeira/core/utils/app_logger.dart';
 import 'package:costeira/features/movimentacoes/compras/domain/entities/compra_upsert_entity.dart';
 import 'package:costeira/features/movimentacoes/compras/domain/entities/delete_compra_entity.dart';
@@ -11,9 +13,9 @@ import 'package:costeira/features/movimentacoes/compras/infra/models/compra_upse
 import 'package:costeira/features/movimentacoes/compras/infra/models/delete_compra_request_model.dart';
 
 class ComprasDatasourceImpl implements ComprasDatasource {
-  const ComprasDatasourceImpl(this._apiClient);
+  const ComprasDatasourceImpl(this._offlineApiService);
 
-  final ApiClient _apiClient;
+  final OfflineApiService _offlineApiService;
 
   @override
   Future<ApiMessage> createCompra(CompraUpsertEntity compra) async {
@@ -24,16 +26,19 @@ class ComprasDatasourceImpl implements ComprasDatasource {
     final payload = CompraUpsertRequestModel.create(compra).data;
     AppLogger.info('COMPRAS DATASOURCE: CREATE PAYLOAD=$payload');
 
-    final response = await _apiClient.post(
-      WSConstantes.movimentacoesAdicionarCompra,
-      data: payload,
-    );
-
-    AppLogger.success('COMPRAS DATASOURCE: CREATE RAW RESPONSE=$response');
-    return _parseMutationResponse(
-      response,
-      operationName: 'CREATE COMPRA',
-      expectedSuccessMessage: 'Compra cadastrada com sucesso',
+    return _offlineApiService.postOrEnqueue(
+      module: 'movimentacoes',
+      action: SyncOperation.create,
+      endpoint: WSConstantes.movimentacoesAdicionarCompra,
+      payload: payload,
+      priority: SyncPriority.movimentacoes,
+      pendingMessage: 'Compra salva localmente para sincronizar.',
+      rawResponseLog: 'COMPRAS DATASOURCE: CREATE RAW RESPONSE',
+      parseResponse: (response) => _parseMutationResponse(
+        response,
+        operationName: 'CREATE COMPRA',
+        expectedSuccessMessage: 'Compra cadastrada com sucesso',
+      ),
     );
   }
 
@@ -49,16 +54,19 @@ class ComprasDatasourceImpl implements ComprasDatasource {
     final payload = CompraUpsertRequestModel.update(compra).data;
     AppLogger.info('COMPRAS DATASOURCE: UPDATE PAYLOAD=$payload');
 
-    final response = await _apiClient.post(
-      WSConstantes.movimentacoesAdicionarCompra,
-      data: payload,
-    );
-
-    AppLogger.success('COMPRAS DATASOURCE: UPDATE RAW RESPONSE=$response');
-    return _parseMutationResponse(
-      response,
-      operationName: 'UPDATE COMPRA',
-      expectedSuccessMessage: 'Compra atualizada com sucesso',
+    return _offlineApiService.postOrEnqueue(
+      module: 'movimentacoes',
+      action: SyncOperation.update,
+      endpoint: WSConstantes.movimentacoesAdicionarCompra,
+      payload: payload,
+      priority: SyncPriority.movimentacoes,
+      pendingMessage: 'Alteração da compra salva para sincronizar.',
+      rawResponseLog: 'COMPRAS DATASOURCE: UPDATE RAW RESPONSE',
+      parseResponse: (response) => _parseMutationResponse(
+        response,
+        operationName: 'UPDATE COMPRA',
+        expectedSuccessMessage: 'Compra atualizada com sucesso',
+      ),
     );
   }
 
@@ -67,16 +75,19 @@ class ComprasDatasourceImpl implements ComprasDatasource {
     final payload = DeleteCompraRequestModel.fromEntity(compra).data;
     AppLogger.info('COMPRAS DATASOURCE: DELETE PAYLOAD=$payload');
 
-    final response = await _apiClient.post(
-      WSConstantes.movimentacoesExcluirCompra,
-      data: payload,
-    );
-
-    AppLogger.success('COMPRAS DATASOURCE: DELETE RAW RESPONSE=$response');
-    return _parseMutationResponse(
-      response,
-      operationName: 'DELETE COMPRA',
-      expectedSuccessMessage: 'Compra excluida com sucesso',
+    return _offlineApiService.postOrEnqueue(
+      module: 'movimentacoes',
+      action: SyncOperation.delete,
+      endpoint: WSConstantes.movimentacoesExcluirCompra,
+      payload: payload,
+      priority: SyncPriority.movimentacoes,
+      pendingMessage: 'Exclusao da compra salva para sincronizar.',
+      rawResponseLog: 'COMPRAS DATASOURCE: DELETE RAW RESPONSE',
+      parseResponse: (response) => _parseMutationResponse(
+        response,
+        operationName: 'DELETE COMPRA',
+        expectedSuccessMessage: 'Compra excluida com sucesso',
+      ),
     );
   }
 
@@ -86,16 +97,13 @@ class ComprasDatasourceImpl implements ComprasDatasource {
     required String expectedSuccessMessage,
   }) {
     final map = responseAsMap(response);
-    final hasMutationContract =
-        map.containsKey('status') || map.containsKey('msg');
+    final hasMutationContract = map.containsKey('status') || map.containsKey('msg');
 
     if (!hasMutationContract) {
       AppLogger.error(
         'COMPRAS DATASOURCE: $operationName RETORNOU CONTRATO INVALIDO RAW=$response',
       );
-      throw ApiException(
-        'Resposta inesperada da API ao executar $operationName.',
-      );
+      throw ApiException('Resposta inesperada da API ao executar $operationName.');
     }
 
     final message = ApiMessage.fromResponse(response);
@@ -104,10 +112,7 @@ class ComprasDatasourceImpl implements ComprasDatasource {
     }
 
     if (message.message.trim().isEmpty) {
-      return ApiMessage(
-        status: message.status,
-        message: expectedSuccessMessage,
-      );
+      return ApiMessage(status: message.status, message: expectedSuccessMessage);
     }
 
     return message;

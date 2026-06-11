@@ -33,9 +33,8 @@ class ManejoDataSourceImpl implements ManejoDataSource {
       endpoint: WSConstantes.pastagensListar,
       payload: payload,
       userId: filter.appUsersId,
-      parser: (response) =>
-          ManejosListResponseModel.fromJson(responseAsMap(response)),
-      missingCacheMessage: 'Sem conexao e sem dados salvos para pastagens.',
+      parser: (response) => ManejosListResponseModel.fromJson(responseAsMap(response)),
+      missingCacheMessage: 'Sem conexão e sem dados salvos para pastagens.',
       rawResponseLog: 'MANEJO DATASOURCE: LIST RAW RESPONSE',
     );
   }
@@ -76,7 +75,7 @@ class ManejoDataSourceImpl implements ManejoDataSource {
       action: SyncOperation.update,
       endpoint: WSConstantes.pastagensAdicionar,
       payload: payload,
-      pendingMessage: 'Alteracao da pastagem salva para sincronizar.',
+      pendingMessage: 'Alteração da pastagem salva para sincronizar.',
       rawResponseLog: 'MANEJO DATASOURCE: UPDATE RESPONSE',
       operationName: 'UPDATE MANEJO',
       expectedSuccessMessage: 'Pastagem atualizada com sucesso',
@@ -104,10 +103,7 @@ class ManejoDataSourceImpl implements ManejoDataSource {
     final payload = ManejoChartsFilterRequestModel.fromEntity(filter).data;
     AppLogger.info('MANEJO CHARTS: PAYLOAD=$payload');
 
-    final response = await _apiClient.post(
-      WSConstantes.pastagensGraficos,
-      data: payload,
-    );
+    final response = await _apiClient.post(WSConstantes.pastagensGraficos, data: payload);
     AppLogger.success('MANEJO CHARTS: RESPONSE=$response');
 
     final wrapper = responseAsMap(response);
@@ -152,8 +148,7 @@ class ManejoDataSourceImpl implements ManejoDataSource {
     required String expectedSuccessMessage,
   }) {
     final map = responseAsMap(response);
-    final hasMutationContract =
-        map.containsKey('status') || map.containsKey('msg');
+    final hasMutationContract = map.containsKey('status') || map.containsKey('msg');
 
     if (!hasMutationContract) {
       throw ApiException(
@@ -168,10 +163,7 @@ class ManejoDataSourceImpl implements ManejoDataSource {
     }
 
     if (message.message.trim().isEmpty) {
-      return ApiMessage(
-        status: message.status,
-        message: expectedSuccessMessage,
-      );
+      return ApiMessage(status: message.status, message: expectedSuccessMessage);
     }
 
     return message;

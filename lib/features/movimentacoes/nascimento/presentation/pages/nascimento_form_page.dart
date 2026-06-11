@@ -245,7 +245,9 @@ class _NascimentoFormPageState extends State<NascimentoFormPage> {
                   CustomButton(
                     onPressed: _submit,
                     text: _pageController.isEdit ? 'Salvar' : 'Adicionar',
-                    enabled: _pageController.isFormValid,
+                    enabled:
+                        !_pageController.isLoading &&
+                        _pageController.isFormValid,
                     isLoading: _pageController.isLoading,
                   ),
                   const SizedBox(height: 80),
@@ -277,12 +279,14 @@ class _NascimentoFormPageState extends State<NascimentoFormPage> {
         _buildSelectionTile(
           label: 'Matriz',
           value: _pageController.selectedMatrizLabel,
+          enabled: _pageController.canSelectAnimals,
           onTap: () =>
               _openAnimalSelection(NascimentoAnimalSelectionType.matriz),
         ),
         _buildSelectionTile(
           label: 'Terneiro',
           value: _pageController.selectedTerneiroLabel,
+          enabled: _pageController.canSelectAnimals,
           onTap: () =>
               _openAnimalSelection(NascimentoAnimalSelectionType.terneiro),
         ),

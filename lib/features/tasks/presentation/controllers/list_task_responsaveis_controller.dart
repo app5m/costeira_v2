@@ -75,6 +75,7 @@ class ListTaskResponsaveisController extends ChangeNotifier {
     }
 
     _responsaveis = current;
+    _errorMessage = null;
     notifyListeners();
   }
 

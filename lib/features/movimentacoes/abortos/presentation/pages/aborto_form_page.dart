@@ -197,7 +197,7 @@ class _AbortoFormPageState extends State<AbortoFormPage> {
                 CustomButton(
                   onPressed: _submit,
                   text: _pageController.isEdit ? 'Salvar' : 'Adicionar',
-                  enabled: _pageController.isFormValid,
+                  enabled: !_pageController.isLoading,
                   isLoading: _pageController.isLoading,
                 ),
                 const SizedBox(height: 80),

@@ -1,8 +1,10 @@
-import 'package:costeira/core/api/api_client.dart';
 import 'package:costeira/core/api/api_exception.dart';
 import 'package:costeira/core/api/api_response_utils.dart';
 import 'package:costeira/core/config/ws_constantes.dart';
 import 'package:costeira/core/models/api_message.dart';
+import 'package:costeira/core/offline/offline_api_service.dart';
+import 'package:costeira/core/offline/sync/sync_operation.dart';
+import 'package:costeira/core/offline/sync/sync_priority.dart';
 import 'package:costeira/core/utils/app_logger.dart';
 import 'package:costeira/features/movimentacoes/abortos/domain/entities/aborto_upsert_entity.dart';
 import 'package:costeira/features/movimentacoes/abortos/domain/entities/delete_aborto_entity.dart';
@@ -11,9 +13,9 @@ import 'package:costeira/features/movimentacoes/abortos/infra/models/aborto_upse
 import 'package:costeira/features/movimentacoes/abortos/infra/models/delete_aborto_request_model.dart';
 
 class AbortosDatasourceImpl implements AbortosDatasource {
-  const AbortosDatasourceImpl(this._apiClient);
+  const AbortosDatasourceImpl(this._offlineApiService);
 
-  final ApiClient _apiClient;
+  final OfflineApiService _offlineApiService;
 
   @override
   Future<ApiMessage> createAborto(AbortoUpsertEntity aborto) async {
@@ -24,16 +26,19 @@ class AbortosDatasourceImpl implements AbortosDatasource {
     final payload = AbortoUpsertRequestModel.create(aborto).data;
     AppLogger.info('ABORTOS DATASOURCE: CREATE PAYLOAD=$payload');
 
-    final response = await _apiClient.post(
-      WSConstantes.movimentacoesAdicionarAborto,
-      data: payload,
-    );
-
-    AppLogger.success('ABORTOS DATASOURCE: CREATE RAW RESPONSE=$response');
-    return _parseMutationResponse(
-      response,
-      operationName: 'CREATE ABORTO',
-      expectedSuccessMessage: 'Aborto cadastrado com sucesso',
+    return _offlineApiService.postOrEnqueue(
+      module: 'movimentacoes',
+      action: SyncOperation.create,
+      endpoint: WSConstantes.movimentacoesAdicionarAborto,
+      payload: payload,
+      priority: SyncPriority.movimentacoes,
+      pendingMessage: 'Aborto salvo localmente para sincronizar.',
+      rawResponseLog: 'ABORTOS DATASOURCE: CREATE RAW RESPONSE',
+      parseResponse: (response) => _parseMutationResponse(
+        response,
+        operationName: 'CREATE ABORTO',
+        expectedSuccessMessage: 'Aborto cadastrado com sucesso',
+      ),
     );
   }
 
@@ -49,16 +54,19 @@ class AbortosDatasourceImpl implements AbortosDatasource {
     final payload = AbortoUpsertRequestModel.update(aborto).data;
     AppLogger.info('ABORTOS DATASOURCE: UPDATE PAYLOAD=$payload');
 
-    final response = await _apiClient.post(
-      WSConstantes.movimentacoesAdicionarAborto,
-      data: payload,
-    );
-
-    AppLogger.success('ABORTOS DATASOURCE: UPDATE RAW RESPONSE=$response');
-    return _parseMutationResponse(
-      response,
-      operationName: 'UPDATE ABORTO',
-      expectedSuccessMessage: 'Aborto atualizado com sucesso',
+    return _offlineApiService.postOrEnqueue(
+      module: 'movimentacoes',
+      action: SyncOperation.update,
+      endpoint: WSConstantes.movimentacoesAdicionarAborto,
+      payload: payload,
+      priority: SyncPriority.movimentacoes,
+      pendingMessage: 'Alteração do aborto salva para sincronizar.',
+      rawResponseLog: 'ABORTOS DATASOURCE: UPDATE RAW RESPONSE',
+      parseResponse: (response) => _parseMutationResponse(
+        response,
+        operationName: 'UPDATE ABORTO',
+        expectedSuccessMessage: 'Aborto atualizado com sucesso',
+      ),
     );
   }
 
@@ -67,16 +75,19 @@ class AbortosDatasourceImpl implements AbortosDatasource {
     final payload = DeleteAbortoRequestModel.fromEntity(aborto).data;
     AppLogger.info('ABORTOS DATASOURCE: DELETE PAYLOAD=$payload');
 
-    final response = await _apiClient.post(
-      WSConstantes.movimentacoesExcluirAborto,
-      data: payload,
-    );
-
-    AppLogger.success('ABORTOS DATASOURCE: DELETE RAW RESPONSE=$response');
-    return _parseMutationResponse(
-      response,
-      operationName: 'DELETE ABORTO',
-      expectedSuccessMessage: 'Aborto excluido com sucesso',
+    return _offlineApiService.postOrEnqueue(
+      module: 'movimentacoes',
+      action: SyncOperation.delete,
+      endpoint: WSConstantes.movimentacoesExcluirAborto,
+      payload: payload,
+      priority: SyncPriority.movimentacoes,
+      pendingMessage: 'Exclusao do aborto salva para sincronizar.',
+      rawResponseLog: 'ABORTOS DATASOURCE: DELETE RAW RESPONSE',
+      parseResponse: (response) => _parseMutationResponse(
+        response,
+        operationName: 'DELETE ABORTO',
+        expectedSuccessMessage: 'Aborto excluido com sucesso',
+      ),
     );
   }
 
@@ -86,13 +97,10 @@ class AbortosDatasourceImpl implements AbortosDatasource {
     required String expectedSuccessMessage,
   }) {
     final map = responseAsMap(response);
-    final hasMutationContract =
-        map.containsKey('status') || map.containsKey('msg');
+    final hasMutationContract = map.containsKey('status') || map.containsKey('msg');
 
     if (!hasMutationContract) {
-      throw ApiException(
-        'Resposta inesperada da API ao executar $operationName.',
-      );
+      throw ApiException('Resposta inesperada da API ao executar $operationName.');
     }
 
     final message = ApiMessage.fromResponse(response);
@@ -101,10 +109,7 @@ class AbortosDatasourceImpl implements AbortosDatasource {
     }
 
     if (message.message.trim().isEmpty) {
-      return ApiMessage(
-        status: message.status,
-        message: expectedSuccessMessage,
-      );
+      return ApiMessage(status: message.status, message: expectedSuccessMessage);
     }
 
     return message;

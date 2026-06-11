@@ -18,9 +18,7 @@ class SanitariosDatasourceImpl implements SanitariosDatasource {
   final OfflineApiService _offlineApiService;
 
   @override
-  Future<SanitariosListEntity> getSanitarios(
-    SanitariosFilterEntity filter,
-  ) async {
+  Future<SanitariosListEntity> getSanitarios(SanitariosFilterEntity filter) async {
     final payload = SanitariosFilterRequestModel.fromEntity(filter).data;
     AppLogger.info('SANITARIOS DATASOURCE: LIST PAYLOAD=$payload');
 
@@ -29,7 +27,7 @@ class SanitariosDatasourceImpl implements SanitariosDatasource {
       payload: payload,
       userId: filter.appUsersId,
       parser: _parseSanitariosList,
-      missingCacheMessage: 'Sem conexao e sem dados salvos para sanitarios.',
+      missingCacheMessage: 'Sem conexão e sem dados salvos para sanitarios.',
       rawResponseLog: 'SANITARIOS DATASOURCE: LIST RAW RESPONSE',
     );
   }
@@ -137,16 +135,11 @@ class SanitariosDatasourceImpl implements SanitariosDatasource {
   }
 
   @override
-  Future<SanitarioChartsEntity> getSanitarioCharts(
-    SanitarioChartsFilterEntity filter,
-  ) async {
+  Future<SanitarioChartsEntity> getSanitarioCharts(SanitarioChartsFilterEntity filter) async {
     final payload = SanitarioChartsFilterRequestModel.fromEntity(filter).data;
     AppLogger.info('SANITARIOS DATASOURCE: CHARTS PAYLOAD=$payload');
 
-    final response = await _apiClient.post(
-      WSConstantes.sanitariosGraficos,
-      data: payload,
-    );
+    final response = await _apiClient.post(WSConstantes.sanitariosGraficos, data: payload);
     AppLogger.success('SANITARIOS DATASOURCE: CHARTS RAW RESPONSE=$response');
 
     final wrappers = responseAsList(response);
@@ -172,13 +165,10 @@ class SanitariosDatasourceImpl implements SanitariosDatasource {
     required String expectedSuccessMessage,
   }) {
     final map = responseAsMap(response);
-    final hasMutationContract =
-        map.containsKey('status') || map.containsKey('msg');
+    final hasMutationContract = map.containsKey('status') || map.containsKey('msg');
 
     if (!hasMutationContract) {
-      throw ApiException(
-        'Resposta inesperada da API ao executar $operationName.',
-      );
+      throw ApiException('Resposta inesperada da API ao executar $operationName.');
     }
 
     final message = ApiMessage.fromResponse(response);
@@ -187,10 +177,7 @@ class SanitariosDatasourceImpl implements SanitariosDatasource {
     }
 
     if (message.message.trim().isEmpty) {
-      return ApiMessage(
-        status: message.status,
-        message: expectedSuccessMessage,
-      );
+      return ApiMessage(status: message.status, message: expectedSuccessMessage);
     }
 
     return message;

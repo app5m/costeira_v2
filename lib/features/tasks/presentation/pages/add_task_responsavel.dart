@@ -89,7 +89,20 @@ class _AddTaskResponsavelState extends State<AddTaskResponsavel> {
         message: message.message,
         isError: false,
       );
-      Navigator.pop(context, true);
+      Navigator.pop(
+        context,
+        TaskResponsavelSaveResult(
+          responsavel: responsavel.id == null && _isPendingSync(message.extra)
+              ? TaskResponsavelEntity(
+                  id: _localIdFromMessage(message.extra),
+                  nome: responsavel.nome,
+                  email: responsavel.email,
+                  celular: responsavel.celular,
+                )
+              : responsavel,
+          isPendingSync: _isPendingSync(message.extra),
+        ),
+      );
     } catch (error) {
       if (!mounted) {
         return;
@@ -107,6 +120,17 @@ class _AddTaskResponsavelState extends State<AddTaskResponsavel> {
         setState(() => _isLoading = false);
       }
     }
+  }
+
+  bool _isPendingSync(dynamic extra) {
+    return extra is Map && extra['sync_pending'] == true;
+  }
+
+  int _localIdFromMessage(dynamic extra) {
+    final idLocal = extra is Map
+        ? int.tryParse(extra['id_local'].toString())
+        : null;
+    return -(idLocal ?? DateTime.now().millisecondsSinceEpoch);
   }
 
   @override
@@ -229,6 +253,16 @@ class _AddTaskResponsavelState extends State<AddTaskResponsavel> {
       ],
     );
   }
+}
+
+class TaskResponsavelSaveResult {
+  const TaskResponsavelSaveResult({
+    required this.responsavel,
+    required this.isPendingSync,
+  });
+
+  final TaskResponsavelEntity responsavel;
+  final bool isPendingSync;
 }
 
 class _CellPhoneInputFormatter extends TextInputFormatter {

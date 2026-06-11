@@ -1,8 +1,10 @@
-import 'package:costeira/core/api/api_client.dart';
 import 'package:costeira/core/api/api_exception.dart';
 import 'package:costeira/core/api/api_response_utils.dart';
 import 'package:costeira/core/config/ws_constantes.dart';
 import 'package:costeira/core/models/api_message.dart';
+import 'package:costeira/core/offline/offline_api_service.dart';
+import 'package:costeira/core/offline/sync/sync_operation.dart';
+import 'package:costeira/core/offline/sync/sync_priority.dart';
 import 'package:costeira/core/utils/app_logger.dart';
 import 'package:costeira/features/movimentacoes/consumo/domain/entities/consumo_upsert_entity.dart';
 import 'package:costeira/features/movimentacoes/consumo/domain/entities/delete_consumo_entity.dart';
@@ -11,9 +13,9 @@ import 'package:costeira/features/movimentacoes/consumo/infra/models/consumo_ups
 import 'package:costeira/features/movimentacoes/consumo/infra/models/delete_consumo_request_model.dart';
 
 class ConsumosDatasourceImpl implements ConsumosDatasource {
-  const ConsumosDatasourceImpl(this._apiClient);
+  const ConsumosDatasourceImpl(this._offlineApiService);
 
-  final ApiClient _apiClient;
+  final OfflineApiService _offlineApiService;
 
   @override
   Future<ApiMessage> createConsumo(ConsumoUpsertEntity consumo) async {
@@ -24,16 +26,19 @@ class ConsumosDatasourceImpl implements ConsumosDatasource {
     final payload = ConsumoUpsertRequestModel.create(consumo).data;
     AppLogger.info('CONSUMOS DATASOURCE: CREATE PAYLOAD=$payload');
 
-    final response = await _apiClient.post(
-      WSConstantes.movimentacoesAdicionarConsumo,
-      data: payload,
-    );
-
-    AppLogger.success('CONSUMOS DATASOURCE: CREATE RAW RESPONSE=$response');
-    return _parseMutationResponse(
-      response,
-      operationName: 'CREATE CONSUMO',
-      expectedSuccessMessage: 'Consumo cadastrado com sucesso',
+    return _offlineApiService.postOrEnqueue(
+      module: 'movimentacoes',
+      action: SyncOperation.create,
+      endpoint: WSConstantes.movimentacoesAdicionarConsumo,
+      payload: payload,
+      priority: SyncPriority.movimentacoes,
+      pendingMessage: 'Consumo salvo localmente para sincronizar.',
+      rawResponseLog: 'CONSUMOS DATASOURCE: CREATE RAW RESPONSE',
+      parseResponse: (response) => _parseMutationResponse(
+        response,
+        operationName: 'CREATE CONSUMO',
+        expectedSuccessMessage: 'Consumo cadastrado com sucesso',
+      ),
     );
   }
 
@@ -49,16 +54,19 @@ class ConsumosDatasourceImpl implements ConsumosDatasource {
     final payload = ConsumoUpsertRequestModel.update(consumo).data;
     AppLogger.info('CONSUMOS DATASOURCE: UPDATE PAYLOAD=$payload');
 
-    final response = await _apiClient.post(
-      WSConstantes.movimentacoesAdicionarConsumo,
-      data: payload,
-    );
-
-    AppLogger.success('CONSUMOS DATASOURCE: UPDATE RAW RESPONSE=$response');
-    return _parseMutationResponse(
-      response,
-      operationName: 'UPDATE CONSUMO',
-      expectedSuccessMessage: 'Consumo atualizado com sucesso',
+    return _offlineApiService.postOrEnqueue(
+      module: 'movimentacoes',
+      action: SyncOperation.update,
+      endpoint: WSConstantes.movimentacoesAdicionarConsumo,
+      payload: payload,
+      priority: SyncPriority.movimentacoes,
+      pendingMessage: 'Alteração do consumo salva para sincronizar.',
+      rawResponseLog: 'CONSUMOS DATASOURCE: UPDATE RAW RESPONSE',
+      parseResponse: (response) => _parseMutationResponse(
+        response,
+        operationName: 'UPDATE CONSUMO',
+        expectedSuccessMessage: 'Consumo atualizado com sucesso',
+      ),
     );
   }
 
@@ -67,16 +75,19 @@ class ConsumosDatasourceImpl implements ConsumosDatasource {
     final payload = DeleteConsumoRequestModel.fromEntity(consumo).data;
     AppLogger.info('CONSUMOS DATASOURCE: DELETE PAYLOAD=$payload');
 
-    final response = await _apiClient.post(
-      WSConstantes.movimentacoesExcluirConsumo,
-      data: payload,
-    );
-
-    AppLogger.success('CONSUMOS DATASOURCE: DELETE RAW RESPONSE=$response');
-    return _parseMutationResponse(
-      response,
-      operationName: 'DELETE CONSUMO',
-      expectedSuccessMessage: 'Consumo excluido com sucesso',
+    return _offlineApiService.postOrEnqueue(
+      module: 'movimentacoes',
+      action: SyncOperation.delete,
+      endpoint: WSConstantes.movimentacoesExcluirConsumo,
+      payload: payload,
+      priority: SyncPriority.movimentacoes,
+      pendingMessage: 'Exclusao do consumo salva para sincronizar.',
+      rawResponseLog: 'CONSUMOS DATASOURCE: DELETE RAW RESPONSE',
+      parseResponse: (response) => _parseMutationResponse(
+        response,
+        operationName: 'DELETE CONSUMO',
+        expectedSuccessMessage: 'Consumo excluido com sucesso',
+      ),
     );
   }
 
@@ -86,13 +97,10 @@ class ConsumosDatasourceImpl implements ConsumosDatasource {
     required String expectedSuccessMessage,
   }) {
     final map = responseAsMap(response);
-    final hasMutationContract =
-        map.containsKey('status') || map.containsKey('msg');
+    final hasMutationContract = map.containsKey('status') || map.containsKey('msg');
 
     if (!hasMutationContract) {
-      throw ApiException(
-        'Resposta inesperada da API ao executar $operationName.',
-      );
+      throw ApiException('Resposta inesperada da API ao executar $operationName.');
     }
 
     final message = ApiMessage.fromResponse(response);
@@ -101,10 +109,7 @@ class ConsumosDatasourceImpl implements ConsumosDatasource {
     }
 
     if (message.message.trim().isEmpty) {
-      return ApiMessage(
-        status: message.status,
-        message: expectedSuccessMessage,
-      );
+      return ApiMessage(status: message.status, message: expectedSuccessMessage);
     }
 
     return message;

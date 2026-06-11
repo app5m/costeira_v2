@@ -1,15 +1,22 @@
 import 'package:costeira/core/api/api_client.dart';
 import 'package:costeira/core/api/api_exception.dart';
 import 'package:costeira/core/offline/network/network_status_service.dart';
+import 'package:costeira/core/offline/sync/post_sync_cache_refresh_service.dart';
 import 'package:costeira/core/offline/sync/sync_queue_service.dart';
 import 'package:costeira/core/offline/sync/sync_result.dart';
 
 class SyncService {
-  SyncService(this._queueService, this._networkStatusService, this._apiClient);
+  SyncService(
+    this._queueService,
+    this._networkStatusService,
+    this._apiClient,
+    this._postSyncCacheRefreshService,
+  );
 
   final SyncQueueService _queueService;
   final NetworkStatusService _networkStatusService;
   final ApiClient _apiClient;
+  final PostSyncCacheRefreshService _postSyncCacheRefreshService;
 
   Future<SyncResult> syncPendingItems() async {
     if (!await _networkStatusService.hasConnection()) {
@@ -18,6 +25,7 @@ class SyncService {
 
     final pendingItems = _queueService.getPendingItems();
     if (pendingItems.isEmpty) {
+      await _refreshMainCaches();
       return SyncResult.empty();
     }
 
@@ -49,13 +57,23 @@ class SyncService {
       }
     }
 
-    return SyncResult(
+    final result = SyncResult(
       totalItems: pendingItems.length,
       successCount: successCount,
       errorCount: errorCount,
       noConnection: noConnection,
       isEmpty: false,
     );
+
+    if (!noConnection) {
+      await _refreshMainCaches();
+    }
+
+    return result;
+  }
+
+  Future<void> _refreshMainCaches() {
+    return _postSyncCacheRefreshService.refreshMainCaches();
   }
 
   String _errorMessage(Object error) {

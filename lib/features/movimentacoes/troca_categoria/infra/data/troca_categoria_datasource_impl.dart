@@ -1,8 +1,10 @@
-import 'package:costeira/core/api/api_client.dart';
 import 'package:costeira/core/api/api_exception.dart';
 import 'package:costeira/core/api/api_response_utils.dart';
 import 'package:costeira/core/config/ws_constantes.dart';
 import 'package:costeira/core/models/api_message.dart';
+import 'package:costeira/core/offline/offline_api_service.dart';
+import 'package:costeira/core/offline/sync/sync_operation.dart';
+import 'package:costeira/core/offline/sync/sync_priority.dart';
 import 'package:costeira/core/utils/app_logger.dart';
 import 'package:costeira/features/movimentacoes/troca_categoria/domain/entities/delete_troca_categoria_entity.dart';
 import 'package:costeira/features/movimentacoes/troca_categoria/domain/entities/troca_categoria_upsert_entity.dart';
@@ -11,14 +13,12 @@ import 'package:costeira/features/movimentacoes/troca_categoria/infra/models/del
 import 'package:costeira/features/movimentacoes/troca_categoria/infra/models/troca_categoria_upsert_request_model.dart';
 
 class TrocaCategoriaDatasourceImpl implements TrocaCategoriaDatasource {
-  const TrocaCategoriaDatasourceImpl(this._apiClient);
+  const TrocaCategoriaDatasourceImpl(this._offlineApiService);
 
-  final ApiClient _apiClient;
+  final OfflineApiService _offlineApiService;
 
   @override
-  Future<ApiMessage> createTrocaCategoria(
-    TrocaCategoriaUpsertEntity troca,
-  ) async {
+  Future<ApiMessage> createTrocaCategoria(TrocaCategoriaUpsertEntity troca) async {
     if (troca.appUsersId == null) {
       throw ApiException('Usuario nao autenticado para cadastrar troca.');
     }
@@ -26,22 +26,24 @@ class TrocaCategoriaDatasourceImpl implements TrocaCategoriaDatasource {
     final payload = TrocaCategoriaUpsertRequestModel.create(troca).data;
     AppLogger.info('TROCA CATEGORIA DATASOURCE: CREATE PAYLOAD=$payload');
 
-    final response = await _apiClient.post(
-      WSConstantes.movimentacoesAdicionarTrocaCategoria,
-      data: payload,
-    );
-
-    return _parseMutationResponse(
-      response,
-      operationName: 'CREATE TROCA CATEGORIA',
-      expectedSuccessMessage: 'Troca de categoria cadastrada com sucesso',
+    return _offlineApiService.postOrEnqueue(
+      module: 'movimentacoes',
+      action: SyncOperation.create,
+      endpoint: WSConstantes.movimentacoesAdicionarTrocaCategoria,
+      payload: payload,
+      priority: SyncPriority.movimentacoes,
+      pendingMessage: 'Troca de categoria salva localmente para sincronizar.',
+      rawResponseLog: 'TROCA CATEGORIA DATASOURCE: CREATE RAW RESPONSE',
+      parseResponse: (response) => _parseMutationResponse(
+        response,
+        operationName: 'CREATE TROCA CATEGORIA',
+        expectedSuccessMessage: 'Troca de categoria cadastrada com sucesso',
+      ),
     );
   }
 
   @override
-  Future<ApiMessage> updateTrocaCategoria(
-    TrocaCategoriaUpsertEntity troca,
-  ) async {
+  Future<ApiMessage> updateTrocaCategoria(TrocaCategoriaUpsertEntity troca) async {
     if (troca.id == null) {
       throw ApiException('Informe o id da troca para atualizar.');
     }
@@ -52,34 +54,40 @@ class TrocaCategoriaDatasourceImpl implements TrocaCategoriaDatasource {
     final payload = TrocaCategoriaUpsertRequestModel.update(troca).data;
     AppLogger.info('TROCA CATEGORIA DATASOURCE: UPDATE PAYLOAD=$payload');
 
-    final response = await _apiClient.post(
-      WSConstantes.movimentacoesAdicionarTrocaCategoria,
-      data: payload,
-    );
-
-    return _parseMutationResponse(
-      response,
-      operationName: 'UPDATE TROCA CATEGORIA',
-      expectedSuccessMessage: 'Troca de categoria atualizada com sucesso',
+    return _offlineApiService.postOrEnqueue(
+      module: 'movimentacoes',
+      action: SyncOperation.update,
+      endpoint: WSConstantes.movimentacoesAdicionarTrocaCategoria,
+      payload: payload,
+      priority: SyncPriority.movimentacoes,
+      pendingMessage: 'Alteração da troca de categoria salva para sincronizar.',
+      rawResponseLog: 'TROCA CATEGORIA DATASOURCE: UPDATE RAW RESPONSE',
+      parseResponse: (response) => _parseMutationResponse(
+        response,
+        operationName: 'UPDATE TROCA CATEGORIA',
+        expectedSuccessMessage: 'Troca de categoria atualizada com sucesso',
+      ),
     );
   }
 
   @override
-  Future<ApiMessage> deleteTrocaCategoria(
-    DeleteTrocaCategoriaEntity troca,
-  ) async {
+  Future<ApiMessage> deleteTrocaCategoria(DeleteTrocaCategoriaEntity troca) async {
     final payload = DeleteTrocaCategoriaRequestModel.fromEntity(troca).data;
     AppLogger.info('TROCA CATEGORIA DATASOURCE: DELETE PAYLOAD=$payload');
 
-    final response = await _apiClient.post(
-      WSConstantes.movimentacoesExcluirTrocaCategoria,
-      data: payload,
-    );
-
-    return _parseMutationResponse(
-      response,
-      operationName: 'DELETE TROCA CATEGORIA',
-      expectedSuccessMessage: 'Troca de categoria excluida com sucesso',
+    return _offlineApiService.postOrEnqueue(
+      module: 'movimentacoes',
+      action: SyncOperation.delete,
+      endpoint: WSConstantes.movimentacoesExcluirTrocaCategoria,
+      payload: payload,
+      priority: SyncPriority.movimentacoes,
+      pendingMessage: 'Exclusao da troca de categoria salva para sincronizar.',
+      rawResponseLog: 'TROCA CATEGORIA DATASOURCE: DELETE RAW RESPONSE',
+      parseResponse: (response) => _parseMutationResponse(
+        response,
+        operationName: 'DELETE TROCA CATEGORIA',
+        expectedSuccessMessage: 'Troca de categoria excluida com sucesso',
+      ),
     );
   }
 
@@ -89,13 +97,10 @@ class TrocaCategoriaDatasourceImpl implements TrocaCategoriaDatasource {
     required String expectedSuccessMessage,
   }) {
     final map = responseAsMap(response);
-    final hasMutationContract =
-        map.containsKey('status') || map.containsKey('msg');
+    final hasMutationContract = map.containsKey('status') || map.containsKey('msg');
 
     if (!hasMutationContract) {
-      throw ApiException(
-        'Resposta inesperada da API ao executar $operationName.',
-      );
+      throw ApiException('Resposta inesperada da API ao executar $operationName.');
     }
 
     final message = ApiMessage.fromResponse(response);
@@ -104,10 +109,7 @@ class TrocaCategoriaDatasourceImpl implements TrocaCategoriaDatasource {
     }
 
     if (message.message.trim().isEmpty) {
-      return ApiMessage(
-        status: message.status,
-        message: expectedSuccessMessage,
-      );
+      return ApiMessage(status: message.status, message: expectedSuccessMessage);
     }
 
     return message;

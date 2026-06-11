@@ -19,6 +19,7 @@ class AppRoutes {
   static const String updatePassword = '/update-password';
   static const String modules = '/modules';
   static const String extras = '/extras';
+  static const String sync = '/sync';
   static const String animals = '/animals';
   static const String animalsAdd = '/animals/add';
   static const String animalsEdit = '/animals/edit';
