@@ -18,6 +18,10 @@ class SuplementoModel extends Suplemento {
     super.potreiro,
     super.lote,
     super.registros,
+    super.idLocal,
+    super.syncStatus,
+    super.pendingAction,
+    super.isLocalOnly = false,
   });
 
   factory SuplementoModel.fromJson(Map<String, dynamic> json) {
@@ -53,6 +57,10 @@ class SuplementoModel extends Suplemento {
               Map<String, dynamic>.from(json['lote'] as Map),
             )
           : null,
+      idLocal: json['idLocal']?.toString(),
+      syncStatus: json['syncStatus']?.toString(),
+      pendingAction: json['pendingAction']?.toString(),
+      isLocalOnly: json['isLocalOnly'] == true,
     );
 
     final registros = (json['registros'] as List<dynamic>? ?? const [])
@@ -82,6 +90,10 @@ class SuplementoModel extends Suplemento {
       potreiro: suplemento.potreiro,
       lote: suplemento.lote,
       registros: registros,
+      idLocal: suplemento.idLocal,
+      syncStatus: suplemento.syncStatus,
+      pendingAction: suplemento.pendingAction,
+      isLocalOnly: suplemento.isLocalOnly,
     );
   }
 }
@@ -132,6 +144,10 @@ class SuplementoRegistroModel extends SuplementoRegistro {
     super.dataCadastro,
     super.updateAt,
     super.suplemento,
+    super.idLocal,
+    super.syncStatus,
+    super.pendingAction,
+    super.isLocalOnly = false,
   });
 
   factory SuplementoRegistroModel.fromJson(
@@ -151,6 +167,10 @@ class SuplementoRegistroModel extends SuplementoRegistro {
       dataCadastro: json['data_cadastro']?.toString(),
       updateAt: json['update_at']?.toString(),
       suplemento: suplemento,
+      idLocal: json['idLocal']?.toString(),
+      syncStatus: json['syncStatus']?.toString(),
+      pendingAction: json['pendingAction']?.toString(),
+      isLocalOnly: json['isLocalOnly'] == true,
     );
   }
 }

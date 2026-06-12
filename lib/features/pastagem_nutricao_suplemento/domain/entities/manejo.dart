@@ -11,6 +11,10 @@ class Manejo {
     this.updateAt,
     this.potreiro,
     this.unidade,
+    this.idLocal,
+    this.syncStatus,
+    this.pendingAction,
+    this.isLocalOnly = false,
   });
 
   final int id;
@@ -24,6 +28,10 @@ class Manejo {
   final String? updateAt;
   final ManejoReference? potreiro;
   final ManejoReference? unidade;
+  final String? idLocal;
+  final String? syncStatus;
+  final String? pendingAction;
+  final bool isLocalOnly;
 }
 
 class TipoManejo {

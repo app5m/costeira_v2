@@ -9,6 +9,7 @@ import 'package:costeira/core/utils/app_logger.dart';
 import 'package:costeira/features/movimentacoes/nascimento/domain/entities/delete_nascimento_entity.dart';
 import 'package:costeira/features/movimentacoes/nascimento/domain/entities/nascimento_upsert_entity.dart';
 import 'package:costeira/features/movimentacoes/nascimento/domain/repository/nascimentos_datasource.dart';
+import 'package:costeira/features/movimentacoes/infra/data/movimentacao_offline_cache_mutation.dart';
 import 'package:costeira/features/movimentacoes/nascimento/infra/models/delete_nascimento_request_model.dart';
 import 'package:costeira/features/movimentacoes/nascimento/infra/models/nascimento_upsert_request_model.dart';
 
@@ -37,6 +38,9 @@ class NascimentosDatasourceImpl implements NascimentosDatasource {
       priority: SyncPriority.movimentacoes,
       pendingMessage: 'Nascimento salvo localmente para sincronizar.',
       rawResponseLog: 'NASCIMENTOS DATASOURCE: CREATE RAW RESPONSE',
+      offlineCacheMutation: MovimentacaoOfflineCacheMutation.forEndpoint(
+        WSConstantes.movimentacoesAdicionarNascimento,
+      ),
       parseResponse: (response) => _parseMutationResponse(
         response,
         operationName: 'CREATE NASCIMENTO',
@@ -65,6 +69,9 @@ class NascimentosDatasourceImpl implements NascimentosDatasource {
       priority: SyncPriority.movimentacoes,
       pendingMessage: 'Alteração do nascimento salva para sincronizar.',
       rawResponseLog: 'NASCIMENTOS DATASOURCE: UPDATE RAW RESPONSE',
+      offlineCacheMutation: MovimentacaoOfflineCacheMutation.forEndpoint(
+        WSConstantes.movimentacoesAdicionarNascimento,
+      ),
       parseResponse: (response) => _parseMutationResponse(
         response,
         operationName: 'UPDATE NASCIMENTO',
@@ -86,6 +93,9 @@ class NascimentosDatasourceImpl implements NascimentosDatasource {
       priority: SyncPriority.movimentacoes,
       pendingMessage: 'Exclusao do nascimento salva para sincronizar.',
       rawResponseLog: 'NASCIMENTOS DATASOURCE: DELETE RAW RESPONSE',
+      offlineCacheMutation: MovimentacaoOfflineCacheMutation.forEndpoint(
+        WSConstantes.movimentacoesExcluirNascimento,
+      ),
       parseResponse: (response) => _parseMutationResponse(
         response,
         operationName: 'DELETE NASCIMENTO',
@@ -100,13 +110,16 @@ class NascimentosDatasourceImpl implements NascimentosDatasource {
     required String expectedSuccessMessage,
   }) {
     final map = responseAsMap(response);
-    final hasMutationContract = map.containsKey('status') || map.containsKey('msg');
+    final hasMutationContract =
+        map.containsKey('status') || map.containsKey('msg');
 
     if (!hasMutationContract) {
       AppLogger.error(
         'NASCIMENTOS DATASOURCE: $operationName RETORNOU CONTRATO INVALIDO RAW=$response',
       );
-      throw ApiException('Resposta inesperada da API ao executar $operationName.');
+      throw ApiException(
+        'Resposta inesperada da API ao executar $operationName.',
+      );
     }
 
     final message = ApiMessage.fromResponse(response);
@@ -115,7 +128,10 @@ class NascimentosDatasourceImpl implements NascimentosDatasource {
     }
 
     if (message.message.trim().isEmpty) {
-      return ApiMessage(status: message.status, message: expectedSuccessMessage);
+      return ApiMessage(
+        status: message.status,
+        message: expectedSuccessMessage,
+      );
     }
 
     return message;

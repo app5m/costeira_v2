@@ -4,6 +4,7 @@ import 'package:costeira/core/api/api_response_utils.dart';
 import 'package:costeira/core/config/ws_constantes.dart';
 import 'package:costeira/core/models/api_message.dart';
 import 'package:costeira/core/offline/cache/api_cache_service.dart';
+import 'package:costeira/core/offline/cache/offline_mutation_cache_service.dart';
 import 'package:costeira/core/offline/network/network_status_service.dart';
 import 'package:costeira/core/offline/sync/sync_operation.dart';
 import 'package:costeira/core/offline/sync/sync_priority.dart';
@@ -37,12 +38,14 @@ class AnimalsDatasourceImpl implements AnimalsDatasource {
     this._networkStatusService,
     this._apiCacheService,
     this._syncQueueService,
+    this._mutationCacheService,
   );
 
   final ApiClient _apiClient;
   final NetworkStatusService _networkStatusService;
   final ApiCacheService _apiCacheService;
   final SyncQueueService _syncQueueService;
+  final OfflineMutationCacheService _mutationCacheService;
 
   @override
   Future<ApiMessage> createAnimal(AnimalUpsertEntity animal) async {
@@ -100,7 +103,8 @@ class AnimalsDatasourceImpl implements AnimalsDatasource {
       endpoint: WSConstantes.animaisListar,
       payload: payload,
       userId: filter.appUsersId,
-      parser: (response) => AnimalsListResponseModel.fromJson(responseAsMap(response)),
+      parser: (response) =>
+          AnimalsListResponseModel.fromJson(responseAsMap(response)),
       missingCacheMessage: 'Sem conexão e sem dados salvos para animais.',
       rawResponseLog: 'ANIMAIS DATASOURCE: LIST RAW RESPONSE',
     );
@@ -172,7 +176,9 @@ class AnimalsDatasourceImpl implements AnimalsDatasource {
   }
 
   @override
-  Future<AnimalLotsListEntity> getAnimalLots(AnimalLotsFilterEntity filter) async {
+  Future<AnimalLotsListEntity> getAnimalLots(
+    AnimalLotsFilterEntity filter,
+  ) async {
     final payload = AnimalLotsFilterRequestModel.fromEntity(filter).data;
     AppLogger.info('ANIMAIS DATASOURCE: LIST LOTS PAYLOAD=$payload');
 
@@ -180,7 +186,8 @@ class AnimalsDatasourceImpl implements AnimalsDatasource {
       endpoint: WSConstantes.animaisListarLotes,
       payload: payload,
       userId: filter.appUsersId,
-      parser: (response) => AnimalLotsListResponseModel.fromJson(responseAsMap(response)),
+      parser: (response) =>
+          AnimalLotsListResponseModel.fromJson(responseAsMap(response)),
       missingCacheMessage: 'Sem conexão e sem dados salvos para lotes.',
       rawResponseLog: 'ANIMAIS DATASOURCE: LIST LOTS RAW RESPONSE',
     );
@@ -205,11 +212,16 @@ class AnimalsDatasourceImpl implements AnimalsDatasource {
   }
 
   @override
-  Future<AnimalChartsEntity> getAnimalCharts(AnimalChartsFilterEntity filter) async {
+  Future<AnimalChartsEntity> getAnimalCharts(
+    AnimalChartsFilterEntity filter,
+  ) async {
     final payload = AnimalChartsFilterRequestModel.fromEntity(filter).data;
     AppLogger.info('ANIMAIS DATASOURCE: CHARTS PAYLOAD=$payload');
 
-    final response = await _apiClient.post(WSConstantes.animaisGraficos, data: payload);
+    final response = await _apiClient.post(
+      WSConstantes.animaisGraficos,
+      data: payload,
+    );
 
     AppLogger.success('ANIMAIS DATASOURCE: CHARTS RAW RESPONSE=$response');
 
@@ -218,7 +230,9 @@ class AnimalsDatasourceImpl implements AnimalsDatasource {
     final first = dataList.whereType<Map>().cast<Map>().firstOrNull;
 
     if (first == null) {
-      AppLogger.warning('ANIMAIS DATASOURCE: CHARTS SEM DADOS, RETORNANDO VAZIO');
+      AppLogger.warning(
+        'ANIMAIS DATASOURCE: CHARTS SEM DADOS, RETORNANDO VAZIO',
+      );
       return const AnimalChartsEntity(
         pesoTotalRebanho: 0,
         pesoMedioFazenda: 0,
@@ -266,7 +280,8 @@ class AnimalsDatasourceImpl implements AnimalsDatasource {
       return parser(response);
     } catch (error) {
       final canUseCacheFallback =
-          !await _networkStatusService.hasConnection() || _isConnectionFailure(error);
+          !await _networkStatusService.hasConnection() ||
+          _isConnectionFailure(error);
 
       if (canUseCacheFallback) {
         final cached = _getCachedList(
@@ -395,6 +410,12 @@ class AnimalsDatasourceImpl implements AnimalsDatasource {
       payload: payload,
       priority: priority,
     );
+    await _applyOfflineCacheMutation(
+      action: action,
+      module: module,
+      payload: payload,
+      idLocal: item.idLocal,
+    );
 
     AppLogger.success(
       'ANIMAIS DATASOURCE: MUTATION ENFILEIRADA ID=${item.idLocal} MODULE=$module ACTION=$action',
@@ -407,13 +428,72 @@ class AnimalsDatasourceImpl implements AnimalsDatasource {
     );
   }
 
+  Future<void> _applyOfflineCacheMutation({
+    required String action,
+    required String module,
+    required Map<String, dynamic> payload,
+    required String idLocal,
+  }) {
+    final userId = int.tryParse(payload['app_users_id']?.toString() ?? '');
+    final listEndpoint = module == 'lotes'
+        ? WSConstantes.animaisListarLotes
+        : WSConstantes.animaisListar;
+    final isAnimalsModule = module == 'animais';
+    final isLotsModule = module == 'lotes';
+    final isAnimalCreate = isAnimalsModule && action == SyncOperation.create;
+    final isLotCreate = isLotsModule && action == SyncOperation.create;
+    final listPayload = userId == null
+        ? null
+        : isAnimalsModule
+        ? _defaultAnimalsListPayload(userId)
+        : isLotsModule
+        ? _defaultLotsListPayload(userId)
+        : null;
+
+    return _mutationCacheService.applyMutation(
+      action: action,
+      listEndpoint: listEndpoint,
+      listPayload: listPayload,
+      userId: userId,
+      item: action == SyncOperation.delete ? null : _cacheItemFrom(payload),
+      itemId: payload['id'],
+      idLocal: idLocal,
+      createCacheWhenMissing: isAnimalCreate || isLotCreate,
+      emptyResponse: isAnimalCreate || isLotCreate
+          ? _emptyListResponse()
+          : null,
+      allowLatestCacheFallback: !(isAnimalsModule || isLotsModule),
+    );
+  }
+
+  Map<String, dynamic> _cacheItemFrom(Map<String, dynamic> payload) {
+    return Map<String, dynamic>.from(payload)..remove('token');
+  }
+
+  Map<String, dynamic> _defaultAnimalsListPayload(int userId) {
+    return AnimalsFilterRequestModel.fromEntity(
+      AnimalsFilterEntity(appUsersId: userId),
+    ).data;
+  }
+
+  Map<String, dynamic> _defaultLotsListPayload(int userId) {
+    return AnimalLotsFilterRequestModel.fromEntity(
+      AnimalLotsFilterEntity(appUsersId: userId),
+    ).data;
+  }
+
+  Map<String, dynamic> _emptyListResponse() {
+    return {'rows': 0, 'data': <Map<String, dynamic>>[]};
+  }
+
   ApiMessage _parseMutationResponse(
     dynamic response, {
     required String operationName,
     required String expectedSuccessMessage,
   }) {
     final map = responseAsMap(response);
-    final hasMutationContract = map.containsKey('status') || map.containsKey('msg');
+    final hasMutationContract =
+        map.containsKey('status') || map.containsKey('msg');
 
     if (!hasMutationContract) {
       AppLogger.error(
@@ -435,7 +515,10 @@ class AnimalsDatasourceImpl implements AnimalsDatasource {
     }
 
     if (message.message.trim().isEmpty) {
-      return ApiMessage(status: message.status, message: expectedSuccessMessage);
+      return ApiMessage(
+        status: message.status,
+        message: expectedSuccessMessage,
+      );
     }
 
     return message;

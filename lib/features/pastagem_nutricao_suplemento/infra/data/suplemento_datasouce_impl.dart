@@ -27,7 +27,9 @@ class SuplementoDatasouceImpl implements SuplementoDatasource {
   final OfflineApiService _offlineApiService;
 
   @override
-  Future<SuplementosListEntity> getSuplementos(SuplementoFilterEntity filter) async {
+  Future<SuplementosListEntity> getSuplementos(
+    SuplementoFilterEntity filter,
+  ) async {
     final payload = SuplementoFilterRequestModel.fromEntity(filter).data;
     AppLogger.info('SUPLEMENTACAO DATASOURCE: LIST PAYLOAD=$payload');
 
@@ -35,7 +37,8 @@ class SuplementoDatasouceImpl implements SuplementoDatasource {
       endpoint: WSConstantes.suplementacaoListar,
       payload: payload,
       userId: filter.appUsersId,
-      parser: (response) => SuplementosListResponseModel.fromJson(responseAsMap(response)),
+      parser: (response) =>
+          SuplementosListResponseModel.fromJson(responseAsMap(response)),
       missingCacheMessage: 'Sem conexão e sem dados salvos para suplementacao.',
       rawResponseLog: 'SUPLEMENTACAO DATASOURCE: LIST RAW RESPONSE',
     );
@@ -85,19 +88,24 @@ class SuplementoDatasouceImpl implements SuplementoDatasource {
   }
 
   @override
-  Future<ApiMessage> createRegistro(SuplementoRegistroUpsertEntity registro) async {
+  Future<ApiMessage> createRegistro(
+    SuplementoRegistroUpsertEntity registro,
+  ) async {
     if (registro.appUsersId == null) {
       throw ApiException('Usuario nao autenticado para cadastrar registro.');
     }
 
-    final payload = SuplementoRegistroUpsertRequestModel.fromEntity(registro).data;
+    final payload = SuplementoRegistroUpsertRequestModel.fromEntity(
+      registro,
+    ).data;
     AppLogger.info('SUPLEMENTACAO REGISTRO: CREATE PAYLOAD=$payload');
 
     return _mutation(
       action: SyncOperation.create,
       endpoint: WSConstantes.suplementacaoAdicionarRegistro,
       payload: payload,
-      pendingMessage: 'Registro de suplementacao salvo localmente para sincronizar.',
+      pendingMessage:
+          'Registro de suplementacao salvo localmente para sincronizar.',
       rawResponseLog: 'SUPLEMENTACAO REGISTRO: CREATE RESPONSE',
       operationName: 'CREATE REGISTRO SUPLEMENTACAO',
       expectedSuccessMessage: 'Registro cadastrado com sucesso',
@@ -105,7 +113,9 @@ class SuplementoDatasouceImpl implements SuplementoDatasource {
   }
 
   @override
-  Future<ApiMessage> updateRegistro(SuplementoRegistroUpsertEntity registro) async {
+  Future<ApiMessage> updateRegistro(
+    SuplementoRegistroUpsertEntity registro,
+  ) async {
     if (registro.id == null) {
       throw ApiException('Informe o id do registro para atualizar.');
     }
@@ -113,14 +123,17 @@ class SuplementoDatasouceImpl implements SuplementoDatasource {
       throw ApiException('Usuario nao autenticado para atualizar registro.');
     }
 
-    final payload = SuplementoRegistroUpsertRequestModel.fromEntity(registro).data;
+    final payload = SuplementoRegistroUpsertRequestModel.fromEntity(
+      registro,
+    ).data;
     AppLogger.info('SUPLEMENTACAO REGISTRO: UPDATE PAYLOAD=$payload');
 
     return _mutation(
       action: SyncOperation.update,
       endpoint: WSConstantes.suplementacaoAdicionarRegistro,
       payload: payload,
-      pendingMessage: 'Alteração do registro de suplementacao salva para sincronizar.',
+      pendingMessage:
+          'Alteração do registro de suplementacao salva para sincronizar.',
       rawResponseLog: 'SUPLEMENTACAO REGISTRO: UPDATE RESPONSE',
       operationName: 'UPDATE REGISTRO SUPLEMENTACAO',
       expectedSuccessMessage: 'Registro atualizado com sucesso',
@@ -144,15 +157,20 @@ class SuplementoDatasouceImpl implements SuplementoDatasource {
   }
 
   @override
-  Future<ApiMessage> deleteRegistro(DeleteSuplementoRegistroEntity registro) async {
-    final payload = DeleteSuplementoRegistroRequestModel.fromEntity(registro).data;
+  Future<ApiMessage> deleteRegistro(
+    DeleteSuplementoRegistroEntity registro,
+  ) async {
+    final payload = DeleteSuplementoRegistroRequestModel.fromEntity(
+      registro,
+    ).data;
     AppLogger.info('SUPLEMENTACAO REGISTRO: DELETE PAYLOAD=$payload');
 
     return _mutation(
       action: SyncOperation.delete,
       endpoint: WSConstantes.suplementacaoExcluirRegistro,
       payload: payload,
-      pendingMessage: 'Exclusao do registro de suplementacao salva para sincronizar.',
+      pendingMessage:
+          'Exclusao do registro de suplementacao salva para sincronizar.',
       rawResponseLog: 'SUPLEMENTACAO REGISTRO: DELETE RESPONSE',
       operationName: 'DELETE REGISTRO SUPLEMENTACAO',
       expectedSuccessMessage: 'Registro excluido com sucesso',
@@ -160,11 +178,16 @@ class SuplementoDatasouceImpl implements SuplementoDatasource {
   }
 
   @override
-  Future<SuplementoChartsEntity> getCharts(SuplementoChartsFilterEntity filter) async {
+  Future<SuplementoChartsEntity> getCharts(
+    SuplementoChartsFilterEntity filter,
+  ) async {
     final payload = SuplementoChartsFilterRequestModel.fromEntity(filter).data;
     AppLogger.info('SUPLEMENTACAO CHARTS: PAYLOAD=$payload');
 
-    final response = await _apiClient.post(WSConstantes.suplementacaoGraficos, data: payload);
+    final response = await _apiClient.post(
+      WSConstantes.suplementacaoGraficos,
+      data: payload,
+    );
     AppLogger.success('SUPLEMENTACAO CHARTS: RESPONSE=$response');
 
     final wrapper = responseAsMap(response);
@@ -175,7 +198,9 @@ class SuplementoDatasouceImpl implements SuplementoDatasource {
       return SuplementoChartsEntity.empty;
     }
 
-    return SuplementoChartsResponseModel.fromJson(Map<String, dynamic>.from(first));
+    return SuplementoChartsResponseModel.fromJson(
+      Map<String, dynamic>.from(first),
+    );
   }
 
   Future<ApiMessage> _mutation({
@@ -195,6 +220,7 @@ class SuplementoDatasouceImpl implements SuplementoDatasource {
       priority: SyncPriority.pastagemNutricaoSuplemento,
       pendingMessage: pendingMessage,
       rawResponseLog: rawResponseLog,
+      offlineCacheMutation: _cacheMutationFor(endpoint),
       parseResponse: (response) => _parseMutationResponse(
         response,
         operationName: operationName,
@@ -203,13 +229,46 @@ class SuplementoDatasouceImpl implements SuplementoDatasource {
     );
   }
 
+  OfflineCacheMutation? _cacheMutationFor(String endpoint) {
+    switch (endpoint) {
+      case WSConstantes.suplementacaoAdicionar:
+      case WSConstantes.suplementacaoExcluir:
+        return OfflineCacheMutation(
+          listEndpoint: WSConstantes.suplementacaoListar,
+          listPayloadBuilder: _defaultSuplementoListPayload,
+          createCacheWhenMissing: true,
+          emptyResponse: _emptySuplementoListResponse,
+          allowLatestCacheFallback: false,
+        );
+      case WSConstantes.suplementacaoAdicionarRegistro:
+        return OfflineCacheMutation(
+          listEndpoint: WSConstantes.suplementacaoListar,
+          listPayloadBuilder: _defaultSuplementoListPayload,
+          parentIdField: 'app_suplementacao_id',
+          nestedListField: 'registros',
+          allowLatestCacheFallback: false,
+        );
+      case WSConstantes.suplementacaoExcluirRegistro:
+        return OfflineCacheMutation(
+          listEndpoint: WSConstantes.suplementacaoListar,
+          listPayloadBuilder: _defaultSuplementoListPayload,
+          parentIdField: 'app_suplementacao_id',
+          nestedListField: 'registros',
+          allowLatestCacheFallback: false,
+        );
+      default:
+        return null;
+    }
+  }
+
   ApiMessage _parseMutationResponse(
     dynamic response, {
     required String operationName,
     required String expectedSuccessMessage,
   }) {
     final map = responseAsMap(response);
-    final hasMutationContract = map.containsKey('status') || map.containsKey('msg');
+    final hasMutationContract =
+        map.containsKey('status') || map.containsKey('msg');
 
     if (!hasMutationContract) {
       throw ApiException(
@@ -224,9 +283,30 @@ class SuplementoDatasouceImpl implements SuplementoDatasource {
     }
 
     if (message.message.trim().isEmpty) {
-      return ApiMessage(status: message.status, message: expectedSuccessMessage);
+      return ApiMessage(
+        status: message.status,
+        message: expectedSuccessMessage,
+      );
     }
 
     return message;
   }
 }
+
+Map<String, dynamic> _defaultSuplementoListPayload(
+  Map<String, dynamic> payload,
+) {
+  final userId = int.tryParse(payload['app_users_id']?.toString() ?? '');
+  if (userId == null) {
+    return <String, dynamic>{};
+  }
+
+  return SuplementoFilterRequestModel.fromEntity(
+    SuplementoFilterEntity(appUsersId: userId),
+  ).data;
+}
+
+const Map<String, dynamic> _emptySuplementoListResponse = {
+  'rows': 0,
+  'data': <Map<String, dynamic>>[],
+};

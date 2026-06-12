@@ -20,6 +20,10 @@ class InsumoModel extends InsumoEntity {
     super.updateAt,
     super.unidade,
     super.suplemento,
+    super.idLocal,
+    super.syncStatus,
+    super.pendingAction,
+    super.isLocalOnly = false,
   });
 
   factory InsumoModel.fromJson(Map<String, dynamic> json) {
@@ -49,6 +53,10 @@ class InsumoModel extends InsumoEntity {
       updateAt: json['update_at']?.toString(),
       unidade: _referenceFromJson(json['unidade']),
       suplemento: _referenceFromJson(json['suplemento']),
+      idLocal: json['idLocal']?.toString(),
+      syncStatus: json['syncStatus']?.toString(),
+      pendingAction: json['pendingAction']?.toString(),
+      isLocalOnly: json['isLocalOnly'] == true,
     );
   }
 

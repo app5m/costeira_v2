@@ -13,6 +13,10 @@ class ManejoModel extends Manejo {
     super.updateAt,
     super.potreiro,
     super.unidade,
+    super.idLocal,
+    super.syncStatus,
+    super.pendingAction,
+    super.isLocalOnly = false,
   });
 
   factory ManejoModel.fromJson(Map<String, dynamic> json) {
@@ -38,6 +42,10 @@ class ManejoModel extends Manejo {
               Map<String, dynamic>.from(json['unidade'] as Map),
             )
           : null,
+      idLocal: json['idLocal']?.toString(),
+      syncStatus: json['syncStatus']?.toString(),
+      pendingAction: json['pendingAction']?.toString(),
+      isLocalOnly: json['isLocalOnly'] == true,
     );
   }
 }

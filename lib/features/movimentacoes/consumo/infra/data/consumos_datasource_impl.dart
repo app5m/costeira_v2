@@ -11,6 +11,7 @@ import 'package:costeira/features/movimentacoes/consumo/domain/entities/delete_c
 import 'package:costeira/features/movimentacoes/consumo/domain/repository/consumos_datasource.dart';
 import 'package:costeira/features/movimentacoes/consumo/infra/models/consumo_upsert_request_model.dart';
 import 'package:costeira/features/movimentacoes/consumo/infra/models/delete_consumo_request_model.dart';
+import 'package:costeira/features/movimentacoes/infra/data/movimentacao_offline_cache_mutation.dart';
 
 class ConsumosDatasourceImpl implements ConsumosDatasource {
   const ConsumosDatasourceImpl(this._offlineApiService);
@@ -34,6 +35,9 @@ class ConsumosDatasourceImpl implements ConsumosDatasource {
       priority: SyncPriority.movimentacoes,
       pendingMessage: 'Consumo salvo localmente para sincronizar.',
       rawResponseLog: 'CONSUMOS DATASOURCE: CREATE RAW RESPONSE',
+      offlineCacheMutation: MovimentacaoOfflineCacheMutation.forEndpoint(
+        WSConstantes.movimentacoesAdicionarConsumo,
+      ),
       parseResponse: (response) => _parseMutationResponse(
         response,
         operationName: 'CREATE CONSUMO',
@@ -62,6 +66,9 @@ class ConsumosDatasourceImpl implements ConsumosDatasource {
       priority: SyncPriority.movimentacoes,
       pendingMessage: 'Alteração do consumo salva para sincronizar.',
       rawResponseLog: 'CONSUMOS DATASOURCE: UPDATE RAW RESPONSE',
+      offlineCacheMutation: MovimentacaoOfflineCacheMutation.forEndpoint(
+        WSConstantes.movimentacoesAdicionarConsumo,
+      ),
       parseResponse: (response) => _parseMutationResponse(
         response,
         operationName: 'UPDATE CONSUMO',
@@ -83,6 +90,9 @@ class ConsumosDatasourceImpl implements ConsumosDatasource {
       priority: SyncPriority.movimentacoes,
       pendingMessage: 'Exclusao do consumo salva para sincronizar.',
       rawResponseLog: 'CONSUMOS DATASOURCE: DELETE RAW RESPONSE',
+      offlineCacheMutation: MovimentacaoOfflineCacheMutation.forEndpoint(
+        WSConstantes.movimentacoesExcluirConsumo,
+      ),
       parseResponse: (response) => _parseMutationResponse(
         response,
         operationName: 'DELETE CONSUMO',
@@ -97,10 +107,13 @@ class ConsumosDatasourceImpl implements ConsumosDatasource {
     required String expectedSuccessMessage,
   }) {
     final map = responseAsMap(response);
-    final hasMutationContract = map.containsKey('status') || map.containsKey('msg');
+    final hasMutationContract =
+        map.containsKey('status') || map.containsKey('msg');
 
     if (!hasMutationContract) {
-      throw ApiException('Resposta inesperada da API ao executar $operationName.');
+      throw ApiException(
+        'Resposta inesperada da API ao executar $operationName.',
+      );
     }
 
     final message = ApiMessage.fromResponse(response);
@@ -109,7 +122,10 @@ class ConsumosDatasourceImpl implements ConsumosDatasource {
     }
 
     if (message.message.trim().isEmpty) {
-      return ApiMessage(status: message.status, message: expectedSuccessMessage);
+      return ApiMessage(
+        status: message.status,
+        message: expectedSuccessMessage,
+      );
     }
 
     return message;

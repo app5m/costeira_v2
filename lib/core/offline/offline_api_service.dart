@@ -4,7 +4,9 @@ import 'package:costeira/core/api/api_client.dart';
 import 'package:costeira/core/api/api_exception.dart';
 import 'package:costeira/core/models/api_message.dart';
 import 'package:costeira/core/offline/cache/api_cache_service.dart';
+import 'package:costeira/core/offline/cache/offline_mutation_cache_service.dart';
 import 'package:costeira/core/offline/network/network_status_service.dart';
+import 'package:costeira/core/offline/sync/sync_operation.dart';
 import 'package:costeira/core/offline/sync/sync_queue_service.dart';
 import 'package:costeira/core/utils/app_logger.dart';
 
@@ -14,12 +16,14 @@ class OfflineApiService {
     this._networkStatusService,
     this._apiCacheService,
     this._syncQueueService,
+    this._mutationCacheService,
   );
 
   final ApiClient _apiClient;
   final NetworkStatusService _networkStatusService;
   final ApiCacheService _apiCacheService;
   final SyncQueueService _syncQueueService;
+  final OfflineMutationCacheService _mutationCacheService;
 
   Future<T> postCached<T>({
     required String endpoint,
@@ -82,6 +86,7 @@ class OfflineApiService {
     required String pendingMessage,
     required FutureOr<ApiMessage> Function(dynamic response) parseResponse,
     required String rawResponseLog,
+    OfflineCacheMutation? offlineCacheMutation,
   }) async {
     if (!await _networkStatusService.hasConnection()) {
       return _enqueue(
@@ -91,6 +96,7 @@ class OfflineApiService {
         payload: payload,
         priority: priority,
         message: pendingMessage,
+        offlineCacheMutation: offlineCacheMutation,
       );
     }
 
@@ -107,6 +113,7 @@ class OfflineApiService {
           payload: payload,
           priority: priority,
           message: pendingMessage,
+          offlineCacheMutation: offlineCacheMutation,
         );
       }
       rethrow;
@@ -179,6 +186,7 @@ class OfflineApiService {
     required Map<String, dynamic> payload,
     required int priority,
     required String message,
+    OfflineCacheMutation? offlineCacheMutation,
   }) async {
     final item = await _syncQueueService.addItem(
       module: module,
@@ -186,6 +194,12 @@ class OfflineApiService {
       endpoint: endpoint,
       payload: payload,
       priority: priority,
+    );
+    await _applyOfflineCacheMutation(
+      action: action,
+      payload: payload,
+      idLocal: item.idLocal,
+      mutation: offlineCacheMutation,
     );
 
     AppLogger.success(
@@ -202,4 +216,119 @@ class OfflineApiService {
   bool _isConnectionFailure(Object error) {
     return error is ApiException && error.statusCode == null;
   }
+
+  Future<void> _applyOfflineCacheMutation({
+    required String action,
+    required Map<String, dynamic> payload,
+    required String idLocal,
+    required OfflineCacheMutation? mutation,
+  }) async {
+    if (mutation == null) {
+      return;
+    }
+
+    final item =
+        mutation.itemBuilder?.call(payload, idLocal) ??
+        _defaultCachedItem(payload);
+    final itemId = mutation.itemId ?? payload[mutation.idField];
+    final userId =
+        mutation.userId ??
+        int.tryParse(payload['app_users_id']?.toString() ?? '');
+    final listPayload =
+        mutation.listPayloadBuilder?.call(payload) ?? mutation.listPayload;
+    final emptyResponse =
+        mutation.emptyResponseBuilder?.call(payload) ?? mutation.emptyResponse;
+
+    if (mutation.nestedListField != null && mutation.parentIdField != null) {
+      await _mutationCacheService.applyNestedListMutation(
+        action: action,
+        listEndpoint: mutation.listEndpoint,
+        listPayload: listPayload,
+        userId: userId,
+        item: action == SyncOperation.delete ? null : item,
+        parentId: mutation.parentId ?? payload[mutation.parentIdField],
+        parentIdField: mutation.parentIdField!,
+        nestedListField: mutation.nestedListField!,
+        itemId: itemId,
+        idLocal: idLocal,
+        idField: mutation.idField,
+        listField: mutation.listField,
+        rowsField: mutation.rowsField,
+        allowLatestCacheFallback: mutation.allowLatestCacheFallback,
+      );
+      return;
+    }
+
+    await _mutationCacheService.applyMutation(
+      action: action,
+      listEndpoint: mutation.listEndpoint,
+      listPayload: listPayload,
+      userId: userId,
+      item: action == SyncOperation.delete ? null : item,
+      itemId: itemId,
+      idLocal: idLocal,
+      idField: mutation.idField,
+      listField: mutation.listField,
+      rowsField: mutation.rowsField,
+      markDeleteInsteadOfRemove: mutation.markDeleteInsteadOfRemove,
+      createCacheWhenMissing:
+          mutation.createCacheWhenMissing && action == SyncOperation.create,
+      emptyResponse: action == SyncOperation.create ? emptyResponse : null,
+      allowLatestCacheFallback: mutation.allowLatestCacheFallback,
+    );
+  }
+
+  Map<String, dynamic> _defaultCachedItem(Map<String, dynamic> payload) {
+    final item = Map<String, dynamic>.from(payload)..remove('token');
+    final animais = item['animais'];
+    if (animais is List && item['qtd_animais'] == null) {
+      item['qtd_animais'] = animais.length;
+    }
+    return item;
+  }
+}
+
+class OfflineCacheMutation {
+  const OfflineCacheMutation({
+    required this.listEndpoint,
+    this.listPayload,
+    this.listPayloadBuilder,
+    this.userId,
+    this.itemId,
+    this.parentId,
+    this.parentIdField,
+    this.nestedListField,
+    this.idField = OfflineCacheFields.id,
+    this.listField = OfflineCacheFields.data,
+    this.rowsField = OfflineCacheFields.rows,
+    this.markDeleteInsteadOfRemove = false,
+    this.createCacheWhenMissing = false,
+    this.emptyResponse,
+    this.emptyResponseBuilder,
+    this.allowLatestCacheFallback = true,
+    this.itemBuilder,
+  });
+
+  final String listEndpoint;
+  final Map<String, dynamic>? listPayload;
+  final Map<String, dynamic>? Function(Map<String, dynamic> payload)?
+  listPayloadBuilder;
+  final int? userId;
+  final Object? itemId;
+  final Object? parentId;
+  final String? parentIdField;
+  final String? nestedListField;
+  final String idField;
+  final String listField;
+  final String rowsField;
+  final bool markDeleteInsteadOfRemove;
+  final bool createCacheWhenMissing;
+  final dynamic emptyResponse;
+  final dynamic Function(Map<String, dynamic> payload)? emptyResponseBuilder;
+  final bool allowLatestCacheFallback;
+  final Map<String, dynamic> Function(
+    Map<String, dynamic> payload,
+    String idLocal,
+  )?
+  itemBuilder;
 }

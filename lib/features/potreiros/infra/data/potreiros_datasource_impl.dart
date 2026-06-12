@@ -4,6 +4,7 @@ import 'package:costeira/core/api/api_response_utils.dart';
 import 'package:costeira/core/config/ws_constantes.dart';
 import 'package:costeira/core/models/api_message.dart';
 import 'package:costeira/core/offline/cache/api_cache_service.dart';
+import 'package:costeira/core/offline/cache/offline_mutation_cache_service.dart';
 import 'package:costeira/core/offline/network/network_status_service.dart';
 import 'package:costeira/core/offline/sync/sync_operation.dart';
 import 'package:costeira/core/offline/sync/sync_priority.dart';
@@ -29,12 +30,14 @@ class PotreirosDatasourceImpl implements PotreirosDatasource {
     this._networkStatusService,
     this._apiCacheService,
     this._syncQueueService,
+    this._mutationCacheService,
   );
 
   final ApiClient _apiClient;
   final NetworkStatusService _networkStatusService;
   final ApiCacheService _apiCacheService;
   final SyncQueueService _syncQueueService;
+  final OfflineMutationCacheService _mutationCacheService;
 
   @override
   Future<PotreirosListEntity> getPotreiros(PotreirosFilterEntity filter) async {
@@ -329,6 +332,21 @@ class PotreirosDatasourceImpl implements PotreirosDatasource {
       payload: payload,
       priority: SyncPriority.potreiros,
     );
+    final userId = int.tryParse(payload['app_users_id']?.toString() ?? '');
+    final isCreate = action == SyncOperation.create;
+
+    await _mutationCacheService.applyMutation(
+      action: action,
+      listEndpoint: WSConstantes.potreirosListar,
+      listPayload: userId == null ? null : _defaultListPayload(userId),
+      userId: userId,
+      item: action == SyncOperation.delete ? null : _cacheItemFrom(payload),
+      itemId: payload['id'],
+      idLocal: item.idLocal,
+      createCacheWhenMissing: isCreate,
+      emptyResponse: isCreate ? _emptyListResponse() : null,
+      allowLatestCacheFallback: false,
+    );
 
     AppLogger.success(
       'POTREIROS DATASOURCE: MUTATION ENFILEIRADA ID=${item.idLocal} ACTION=$action',
@@ -339,5 +357,19 @@ class PotreirosDatasourceImpl implements PotreirosDatasource {
       message: successMessage,
       extra: {'sync_pending': true, 'id_local': item.idLocal},
     );
+  }
+
+  Map<String, dynamic> _cacheItemFrom(Map<String, dynamic> payload) {
+    return Map<String, dynamic>.from(payload)..remove('token');
+  }
+
+  Map<String, dynamic> _defaultListPayload(int userId) {
+    return PotreirosFilterRequestModel.fromEntity(
+      PotreirosFilterEntity(appUsersId: userId),
+    ).data;
+  }
+
+  Map<String, dynamic> _emptyListResponse() {
+    return {'rows': 0, 'data': <Map<String, dynamic>>[]};
   }
 }

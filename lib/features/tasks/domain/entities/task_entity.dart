@@ -16,6 +16,10 @@ class TaskEntity {
     required this.statusNome,
     this.responsavel,
     this.datas = const [],
+    this.idLocal,
+    this.syncStatus,
+    this.pendingAction,
+    this.isLocalOnly = false,
   });
 
   final int id;
@@ -31,6 +35,10 @@ class TaskEntity {
   final String statusNome;
   final TaskResponsavelEntity? responsavel;
   final List<TaskDateInfoEntity> datas;
+  final String? idLocal;
+  final String? syncStatus;
+  final String? pendingAction;
+  final bool isLocalOnly;
 
   bool get isDone => statusId == 3 || statusNome.toLowerCase() == 'realizado';
 }

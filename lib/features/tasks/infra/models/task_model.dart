@@ -17,6 +17,10 @@ class TaskModel extends TaskEntity {
     required super.statusNome,
     super.responsavel,
     super.datas,
+    super.idLocal,
+    super.syncStatus,
+    super.pendingAction,
+    super.isLocalOnly = false,
   });
 
   factory TaskModel.fromJson(Map<String, dynamic> json) {
@@ -49,6 +53,10 @@ class TaskModel extends TaskEntity {
                 TaskDateInfoModel.fromJson(Map<String, dynamic>.from(item)),
           )
           .toList(growable: false),
+      idLocal: json['idLocal']?.toString(),
+      syncStatus: json['syncStatus']?.toString(),
+      pendingAction: json['pendingAction']?.toString(),
+      isLocalOnly: json['isLocalOnly'] == true,
     );
   }
 }

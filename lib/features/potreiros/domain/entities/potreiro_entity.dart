@@ -14,6 +14,10 @@ class PotreiroEntity {
     this.updateAt,
     this.obs,
     this.animalsCount = 0,
+    this.idLocal,
+    this.syncStatus,
+    this.pendingAction,
+    this.isLocalOnly = false,
   });
 
   final int id;
@@ -30,4 +34,8 @@ class PotreiroEntity {
   final String? updateAt;
   final String? obs;
   final int animalsCount;
+  final String? idLocal;
+  final String? syncStatus;
+  final String? pendingAction;
+  final bool isLocalOnly;
 }

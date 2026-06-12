@@ -17,6 +17,10 @@ class InsumoEntity {
     this.updateAt,
     this.unidade,
     this.suplemento,
+    this.idLocal,
+    this.syncStatus,
+    this.pendingAction,
+    this.isLocalOnly = false,
   });
 
   final int id;
@@ -36,6 +40,10 @@ class InsumoEntity {
   final String? updateAt;
   final InsumoReferenceEntity? unidade;
   final InsumoReferenceEntity? suplemento;
+  final String? idLocal;
+  final String? syncStatus;
+  final String? pendingAction;
+  final bool isLocalOnly;
 }
 
 class InsumoReferenceEntity {
@@ -88,6 +96,10 @@ class InsumoRegistroEntity {
     this.obs,
     this.dataCadastro,
     this.updateAt,
+    this.idLocal,
+    this.syncStatus,
+    this.pendingAction,
+    this.isLocalOnly = false,
   });
 
   final int id;
@@ -101,6 +113,10 @@ class InsumoRegistroEntity {
   final String? obs;
   final String? dataCadastro;
   final String? updateAt;
+  final String? idLocal;
+  final String? syncStatus;
+  final String? pendingAction;
+  final bool isLocalOnly;
 }
 
 class InsumoUpsertEntity {

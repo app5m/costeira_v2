@@ -14,6 +14,10 @@ class InsumoRegistroModel extends InsumoRegistroEntity {
     super.obs,
     super.dataCadastro,
     super.updateAt,
+    super.idLocal,
+    super.syncStatus,
+    super.pendingAction,
+    super.isLocalOnly = false,
   });
 
   factory InsumoRegistroModel.fromJson(Map<String, dynamic> json) {
@@ -36,6 +40,10 @@ class InsumoRegistroModel extends InsumoRegistroEntity {
       obs: json['obs']?.toString(),
       dataCadastro: json['data_cadastro']?.toString(),
       updateAt: json['update_at']?.toString(),
+      idLocal: json['idLocal']?.toString(),
+      syncStatus: json['syncStatus']?.toString(),
+      pendingAction: json['pendingAction']?.toString(),
+      isLocalOnly: json['isLocalOnly'] == true,
     );
   }
 

@@ -9,6 +9,7 @@ import 'package:costeira/core/utils/app_logger.dart';
 import 'package:costeira/features/movimentacoes/mortes/domain/entities/delete_morte_entity.dart';
 import 'package:costeira/features/movimentacoes/mortes/domain/entities/morte_upsert_entity.dart';
 import 'package:costeira/features/movimentacoes/mortes/domain/repository/mortes_datasource.dart';
+import 'package:costeira/features/movimentacoes/infra/data/movimentacao_offline_cache_mutation.dart';
 import 'package:costeira/features/movimentacoes/mortes/infra/models/delete_morte_request_model.dart';
 import 'package:costeira/features/movimentacoes/mortes/infra/models/morte_upsert_request_model.dart';
 
@@ -34,6 +35,9 @@ class MortesDatasourceImpl implements MortesDatasource {
       priority: SyncPriority.movimentacoes,
       pendingMessage: 'Morte salva localmente para sincronizar.',
       rawResponseLog: 'MORTES DATASOURCE: CREATE RAW RESPONSE',
+      offlineCacheMutation: MovimentacaoOfflineCacheMutation.forEndpoint(
+        WSConstantes.movimentacoesAdicionarMorte,
+      ),
       parseResponse: (response) => _parseMutationResponse(
         response,
         operationName: 'CREATE MORTE',
@@ -62,6 +66,9 @@ class MortesDatasourceImpl implements MortesDatasource {
       priority: SyncPriority.movimentacoes,
       pendingMessage: 'Alteração da morte salva para sincronizar.',
       rawResponseLog: 'MORTES DATASOURCE: UPDATE RAW RESPONSE',
+      offlineCacheMutation: MovimentacaoOfflineCacheMutation.forEndpoint(
+        WSConstantes.movimentacoesAdicionarMorte,
+      ),
       parseResponse: (response) => _parseMutationResponse(
         response,
         operationName: 'UPDATE MORTE',
@@ -83,6 +90,9 @@ class MortesDatasourceImpl implements MortesDatasource {
       priority: SyncPriority.movimentacoes,
       pendingMessage: 'Exclusao da morte salva para sincronizar.',
       rawResponseLog: 'MORTES DATASOURCE: DELETE RAW RESPONSE',
+      offlineCacheMutation: MovimentacaoOfflineCacheMutation.forEndpoint(
+        WSConstantes.movimentacoesExcluirMorte,
+      ),
       parseResponse: (response) => _parseMutationResponse(
         response,
         operationName: 'DELETE MORTE',
@@ -97,10 +107,13 @@ class MortesDatasourceImpl implements MortesDatasource {
     required String expectedSuccessMessage,
   }) {
     final map = responseAsMap(response);
-    final hasMutationContract = map.containsKey('status') || map.containsKey('msg');
+    final hasMutationContract =
+        map.containsKey('status') || map.containsKey('msg');
 
     if (!hasMutationContract) {
-      throw ApiException('Resposta inesperada da API ao executar $operationName.');
+      throw ApiException(
+        'Resposta inesperada da API ao executar $operationName.',
+      );
     }
 
     final message = ApiMessage.fromResponse(response);
@@ -109,7 +122,10 @@ class MortesDatasourceImpl implements MortesDatasource {
     }
 
     if (message.message.trim().isEmpty) {
-      return ApiMessage(status: message.status, message: expectedSuccessMessage);
+      return ApiMessage(
+        status: message.status,
+        message: expectedSuccessMessage,
+      );
     }
 
     return message;

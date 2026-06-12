@@ -11,6 +11,7 @@ import 'package:costeira/features/movimentacoes/abigeatos/domain/entities/delete
 import 'package:costeira/features/movimentacoes/abigeatos/domain/repository/abigeatos_datasource.dart';
 import 'package:costeira/features/movimentacoes/abigeatos/infra/models/abigeato_upsert_request_model.dart';
 import 'package:costeira/features/movimentacoes/abigeatos/infra/models/delete_abigeato_request_model.dart';
+import 'package:costeira/features/movimentacoes/infra/data/movimentacao_offline_cache_mutation.dart';
 
 class AbigeatosDatasourceImpl implements AbigeatosDatasource {
   const AbigeatosDatasourceImpl(this._offlineApiService);
@@ -34,6 +35,9 @@ class AbigeatosDatasourceImpl implements AbigeatosDatasource {
       priority: SyncPriority.movimentacoes,
       pendingMessage: 'Abigeato salvo localmente para sincronizar.',
       rawResponseLog: 'ABIGEATOS DATASOURCE: CREATE RAW RESPONSE',
+      offlineCacheMutation: MovimentacaoOfflineCacheMutation.forEndpoint(
+        WSConstantes.movimentacoesAdicionarAbigeato,
+      ),
       parseResponse: (response) => _parseMutationResponse(
         response,
         operationName: 'CREATE ABIGEATO',
@@ -62,6 +66,9 @@ class AbigeatosDatasourceImpl implements AbigeatosDatasource {
       priority: SyncPriority.movimentacoes,
       pendingMessage: 'Alteração do abigeato salva para sincronizar.',
       rawResponseLog: 'ABIGEATOS DATASOURCE: UPDATE RAW RESPONSE',
+      offlineCacheMutation: MovimentacaoOfflineCacheMutation.forEndpoint(
+        WSConstantes.movimentacoesAdicionarAbigeato,
+      ),
       parseResponse: (response) => _parseMutationResponse(
         response,
         operationName: 'UPDATE ABIGEATO',
@@ -83,6 +90,9 @@ class AbigeatosDatasourceImpl implements AbigeatosDatasource {
       priority: SyncPriority.movimentacoes,
       pendingMessage: 'Exclusao do abigeato salva para sincronizar.',
       rawResponseLog: 'ABIGEATOS DATASOURCE: DELETE RAW RESPONSE',
+      offlineCacheMutation: MovimentacaoOfflineCacheMutation.forEndpoint(
+        WSConstantes.movimentacoesExcluirAbigeato,
+      ),
       parseResponse: (response) => _parseMutationResponse(
         response,
         operationName: 'DELETE ABIGEATO',
@@ -97,13 +107,16 @@ class AbigeatosDatasourceImpl implements AbigeatosDatasource {
     required String expectedSuccessMessage,
   }) {
     final map = responseAsMap(response);
-    final hasMutationContract = map.containsKey('status') || map.containsKey('msg');
+    final hasMutationContract =
+        map.containsKey('status') || map.containsKey('msg');
 
     if (!hasMutationContract) {
       AppLogger.error(
         'ABIGEATOS DATASOURCE: $operationName RETORNOU CONTRATO INVALIDO RAW=$response',
       );
-      throw ApiException('Resposta inesperada da API ao executar $operationName.');
+      throw ApiException(
+        'Resposta inesperada da API ao executar $operationName.',
+      );
     }
 
     final message = ApiMessage.fromResponse(response);
@@ -112,7 +125,10 @@ class AbigeatosDatasourceImpl implements AbigeatosDatasource {
     }
 
     if (message.message.trim().isEmpty) {
-      return ApiMessage(status: message.status, message: expectedSuccessMessage);
+      return ApiMessage(
+        status: message.status,
+        message: expectedSuccessMessage,
+      );
     }
 
     return message;

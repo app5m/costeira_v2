@@ -7,6 +7,10 @@ class AnimalLotEntity {
     this.createAt,
     this.updateAt,
     this.animalsCount = 0,
+    this.idLocal,
+    this.syncStatus,
+    this.pendingAction,
+    this.isLocalOnly = false,
   });
 
   final int id;
@@ -16,4 +20,8 @@ class AnimalLotEntity {
   final String? createAt;
   final String? updateAt;
   final int animalsCount;
+  final String? idLocal;
+  final String? syncStatus;
+  final String? pendingAction;
+  final bool isLocalOnly;
 }

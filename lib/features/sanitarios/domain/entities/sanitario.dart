@@ -13,6 +13,10 @@ class SanitarioEntity {
     this.categorias = const [],
     this.lotes = const [],
     this.insumos = const [],
+    this.idLocal,
+    this.syncStatus,
+    this.pendingAction,
+    this.isLocalOnly = false,
   });
 
   final int id;
@@ -28,6 +32,10 @@ class SanitarioEntity {
   final List<SanitarioCategoriaEntity> categorias;
   final List<SanitarioLoteEntity> lotes;
   final List<SanitarioInsumoEntity> insumos;
+  final String? idLocal;
+  final String? syncStatus;
+  final String? pendingAction;
+  final bool isLocalOnly;
 }
 
 class SanitarioCategoriaEntity {

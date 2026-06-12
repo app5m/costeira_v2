@@ -16,6 +16,10 @@ class Suplemento {
     this.potreiro,
     this.lote,
     this.registros = const [],
+    this.idLocal,
+    this.syncStatus,
+    this.pendingAction,
+    this.isLocalOnly = false,
   });
 
   final int id;
@@ -34,6 +38,10 @@ class Suplemento {
   final SuplementoReference? potreiro;
   final SuplementoReference? lote;
   final List<SuplementoRegistro> registros;
+  final String? idLocal;
+  final String? syncStatus;
+  final String? pendingAction;
+  final bool isLocalOnly;
 }
 
 class SuplementoConsumoReal {
@@ -72,6 +80,10 @@ class SuplementoRegistro {
     this.dataCadastro,
     this.updateAt,
     this.suplemento,
+    this.idLocal,
+    this.syncStatus,
+    this.pendingAction,
+    this.isLocalOnly = false,
   });
 
   final int id;
@@ -82,6 +94,10 @@ class SuplementoRegistro {
   final String? dataCadastro;
   final String? updateAt;
   final Suplemento? suplemento;
+  final String? idLocal;
+  final String? syncStatus;
+  final String? pendingAction;
+  final bool isLocalOnly;
 }
 
 class SuplementoUpsertEntity {

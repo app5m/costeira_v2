@@ -11,6 +11,7 @@ import 'package:costeira/features/movimentacoes/compras/domain/entities/delete_c
 import 'package:costeira/features/movimentacoes/compras/domain/repository/compras_datasource.dart';
 import 'package:costeira/features/movimentacoes/compras/infra/models/compra_upsert_request_model.dart';
 import 'package:costeira/features/movimentacoes/compras/infra/models/delete_compra_request_model.dart';
+import 'package:costeira/features/movimentacoes/infra/data/movimentacao_offline_cache_mutation.dart';
 
 class ComprasDatasourceImpl implements ComprasDatasource {
   const ComprasDatasourceImpl(this._offlineApiService);
@@ -34,6 +35,9 @@ class ComprasDatasourceImpl implements ComprasDatasource {
       priority: SyncPriority.movimentacoes,
       pendingMessage: 'Compra salva localmente para sincronizar.',
       rawResponseLog: 'COMPRAS DATASOURCE: CREATE RAW RESPONSE',
+      offlineCacheMutation: MovimentacaoOfflineCacheMutation.forEndpoint(
+        WSConstantes.movimentacoesAdicionarCompra,
+      ),
       parseResponse: (response) => _parseMutationResponse(
         response,
         operationName: 'CREATE COMPRA',
@@ -62,6 +66,9 @@ class ComprasDatasourceImpl implements ComprasDatasource {
       priority: SyncPriority.movimentacoes,
       pendingMessage: 'Alteração da compra salva para sincronizar.',
       rawResponseLog: 'COMPRAS DATASOURCE: UPDATE RAW RESPONSE',
+      offlineCacheMutation: MovimentacaoOfflineCacheMutation.forEndpoint(
+        WSConstantes.movimentacoesAdicionarCompra,
+      ),
       parseResponse: (response) => _parseMutationResponse(
         response,
         operationName: 'UPDATE COMPRA',
@@ -83,6 +90,9 @@ class ComprasDatasourceImpl implements ComprasDatasource {
       priority: SyncPriority.movimentacoes,
       pendingMessage: 'Exclusao da compra salva para sincronizar.',
       rawResponseLog: 'COMPRAS DATASOURCE: DELETE RAW RESPONSE',
+      offlineCacheMutation: MovimentacaoOfflineCacheMutation.forEndpoint(
+        WSConstantes.movimentacoesExcluirCompra,
+      ),
       parseResponse: (response) => _parseMutationResponse(
         response,
         operationName: 'DELETE COMPRA',
@@ -97,13 +107,16 @@ class ComprasDatasourceImpl implements ComprasDatasource {
     required String expectedSuccessMessage,
   }) {
     final map = responseAsMap(response);
-    final hasMutationContract = map.containsKey('status') || map.containsKey('msg');
+    final hasMutationContract =
+        map.containsKey('status') || map.containsKey('msg');
 
     if (!hasMutationContract) {
       AppLogger.error(
         'COMPRAS DATASOURCE: $operationName RETORNOU CONTRATO INVALIDO RAW=$response',
       );
-      throw ApiException('Resposta inesperada da API ao executar $operationName.');
+      throw ApiException(
+        'Resposta inesperada da API ao executar $operationName.',
+      );
     }
 
     final message = ApiMessage.fromResponse(response);
@@ -112,7 +125,10 @@ class ComprasDatasourceImpl implements ComprasDatasource {
     }
 
     if (message.message.trim().isEmpty) {
-      return ApiMessage(status: message.status, message: expectedSuccessMessage);
+      return ApiMessage(
+        status: message.status,
+        message: expectedSuccessMessage,
+      );
     }
 
     return message;

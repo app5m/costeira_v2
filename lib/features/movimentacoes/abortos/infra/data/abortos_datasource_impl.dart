@@ -11,6 +11,7 @@ import 'package:costeira/features/movimentacoes/abortos/domain/entities/delete_a
 import 'package:costeira/features/movimentacoes/abortos/domain/repository/abortos_datasource.dart';
 import 'package:costeira/features/movimentacoes/abortos/infra/models/aborto_upsert_request_model.dart';
 import 'package:costeira/features/movimentacoes/abortos/infra/models/delete_aborto_request_model.dart';
+import 'package:costeira/features/movimentacoes/infra/data/movimentacao_offline_cache_mutation.dart';
 
 class AbortosDatasourceImpl implements AbortosDatasource {
   const AbortosDatasourceImpl(this._offlineApiService);
@@ -34,6 +35,9 @@ class AbortosDatasourceImpl implements AbortosDatasource {
       priority: SyncPriority.movimentacoes,
       pendingMessage: 'Aborto salvo localmente para sincronizar.',
       rawResponseLog: 'ABORTOS DATASOURCE: CREATE RAW RESPONSE',
+      offlineCacheMutation: MovimentacaoOfflineCacheMutation.forEndpoint(
+        WSConstantes.movimentacoesAdicionarAborto,
+      ),
       parseResponse: (response) => _parseMutationResponse(
         response,
         operationName: 'CREATE ABORTO',
@@ -62,6 +66,9 @@ class AbortosDatasourceImpl implements AbortosDatasource {
       priority: SyncPriority.movimentacoes,
       pendingMessage: 'Alteração do aborto salva para sincronizar.',
       rawResponseLog: 'ABORTOS DATASOURCE: UPDATE RAW RESPONSE',
+      offlineCacheMutation: MovimentacaoOfflineCacheMutation.forEndpoint(
+        WSConstantes.movimentacoesAdicionarAborto,
+      ),
       parseResponse: (response) => _parseMutationResponse(
         response,
         operationName: 'UPDATE ABORTO',
@@ -83,6 +90,9 @@ class AbortosDatasourceImpl implements AbortosDatasource {
       priority: SyncPriority.movimentacoes,
       pendingMessage: 'Exclusao do aborto salva para sincronizar.',
       rawResponseLog: 'ABORTOS DATASOURCE: DELETE RAW RESPONSE',
+      offlineCacheMutation: MovimentacaoOfflineCacheMutation.forEndpoint(
+        WSConstantes.movimentacoesExcluirAborto,
+      ),
       parseResponse: (response) => _parseMutationResponse(
         response,
         operationName: 'DELETE ABORTO',
@@ -97,10 +107,13 @@ class AbortosDatasourceImpl implements AbortosDatasource {
     required String expectedSuccessMessage,
   }) {
     final map = responseAsMap(response);
-    final hasMutationContract = map.containsKey('status') || map.containsKey('msg');
+    final hasMutationContract =
+        map.containsKey('status') || map.containsKey('msg');
 
     if (!hasMutationContract) {
-      throw ApiException('Resposta inesperada da API ao executar $operationName.');
+      throw ApiException(
+        'Resposta inesperada da API ao executar $operationName.',
+      );
     }
 
     final message = ApiMessage.fromResponse(response);
@@ -109,7 +122,10 @@ class AbortosDatasourceImpl implements AbortosDatasource {
     }
 
     if (message.message.trim().isEmpty) {
-      return ApiMessage(status: message.status, message: expectedSuccessMessage);
+      return ApiMessage(
+        status: message.status,
+        message: expectedSuccessMessage,
+      );
     }
 
     return message;

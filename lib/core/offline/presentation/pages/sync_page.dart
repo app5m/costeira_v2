@@ -69,8 +69,7 @@ class _SyncPageState extends State<SyncPage> {
               if (!_controller.isOnline) ...[
                 const _InfoBanner(
                   title: 'Sem conexão para sincronizar',
-                  message:
-                      'Conecte-se a internet para enviar as alterações pendentes.',
+                  message: 'Conecte-se a internet para enviar as alterações pendentes.',
                   isError: true,
                 ),
                 const SizedBox(height: 16),
@@ -78,8 +77,7 @@ class _SyncPageState extends State<SyncPage> {
               if (_controller.errorCount > 0) ...[
                 const _InfoBanner(
                   title: 'Alguns itens nao puderam ser sincronizados',
-                  message:
-                      'Os itens com erro ficam salvos no aparelho para uma nova tentativa.',
+                  message: 'Os itens com erro ficam salvos no aparelho para uma nova tentativa.',
                   isError: true,
                 ),
                 const SizedBox(height: 16),
@@ -89,8 +87,7 @@ class _SyncPageState extends State<SyncPage> {
                   _controller.errorCount == 0) ...[
                 _InfoBanner(
                   title: _controller.message!,
-                  message:
-                      'Os dados oficiais serao recarregados apos a sincronização.',
+                  message: 'Os dados oficiais serao recarregados apos a sincronização.',
                   isError: false,
                 ),
                 const SizedBox(height: 16),
@@ -112,9 +109,7 @@ class _StatusCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final isDone =
-        controller.pendingCount == 0 &&
-        controller.errorCount == 0 &&
-        !controller.isSyncing;
+        controller.pendingCount == 0 && controller.errorCount == 0 && !controller.isSyncing;
 
     return Container(
       padding: const EdgeInsets.all(14),
@@ -142,10 +137,7 @@ class _StatusCard extends StatelessWidget {
                       'icon/cloud-sync.svg',
                       width: 30,
                       height: 30,
-                      colorFilter: const ColorFilter.mode(
-                        MyColors.colorPrimary,
-                        BlendMode.srcIn,
-                      ),
+                      colorFilter: const ColorFilter.mode(MyColors.colorPrimary, BlendMode.srcIn),
                     ),
             ),
           ),
@@ -173,11 +165,7 @@ class _StatusCard extends StatelessWidget {
                       : isDone
                       ? 'Nenhuma alteração pendente no momento.'
                       : 'Sincronize quando tiver internet.',
-                  style: const TextStyle(
-                    color: Color(0xFF666666),
-                    fontSize: 12,
-                    height: 1.25,
-                  ),
+                  style: const TextStyle(color: Color(0xFF666666), fontSize: 12, height: 1.25),
                 ),
               ],
             ),
@@ -234,11 +222,7 @@ class _SummaryRow extends StatelessWidget {
 }
 
 class _SummaryCard extends StatelessWidget {
-  const _SummaryCard({
-    required this.label,
-    required this.value,
-    required this.color,
-  });
+  const _SummaryCard({required this.label, required this.value, required this.color});
 
   final String label;
   final String value;
@@ -256,11 +240,7 @@ class _SummaryCard extends StatelessWidget {
         children: [
           Text(
             value,
-            style: TextStyle(
-              color: color,
-              fontSize: 22,
-              fontWeight: FontWeight.w800,
-            ),
+            style: TextStyle(color: color, fontSize: 22, fontWeight: FontWeight.w800),
           ),
           const SizedBox(height: 4),
           Text(
@@ -305,20 +285,14 @@ class _SyncButton extends StatelessWidget {
               const SizedBox(
                 width: 18,
                 height: 18,
-                child: CircularProgressIndicator(
-                  strokeWidth: 2.2,
-                  color: Colors.white,
-                ),
+                child: CircularProgressIndicator(strokeWidth: 2.2, color: Colors.white),
               )
             else
               SvgPicture.asset(
                 'icon/arrow-reload-horizontal.svg',
                 width: 20,
                 height: 20,
-                colorFilter: const ColorFilter.mode(
-                  Colors.white,
-                  BlendMode.srcIn,
-                ),
+                colorFilter: const ColorFilter.mode(Colors.white, BlendMode.srcIn),
               ),
             const SizedBox(width: 10),
             Text(
@@ -388,9 +362,7 @@ class _SyncItemTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final visual = _StatusVisual.fromStatus(
-      isSyncing && item.status == SyncStatus.pending
-          ? SyncStatus.syncing
-          : item.status,
+      isSyncing && item.status == SyncStatus.pending ? SyncStatus.syncing : item.status,
     );
 
     return Container(
@@ -477,7 +449,7 @@ class _SyncItemTile extends StatelessWidget {
       case 'potreiros':
         return 'Potreiros';
       case 'movimentacoes':
-        return 'Movimentacoes';
+        return 'Movimentações';
       default:
         return module.isEmpty ? 'Item offline' : module;
     }
@@ -517,11 +489,7 @@ class _StatusChip extends StatelessWidget {
       ),
       child: Text(
         visual.label,
-        style: TextStyle(
-          color: visual.color,
-          fontSize: 10,
-          fontWeight: FontWeight.w800,
-        ),
+        style: TextStyle(color: visual.color, fontSize: 10, fontWeight: FontWeight.w800),
       ),
     );
   }
@@ -553,11 +521,7 @@ class _ConnectionPill extends StatelessWidget {
           const SizedBox(width: 5),
           Text(
             isOnline ? 'Online' : 'Offline',
-            style: TextStyle(
-              color: color,
-              fontSize: 10,
-              fontWeight: FontWeight.w800,
-            ),
+            style: TextStyle(color: color, fontSize: 10, fontWeight: FontWeight.w800),
           ),
         ],
       ),
@@ -566,11 +530,7 @@ class _ConnectionPill extends StatelessWidget {
 }
 
 class _InfoBanner extends StatelessWidget {
-  const _InfoBanner({
-    required this.title,
-    required this.message,
-    required this.isError,
-  });
+  const _InfoBanner({required this.title, required this.message, required this.isError});
 
   final String title;
   final String message;
@@ -590,11 +550,7 @@ class _InfoBanner extends StatelessWidget {
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Icon(
-            isError ? Icons.error_outline : Icons.check_circle_outline,
-            color: color,
-            size: 20,
-          ),
+          Icon(isError ? Icons.error_outline : Icons.check_circle_outline, color: color, size: 20),
           const SizedBox(width: 10),
           Expanded(
             child: Column(
@@ -602,11 +558,7 @@ class _InfoBanner extends StatelessWidget {
               children: [
                 Text(
                   title,
-                  style: TextStyle(
-                    color: color,
-                    fontSize: 12,
-                    fontWeight: FontWeight.w800,
-                  ),
+                  style: TextStyle(color: color, fontSize: 12, fontWeight: FontWeight.w800),
                 ),
               ],
             ),
@@ -634,20 +586,12 @@ class _EmptyState extends StatelessWidget {
               color: MyColors.colorPrimary.withOpacity(0.10),
               shape: BoxShape.circle,
             ),
-            child: const Icon(
-              Icons.check_rounded,
-              color: MyColors.colorPrimary,
-              size: 32,
-            ),
+            child: const Icon(Icons.check_rounded, color: MyColors.colorPrimary, size: 32),
           ),
           const SizedBox(height: 12),
           const Text(
             'Tudo sincronizado',
-            style: TextStyle(
-              color: Color(0xFF202020),
-              fontSize: 15,
-              fontWeight: FontWeight.w800,
-            ),
+            style: TextStyle(color: Color(0xFF202020), fontSize: 15, fontWeight: FontWeight.w800),
           ),
           const SizedBox(height: 4),
           const Text(
@@ -667,11 +611,7 @@ class _EmptyState extends StatelessWidget {
 }
 
 class _StatusVisual {
-  const _StatusVisual({
-    required this.label,
-    required this.color,
-    required this.icon,
-  });
+  const _StatusVisual({required this.label, required this.color, required this.icon});
 
   final String label;
   final Color color;
@@ -707,8 +647,6 @@ BoxDecoration _cardDecoration() {
     color: Colors.white,
     borderRadius: BorderRadius.circular(8),
     border: Border.all(color: const Color(0xFFEAEAEA)),
-    boxShadow: const [
-      BoxShadow(color: Color(0x0F000000), blurRadius: 10, offset: Offset(0, 3)),
-    ],
+    boxShadow: const [BoxShadow(color: Color(0x0F000000), blurRadius: 10, offset: Offset(0, 3))],
   );
 }

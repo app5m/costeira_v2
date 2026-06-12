@@ -34,25 +34,33 @@ class InsumosDatasourceImpl implements InsumosDatasource {
       endpoint: WSConstantes.insumosListar,
       payload: payload,
       userId: filter.appUsersId,
-      parser: (response) => InsumosListResponseModel.fromJson(responseAsMap(response)),
+      parser: (response) =>
+          InsumosListResponseModel.fromJson(responseAsMap(response)),
       missingCacheMessage: 'Sem conexão e sem dados salvos para insumos.',
       rawResponseLog: 'INSUMOS DATASOURCE: LIST RAW RESPONSE',
     );
   }
 
   @override
-  Future<InsumoChartsEntity> getInsumoCharts(InsumoChartsFilterEntity filter) async {
+  Future<InsumoChartsEntity> getInsumoCharts(
+    InsumoChartsFilterEntity filter,
+  ) async {
     final payload = InsumoChartsFilterRequestModel.fromEntity(filter).data;
     AppLogger.info('INSUMOS DATASOURCE: CHARTS PAYLOAD=$payload');
 
-    final response = await _apiClient.post(WSConstantes.insumosGraficos, data: payload);
+    final response = await _apiClient.post(
+      WSConstantes.insumosGraficos,
+      data: payload,
+    );
 
     AppLogger.success('INSUMOS DATASOURCE: CHARTS RAW RESPONSE=$response');
     return InsumoChartsResponseModel.fromJson(responseAsMap(response));
   }
 
   @override
-  Future<InsumosTipoListEntity> getInsumosTipo(InsumosTipoFilterEntity filter) async {
+  Future<InsumosTipoListEntity> getInsumosTipo(
+    InsumosTipoFilterEntity filter,
+  ) async {
     final payload = InsumosTipoFilterRequestModel.fromEntity(filter).data;
     AppLogger.info('INSUMOS DATASOURCE: LIST TIPO PAYLOAD=$payload');
 
@@ -60,8 +68,10 @@ class InsumosDatasourceImpl implements InsumosDatasource {
       endpoint: WSConstantes.insumosListarTipo,
       payload: payload,
       userId: filter.appUsersId,
-      parser: (response) => InsumosTipoListResponseModel.fromJson(responseAsMap(response)),
-      missingCacheMessage: 'Sem conexão e sem dados salvos para tipos de insumos.',
+      parser: (response) =>
+          InsumosTipoListResponseModel.fromJson(responseAsMap(response)),
+      missingCacheMessage:
+          'Sem conexão e sem dados salvos para tipos de insumos.',
       rawResponseLog: 'INSUMOS DATASOURCE: LIST TIPO RAW RESPONSE',
     );
   }
@@ -79,6 +89,14 @@ class InsumosDatasourceImpl implements InsumosDatasource {
       priority: SyncPriority.insumos,
       pendingMessage: 'Insumo salvo localmente para sincronizar.',
       rawResponseLog: 'INSUMOS DATASOURCE: CREATE RAW RESPONSE',
+      offlineCacheMutation: OfflineCacheMutation(
+        listEndpoint: WSConstantes.insumosListar,
+        listPayloadBuilder: _defaultInsumosListPayload,
+        listField: 'data.lista',
+        createCacheWhenMissing: true,
+        emptyResponse: _emptyInsumosListResponse,
+        allowLatestCacheFallback: false,
+      ),
       parseResponse: (response) => _parseMutationResponse(
         response,
         operationName: 'CREATE INSUMO',
@@ -104,6 +122,12 @@ class InsumosDatasourceImpl implements InsumosDatasource {
       priority: SyncPriority.insumos,
       pendingMessage: 'Alteração do insumo salva para sincronizar.',
       rawResponseLog: 'INSUMOS DATASOURCE: UPDATE RAW RESPONSE',
+      offlineCacheMutation: OfflineCacheMutation(
+        listEndpoint: WSConstantes.insumosListar,
+        listPayloadBuilder: _defaultInsumosListPayload,
+        listField: 'data.lista',
+        allowLatestCacheFallback: false,
+      ),
       parseResponse: (response) => _parseMutationResponse(
         response,
         operationName: 'UPDATE INSUMO',
@@ -113,7 +137,9 @@ class InsumosDatasourceImpl implements InsumosDatasource {
   }
 
   @override
-  Future<ApiMessage> createInsumoRegistro(InsumoRegistroUpsertEntity registro) async {
+  Future<ApiMessage> createInsumoRegistro(
+    InsumoRegistroUpsertEntity registro,
+  ) async {
     final payload = InsumoRegistroUpsertRequestModel.fromEntity(registro).data;
     AppLogger.info('INSUMOS DATASOURCE: CREATE REGISTRO PAYLOAD=$payload');
 
@@ -125,6 +151,14 @@ class InsumosDatasourceImpl implements InsumosDatasource {
       priority: SyncPriority.insumos,
       pendingMessage: 'Registro de insumo salvo localmente para sincronizar.',
       rawResponseLog: 'INSUMOS DATASOURCE: CREATE REGISTRO RAW RESPONSE',
+      offlineCacheMutation: OfflineCacheMutation(
+        listEndpoint: WSConstantes.insumosListar,
+        listPayloadBuilder: _defaultInsumosListPayload,
+        listField: 'data.registros',
+        createCacheWhenMissing: true,
+        emptyResponse: _emptyInsumosListResponse,
+        allowLatestCacheFallback: false,
+      ),
       parseResponse: (response) => _parseMutationResponse(
         response,
         operationName: 'CREATE INSUMO REGISTRO',
@@ -134,7 +168,9 @@ class InsumosDatasourceImpl implements InsumosDatasource {
   }
 
   @override
-  Future<ApiMessage> updateInsumoRegistro(InsumoRegistroUpsertEntity registro) async {
+  Future<ApiMessage> updateInsumoRegistro(
+    InsumoRegistroUpsertEntity registro,
+  ) async {
     if (registro.id == null) {
       throw ApiException('Informe o id do registro para atualizar.');
     }
@@ -150,6 +186,12 @@ class InsumosDatasourceImpl implements InsumosDatasource {
       priority: SyncPriority.insumos,
       pendingMessage: 'Alteração do registro de insumo salva para sincronizar.',
       rawResponseLog: 'INSUMOS DATASOURCE: UPDATE REGISTRO RAW RESPONSE',
+      offlineCacheMutation: OfflineCacheMutation(
+        listEndpoint: WSConstantes.insumosListar,
+        listPayloadBuilder: _defaultInsumosListPayload,
+        listField: 'data.registros',
+        allowLatestCacheFallback: false,
+      ),
       parseResponse: (response) => _parseMutationResponse(
         response,
         operationName: 'UPDATE INSUMO REGISTRO',
@@ -171,6 +213,12 @@ class InsumosDatasourceImpl implements InsumosDatasource {
       priority: SyncPriority.insumos,
       pendingMessage: 'Exclusao do insumo salva para sincronizar.',
       rawResponseLog: 'INSUMOS DATASOURCE: DELETE RAW RESPONSE',
+      offlineCacheMutation: OfflineCacheMutation(
+        listEndpoint: WSConstantes.insumosListar,
+        listPayloadBuilder: _defaultInsumosListPayload,
+        listField: 'data.lista',
+        allowLatestCacheFallback: false,
+      ),
       parseResponse: (response) => _parseMutationResponse(
         response,
         operationName: 'DELETE INSUMO',
@@ -192,6 +240,12 @@ class InsumosDatasourceImpl implements InsumosDatasource {
       priority: SyncPriority.insumos,
       pendingMessage: 'Exclusao do registro de insumo salva para sincronizar.',
       rawResponseLog: 'INSUMOS DATASOURCE: DELETE REGISTRO RAW RESPONSE',
+      offlineCacheMutation: OfflineCacheMutation(
+        listEndpoint: WSConstantes.insumosListar,
+        listPayloadBuilder: _defaultInsumosListPayload,
+        listField: 'data.registros',
+        allowLatestCacheFallback: false,
+      ),
       parseResponse: (response) => _parseMutationResponse(
         response,
         operationName: 'DELETE INSUMO REGISTRO',
@@ -215,9 +269,31 @@ class InsumosDatasourceImpl implements InsumosDatasource {
     }
 
     if (message.message.trim().isEmpty) {
-      return ApiMessage(status: message.status, message: expectedSuccessMessage);
+      return ApiMessage(
+        status: message.status,
+        message: expectedSuccessMessage,
+      );
     }
 
     return message;
   }
 }
+
+Map<String, dynamic> _defaultInsumosListPayload(Map<String, dynamic> payload) {
+  final userId = int.tryParse(payload['app_users_id']?.toString() ?? '');
+  if (userId == null) {
+    return <String, dynamic>{};
+  }
+
+  return InsumosFilterRequestModel.fromEntity(
+    InsumosFilterEntity(appUsersId: userId),
+  ).data;
+}
+
+const Map<String, dynamic> _emptyInsumosListResponse = {
+  'rows': 0,
+  'data': {
+    'lista': <Map<String, dynamic>>[],
+    'registros': <Map<String, dynamic>>[],
+  },
+};

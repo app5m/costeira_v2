@@ -18,7 +18,9 @@ class SanitariosDatasourceImpl implements SanitariosDatasource {
   final OfflineApiService _offlineApiService;
 
   @override
-  Future<SanitariosListEntity> getSanitarios(SanitariosFilterEntity filter) async {
+  Future<SanitariosListEntity> getSanitarios(
+    SanitariosFilterEntity filter,
+  ) async {
     final payload = SanitariosFilterRequestModel.fromEntity(filter).data;
     AppLogger.info('SANITARIOS DATASOURCE: LIST PAYLOAD=$payload');
 
@@ -49,6 +51,14 @@ class SanitariosDatasourceImpl implements SanitariosDatasource {
       priority: SyncPriority.sanitarios,
       pendingMessage: 'Sanitario salvo localmente para sincronizar.',
       rawResponseLog: 'SANITARIOS DATASOURCE: CREATE RAW RESPONSE',
+      offlineCacheMutation: OfflineCacheMutation(
+        listEndpoint: WSConstantes.sanitariosListar,
+        listPayloadBuilder: _defaultSanitariosListPayload,
+        listField: 'data.lista',
+        createCacheWhenMissing: true,
+        emptyResponse: _emptySanitariosListResponse,
+        allowLatestCacheFallback: false,
+      ),
       parseResponse: (response) => _parseMutationResponse(
         response,
         operationName: 'CREATE SANITARIO',
@@ -77,6 +87,12 @@ class SanitariosDatasourceImpl implements SanitariosDatasource {
       priority: SyncPriority.sanitarios,
       pendingMessage: 'Alteracao do sanitario salva para sincronizar.',
       rawResponseLog: 'SANITARIOS DATASOURCE: UPDATE RAW RESPONSE',
+      offlineCacheMutation: OfflineCacheMutation(
+        listEndpoint: WSConstantes.sanitariosListar,
+        listPayloadBuilder: _defaultSanitariosListPayload,
+        listField: 'data.lista',
+        allowLatestCacheFallback: false,
+      ),
       parseResponse: (response) => _parseMutationResponse(
         response,
         operationName: 'UPDATE SANITARIO',
@@ -98,6 +114,12 @@ class SanitariosDatasourceImpl implements SanitariosDatasource {
       priority: SyncPriority.sanitarios,
       pendingMessage: 'Exclusao do sanitario salva para sincronizar.',
       rawResponseLog: 'SANITARIOS DATASOURCE: DELETE RAW RESPONSE',
+      offlineCacheMutation: OfflineCacheMutation(
+        listEndpoint: WSConstantes.sanitariosListar,
+        listPayloadBuilder: _defaultSanitariosListPayload,
+        listField: 'data.lista',
+        allowLatestCacheFallback: false,
+      ),
       parseResponse: (response) => _parseMutationResponse(
         response,
         operationName: 'DELETE SANITARIO',
@@ -126,6 +148,12 @@ class SanitariosDatasourceImpl implements SanitariosDatasource {
       priority: SyncPriority.sanitarios,
       pendingMessage: 'Execucao do sanitario salva para sincronizar.',
       rawResponseLog: 'SANITARIOS DATASOURCE: EXECUTAR RAW RESPONSE',
+      offlineCacheMutation: OfflineCacheMutation(
+        listEndpoint: WSConstantes.sanitariosListar,
+        listPayloadBuilder: _defaultSanitariosListPayload,
+        listField: 'data.lista',
+        allowLatestCacheFallback: false,
+      ),
       parseResponse: (response) => _parseMutationResponse(
         response,
         operationName: 'EXECUTAR SANITARIO',
@@ -135,11 +163,16 @@ class SanitariosDatasourceImpl implements SanitariosDatasource {
   }
 
   @override
-  Future<SanitarioChartsEntity> getSanitarioCharts(SanitarioChartsFilterEntity filter) async {
+  Future<SanitarioChartsEntity> getSanitarioCharts(
+    SanitarioChartsFilterEntity filter,
+  ) async {
     final payload = SanitarioChartsFilterRequestModel.fromEntity(filter).data;
     AppLogger.info('SANITARIOS DATASOURCE: CHARTS PAYLOAD=$payload');
 
-    final response = await _apiClient.post(WSConstantes.sanitariosGraficos, data: payload);
+    final response = await _apiClient.post(
+      WSConstantes.sanitariosGraficos,
+      data: payload,
+    );
     AppLogger.success('SANITARIOS DATASOURCE: CHARTS RAW RESPONSE=$response');
 
     final wrappers = responseAsList(response);
@@ -165,10 +198,13 @@ class SanitariosDatasourceImpl implements SanitariosDatasource {
     required String expectedSuccessMessage,
   }) {
     final map = responseAsMap(response);
-    final hasMutationContract = map.containsKey('status') || map.containsKey('msg');
+    final hasMutationContract =
+        map.containsKey('status') || map.containsKey('msg');
 
     if (!hasMutationContract) {
-      throw ApiException('Resposta inesperada da API ao executar $operationName.');
+      throw ApiException(
+        'Resposta inesperada da API ao executar $operationName.',
+      );
     }
 
     final message = ApiMessage.fromResponse(response);
@@ -177,9 +213,39 @@ class SanitariosDatasourceImpl implements SanitariosDatasource {
     }
 
     if (message.message.trim().isEmpty) {
-      return ApiMessage(status: message.status, message: expectedSuccessMessage);
+      return ApiMessage(
+        status: message.status,
+        message: expectedSuccessMessage,
+      );
     }
 
     return message;
   }
 }
+
+Map<String, dynamic> _defaultSanitariosListPayload(
+  Map<String, dynamic> payload,
+) {
+  final userId = int.tryParse(payload['app_users_id']?.toString() ?? '');
+  if (userId == null) {
+    return <String, dynamic>{};
+  }
+
+  return SanitariosFilterRequestModel.fromEntity(
+    SanitariosFilterEntity(appUsersId: userId),
+  ).data;
+}
+
+const Map<String, dynamic> _emptySanitariosListResponse = {
+  'rows': 0,
+  'data': [
+    {
+      'lista': <Map<String, dynamic>>[],
+      'tipos_manejos': <Map<String, dynamic>>[],
+      'status': <Map<String, dynamic>>[],
+      'categorias': <Map<String, dynamic>>[],
+      'lotes': <Map<String, dynamic>>[],
+      'insumos': <Map<String, dynamic>>[],
+    },
+  ],
+};

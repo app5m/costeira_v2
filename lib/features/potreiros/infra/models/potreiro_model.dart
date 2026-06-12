@@ -16,6 +16,10 @@ class PotreiroModel extends PotreiroEntity {
     super.updateAt,
     super.obs,
     super.animalsCount,
+    super.idLocal,
+    super.syncStatus,
+    super.pendingAction,
+    super.isLocalOnly = false,
   });
 
   factory PotreiroModel.fromJson(Map<String, dynamic> json) {
@@ -36,6 +40,10 @@ class PotreiroModel extends PotreiroEntity {
       updateAt: json['update_at']?.toString(),
       obs: json['obs']?.toString(),
       animalsCount: animals.length,
+      idLocal: json['idLocal']?.toString(),
+      syncStatus: json['syncStatus']?.toString(),
+      pendingAction: json['pendingAction']?.toString(),
+      isLocalOnly: json['isLocalOnly'] == true,
     );
   }
 

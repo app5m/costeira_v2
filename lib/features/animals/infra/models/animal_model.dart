@@ -23,6 +23,10 @@ class AnimalModel extends AnimalEntity {
     super.baseRacial,
     super.lote,
     super.potreiro,
+    super.idLocal,
+    super.syncStatus,
+    super.pendingAction,
+    super.isLocalOnly = false,
   });
 
   factory AnimalModel.fromJson(Map<String, dynamic> json) {
@@ -92,6 +96,10 @@ class AnimalModel extends AnimalEntity {
               Map<String, dynamic>.from(json['potreiro'] as Map),
             )
           : null,
+      idLocal: json['idLocal']?.toString(),
+      syncStatus: json['syncStatus']?.toString(),
+      pendingAction: json['pendingAction']?.toString(),
+      isLocalOnly: json['isLocalOnly'] == true,
     );
   }
 }

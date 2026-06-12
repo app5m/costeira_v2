@@ -9,6 +9,10 @@ class ClimateModel extends ClimateEntity {
     required super.dataOut,
     super.createAt,
     super.updateAt,
+    super.idLocal,
+    super.syncStatus,
+    super.pendingAction,
+    super.isLocalOnly = false,
   });
 
   factory ClimateModel.fromJson(Map<String, dynamic> json) {
@@ -20,6 +24,10 @@ class ClimateModel extends ClimateEntity {
       dataOut: json['data_out']?.toString() ?? '',
       createAt: json['create_at']?.toString(),
       updateAt: json['update_at']?.toString(),
+      idLocal: json['idLocal']?.toString(),
+      syncStatus: json['syncStatus']?.toString(),
+      pendingAction: json['pendingAction']?.toString(),
+      isLocalOnly: json['isLocalOnly'] == true,
     );
   }
 }

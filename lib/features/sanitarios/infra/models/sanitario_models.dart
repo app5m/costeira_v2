@@ -245,6 +245,10 @@ class SanitarioModel extends SanitarioEntity {
     super.categorias,
     super.lotes,
     super.insumos,
+    super.idLocal,
+    super.syncStatus,
+    super.pendingAction,
+    super.isLocalOnly = false,
   });
 
   factory SanitarioModel.fromJson(Map<String, dynamic> json) {
@@ -262,6 +266,10 @@ class SanitarioModel extends SanitarioEntity {
       categorias: _list(json['categorias'], SanitarioCategoriaModel.fromJson),
       lotes: _list(json['lotes'], SanitarioLoteModel.fromJson),
       insumos: _list(json['insumos'], SanitarioInsumoModel.fromJson),
+      idLocal: json['idLocal']?.toString(),
+      syncStatus: json['syncStatus']?.toString(),
+      pendingAction: json['pendingAction']?.toString(),
+      isLocalOnly: json['isLocalOnly'] == true,
     );
   }
 }

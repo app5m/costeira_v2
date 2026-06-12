@@ -9,6 +9,10 @@ class AnimalLotModel extends AnimalLotEntity {
     super.createAt,
     super.updateAt,
     super.animalsCount,
+    super.idLocal,
+    super.syncStatus,
+    super.pendingAction,
+    super.isLocalOnly = false,
   });
 
   factory AnimalLotModel.fromJson(Map<String, dynamic> json) {
@@ -24,6 +28,10 @@ class AnimalLotModel extends AnimalLotEntity {
       createAt: json['create_at']?.toString(),
       updateAt: json['update_at']?.toString(),
       animalsCount: animals.length,
+      idLocal: json['idLocal']?.toString(),
+      syncStatus: json['syncStatus']?.toString(),
+      pendingAction: json['pendingAction']?.toString(),
+      isLocalOnly: json['isLocalOnly'] == true,
     );
   }
 }

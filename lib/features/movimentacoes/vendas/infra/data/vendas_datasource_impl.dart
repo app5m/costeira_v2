@@ -9,6 +9,7 @@ import 'package:costeira/core/utils/app_logger.dart';
 import 'package:costeira/features/movimentacoes/vendas/domain/entities/delete_venda_entity.dart';
 import 'package:costeira/features/movimentacoes/vendas/domain/entities/venda_upsert_entity.dart';
 import 'package:costeira/features/movimentacoes/vendas/domain/repository/vendas_datasource.dart';
+import 'package:costeira/features/movimentacoes/infra/data/movimentacao_offline_cache_mutation.dart';
 import 'package:costeira/features/movimentacoes/vendas/infra/models/delete_venda_request_model.dart';
 import 'package:costeira/features/movimentacoes/vendas/infra/models/venda_upsert_request_model.dart';
 
@@ -34,6 +35,9 @@ class VendasDatasourceImpl implements VendasDatasource {
       priority: SyncPriority.movimentacoes,
       pendingMessage: 'Venda salva localmente para sincronizar.',
       rawResponseLog: 'VENDAS DATASOURCE: CREATE RAW RESPONSE',
+      offlineCacheMutation: MovimentacaoOfflineCacheMutation.forEndpoint(
+        WSConstantes.movimentacoesAdicionarVenda,
+      ),
       parseResponse: (response) => _parseMutationResponse(
         response,
         operationName: 'CREATE VENDA',
@@ -62,6 +66,9 @@ class VendasDatasourceImpl implements VendasDatasource {
       priority: SyncPriority.movimentacoes,
       pendingMessage: 'Alteração da venda salva para sincronizar.',
       rawResponseLog: 'VENDAS DATASOURCE: UPDATE RAW RESPONSE',
+      offlineCacheMutation: MovimentacaoOfflineCacheMutation.forEndpoint(
+        WSConstantes.movimentacoesAdicionarVenda,
+      ),
       parseResponse: (response) => _parseMutationResponse(
         response,
         operationName: 'UPDATE VENDA',
@@ -83,6 +90,9 @@ class VendasDatasourceImpl implements VendasDatasource {
       priority: SyncPriority.movimentacoes,
       pendingMessage: 'Exclusao da venda salva para sincronizar.',
       rawResponseLog: 'VENDAS DATASOURCE: DELETE RAW RESPONSE',
+      offlineCacheMutation: MovimentacaoOfflineCacheMutation.forEndpoint(
+        WSConstantes.movimentacoesExcluirVenda,
+      ),
       parseResponse: (response) => _parseMutationResponse(
         response,
         operationName: 'DELETE VENDA',
@@ -97,11 +107,16 @@ class VendasDatasourceImpl implements VendasDatasource {
     required String expectedSuccessMessage,
   }) {
     final map = responseAsMap(response);
-    final hasMutationContract = map.containsKey('status') || map.containsKey('msg');
+    final hasMutationContract =
+        map.containsKey('status') || map.containsKey('msg');
 
     if (!hasMutationContract) {
-      AppLogger.error('VENDAS DATASOURCE: $operationName RETORNOU CONTRATO INVALIDO RAW=$response');
-      throw ApiException('Resposta inesperada da API ao executar $operationName.');
+      AppLogger.error(
+        'VENDAS DATASOURCE: $operationName RETORNOU CONTRATO INVALIDO RAW=$response',
+      );
+      throw ApiException(
+        'Resposta inesperada da API ao executar $operationName.',
+      );
     }
 
     final message = ApiMessage.fromResponse(response);
@@ -110,7 +125,10 @@ class VendasDatasourceImpl implements VendasDatasource {
     }
 
     if (message.message.trim().isEmpty) {
-      return ApiMessage(status: message.status, message: expectedSuccessMessage);
+      return ApiMessage(
+        status: message.status,
+        message: expectedSuccessMessage,
+      );
     }
 
     return message;

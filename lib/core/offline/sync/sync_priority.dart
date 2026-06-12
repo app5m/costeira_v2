@@ -8,6 +8,6 @@ class SyncPriority {
   static const int insumos = 50;
   static const int pastagemNutricaoSuplemento = 60;
   static const int sanitarios = 70;
-  static const int movimentacoes = 80;
   static const int tasks = 80;
+  static const int movimentacoes = 90;
 }

@@ -7,6 +7,10 @@ class ClimateEntity {
     required this.dataOut,
     this.createAt,
     this.updateAt,
+    this.idLocal,
+    this.syncStatus,
+    this.pendingAction,
+    this.isLocalOnly = false,
   });
 
   final int id;
@@ -16,4 +20,8 @@ class ClimateEntity {
   final String dataOut;
   final String? createAt;
   final String? updateAt;
+  final String? idLocal;
+  final String? syncStatus;
+  final String? pendingAction;
+  final bool isLocalOnly;
 }

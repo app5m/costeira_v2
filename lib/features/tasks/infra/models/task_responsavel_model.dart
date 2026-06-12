@@ -6,6 +6,10 @@ class TaskResponsavelModel extends TaskResponsavelEntity {
     required super.nome,
     super.email,
     super.celular,
+    super.idLocal,
+    super.syncStatus,
+    super.pendingAction,
+    super.isLocalOnly = false,
   });
 
   factory TaskResponsavelModel.fromJson(Map<String, dynamic> json) {
@@ -14,6 +18,10 @@ class TaskResponsavelModel extends TaskResponsavelEntity {
       nome: json['nome']?.toString() ?? '',
       email: json['email']?.toString() ?? '',
       celular: json['celular']?.toString() ?? '',
+      idLocal: json['idLocal']?.toString(),
+      syncStatus: json['syncStatus']?.toString(),
+      pendingAction: json['pendingAction']?.toString(),
+      isLocalOnly: json['isLocalOnly'] == true,
     );
   }
 }

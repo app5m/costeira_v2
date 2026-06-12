@@ -22,6 +22,10 @@ class AnimalEntity {
     this.baseRacial,
     this.lote,
     this.potreiro,
+    this.idLocal,
+    this.syncStatus,
+    this.pendingAction,
+    this.isLocalOnly = false,
   });
 
   final int id;
@@ -43,4 +47,8 @@ class AnimalEntity {
   final AnimalReferenceEntity? baseRacial;
   final AnimalReferenceEntity? lote;
   final AnimalReferenceEntity? potreiro;
+  final String? idLocal;
+  final String? syncStatus;
+  final String? pendingAction;
+  final bool isLocalOnly;
 }

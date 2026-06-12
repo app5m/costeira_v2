@@ -6,6 +6,7 @@ import 'package:costeira/core/offline/offline_api_service.dart';
 import 'package:costeira/core/offline/cache/api_cache_service.dart';
 import 'package:costeira/core/offline/cache/api_cache_storage.dart';
 import 'package:costeira/core/offline/cache/form_dependencies_cache_service.dart';
+import 'package:costeira/core/offline/cache/offline_mutation_cache_service.dart';
 import 'package:costeira/core/offline/network/network_status_service.dart';
 import 'package:costeira/core/offline/presentation/controllers/sync_controller.dart';
 import 'package:costeira/core/offline/presentation/pages/sync_page.dart';
@@ -85,6 +86,9 @@ class AppModule extends Module {
     i.addLazySingleton<NetworkStatusService>(NetworkStatusService.new);
     i.addLazySingleton<ApiCacheStorage>(ApiCacheStorage.new);
     i.addLazySingleton<ApiCacheService>(ApiCacheService.new);
+    i.addLazySingleton<OfflineMutationCacheService>(
+      OfflineMutationCacheService.new,
+    );
     i.addLazySingleton<SyncQueueStorage>(SyncQueueStorage.new);
     i.addLazySingleton<SyncQueueService>(SyncQueueService.new);
     i.addLazySingleton<OfflineApiService>(OfflineApiService.new);
