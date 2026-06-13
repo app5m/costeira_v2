@@ -80,6 +80,12 @@ class ListTransferenciasController extends ChangeNotifier {
     }
   }
 
+  void removeById(int id) {
+    _transferencias = _transferencias.where((item) => item.id != id).toList();
+    _rows = _transferencias.length;
+    notifyListeners();
+  }
+
   void _setLoading(bool value) {
     _isLoading = value;
     notifyListeners();

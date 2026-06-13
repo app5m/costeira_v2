@@ -1,7 +1,10 @@
 import 'package:costeira/core/api/api_client.dart';
 import 'package:costeira/core/api/api_exception.dart';
+import 'package:costeira/core/api/api_response_utils.dart';
+import 'package:costeira/core/models/api_message.dart';
 import 'package:costeira/core/offline/network/network_status_service.dart';
 import 'package:costeira/core/offline/sync/post_sync_cache_refresh_service.dart';
+import 'package:costeira/core/offline/sync/sync_item.dart';
 import 'package:costeira/core/offline/sync/sync_queue_service.dart';
 import 'package:costeira/core/offline/sync/sync_result.dart';
 
@@ -32,6 +35,7 @@ class SyncService {
     var successCount = 0;
     var errorCount = 0;
     var noConnection = false;
+    final successfulItems = <SyncItem>[];
 
     for (final item in pendingItems) {
       if (!await _networkStatusService.hasConnection()) {
@@ -42,8 +46,13 @@ class SyncService {
       await _queueService.markAsSyncing(item.idLocal);
 
       try {
-        await _apiClient.post(item.endpoint, data: item.payload);
+        final response = await _apiClient.post(
+          item.endpoint,
+          data: item.payload,
+        );
+        _throwIfMutationFailed(response);
         await _queueService.removeItem(item.idLocal);
+        successfulItems.add(item);
         successCount++;
       } catch (error) {
         if (!await _networkStatusService.hasConnection()) {
@@ -66,14 +75,30 @@ class SyncService {
     );
 
     if (!noConnection) {
-      await _refreshMainCaches();
+      await _refreshMainCaches(successfulItems);
     }
 
     return result;
   }
 
-  Future<void> _refreshMainCaches() {
-    return _postSyncCacheRefreshService.refreshMainCaches();
+  Future<void> _refreshMainCaches([List<SyncItem> successfulItems = const []]) {
+    return _postSyncCacheRefreshService.refreshMainCaches(
+      successfulItems: successfulItems,
+    );
+  }
+
+  void _throwIfMutationFailed(dynamic response) {
+    final map = responseAsMap(response);
+    final hasMutationContract =
+        map.containsKey('status') || map.containsKey('msg');
+    if (!hasMutationContract) {
+      return;
+    }
+
+    final message = ApiMessage.fromResponse(response);
+    if (!message.isSuccess) {
+      throw ApiException(message.message);
+    }
   }
 
   String _errorMessage(Object error) {

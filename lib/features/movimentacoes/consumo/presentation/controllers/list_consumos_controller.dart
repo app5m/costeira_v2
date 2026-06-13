@@ -80,6 +80,12 @@ class ListConsumosController extends ChangeNotifier {
     }
   }
 
+  void removeById(int id) {
+    _consumos = _consumos.where((item) => item.id != id).toList();
+    _rows = _consumos.length;
+    notifyListeners();
+  }
+
   void _setLoading(bool value) {
     _isLoading = value;
     notifyListeners();

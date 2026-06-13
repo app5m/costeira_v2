@@ -54,6 +54,7 @@ class AbortosListPageController extends ChangeNotifier {
         return result?.message ?? 'Nao foi possivel excluir o aborto.';
       }
 
+      _listController.removeById(aborto.id);
       await loadInitialData();
       return null;
     } catch (_) {

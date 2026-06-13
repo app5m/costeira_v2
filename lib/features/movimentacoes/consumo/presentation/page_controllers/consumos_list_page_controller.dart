@@ -54,6 +54,7 @@ class ConsumosListPageController extends ChangeNotifier {
         return result?.message ?? 'Nao foi possivel excluir o consumo.';
       }
 
+      _listController.removeById(consumo.id);
       await loadInitialData();
       return null;
     } catch (_) {

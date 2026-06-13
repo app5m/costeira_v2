@@ -58,6 +58,7 @@ class TransferenciasListPageController extends ChangeNotifier {
         return result?.message ?? 'Nao foi possivel excluir a transferencia.';
       }
 
+      _listController.removeById(transferencia.id);
       await loadInitialData();
       return null;
     } catch (_) {

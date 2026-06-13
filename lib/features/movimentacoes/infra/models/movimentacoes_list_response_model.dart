@@ -8,6 +8,7 @@ import 'package:costeira/features/movimentacoes/infra/models/nascimento_model.da
 import 'package:costeira/features/movimentacoes/infra/models/troca_categoria_model.dart';
 import 'package:costeira/features/movimentacoes/infra/models/transferencia_model.dart';
 import 'package:costeira/features/movimentacoes/infra/models/venda_model.dart';
+import 'package:costeira/core/utils/app_logger.dart';
 
 class MovimentacoesListResponseModel extends MovimentacoesListEntity {
   const MovimentacoesListResponseModel({
@@ -25,52 +26,43 @@ class MovimentacoesListResponseModel extends MovimentacoesListEntity {
 
   factory MovimentacoesListResponseModel.fromJson(Map<String, dynamic> json) {
     final data = _asMap(json['data']);
-    final compras = (data['compras'] as List<dynamic>? ?? const [])
-        .whereType<Map>()
-        .map((item) => CompraModel.fromJson(Map<String, dynamic>.from(item)))
-        .toList(growable: false);
-    final vendas = (data['vendas'] as List<dynamic>? ?? const [])
-        .whereType<Map>()
-        .map((item) => VendaModel.fromJson(Map<String, dynamic>.from(item)))
-        .toList(growable: false);
-    final mortes = (data['mortes'] as List<dynamic>? ?? const [])
-        .whereType<Map>()
-        .map((item) => MorteModel.fromJson(Map<String, dynamic>.from(item)))
-        .toList(growable: false);
-    final nascimentos = (data['nascimentos'] as List<dynamic>? ?? const [])
-        .whereType<Map>()
-        .map(
-          (item) => NascimentoModel.fromJson(Map<String, dynamic>.from(item)),
-        )
-        .toList(growable: false);
-    final trocaCategoria =
-        (data['troca_categoria'] as List<dynamic>? ?? const [])
-            .whereType<Map>()
-            .map(
-              (item) =>
-                  TrocaCategoriaModel.fromJson(Map<String, dynamic>.from(item)),
-            )
-            .toList(growable: false);
-    final abigeatos = (data['abigeatos'] as List<dynamic>? ?? const [])
-        .whereType<Map>()
-        .map((item) => AbigeatoModel.fromJson(Map<String, dynamic>.from(item)))
-        .toList(growable: false);
-    final abortos = (data['abortos'] as List<dynamic>? ?? const [])
-        .whereType<Map>()
-        .map((item) => AbortoModel.fromJson(Map<String, dynamic>.from(item)))
-        .toList(growable: false);
-    final consumos = (data['consumos'] as List<dynamic>? ?? const [])
-        .whereType<Map>()
-        .map((item) => ConsumoModel.fromJson(Map<String, dynamic>.from(item)))
-        .toList(growable: false);
-    final transferencias =
-        (data['transferencias'] as List<dynamic>? ?? const [])
-            .whereType<Map>()
-            .map(
-              (item) =>
-                  TransferenciaModel.fromJson(Map<String, dynamic>.from(item)),
-            )
-            .toList(growable: false);
+    final compras = _parseList(
+      data['compras'],
+      'compras',
+      CompraModel.fromJson,
+    );
+    final vendas = _parseList(data['vendas'], 'vendas', VendaModel.fromJson);
+    final mortes = _parseList(data['mortes'], 'mortes', MorteModel.fromJson);
+    final nascimentos = _parseList(
+      data['nascimentos'],
+      'nascimentos',
+      NascimentoModel.fromJson,
+    );
+    final trocaCategoria = _parseList(
+      data['troca_categoria'],
+      'troca_categoria',
+      TrocaCategoriaModel.fromJson,
+    );
+    final abigeatos = _parseList(
+      data['abigeatos'],
+      'abigeatos',
+      AbigeatoModel.fromJson,
+    );
+    final abortos = _parseList(
+      data['abortos'],
+      'abortos',
+      AbortoModel.fromJson,
+    );
+    final consumos = _parseList(
+      data['consumos'],
+      'consumos',
+      ConsumoModel.fromJson,
+    );
+    final transferencias = _parseList(
+      data['transferencias'],
+      'transferencias',
+      TransferenciaModel.fromJson,
+    );
 
     return MovimentacoesListResponseModel(
       rows:
@@ -95,5 +87,27 @@ class MovimentacoesListResponseModel extends MovimentacoesListEntity {
       return Map<String, dynamic>.from(raw);
     }
     return <String, dynamic>{};
+  }
+
+  static List<T> _parseList<T>(
+    dynamic raw,
+    String field,
+    T Function(Map<String, dynamic> json) parser,
+  ) {
+    if (raw is! List) {
+      return <T>[];
+    }
+
+    final items = <T>[];
+    for (final item in raw.whereType<Map>()) {
+      try {
+        items.add(parser(Map<String, dynamic>.from(item)));
+      } catch (error, stackTrace) {
+        AppLogger.error(
+          'MOVIMENTACOES LIST RESPONSE: ERRO AO PARSEAR $field ITEM=$item ERROR=$error STACK=$stackTrace',
+        );
+      }
+    }
+    return items;
   }
 }

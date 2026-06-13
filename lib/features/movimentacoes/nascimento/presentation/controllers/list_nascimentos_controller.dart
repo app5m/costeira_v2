@@ -80,6 +80,14 @@ class ListNascimentosController extends ChangeNotifier {
     }
   }
 
+  void removeById(int nascimentoId) {
+    _nascimentos = _nascimentos
+        .where((item) => item.id != nascimentoId)
+        .toList();
+    _rows = _nascimentos.length;
+    notifyListeners();
+  }
+
   void _setLoading(bool value) {
     _isLoading = value;
     notifyListeners();

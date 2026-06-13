@@ -42,8 +42,7 @@ class TasksDatasourceImpl implements TasksDatasource {
       endpoint: WSConstantes.tarefasListar,
       payload: payload,
       userId: filter.appUsersId,
-      parser: (response) =>
-          TasksListResponseModel.fromJson(responseAsMap(response)),
+      parser: (response) => TasksListResponseModel.fromJson(responseAsMap(response)),
       missingCacheMessage: 'Sem conexão e sem dados salvos para tarefas.',
       rawResponseLog: 'TASKS DATASOURCE: LIST RAW RESPONSE',
     );
@@ -55,9 +54,7 @@ class TasksDatasourceImpl implements TasksDatasource {
     AppLogger.info('TASKS DATASOURCE: SAVE PAYLOAD=$payload');
 
     return _mutation(
-      action: payload['id'] == null
-          ? SyncOperation.create
-          : SyncOperation.update,
+      action: payload['id'] == null ? SyncOperation.create : SyncOperation.update,
       endpoint: WSConstantes.tarefasAdicionar,
       payload: payload,
       pendingMessage: 'Tarefa salva localmente para sincronizar.',
@@ -76,7 +73,7 @@ class TasksDatasourceImpl implements TasksDatasource {
       action: SyncOperation.delete,
       endpoint: WSConstantes.tarefasExcluir,
       payload: payload,
-      pendingMessage: 'Exclusao da tarefa salva para sincronizar.',
+      pendingMessage: 'Exclusão da tarefa salva para sincronizar.',
       rawResponseLog: 'TASKS DATASOURCE: DELETE RAW RESPONSE',
       operationName: 'DELETE TASK',
       expectedSuccessMessage: 'Tarefa excluida com sucesso.',
@@ -100,18 +97,12 @@ class TasksDatasourceImpl implements TasksDatasource {
   }
 
   @override
-  Future<ApiMessage> saveResponsavel(
-    TaskResponsavelUpsertEntity responsavel,
-  ) async {
-    final payload = TaskResponsavelUpsertRequestDto.fromEntity(
-      responsavel,
-    ).data;
+  Future<ApiMessage> saveResponsavel(TaskResponsavelUpsertEntity responsavel) async {
+    final payload = TaskResponsavelUpsertRequestDto.fromEntity(responsavel).data;
     AppLogger.info('TASKS DATASOURCE: SAVE RESPONSAVEL PAYLOAD=$payload');
 
     return _mutation(
-      action: payload['id'] == null
-          ? SyncOperation.create
-          : SyncOperation.update,
+      action: payload['id'] == null ? SyncOperation.create : SyncOperation.update,
       endpoint: WSConstantes.tarefasAdicionarResponsavel,
       payload: payload,
       pendingMessage: 'Responsavel da tarefa salvo para sincronizar.',
@@ -122,19 +113,15 @@ class TasksDatasourceImpl implements TasksDatasource {
   }
 
   @override
-  Future<ApiMessage> deleteResponsavel(
-    DeleteTaskResponsavelEntity responsavel,
-  ) async {
-    final payload = DeleteTaskResponsavelRequestDto.fromEntity(
-      responsavel,
-    ).data;
+  Future<ApiMessage> deleteResponsavel(DeleteTaskResponsavelEntity responsavel) async {
+    final payload = DeleteTaskResponsavelRequestDto.fromEntity(responsavel).data;
     AppLogger.info('TASKS DATASOURCE: DELETE RESPONSAVEL PAYLOAD=$payload');
 
     return _mutation(
       action: SyncOperation.delete,
       endpoint: WSConstantes.tarefasExcluirResponsavel,
       payload: payload,
-      pendingMessage: 'Exclusao do responsavel salva para sincronizar.',
+      pendingMessage: 'Exclusão do responsavel salva para sincronizar.',
       rawResponseLog: 'TASKS DATASOURCE: DELETE RESPONSAVEL RAW RESPONSE',
       operationName: 'DELETE RESPONSAVEL',
       expectedSuccessMessage: 'Responsavel excluido com sucesso.',
@@ -146,10 +133,7 @@ class TasksDatasourceImpl implements TasksDatasource {
     final payload = TaskChartsFilterRequestDto.fromEntity(filter).data;
     AppLogger.info('TASKS DATASOURCE: CHARTS PAYLOAD=$payload');
 
-    final response = await _apiClient.post(
-      WSConstantes.tarefasGraficos,
-      data: payload,
-    );
+    final response = await _apiClient.post(WSConstantes.tarefasGraficos, data: payload);
 
     AppLogger.success('TASKS DATASOURCE: CHARTS RAW RESPONSE=$response');
 
@@ -224,16 +208,11 @@ class TasksDatasourceImpl implements TasksDatasource {
     required String expectedSuccessMessage,
   }) {
     final map = responseAsMap(response);
-    final hasMutationContract =
-        map.containsKey('status') || map.containsKey('msg');
+    final hasMutationContract = map.containsKey('status') || map.containsKey('msg');
 
     if (!hasMutationContract) {
-      AppLogger.error(
-        'TASKS DATASOURCE: $operationName RETORNOU CONTRATO INVALIDO RAW=$response',
-      );
-      throw ApiException(
-        'Resposta inesperada da API ao executar $operationName.',
-      );
+      AppLogger.error('TASKS DATASOURCE: $operationName RETORNOU CONTRATO INVALIDO RAW=$response');
+      throw ApiException('Resposta inesperada da API ao executar $operationName.');
     }
 
     final message = ApiMessage.fromResponse(response);
@@ -242,27 +221,20 @@ class TasksDatasourceImpl implements TasksDatasource {
     }
 
     if (message.message.trim().isEmpty) {
-      return ApiMessage(
-        status: message.status,
-        message: expectedSuccessMessage,
-      );
+      return ApiMessage(status: message.status, message: expectedSuccessMessage);
     }
 
     return message;
   }
 }
 
-Map<String, dynamic> _defaultTaskResponsaveisListPayload(
-  Map<String, dynamic> payload,
-) {
+Map<String, dynamic> _defaultTaskResponsaveisListPayload(Map<String, dynamic> payload) {
   final userId = int.tryParse(payload['app_users_id']?.toString() ?? '');
   if (userId == null) {
     return <String, dynamic>{};
   }
 
-  return TaskFilterRequestDto.fromEntity(
-    TaskFilterEntity(appUsersId: userId),
-  ).data;
+  return TaskFilterRequestDto.fromEntity(TaskFilterEntity(appUsersId: userId)).data;
 }
 
 Map<String, dynamic> _defaultTasksListPayload(Map<String, dynamic> payload) {
@@ -278,8 +250,5 @@ Map<String, dynamic> _defaultTasksListPayload(Map<String, dynamic> payload) {
 
 const Map<String, dynamic> _emptyTasksListResponse = {
   'rows': 0,
-  'data': {
-    'lista': <Map<String, dynamic>>[],
-    'responsaveis': <Map<String, dynamic>>[],
-  },
+  'data': {'lista': <Map<String, dynamic>>[], 'responsaveis': <Map<String, dynamic>>[]},
 };

@@ -7,11 +7,7 @@ import 'package:costeira/core/offline/sync/sync_status.dart';
 import 'package:flutter/foundation.dart';
 
 class SyncController extends ChangeNotifier {
-  SyncController(
-    this._networkStatusService,
-    this._syncQueueService,
-    this._syncService,
-  );
+  SyncController(this._networkStatusService, this._syncQueueService, this._syncService);
 
   final NetworkStatusService _networkStatusService;
   final SyncQueueService _syncQueueService;
@@ -31,21 +27,17 @@ class SyncController extends ChangeNotifier {
   SyncResult? get lastResult => _lastResult;
   List<SyncItem> get items => _items;
 
-  int get pendingCount =>
-      _items.where((item) => item.status == SyncStatus.pending).length;
+  int get pendingCount => _items.where((item) => item.status == SyncStatus.pending).length;
 
-  int get syncingCount =>
-      _items.where((item) => item.status == SyncStatus.syncing).length;
+  int get syncingCount => _items.where((item) => item.status == SyncStatus.syncing).length;
 
-  int get errorCount =>
-      _items.where((item) => item.status == SyncStatus.error).length;
+  int get errorCount => _items.where((item) => item.status == SyncStatus.error).length;
 
   int get visibleCount => _items.length;
 
   bool get hasItems => _items.isNotEmpty;
 
-  bool get canSyncNow =>
-      _isOnline && pendingCount > 0 && !_isSyncing && !_isLoading;
+  bool get canSyncNow => _isOnline && pendingCount > 0 && !_isSyncing && !_isLoading;
 
   Future<void> load() async {
     _isLoading = true;
@@ -108,7 +100,7 @@ class SyncController extends ChangeNotifier {
       return 'Sem conexão para sincronizar.';
     }
     if (errorCount > 0 || result.errorCount > 0) {
-      return 'Alguns itens nao puderam ser sincronizados.';
+      return 'Alguns itens não puderam ser sincronizados.';
     }
     if (result.isEmpty) {
       return 'Tudo sincronizado.';

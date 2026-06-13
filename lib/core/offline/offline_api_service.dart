@@ -203,7 +203,7 @@ class OfflineApiService {
     );
 
     AppLogger.success(
-      'OFFLINE API SERVICE: MUTATION ENFILEIRADA ID=${item.idLocal} MODULE=$module ACTION=$action',
+      'OFFLINE API SERVICE: MUTATION ENFILEIRADA ID=${item.idLocal} MODULE=$module ACTION=$action ENDPOINT=$endpoint PAYLOAD_ID=${payload['id']}',
     );
 
     return ApiMessage(

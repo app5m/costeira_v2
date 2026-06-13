@@ -80,6 +80,12 @@ class ListAbortosController extends ChangeNotifier {
     }
   }
 
+  void removeById(int id) {
+    _abortos = _abortos.where((item) => item.id != id).toList();
+    _rows = _abortos.length;
+    notifyListeners();
+  }
+
   void _setLoading(bool value) {
     _isLoading = value;
     notifyListeners();

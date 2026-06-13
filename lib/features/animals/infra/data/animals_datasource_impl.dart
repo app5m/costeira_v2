@@ -103,8 +103,7 @@ class AnimalsDatasourceImpl implements AnimalsDatasource {
       endpoint: WSConstantes.animaisListar,
       payload: payload,
       userId: filter.appUsersId,
-      parser: (response) =>
-          AnimalsListResponseModel.fromJson(responseAsMap(response)),
+      parser: (response) => AnimalsListResponseModel.fromJson(responseAsMap(response)),
       missingCacheMessage: 'Sem conexão e sem dados salvos para animais.',
       rawResponseLog: 'ANIMAIS DATASOURCE: LIST RAW RESPONSE',
     );
@@ -121,7 +120,7 @@ class AnimalsDatasourceImpl implements AnimalsDatasource {
       endpoint: WSConstantes.animaisExcluir,
       payload: payload,
       priority: SyncPriority.animais,
-      pendingMessage: 'Exclusao do animal salva para sincronizar.',
+      pendingMessage: 'Exclusão do animal salva para sincronizar.',
       requestDescription: 'DELETE ANIMAL',
       expectedSuccessMessage: 'Animal excluido com sucesso',
       rawResponseLog: 'ANIMAIS DATASOURCE: DELETE RAW RESPONSE',
@@ -176,9 +175,7 @@ class AnimalsDatasourceImpl implements AnimalsDatasource {
   }
 
   @override
-  Future<AnimalLotsListEntity> getAnimalLots(
-    AnimalLotsFilterEntity filter,
-  ) async {
+  Future<AnimalLotsListEntity> getAnimalLots(AnimalLotsFilterEntity filter) async {
     final payload = AnimalLotsFilterRequestModel.fromEntity(filter).data;
     AppLogger.info('ANIMAIS DATASOURCE: LIST LOTS PAYLOAD=$payload');
 
@@ -186,8 +183,7 @@ class AnimalsDatasourceImpl implements AnimalsDatasource {
       endpoint: WSConstantes.animaisListarLotes,
       payload: payload,
       userId: filter.appUsersId,
-      parser: (response) =>
-          AnimalLotsListResponseModel.fromJson(responseAsMap(response)),
+      parser: (response) => AnimalLotsListResponseModel.fromJson(responseAsMap(response)),
       missingCacheMessage: 'Sem conexão e sem dados salvos para lotes.',
       rawResponseLog: 'ANIMAIS DATASOURCE: LIST LOTS RAW RESPONSE',
     );
@@ -204,7 +200,7 @@ class AnimalsDatasourceImpl implements AnimalsDatasource {
       endpoint: WSConstantes.animaisExcluirLote,
       payload: payload,
       priority: SyncPriority.lotes,
-      pendingMessage: 'Exclusao do lote salva para sincronizar.',
+      pendingMessage: 'Exclusão do lote salva para sincronizar.',
       requestDescription: 'DELETE LOT',
       expectedSuccessMessage: 'Lote excluido com sucesso',
       rawResponseLog: 'ANIMAIS DATASOURCE: DELETE LOT RAW RESPONSE',
@@ -212,16 +208,11 @@ class AnimalsDatasourceImpl implements AnimalsDatasource {
   }
 
   @override
-  Future<AnimalChartsEntity> getAnimalCharts(
-    AnimalChartsFilterEntity filter,
-  ) async {
+  Future<AnimalChartsEntity> getAnimalCharts(AnimalChartsFilterEntity filter) async {
     final payload = AnimalChartsFilterRequestModel.fromEntity(filter).data;
     AppLogger.info('ANIMAIS DATASOURCE: CHARTS PAYLOAD=$payload');
 
-    final response = await _apiClient.post(
-      WSConstantes.animaisGraficos,
-      data: payload,
-    );
+    final response = await _apiClient.post(WSConstantes.animaisGraficos, data: payload);
 
     AppLogger.success('ANIMAIS DATASOURCE: CHARTS RAW RESPONSE=$response');
 
@@ -230,9 +221,7 @@ class AnimalsDatasourceImpl implements AnimalsDatasource {
     final first = dataList.whereType<Map>().cast<Map>().firstOrNull;
 
     if (first == null) {
-      AppLogger.warning(
-        'ANIMAIS DATASOURCE: CHARTS SEM DADOS, RETORNANDO VAZIO',
-      );
+      AppLogger.warning('ANIMAIS DATASOURCE: CHARTS SEM DADOS, RETORNANDO VAZIO');
       return const AnimalChartsEntity(
         pesoTotalRebanho: 0,
         pesoMedioFazenda: 0,
@@ -280,8 +269,7 @@ class AnimalsDatasourceImpl implements AnimalsDatasource {
       return parser(response);
     } catch (error) {
       final canUseCacheFallback =
-          !await _networkStatusService.hasConnection() ||
-          _isConnectionFailure(error);
+          !await _networkStatusService.hasConnection() || _isConnectionFailure(error);
 
       if (canUseCacheFallback) {
         final cached = _getCachedList(
@@ -459,9 +447,7 @@ class AnimalsDatasourceImpl implements AnimalsDatasource {
       itemId: payload['id'],
       idLocal: idLocal,
       createCacheWhenMissing: isAnimalCreate || isLotCreate,
-      emptyResponse: isAnimalCreate || isLotCreate
-          ? _emptyListResponse()
-          : null,
+      emptyResponse: isAnimalCreate || isLotCreate ? _emptyListResponse() : null,
       allowLatestCacheFallback: !(isAnimalsModule || isLotsModule),
     );
   }
@@ -471,15 +457,11 @@ class AnimalsDatasourceImpl implements AnimalsDatasource {
   }
 
   Map<String, dynamic> _defaultAnimalsListPayload(int userId) {
-    return AnimalsFilterRequestModel.fromEntity(
-      AnimalsFilterEntity(appUsersId: userId),
-    ).data;
+    return AnimalsFilterRequestModel.fromEntity(AnimalsFilterEntity(appUsersId: userId)).data;
   }
 
   Map<String, dynamic> _defaultLotsListPayload(int userId) {
-    return AnimalLotsFilterRequestModel.fromEntity(
-      AnimalLotsFilterEntity(appUsersId: userId),
-    ).data;
+    return AnimalLotsFilterRequestModel.fromEntity(AnimalLotsFilterEntity(appUsersId: userId)).data;
   }
 
   Map<String, dynamic> _emptyListResponse() {
@@ -492,8 +474,7 @@ class AnimalsDatasourceImpl implements AnimalsDatasource {
     required String expectedSuccessMessage,
   }) {
     final map = responseAsMap(response);
-    final hasMutationContract =
-        map.containsKey('status') || map.containsKey('msg');
+    final hasMutationContract = map.containsKey('status') || map.containsKey('msg');
 
     if (!hasMutationContract) {
       AppLogger.error(
@@ -515,10 +496,7 @@ class AnimalsDatasourceImpl implements AnimalsDatasource {
     }
 
     if (message.message.trim().isEmpty) {
-      return ApiMessage(
-        status: message.status,
-        message: expectedSuccessMessage,
-      );
+      return ApiMessage(status: message.status, message: expectedSuccessMessage);
     }
 
     return message;

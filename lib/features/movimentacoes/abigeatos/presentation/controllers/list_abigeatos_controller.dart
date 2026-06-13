@@ -80,6 +80,12 @@ class ListAbigeatosController extends ChangeNotifier {
     }
   }
 
+  void removeById(int id) {
+    _abigeatos = _abigeatos.where((item) => item.id != id).toList();
+    _rows = _abigeatos.length;
+    notifyListeners();
+  }
+
   void _setLoading(bool value) {
     _isLoading = value;
     notifyListeners();

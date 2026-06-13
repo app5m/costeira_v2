@@ -45,12 +45,18 @@ class ListComprasController extends ChangeNotifier {
       _compras = result.data;
       _rows = result.rows;
       AppLogger.success(
-        'COMPRAS LIST CONTROLLER: LISTA CARREGADA COM ${result.rows} REGISTROS',
+        'COMPRAS LIST CONTROLLER: LISTA CARREGADA COM ${result.data.length} COMPRAS ROWS=${result.rows}',
       );
     } on ApiException catch (error) {
       _errorMessage = error.message;
       AppLogger.error(
         'COMPRAS LIST CONTROLLER: ERRO AO LISTAR MSG=${error.message}',
+      );
+      rethrow;
+    } catch (error, stackTrace) {
+      _errorMessage = 'Nao foi possivel carregar as compras.';
+      AppLogger.error(
+        'COMPRAS LIST CONTROLLER: ERRO INESPERADO AO LISTAR ERROR=$error STACK=$stackTrace',
       );
       rethrow;
     } finally {
@@ -74,6 +80,12 @@ class ListComprasController extends ChangeNotifier {
       _rows = result.rows;
     } on ApiException catch (error) {
       _errorMessage = error.message;
+      rethrow;
+    } catch (error, stackTrace) {
+      _errorMessage = 'Nao foi possivel carregar as compras.';
+      AppLogger.error(
+        'COMPRAS LIST CONTROLLER: ERRO INESPERADO AO RECARREGAR ERROR=$error STACK=$stackTrace',
+      );
       rethrow;
     } finally {
       _setLoading(false);

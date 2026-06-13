@@ -41,6 +41,7 @@ class VendasListPageController extends ChangeNotifier {
         return result?.message ?? 'Nao foi possivel excluir a venda.';
       }
 
+      _listController.removeById(venda.id);
       await loadInitialData();
       return null;
     } catch (_) {

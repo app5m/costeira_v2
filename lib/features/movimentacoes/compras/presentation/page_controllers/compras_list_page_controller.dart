@@ -41,6 +41,7 @@ class ComprasListPageController extends ChangeNotifier {
         return result?.message ?? 'Nao foi possivel excluir a compra.';
       }
 
+      _listController.removeById(compra.id);
       await loadInitialData();
       return null;
     } catch (_) {

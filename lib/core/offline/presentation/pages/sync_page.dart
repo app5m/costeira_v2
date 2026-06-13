@@ -76,7 +76,7 @@ class _SyncPageState extends State<SyncPage> {
               ],
               if (_controller.errorCount > 0) ...[
                 const _InfoBanner(
-                  title: 'Alguns itens nao puderam ser sincronizados',
+                  title: 'Alguns itens não puderam ser sincronizados',
                   message: 'Os itens com erro ficam salvos no aparelho para uma nova tentativa.',
                   isError: true,
                 ),
@@ -437,7 +437,9 @@ class _SyncItemTile extends StatelessWidget {
   }
 
   String _itemSubtitle(SyncItem item) {
-    return _formatDate(item.createdAt);
+    final id = item.payload['id'];
+    final idLabel = id == null ? '' : ' - ID $id';
+    return '${_formatDate(item.createdAt)}$idLabel';
   }
 
   String _moduleLabel(String module) {

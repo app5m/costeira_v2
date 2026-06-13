@@ -41,6 +41,7 @@ class NascimentosListPageController extends ChangeNotifier {
         return result?.message ?? 'Nao foi possivel excluir o nascimento.';
       }
 
+      _listController.removeById(nascimento.id);
       await loadInitialData();
       return null;
     } catch (_) {

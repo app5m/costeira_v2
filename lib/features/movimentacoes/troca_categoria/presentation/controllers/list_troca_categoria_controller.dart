@@ -80,6 +80,12 @@ class ListTrocaCategoriaController extends ChangeNotifier {
     }
   }
 
+  void removeById(int id) {
+    _trocas = _trocas.where((item) => item.id != id).toList();
+    _rows = _trocas.length;
+    notifyListeners();
+  }
+
   void _setLoading(bool value) {
     _isLoading = value;
     notifyListeners();

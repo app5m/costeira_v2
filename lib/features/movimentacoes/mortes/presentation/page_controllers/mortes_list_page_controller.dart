@@ -41,6 +41,7 @@ class MortesListPageController extends ChangeNotifier {
         return result?.message ?? 'Nao foi possivel excluir a morte.';
       }
 
+      _listController.removeById(morte.id);
       await loadInitialData();
       return null;
     } catch (_) {

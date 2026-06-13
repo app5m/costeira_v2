@@ -450,6 +450,12 @@ class OfflineMutationCacheService {
   }
 
   static _ListTarget? _resolveListTarget(dynamic response, String listField) {
+    final explicitPath = listField.split('.');
+    final explicitValue = _readPath(response, explicitPath);
+    if (explicitValue is List) {
+      return _ListTarget.path(explicitPath);
+    }
+
     if (response is List) {
       final first = response.firstOrNull;
       if (first is Map) {
@@ -459,12 +465,6 @@ class OfflineMutationCacheService {
         }
       }
       return const _ListTarget.root();
-    }
-
-    final explicitPath = listField.split('.');
-    final explicitValue = _readPath(response, explicitPath);
-    if (explicitValue is List) {
-      return _ListTarget.path(explicitPath);
     }
 
     final detectedPath = _detectListPath(response, preferredPath: explicitPath);

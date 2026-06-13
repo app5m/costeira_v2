@@ -54,6 +54,7 @@ class AbigeatosListPageController extends ChangeNotifier {
         return result?.message ?? 'Nao foi possivel excluir o abigeato.';
       }
 
+      _listController.removeById(abigeato.id);
       await loadInitialData();
       return null;
     } catch (_) {

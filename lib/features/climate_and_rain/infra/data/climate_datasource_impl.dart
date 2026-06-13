@@ -36,8 +36,7 @@ class ClimateDatasourceImpl implements ClimateDatasource {
       endpoint: WSConstantes.climasListar,
       payload: payload,
       userId: filter.appUsersId,
-      parser: (response) =>
-          ClimateListResponseModel.fromJson(responseAsMap(response)),
+      parser: (response) => ClimateListResponseModel.fromJson(responseAsMap(response)),
       missingCacheMessage: 'Sem conexão e sem dados salvos para clima.',
       rawResponseLog: 'CLIMATE DATASOURCE: LIST RAW RESPONSE',
     );
@@ -119,7 +118,7 @@ class ClimateDatasourceImpl implements ClimateDatasource {
       endpoint: WSConstantes.climasExcluir,
       payload: payload,
       priority: SyncPriority.climateAndRain,
-      pendingMessage: 'Exclusao do clima salva para sincronizar.',
+      pendingMessage: 'Exclusão do clima salva para sincronizar.',
       rawResponseLog: 'CLIMATE DATASOURCE: DELETE RAW RESPONSE',
       offlineCacheMutation: const OfflineCacheMutation(
         listEndpoint: WSConstantes.climasListar,
@@ -135,16 +134,11 @@ class ClimateDatasourceImpl implements ClimateDatasource {
   }
 
   @override
-  Future<ClimateChartsEntity> getClimateCharts(
-    ClimateChartsFilterEntity filter,
-  ) async {
+  Future<ClimateChartsEntity> getClimateCharts(ClimateChartsFilterEntity filter) async {
     final payload = ClimateChartsFilterRequestModel.fromEntity(filter).data;
     AppLogger.info('CLIMATE DATASOURCE: CHARTS PAYLOAD=$payload');
 
-    final response = await _apiClient.post(
-      WSConstantes.climasGraficos,
-      data: payload,
-    );
+    final response = await _apiClient.post(WSConstantes.climasGraficos, data: payload);
     AppLogger.success('CLIMATE DATASOURCE: CHARTS RAW RESPONSE=$response');
 
     final wrapper = responseAsMap(response);
@@ -160,9 +154,7 @@ class ClimateDatasourceImpl implements ClimateDatasource {
       );
     }
 
-    return ClimateChartsResponseModel.fromJson(
-      Map<String, dynamic>.from(first),
-    );
+    return ClimateChartsResponseModel.fromJson(Map<String, dynamic>.from(first));
   }
 
   ApiMessage _parseMutationResponse(
@@ -171,8 +163,7 @@ class ClimateDatasourceImpl implements ClimateDatasource {
     required String expectedSuccessMessage,
   }) {
     final map = responseAsMap(response);
-    final hasMutationContract =
-        map.containsKey('status') || map.containsKey('msg');
+    final hasMutationContract = map.containsKey('status') || map.containsKey('msg');
 
     if (!hasMutationContract) {
       throw ApiException(
@@ -191,10 +182,7 @@ class ClimateDatasourceImpl implements ClimateDatasource {
     }
 
     if (message.message.trim().isEmpty) {
-      return ApiMessage(
-        status: message.status,
-        message: expectedSuccessMessage,
-      );
+      return ApiMessage(status: message.status, message: expectedSuccessMessage);
     }
 
     return message;
@@ -207,7 +195,5 @@ Map<String, dynamic> _defaultClimateListPayload(Map<String, dynamic> payload) {
     return <String, dynamic>{};
   }
 
-  return ClimateFilterRequestModel.fromEntity(
-    ClimateFilterEntity(appUsersId: userId),
-  ).data;
+  return ClimateFilterRequestModel.fromEntity(ClimateFilterEntity(appUsersId: userId)).data;
 }

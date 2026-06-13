@@ -57,6 +57,7 @@ class TrocaCategoriaListPageController extends ChangeNotifier {
         return result?.message ?? 'Nao foi possivel excluir a troca.';
       }
 
+      _listController.removeById(troca.id);
       await loadInitialData();
       return null;
     } catch (_) {

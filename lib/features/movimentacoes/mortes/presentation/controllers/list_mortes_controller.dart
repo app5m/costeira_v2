@@ -80,6 +80,12 @@ class ListMortesController extends ChangeNotifier {
     }
   }
 
+  void removeById(int morteId) {
+    _mortes = _mortes.where((item) => item.id != morteId).toList();
+    _rows = _mortes.length;
+    notifyListeners();
+  }
+
   void _setLoading(bool value) {
     _isLoading = value;
     notifyListeners();
