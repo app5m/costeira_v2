@@ -3,12 +3,17 @@ import 'package:costeira/core/storage/session_storage.dart';
 import 'package:costeira/features/animals/domain/entities/animal_lot_entity.dart';
 import 'package:costeira/features/animals/domain/entities/animal_lots_filter_entity.dart';
 import 'package:costeira/features/animals/domain/usecases/get_animal_lots_usecase.dart';
+import 'package:costeira/features/fazendas/domain/usecases/resolve_current_farm_id.dart';
 import 'package:flutter/foundation.dart';
 
 class ListAnimalLotsController extends ChangeNotifier {
-  ListAnimalLotsController(this._getAnimalLotsUsecase);
+  ListAnimalLotsController(
+    this._getAnimalLotsUsecase,
+    this._resolveCurrentFarmId,
+  );
 
   final GetAnimalLotsUsecase _getAnimalLotsUsecase;
+  final ResolveCurrentFarmId _resolveCurrentFarmId;
 
   bool _isLoading = false;
   String? _errorMessage;
@@ -22,18 +27,30 @@ class ListAnimalLotsController extends ChangeNotifier {
   int get rows => _rows;
   AnimalLotsFilterEntity? get currentFilter => _currentFilter;
 
-  Future<void> load({int? id, String? nome}) async {
+  Future<void> load({int? id, String? nome, int? appFazendasId}) async {
     _setLoading(true);
     _errorMessage = null;
 
     try {
       final user = await SessionStorage.getUserSession();
-      if (user == null) {
+      if (user == null || user.id <= 0) {
         throw ApiException('Usuário não autenticado.');
+      }
+
+      final farmId = await _resolveCurrentFarmId(
+        preferred: appFazendasId,
+        userId: user.id,
+      );
+      if (farmId == null) {
+        _lots = const [];
+        _rows = 0;
+        _errorMessage = 'Cadastre uma fazenda antes.';
+        return;
       }
 
       _currentFilter = AnimalLotsFilterEntity(
         appUsersId: user.id,
+        appFazendasId: farmId,
         id: id,
         nome: nome,
       );

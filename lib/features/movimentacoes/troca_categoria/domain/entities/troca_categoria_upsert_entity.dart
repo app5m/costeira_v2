@@ -4,6 +4,7 @@ class TrocaCategoriaUpsertEntity {
   const TrocaCategoriaUpsertEntity({
     this.id,
     this.appUsersId,
+    this.appFazendasId,
     required this.data,
     required this.catgDestino,
     required this.appPotreirosId,
@@ -14,6 +15,7 @@ class TrocaCategoriaUpsertEntity {
 
   final int? id;
   final int? appUsersId;
+  final int? appFazendasId;
   final String data;
   final int catgDestino;
   final int appPotreirosId;
@@ -24,6 +26,7 @@ class TrocaCategoriaUpsertEntity {
   TrocaCategoriaUpsertEntity copyWith({
     int? id,
     int? appUsersId,
+    int? appFazendasId,
     String? data,
     int? catgDestino,
     int? appPotreirosId,
@@ -34,6 +37,7 @@ class TrocaCategoriaUpsertEntity {
     return TrocaCategoriaUpsertEntity(
       id: id ?? this.id,
       appUsersId: appUsersId ?? this.appUsersId,
+      appFazendasId: appFazendasId ?? this.appFazendasId,
       data: data ?? this.data,
       catgDestino: catgDestino ?? this.catgDestino,
       appPotreirosId: appPotreirosId ?? this.appPotreirosId,

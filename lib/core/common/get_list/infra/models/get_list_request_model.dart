@@ -7,9 +7,12 @@ class GetListRequestModel {
   final Map<String, dynamic> data;
 
   factory GetListRequestModel.fromEntity(GetListParamsEntity params) {
-    return GetListRequestModel._({
-      'sexo': params.sexo,
-      'token': WSConstantes.token,
-    });
+    return GetListRequestModel._(
+      {
+        'sexo': params.sexo,
+        'token': WSConstantes.token,
+        if (params.userId != null) 'id_user': params.userId,
+      }..removeWhere((key, value) => value == null),
+    );
   }
 }

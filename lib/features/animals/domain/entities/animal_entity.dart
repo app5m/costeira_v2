@@ -15,6 +15,7 @@ class AnimalEntity {
     this.peso,
     this.createAt,
     this.updateAt,
+    this.ultimaPesagem,
     this.obs,
     this.status,
     this.categoria,
@@ -40,6 +41,7 @@ class AnimalEntity {
   final double? peso;
   final String? createAt;
   final String? updateAt;
+  final String? ultimaPesagem;
   final String? obs;
   final String? status;
   final AnimalCategoryEntity? categoria;

@@ -1,14 +1,16 @@
 import 'package:costeira/core/api/api_exception.dart';
 import 'package:costeira/core/models/api_message.dart';
 import 'package:costeira/core/storage/session_storage.dart';
+import 'package:costeira/features/fazendas/domain/usecases/resolve_current_farm_id.dart';
 import 'package:costeira/features/movimentacoes/nascimento/domain/entities/nascimento_upsert_entity.dart';
 import 'package:costeira/features/movimentacoes/nascimento/domain/usecases/create_nascimento_usecase.dart';
 import 'package:flutter/foundation.dart';
 
 class AddNascimentoController extends ChangeNotifier {
-  AddNascimentoController(this._createNascimentoUsecase);
+  AddNascimentoController(this._createNascimentoUsecase, this._resolveCurrentFarmId);
 
   final CreateNascimentoUsecase _createNascimentoUsecase;
+  final ResolveCurrentFarmId _resolveCurrentFarmId;
 
   bool _isLoading = false;
   String? _errorMessage;
@@ -26,8 +28,16 @@ class AddNascimentoController extends ChangeNotifier {
         throw ApiException('Usuario nao autenticado.');
       }
 
+      final farmId = await _resolveCurrentFarmId(
+        preferred: nascimento.appFazendasId,
+        userId: user.id,
+      );
+      if (farmId == null) {
+        throw ApiException('Cadastre uma fazenda antes de registrar o nascimento.');
+      }
+
       return await _createNascimentoUsecase(
-        nascimento.copyWith(appUsersId: user.id),
+        nascimento.copyWith(appUsersId: user.id, appFazendasId: farmId),
       );
     } on ApiException catch (error) {
       _errorMessage = error.message;

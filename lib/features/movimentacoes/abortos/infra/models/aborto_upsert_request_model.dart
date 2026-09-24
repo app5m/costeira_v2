@@ -25,6 +25,7 @@ class AbortoUpsertRequestModel {
     return {
       'token': WSConstantes.token,
       'app_users_id': aborto.appUsersId,
+      'app_fazendas_id': aborto.appFazendasId,
       'data': aborto.data,
       'status_destino': aborto.statusDestino,
       'app_potreiros_id': aborto.appPotreirosId,

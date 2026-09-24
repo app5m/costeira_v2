@@ -10,12 +10,17 @@ class ListCategoryModel extends ListCategoryEntity {
   });
 
   factory ListCategoryModel.fromJson(Map<String, dynamic> json) {
-    final rawSubcategories = (json['subcategorias'] as List<dynamic>? ?? const []);
+    final rawSubcategories =
+        (json['subcategorias'] as List<dynamic>? ?? const []);
 
     final subcategorias = rawSubcategories
         .whereType<Map>()
         .map((item) => Map<String, dynamic>.from(item))
-        .where((item) => item['id'] != null && item['nome'] != null)
+        .where((item) {
+          final id = int.tryParse(item['id']?.toString() ?? '') ?? 0;
+          final nome = item['nome']?.toString().trim() ?? '';
+          return id > 0 && nome.isNotEmpty;
+        })
         .map(ListSubcategoryModel.fromJson)
         .toList(growable: false);
 

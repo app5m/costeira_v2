@@ -25,6 +25,7 @@ class ConsumoUpsertRequestModel {
     return {
       'token': WSConstantes.token,
       'app_users_id': consumo.appUsersId,
+      'app_fazendas_id': consumo.appFazendasId,
       'data': consumo.data,
       'obs': consumo.obs,
     }..removeWhere((key, value) => value == null);

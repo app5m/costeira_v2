@@ -1,5 +1,6 @@
 class WSConstantes {
-  static const String urlBase = 'https://costeira.app.br/apiv3/user';
+  static const String urlBase = 'https://costeira.app.br/v2/apiv3/user';
+  static const String menuIconsBase = 'https://costeira.app.br/uploads/icones';
   static const String token = 'Q0NW47kj';
 
   static const String doisFatores = '/usuarios/doisFatores';
@@ -102,6 +103,20 @@ class WSConstantes {
   static const String sanitariosExcluir = '/sanitarios/excluir';
   static const String sanitariosSetExecutar = '/sanitarios/setExecutar';
   static const String sanitariosGraficos = '/sanitarios/graficos';
+  static const String fazendasListar = '/fazendas/listar';
+  static const String fazendasAdicionar = '/fazendas/adicionar';
+  static const String fornecedoresListar = '/fornecedores/listar';
+  static const String fornecedoresAdicionar = '/fornecedores/adicionar';
+  static const String fornecedoresExcluir = '/fornecedores/excluir';
+  static const String compradoresListar = '/compradores/listar';
+  static const String compradoresAdicionar = '/compradores/adicionar';
+  static const String compradoresExcluir = '/compradores/excluir';
+  static const String usuariosBuscaEndereco = '/usuarios/buscaEndereco';
+  static const String usuariosListar = '/usuarios/listarUsuarios';
+  static const String usuariosAdicionar = '/usuarios/AdicionarUsuario';
+  static const String usuariosListarPermissoes = '/usuarios/listarPermissoes';
+  static const int mesmoCnpjSim = 1;
+  static const int mesmoCnpjNao = 2;
 
   static const int tipoPessoaFisica = 1;
   static const int tipoPessoaJuridica = 2;

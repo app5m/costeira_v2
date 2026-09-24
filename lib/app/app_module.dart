@@ -24,6 +24,17 @@ import 'package:costeira/features/climate_and_rain/presentation/pages/climate_ad
 import 'package:costeira/features/climate_and_rain/presentation/pages/climate_edit.dart';
 import 'package:costeira/features/climate_and_rain/presentation/pages/climate_page.dart';
 import 'package:costeira/features/dashboard/dashboard_binds.dart';
+import 'package:costeira/features/fazendas/fazendas_binds.dart';
+import 'package:costeira/features/cadastros/cadastros_binds.dart';
+import 'package:costeira/features/usuarios/presentation/pages/sub_usuario_form_page.dart';
+import 'package:costeira/features/usuarios/presentation/pages/sub_usuarios_list_page.dart';
+import 'package:costeira/features/usuarios/usuarios_binds.dart';
+import 'package:costeira/features/cadastros/domain/entities/parceiro_kind.dart';
+import 'package:costeira/features/cadastros/presentation/pages/parceiro_form_page.dart';
+import 'package:costeira/features/cadastros/presentation/pages/parceiros_list_page.dart';
+import 'package:costeira/features/fazendas/domain/entities/fazenda_entity.dart';
+import 'package:costeira/features/fazendas/presentation/pages/fazenda_form_page.dart';
+import 'package:costeira/features/base/pages/coming_soon_page.dart';
 import 'package:costeira/features/account/repositories/account_repository.dart';
 import 'package:costeira/features/animals/animals_binds.dart';
 import 'package:costeira/features/animals/domain/entities/animal_entity.dart';
@@ -32,11 +43,14 @@ import 'package:costeira/features/auth/models/register_draft.dart';
 import 'package:costeira/features/auth/repositories/auth_repository.dart';
 import 'package:costeira/features/notifications/repositories/notifications_repository.dart';
 import 'package:costeira/features/movimentacoes/movimentacoes_binds.dart';
+import 'package:costeira/features/movimentacoes/movimentacoes.dart';
 import 'package:costeira/features/utils/repositories/utils_repository.dart';
 import 'package:costeira/features/animals/presentation/pages/animals/add_animal.dart';
 import 'package:costeira/features/animals/presentation/pages/animals/animal_detail.dart';
 import 'package:costeira/features/animals/presentation/pages/animals/animal_edit.dart';
 import 'package:costeira/features/animals/presentation/pages/animals_page.dart';
+import 'package:costeira/features/insumos/presentation/pages/estoque_insumos.dart';
+import 'package:costeira/features/tasks/presentation/pages/task_page.dart';
 import 'package:costeira/features/animals/presentation/pages/lotes/add_lote.dart';
 import 'package:costeira/features/animals/presentation/pages/lotes/edit_lote.dart';
 import 'package:costeira/features/animals/presentation/pages/lotes/lotes_page.dart';
@@ -110,6 +124,7 @@ class AppModule extends Module {
     );
     GetListBinds.register(i);
     ClimateAndRainBinds.register(i);
+    FazendasBinds.register(i);
     PotreirosBinds.register(i);
     AnimalsBinds.register(i);
     DashboardBinds.register(i);
@@ -118,6 +133,8 @@ class AppModule extends Module {
     PastagemNutricaoSuplementoBinds.register(i);
     SanitariosBinds.register(i);
     TasksBinds.register(i);
+    CadastrosBinds.register(i);
+    UsuariosBinds.register(i);
     i.addLazySingleton<PostSyncCacheRefreshService>(
       PostSyncCacheRefreshService.new,
     );
@@ -166,6 +183,7 @@ class AppModule extends Module {
           lat: data.latitude,
           long: data.longitude,
           tipo: data.userType,
+          pendingUser: data.pendingUser,
         );
       },
     );
@@ -186,6 +204,79 @@ class AppModule extends Module {
     r.child(AppRoutes.extras, child: (_) => const Extras());
     r.child(AppRoutes.sync, child: (_) => const SyncPage());
     r.child(AppRoutes.climateRain, child: (_) => const ClimatePage());
+    r.child(AppRoutes.estoque, child: (_) => const Insumos());
+    r.child(AppRoutes.tasks, child: (_) => const TaskPage());
+    r.child(
+      AppRoutes.comingSoon,
+      child: (_) {
+        final data = r.args.data;
+        if (data is ComingSoonRouteData) {
+          return ComingSoonPage(
+            title: data.title,
+            message: data.message,
+            menu: data.menu,
+          );
+        }
+        return const ComingSoonPage(title: 'Em breve');
+      },
+    );
+    r.child(AppRoutes.fazendasAdd, child: (_) => const FazendaFormPage());
+    r.child(
+      AppRoutes.fazendasEdit,
+      child: (_) {
+        final fazenda = _requireArgs<FazendaEntity>(r.args.data);
+        return FazendaFormPage(fazenda: fazenda);
+      },
+    );
+    r.child(
+      AppRoutes.fornecedores,
+      child: (_) => const ParceirosListPage(kind: ParceiroKind.fornecedor),
+    );
+    r.child(
+      AppRoutes.compradores,
+      child: (_) => const ParceirosListPage(kind: ParceiroKind.comprador),
+    );
+    r.child(
+      AppRoutes.fornecedoresAdd,
+      child: (_) {
+        final data = _requireArgs<ParceiroFormRouteData>(r.args.data);
+        return ParceiroFormPage(data: data);
+      },
+    );
+    r.child(
+      AppRoutes.compradoresAdd,
+      child: (_) {
+        final data = _requireArgs<ParceiroFormRouteData>(r.args.data);
+        return ParceiroFormPage(data: data);
+      },
+    );
+    r.child(
+      AppRoutes.fornecedoresEdit,
+      child: (_) {
+        final data = _requireArgs<ParceiroFormRouteData>(r.args.data);
+        return ParceiroFormPage(data: data);
+      },
+    );
+    r.child(
+      AppRoutes.compradoresEdit,
+      child: (_) {
+        final data = _requireArgs<ParceiroFormRouteData>(r.args.data);
+        return ParceiroFormPage(data: data);
+      },
+    );
+    r.child(AppRoutes.usuarios, child: (_) => const SubUsuariosListPage());
+    r.child(AppRoutes.usuariosAdd, child: (_) => const SubUsuarioFormPage());
+    r.child(
+      AppRoutes.usuariosEdit,
+      child: (_) {
+        final data = r.args.data;
+        if (data is SubUsuarioFormRouteData) {
+          return SubUsuarioFormPage(data: data);
+        }
+        return const SubUsuarioFormPage();
+      },
+    );
+    r.child(AppRoutes.movimentacoes, child: (_) => const Movimentacoes());
     r.child(AppRoutes.climateRainAdd, child: (_) => const ClimateAdd());
     r.child(
       AppRoutes.climateRainEdit,

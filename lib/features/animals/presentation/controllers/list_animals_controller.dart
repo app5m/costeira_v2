@@ -4,12 +4,14 @@ import 'package:costeira/core/utils/app_logger.dart';
 import 'package:costeira/features/animals/domain/entities/animal_entity.dart';
 import 'package:costeira/features/animals/domain/entities/animals_filter_entity.dart';
 import 'package:costeira/features/animals/domain/usecases/get_animals_usecase.dart';
+import 'package:costeira/features/fazendas/domain/usecases/resolve_current_farm_id.dart';
 import 'package:flutter/foundation.dart';
 
 class ListAnimalsController extends ChangeNotifier {
-  ListAnimalsController(this._getAnimalsUsecase);
+  ListAnimalsController(this._getAnimalsUsecase, this._resolveCurrentFarmId);
 
   final GetAnimalsUsecase _getAnimalsUsecase;
+  final ResolveCurrentFarmId _resolveCurrentFarmId;
 
   bool _isLoading = false;
   String? _errorMessage;
@@ -25,10 +27,14 @@ class ListAnimalsController extends ChangeNotifier {
 
   Future<void> load({
     int? id,
+    int? appFazendasId,
+    int? appPotreirosId,
+    int? appAnimaisLotesId,
     int? appAnimaisCategoriasId,
     int? appAnimaisSubcategoriasId,
     int? utBasesRaciaisId,
     String? brinco,
+    bool brincoOnly = false,
   }) async {
     AppLogger.info(
       'ANIMAIS LIST CONTROLLER: INICIANDO CARREGAMENTO DE ANIMAIS',
@@ -43,13 +49,30 @@ class ListAnimalsController extends ChangeNotifier {
         throw ApiException('Usuário não autenticado.');
       }
 
+      final farmId = await _resolveCurrentFarmId(
+        preferred: appFazendasId,
+        userId: user.id,
+      );
+      if (farmId == null || farmId <= 0) {
+        AppLogger.error(
+          'ANIMAIS LIST CONTROLLER: app_fazendas_id OBRIGATORIO AUSENTE',
+        );
+        throw ApiException(
+          'Selecione uma fazenda antes de listar os animais.',
+        );
+      }
+
       _currentFilter = AnimalsFilterEntity(
         appUsersId: user.id,
         id: id,
+        appFazendasId: farmId,
+        appPotreirosId: appPotreirosId,
+        appAnimaisLotesId: appAnimaisLotesId,
         appAnimaisCategoriasId: appAnimaisCategoriasId,
         appAnimaisSubcategoriasId: appAnimaisSubcategoriasId,
         utBasesRaciaisId: utBasesRaciaisId,
         brinco: brinco,
+        brincoOnly: brincoOnly,
       );
 
       final result = await _getAnimalsUsecase(_currentFilter!);

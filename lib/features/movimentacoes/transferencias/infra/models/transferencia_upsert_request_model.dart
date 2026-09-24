@@ -40,6 +40,7 @@ class TransferenciaUpsertRequestModel {
     return {
       'token': WSConstantes.token,
       'app_users_id': transferencia.appUsersId,
+      'app_fazendas_id': transferencia.appFazendasId,
       'data': transferencia.data,
       'potreiro_destino': transferencia.potreiroDestino,
       'lote_destino': transferencia.loteDestino,

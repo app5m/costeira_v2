@@ -98,6 +98,25 @@ class SyncQueueService {
     await _storage.remove(idLocal);
   }
 
+  Future<void> updateItemPayload(
+    String idLocal,
+    Map<String, dynamic> payload,
+  ) async {
+    final item = _storage.read(idLocal);
+    if (item == null) {
+      return;
+    }
+
+    await _storage.save(
+      item.copyWith(
+        payload: Map<String, dynamic>.from(payload),
+        status: SyncStatus.pending,
+        error: null,
+        updatedAt: DateTime.now(),
+      ),
+    );
+  }
+
   Future<void> clearQueue() async {
     await _storage.clear();
   }

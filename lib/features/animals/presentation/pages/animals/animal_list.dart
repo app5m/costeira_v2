@@ -338,17 +338,48 @@ class _AnimalListState extends State<AnimalList> {
                                         child: Column(
                                           crossAxisAlignment: CrossAxisAlignment.start,
                                           children: [
-                                            Text(
-                                              animal.brinco?.trim().isNotEmpty == true
-                                                  ? animal.brinco!.trim()
-                                                  : 'Animal #${animal.id}',
-                                              style: const TextStyle(
-                                                color: Color(0xFF313131),
-                                                fontSize: 16,
-                                                fontFamily: 'Montserrat',
-                                                fontWeight: FontWeight.w600,
+                                            if (animal.brinco
+                                                    ?.trim()
+                                                    .isNotEmpty ==
+                                                true)
+                                              Text(
+                                                animal.brinco!.trim(),
+                                                style: const TextStyle(
+                                                  color: Color(0xFF313131),
+                                                  fontSize: 16,
+                                                  fontFamily: 'Montserrat',
+                                                  fontWeight: FontWeight.w600,
+                                                ),
+                                              )
+                                            else
+                                              Container(
+                                                padding:
+                                                    const EdgeInsets.symmetric(
+                                                      horizontal: 8,
+                                                      vertical: 4,
+                                                    ),
+                                                decoration: BoxDecoration(
+                                                  color: const Color(
+                                                    0xFFFFF7ED,
+                                                  ),
+                                                  borderRadius:
+                                                      BorderRadius.circular(6),
+                                                  border: Border.all(
+                                                    color: const Color(
+                                                      0xFFFDBA74,
+                                                    ),
+                                                  ),
+                                                ),
+                                                child: const Text(
+                                                  'Brinco não cadastrado',
+                                                  style: TextStyle(
+                                                    color: Color(0xFFB45309),
+                                                    fontSize: 12,
+                                                    fontFamily: 'Montserrat',
+                                                    fontWeight: FontWeight.w500,
+                                                  ),
+                                                ),
                                               ),
-                                            ),
                                             const SizedBox(height: 8),
                                             Text(
                                               _pageController.buildSummary(animal),

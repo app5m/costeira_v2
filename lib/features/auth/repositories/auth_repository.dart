@@ -4,7 +4,9 @@ import 'package:costeira/core/api/api_exception.dart';
 import 'package:costeira/core/api/api_response_utils.dart';
 import 'package:costeira/core/models/api_message.dart';
 import 'package:costeira/core/models/user_coordinates.dart';
+import 'package:costeira/core/storage/session_storage.dart';
 import 'package:costeira/core/utils/app_logger.dart';
+import 'package:costeira/features/auth/auth_bypass.dart';
 import 'package:costeira/features/auth/models/auth_result.dart';
 import 'package:costeira/features/auth/models/cnpj_lookup_result.dart';
 import 'package:costeira/features/auth/models/register_draft.dart';
@@ -19,6 +21,7 @@ class AuthRepository {
     final response = await _client.post(
       WSConstantes.listCnpj,
       data: {'cnpj': cnpj, 'token': WSConstantes.token},
+      timeout: const Duration(seconds: 60),
     );
 
     final message = ApiMessage.fromResponse(response);
@@ -67,14 +70,17 @@ class AuthRepository {
 
     final message = ApiMessage.fromResponse(response);
     final map = responseAsMap(response);
-    final user = message.isSuccess
-        ? UserSession.fromLoginResponse(map, tipo)
-        : null;
+    final parsed = UserSession.fromLoginResponse(map, tipo);
+    var user = parsed.id > 0 ? parsed : null;
+    if (user == null &&
+        AuthBypass.shouldBypass(message.status, message.message)) {
+      user = await SessionStorage.getPendingUser(email: email);
+    }
 
     return AuthResult(message: message, user: user);
   }
 
-  Future<ApiMessage> register({
+  Future<AuthResult> register({
     required RegisterDraft draft,
     required UserCoordinates coordinates,
   }) async {
@@ -98,12 +104,22 @@ class AuthRepository {
     );
 
     final responseMap = responseAsMap(response);
+    final message = ApiMessage.fromResponse(response);
+    final tipo =
+        int.tryParse(responseMap['tipo']?.toString() ?? '') ??
+        draft.tipoPessoa;
+    final parsed = UserSession.fromLoginResponse(responseMap, tipo);
+    final user = parsed.id > 0 ? parsed : null;
+    if (user != null) {
+      await SessionStorage.savePendingUser(user);
+    }
+
     AppLogger.success('AUTH CADASTRO: RETORNO BRUTO=$response');
     AppLogger.success(
       'AUTH CADASTRO: POSSIVEL USER_ID=${_extractRegisteredUserId(responseMap)} MAP=$responseMap',
     );
 
-    return ApiMessage.fromResponse(response);
+    return AuthResult(message: message, user: user);
   }
 
   String _extractRegisteredUserId(Map<String, dynamic> map) {

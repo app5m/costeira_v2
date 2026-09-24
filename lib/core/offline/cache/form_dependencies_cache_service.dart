@@ -7,6 +7,7 @@ import 'package:costeira/features/animals/domain/entities/animal_lots_filter_ent
 import 'package:costeira/features/animals/domain/entities/animals_filter_entity.dart';
 import 'package:costeira/features/animals/domain/usecases/get_animal_lots_usecase.dart';
 import 'package:costeira/features/animals/domain/usecases/get_animals_usecase.dart';
+import 'package:costeira/features/fazendas/domain/usecases/resolve_current_farm_id.dart';
 import 'package:costeira/features/climate_and_rain/domain/entities/climate_filter_entity.dart';
 import 'package:costeira/features/climate_and_rain/domain/usecases/get_climates_usecase.dart';
 import 'package:costeira/features/insumos/domain/entities/insumos.dart';
@@ -40,6 +41,7 @@ class FormDependenciesCacheService {
     this._getSanitariosUsecase,
     this._getTasksUsecase,
     this._getComprasUsecase,
+    this._resolveCurrentFarmId,
   );
 
   final NetworkStatusService _networkStatusService;
@@ -55,6 +57,7 @@ class FormDependenciesCacheService {
   final GetSanitariosUsecase _getSanitariosUsecase;
   final GetTasksUsecase _getTasksUsecase;
   final GetComprasUsecase _getComprasUsecase;
+  final ResolveCurrentFarmId _resolveCurrentFarmId;
 
   bool _isRunning = false;
   bool _hasCompleted = false;
@@ -81,22 +84,29 @@ class FormDependenciesCacheService {
     _isRunning = true;
     try {
       await _safe('util/lista macho', () {
-        return _getListUsecase(const GetListParamsEntity(sexo: 1));
+        return _getListUsecase(GetListParamsEntity(sexo: 1, userId: userId));
       });
       await _safe('util/lista femea', () {
-        return _getListUsecase(const GetListParamsEntity(sexo: 2));
+        return _getListUsecase(GetListParamsEntity(sexo: 2, userId: userId));
       });
-      await _safe('potreiros', () {
-        return _getPotreirosUsecase(PotreirosFilterEntity(appUsersId: userId));
-      });
-      await _safe('lotes', () {
-        return _getAnimalLotsUsecase(
-          AnimalLotsFilterEntity(appUsersId: userId),
-        );
-      });
-      await _safe('animais', () {
-        return _getAnimalsUsecase(AnimalsFilterEntity(appUsersId: userId));
-      });
+      final farmId = await _resolveCurrentFarmId(userId: userId);
+      if (farmId != null) {
+        await _safe('potreiros', () {
+          return _getPotreirosUsecase(
+            PotreirosFilterEntity(appUsersId: userId, appFazendasId: farmId),
+          );
+        });
+        await _safe('lotes', () {
+          return _getAnimalLotsUsecase(
+            AnimalLotsFilterEntity(appUsersId: userId, appFazendasId: farmId),
+          );
+        });
+        await _safe('animais', () {
+          return _getAnimalsUsecase(
+            AnimalsFilterEntity(appUsersId: userId, appFazendasId: farmId),
+          );
+        });
+      }
       await _safe('clima e chuva', () {
         return _getClimatesUsecase(ClimateFilterEntity(appUsersId: userId));
       });
@@ -176,17 +186,24 @@ class FormDependenciesCacheService {
     );
 
     await _safe('animal form util/lista macho', () {
-      return _getListUsecase(const GetListParamsEntity(sexo: 1));
+      return _getListUsecase(GetListParamsEntity(sexo: 1, userId: userId));
     });
     await _safe('animal form util/lista femea', () {
-      return _getListUsecase(const GetListParamsEntity(sexo: 2));
+      return _getListUsecase(GetListParamsEntity(sexo: 2, userId: userId));
     });
-    await _safe('animal form lotes', () {
-      return _getAnimalLotsUsecase(AnimalLotsFilterEntity(appUsersId: userId));
-    });
-    await _safe('animal form potreiros', () {
-      return _getPotreirosUsecase(PotreirosFilterEntity(appUsersId: userId));
-    });
+    final farmId = await _resolveCurrentFarmId(userId: userId);
+    if (farmId != null) {
+      await _safe('animal form lotes', () {
+        return _getAnimalLotsUsecase(
+          AnimalLotsFilterEntity(appUsersId: userId, appFazendasId: farmId),
+        );
+      });
+      await _safe('animal form potreiros', () {
+        return _getPotreirosUsecase(
+          PotreirosFilterEntity(appUsersId: userId, appFazendasId: farmId),
+        );
+      });
+    }
   }
 
   Future<void> preloadNascimentoFormDependencies() async {
@@ -209,15 +226,24 @@ class FormDependenciesCacheService {
       'FORM DEPENDENCIES CACHE: preload do formulario de nascimento userId=$userId',
     );
 
-    await _safe('nascimento form animais', () {
-      return _getAnimalsUsecase(AnimalsFilterEntity(appUsersId: userId));
-    });
-    await _safe('nascimento form lotes', () {
-      return _getAnimalLotsUsecase(AnimalLotsFilterEntity(appUsersId: userId));
-    });
-    await _safe('nascimento form potreiros', () {
-      return _getPotreirosUsecase(PotreirosFilterEntity(appUsersId: userId));
-    });
+    final farmId = await _resolveCurrentFarmId(userId: userId);
+    if (farmId != null) {
+      await _safe('nascimento form animais', () {
+        return _getAnimalsUsecase(
+          AnimalsFilterEntity(appUsersId: userId, appFazendasId: farmId),
+        );
+      });
+      await _safe('nascimento form lotes', () {
+        return _getAnimalLotsUsecase(
+          AnimalLotsFilterEntity(appUsersId: userId, appFazendasId: farmId),
+        );
+      });
+      await _safe('nascimento form potreiros', () {
+        return _getPotreirosUsecase(
+          PotreirosFilterEntity(appUsersId: userId, appFazendasId: farmId),
+        );
+      });
+    }
   }
 
   Future<void> preloadAbortoFormDependencies() async {
@@ -240,15 +266,24 @@ class FormDependenciesCacheService {
       'FORM DEPENDENCIES CACHE: preload do formulario de aborto userId=$userId',
     );
 
-    await _safe('aborto form animais', () {
-      return _getAnimalsUsecase(AnimalsFilterEntity(appUsersId: userId));
-    });
-    await _safe('aborto form lotes', () {
-      return _getAnimalLotsUsecase(AnimalLotsFilterEntity(appUsersId: userId));
-    });
-    await _safe('aborto form potreiros', () {
-      return _getPotreirosUsecase(PotreirosFilterEntity(appUsersId: userId));
-    });
+    final farmId = await _resolveCurrentFarmId(userId: userId);
+    if (farmId != null) {
+      await _safe('aborto form animais', () {
+        return _getAnimalsUsecase(
+          AnimalsFilterEntity(appUsersId: userId, appFazendasId: farmId),
+        );
+      });
+      await _safe('aborto form lotes', () {
+        return _getAnimalLotsUsecase(
+          AnimalLotsFilterEntity(appUsersId: userId, appFazendasId: farmId),
+        );
+      });
+      await _safe('aborto form potreiros', () {
+        return _getPotreirosUsecase(
+          PotreirosFilterEntity(appUsersId: userId, appFazendasId: farmId),
+        );
+      });
+    }
   }
 
   Future<void> preloadSuplementoFormDependencies() async {
@@ -271,12 +306,19 @@ class FormDependenciesCacheService {
       'FORM DEPENDENCIES CACHE: preload do formulario de suplemento userId=$userId',
     );
 
-    await _safe('suplemento form potreiros', () {
-      return _getPotreirosUsecase(PotreirosFilterEntity(appUsersId: userId));
-    });
-    await _safe('suplemento form lotes', () {
-      return _getAnimalLotsUsecase(AnimalLotsFilterEntity(appUsersId: userId));
-    });
+    final farmId = await _resolveCurrentFarmId(userId: userId);
+    if (farmId != null) {
+      await _safe('suplemento form potreiros', () {
+        return _getPotreirosUsecase(
+          PotreirosFilterEntity(appUsersId: userId, appFazendasId: farmId),
+        );
+      });
+      await _safe('suplemento form lotes', () {
+        return _getAnimalLotsUsecase(
+          AnimalLotsFilterEntity(appUsersId: userId, appFazendasId: farmId),
+        );
+      });
+    }
     await _safe('suplemento form produtos plural', () {
       return _getInsumosTipoUsecase(
         InsumosTipoFilterEntity(appUsersId: userId, tipo: 'suplementos'),

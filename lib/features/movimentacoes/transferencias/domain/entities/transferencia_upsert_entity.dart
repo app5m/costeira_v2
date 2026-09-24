@@ -5,6 +5,7 @@ class TransferenciaUpsertEntity {
   const TransferenciaUpsertEntity({
     this.id,
     this.appUsersId,
+    this.appFazendasId,
     required this.data,
     required this.tipo,
     required this.potreiroDestino,
@@ -16,6 +17,7 @@ class TransferenciaUpsertEntity {
 
   final int? id;
   final int? appUsersId;
+  final int? appFazendasId;
   final String data;
   final String tipo;
   final int potreiroDestino;
@@ -27,6 +29,7 @@ class TransferenciaUpsertEntity {
   TransferenciaUpsertEntity copyWith({
     int? id,
     int? appUsersId,
+    int? appFazendasId,
     String? data,
     String? tipo,
     int? potreiroDestino,
@@ -38,6 +41,7 @@ class TransferenciaUpsertEntity {
     return TransferenciaUpsertEntity(
       id: id ?? this.id,
       appUsersId: appUsersId ?? this.appUsersId,
+      appFazendasId: appFazendasId ?? this.appFazendasId,
       data: data ?? this.data,
       tipo: tipo ?? this.tipo,
       potreiroDestino: potreiroDestino ?? this.potreiroDestino,

@@ -13,6 +13,7 @@ class MovimentacaoFilterRequestModel {
       {
         'token': WSConstantes.token,
         'app_users_id': filter.appUsersId,
+        'app_fazendas_id': filter.appFazendasId,
         'id': filter.id,
         'data_in': filter.dataIn,
         'data_out': filter.dataOut,

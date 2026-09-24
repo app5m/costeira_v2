@@ -16,6 +16,7 @@ class AnimalModel extends AnimalEntity {
     super.peso,
     super.createAt,
     super.updateAt,
+    super.ultimaPesagem,
     super.obs,
     super.status,
     super.categoria,
@@ -51,6 +52,10 @@ class AnimalModel extends AnimalEntity {
       peso: double.tryParse(json['peso']?.toString() ?? ''),
       createAt: json['create_at']?.toString(),
       updateAt: json['update_at']?.toString(),
+      ultimaPesagem:
+          json['data_pesagem']?.toString() ??
+          json['ultima_pesagem']?.toString() ??
+          json['update_at']?.toString(),
       obs: json['obs']?.toString(),
       status: json['status']?.toString(),
       categoria: json['categoria'] is Map<String, dynamic>

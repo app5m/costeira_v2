@@ -29,7 +29,7 @@ class _AddLoteState extends State<AddLote> {
     }
 
     if (result.isSuccess) {
-      Modular.to.pop({'success': true, 'message': result.message});
+      Navigator.of(context).pop({'success': true, 'message': result.message});
       return;
     }
 
@@ -48,7 +48,7 @@ class _AddLoteState extends State<AddLote> {
           appBar: AppBar(
             backgroundColor: MyColors.colorPrimary,
             leading: GestureDetector(
-              onTap: () => Modular.to.pop(),
+              onTap: () => Navigator.of(context).pop(),
               child: const Icon(Icons.arrow_back_ios, color: Colors.white),
             ),
             title: const Text(

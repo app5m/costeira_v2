@@ -6,6 +6,7 @@ import 'package:costeira/features/pastagem_nutricao_suplemento/domain/entities/m
 import 'package:costeira/features/pastagem_nutricao_suplemento/domain/usecases/create_manejo_usecase.dart';
 import 'package:costeira/features/pastagem_nutricao_suplemento/domain/usecases/get_tipos_manejo_usecase.dart';
 import 'package:costeira/features/pastagem_nutricao_suplemento/domain/usecases/update_manejo_usecase.dart';
+import 'package:costeira/features/fazendas/domain/usecases/resolve_current_farm_id.dart';
 import 'package:costeira/features/potreiros/domain/entities/potreiros_filter_entity.dart';
 import 'package:costeira/features/potreiros/domain/entities/potreiro_entity.dart';
 import 'package:costeira/features/potreiros/domain/usecases/get_potreiros_usecase.dart';
@@ -17,6 +18,7 @@ class ManejoFormController extends ChangeNotifier {
     this._updateManejoUsecase,
     this._getPotreirosUsecase,
     this._getTiposManejoUsecase,
+    this._resolveCurrentFarmId,
   ) {
     dataController.addListener(notifyListeners);
     quantidadeController.addListener(notifyListeners);
@@ -26,6 +28,7 @@ class ManejoFormController extends ChangeNotifier {
   final UpdateManejoUsecase _updateManejoUsecase;
   final GetPotreirosUsecase _getPotreirosUsecase;
   final GetTiposManejoUsecase _getTiposManejoUsecase;
+  final ResolveCurrentFarmId _resolveCurrentFarmId;
 
   final dataController = TextEditingController();
   final quantidadeController = TextEditingController();
@@ -101,9 +104,13 @@ class ManejoFormController extends ChangeNotifier {
         throw ApiException('Usuario nao autenticado.');
       }
 
+      final farmId = await _resolveCurrentFarmId(userId: _currentUserId);
       final results = await Future.wait([
         _getPotreirosUsecase(
-          PotreirosFilterEntity(appUsersId: _currentUserId!),
+          PotreirosFilterEntity(
+            appUsersId: _currentUserId!,
+            appFazendasId: farmId,
+          ),
         ),
         _getTiposManejoUsecase(ManejoFilterEntity(appUsersId: _currentUserId!)),
       ]);

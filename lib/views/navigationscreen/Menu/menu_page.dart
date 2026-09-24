@@ -1,6 +1,12 @@
 import 'package:costeira/app/app_routes.dart';
-import 'package:costeira/core/config/ws_constantes.dart';
 import 'package:costeira/core/api/api_exception.dart';
+import 'package:costeira/core/common/get_list/domain/entities/app_menu_entity.dart';
+import 'package:costeira/core/components/app_snack.dart';
+import 'package:costeira/core/components/settings_option_tile.dart';
+import 'package:costeira/core/config/ws_constantes.dart';
+import 'package:costeira/core/menus/app_menus_controller.dart';
+import 'package:costeira/core/menus/menu_action_resolver.dart';
+import 'package:costeira/core/menus/menu_icon.dart';
 import 'package:costeira/core/storage/session_storage.dart';
 import 'package:costeira/features/account/models/account_profile.dart';
 import 'package:costeira/features/account/repositories/account_repository.dart';
@@ -8,7 +14,8 @@ import 'package:costeira/features/auth/models/user_session.dart';
 import 'package:costeira/theme/colors.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_modular/flutter_modular.dart';
-import 'package:flutter_svg/svg.dart';
+import 'package:flutter_svg/flutter_svg.dart';
+import 'package:lucide_icons/lucide_icons.dart';
 
 class MenuPage extends StatefulWidget {
   const MenuPage({super.key});
@@ -19,15 +26,32 @@ class MenuPage extends StatefulWidget {
 
 class _MenuPageState extends State<MenuPage> {
   late final AccountRepository _accountRepository;
+  late final AppMenusController _menusController;
   UserSession? _user;
   AccountProfile? _profile;
   bool _isLoadingProfile = true;
+  bool _isDeactivating = false;
 
   @override
   void initState() {
     super.initState();
     _accountRepository = Modular.get<AccountRepository>();
+    _menusController = Modular.get<AppMenusController>();
+    _menusController.addListener(_onMenus);
+    _menusController.load();
     _loadProfile();
+  }
+
+  void _onMenus() {
+    if (mounted) {
+      setState(() {});
+    }
+  }
+
+  @override
+  void dispose() {
+    _menusController.removeListener(_onMenus);
+    super.dispose();
   }
 
   Future<void> _loadProfile() async {
@@ -95,32 +119,42 @@ class _MenuPageState extends State<MenuPage> {
             const SizedBox(height: 24),
             Expanded(
               child: ListView(
-                padding: const EdgeInsets.symmetric(horizontal: 20),
+                padding: const EdgeInsets.fromLTRB(20, 0, 20, 16),
                 children: [
-                  _MenuCard(
-                    icon: 'icon/minhaconta.svg',
-                    title: 'Minha conta',
-                    onTap: () => Modular.to.pushNamed(AppRoutes.myAccount),
+                  const _SectionTitle('Dados'),
+                  SettingsOptionTile(
+                    title: 'Alterar dados cadastrais',
+                    leading: _localIcon(
+                      'icon/user-round.svg',
+                      color: Colors.black,
+                    ),
+                    onTap: () => Modular.to.pushNamed(AppRoutes.profile),
                   ),
-                  const SizedBox(height: 16),
-                  _MenuCard(
-                    icon: 'icon/modulos.svg',
-                    title: 'Módulos',
-                    onTap: () => Modular.to.pushNamed(AppRoutes.modules),
+                  const SizedBox(height: 12),
+                  SettingsOptionTile(
+                    title: 'Alterar Senha',
+                    leading: const Icon(
+                      LucideIcons.lock,
+                      size: 22,
+                      color: Color(0xFF313131),
+                    ),
+                    onTap: () => Modular.to.pushNamed(AppRoutes.updatePassword),
                   ),
-                  const SizedBox(height: 16),
-                  _MenuCard(
-                    icon: 'icon/extras.svg',
-                    title: 'Extras',
-                    onTap: () => Modular.to.pushNamed(AppRoutes.extras),
+                  const SizedBox(height: 12),
+                  SettingsOptionTile(
+                    title: 'Desativar Conta',
+                    textColor: Colors.red,
+                    leading: _localIcon('icon/trash.svg', color: Colors.red),
+                    onTap: _confirmDeactivateAccount,
                   ),
+                  ..._buildApiOrFallbackSections(),
                 ],
               ),
             ),
             Padding(
               padding: const EdgeInsets.fromLTRB(20, 0, 20, 32),
               child: OutlinedButton(
-                onPressed: _showExitBottomSheet,
+                onPressed: _isDeactivating ? null : _showExitBottomSheet,
                 style: OutlinedButton.styleFrom(
                   minimumSize: const Size.fromHeight(48),
                   side: const BorderSide(color: Color(0xFFFF3B30)),
@@ -219,6 +253,226 @@ class _MenuPageState extends State<MenuPage> {
     );
   }
 
+  List<Widget> _buildApiOrFallbackSections() {
+    final groups = _menusController.profileMenu;
+    if (groups.isEmpty) {
+      return [
+        const SizedBox(height: 24),
+        const _SectionTitle('Módulos'),
+        SettingsOptionTile(
+          title: 'Potreiros',
+          onTap: () => Modular.to.pushNamed(AppRoutes.potreirosHub),
+        ),
+        const SizedBox(height: 12),
+        SettingsOptionTile(
+          title: 'Estoque',
+          onTap: () => Modular.to.pushNamed(AppRoutes.estoque),
+        ),
+        const SizedBox(height: 12),
+        SettingsOptionTile(
+          title: 'Tarefas',
+          onTap: () => Modular.to.pushNamed(AppRoutes.tasks),
+        ),
+        const SizedBox(height: 12),
+        SettingsOptionTile(
+          title: 'Pluviosidade',
+          onTap: () => Modular.to.pushNamed(AppRoutes.climateRain),
+        ),
+        const SizedBox(height: 24),
+        const _SectionTitle('Cadastros'),
+        SettingsOptionTile(
+          title: 'Fornecedores',
+          onTap: () => Modular.to.pushNamed(AppRoutes.fornecedores),
+        ),
+        const SizedBox(height: 12),
+        SettingsOptionTile(
+          title: 'Compradores',
+          onTap: () => Modular.to.pushNamed(AppRoutes.compradores),
+        ),
+        const SizedBox(height: 12),
+        SettingsOptionTile(
+          title: 'Usuários e Acessos',
+          onTap: () => Modular.to.pushNamed(AppRoutes.usuarios),
+        ),
+      ];
+    }
+
+    final widgets = <Widget>[];
+    for (final group in groups) {
+      final children = group.children;
+      if (children.isEmpty) {
+        continue;
+      }
+      widgets.add(const SizedBox(height: 24));
+      widgets.add(_SectionTitle(group.name));
+      for (var i = 0; i < children.length; i++) {
+        if (i > 0) {
+          widgets.add(const SizedBox(height: 12));
+        }
+        widgets.add(_buildMenuTile(children[i]));
+      }
+    }
+    return widgets;
+  }
+
+  Widget _localIcon(String asset, {Color color = const Color(0xFF313131)}) {
+    return SvgPicture.asset(
+      asset,
+      width: 22,
+      height: 22,
+      colorFilter: ColorFilter.mode(color, BlendMode.srcIn),
+    );
+  }
+
+  Widget? _menuLeading(AppMenuEntity item) {
+    return MenuIcon.maybe(item: item, size: 22, color: const Color(0xFF313131));
+  }
+
+  Widget _buildMenuTile(AppMenuEntity item) {
+    return SettingsOptionTile(
+      title: item.name,
+      leading: _menuLeading(item),
+      onTap: () => _openProfileItem(item),
+    );
+  }
+
+  Future<void> _openProfileItem(AppMenuEntity item) async {
+    if (item.children.isNotEmpty) {
+      await _showProfileChildren(item);
+      return;
+    }
+    await MenuActionResolver.open(context, item, surface: MenuSurface.profile);
+  }
+
+  Future<void> _showProfileChildren(AppMenuEntity parent) {
+    return showModalBottomSheet<void>(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.white,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+      ),
+      builder: (sheetContext) {
+        return SafeArea(
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(20, 12, 20, 20),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Center(
+                  child: Container(
+                    width: 72,
+                    height: 3,
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFE2E2E2),
+                      borderRadius: BorderRadius.circular(2),
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 16),
+                Text(
+                  parent.name,
+                  style: const TextStyle(
+                    fontFamily: 'Montserrat',
+                    fontSize: 18,
+                    fontWeight: FontWeight.w700,
+                    color: Color(0xFF313131),
+                  ),
+                ),
+                const SizedBox(height: 12),
+                ConstrainedBox(
+                  constraints: BoxConstraints(
+                    maxHeight: MediaQuery.of(sheetContext).size.height * 0.55,
+                  ),
+                  child: ListView.separated(
+                    shrinkWrap: true,
+                    itemCount: parent.children.length,
+                    separatorBuilder: (_, __) => const SizedBox(height: 8),
+                    itemBuilder: (_, index) {
+                      final child = parent.children[index];
+                      return SettingsOptionTile(
+                        title: child.name,
+                        leading: _menuLeading(child),
+                        onTap: () async {
+                          Navigator.pop(sheetContext);
+                          await _openProfileItem(child);
+                        },
+                      );
+                    },
+                  ),
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  Future<void> _confirmDeactivateAccount() async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (dialogContext) {
+        return AlertDialog(
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16),
+          ),
+          title: const Text('Desativar conta?'),
+          content: const Text('Tem certeza que deseja desativar sua conta?'),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(dialogContext).pop(false),
+              child: const Text('Cancelar'),
+            ),
+            TextButton(
+              onPressed: () => Navigator.of(dialogContext).pop(true),
+              child: const Text(
+                'Desativar',
+                style: TextStyle(color: Colors.red),
+              ),
+            ),
+          ],
+        );
+      },
+    );
+
+    if (confirmed == true) {
+      await _deactivateAccount();
+    }
+  }
+
+  Future<void> _deactivateAccount() async {
+    if (_user == null) {
+      _showMessage('Usuário não autenticado.');
+      return;
+    }
+
+    setState(() {
+      _isDeactivating = true;
+    });
+
+    try {
+      final response = await _accountRepository.deactivateAccount(_user!.id);
+      _showMessage(response.message, isError: !response.isSuccess);
+      if (response.isSuccess) {
+        await SessionStorage.clearAuthData();
+        if (!mounted) {
+          return;
+        }
+        Modular.to.navigate(AppRoutes.welcome);
+      }
+    } on ApiException catch (error) {
+      _showMessage(error.message);
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isDeactivating = false;
+        });
+      }
+    }
+  }
+
   void _showExitBottomSheet() {
     showModalBottomSheet<void>(
       backgroundColor: Colors.white,
@@ -287,68 +541,31 @@ class _MenuPageState extends State<MenuPage> {
       },
     );
   }
+
+  void _showMessage(String message, {bool isError = true}) {
+    if (!mounted) {
+      return;
+    }
+    AppSnackBar.show(context: context, message: message, isError: isError);
+  }
 }
 
-class _MenuCard extends StatelessWidget {
-  const _MenuCard({
-    required this.icon,
-    required this.title,
-    required this.onTap,
-  });
+class _SectionTitle extends StatelessWidget {
+  const _SectionTitle(this.title);
 
-  final String icon;
   final String title;
-  final VoidCallback onTap;
 
   @override
   Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: onTap,
-      child: Container(
-        padding: const EdgeInsets.all(16),
-        decoration: ShapeDecoration(
-          color: Colors.white,
-          shape: RoundedRectangleBorder(
-            side: const BorderSide(width: 1, color: Color(0xFFEBEBEB)),
-            borderRadius: BorderRadius.circular(12),
-          ),
-          shadows: const [
-            BoxShadow(
-              color: Color(0x0A000000),
-              blurRadius: 24,
-              offset: Offset(0, 0),
-            ),
-          ],
-        ),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            Row(
-              children: [
-                SvgPicture.asset(
-                  icon,
-                  width: 24,
-                  height: 24,
-                  colorFilter: const ColorFilter.mode(
-                    Color(0xFF00823A),
-                    BlendMode.srcIn,
-                  ),
-                ),
-                const SizedBox(width: 8),
-                Text(
-                  title,
-                  style: const TextStyle(
-                    color: Color(0xFF313131),
-                    fontSize: 14,
-                    fontFamily: 'Montserrat',
-                    fontWeight: FontWeight.w500,
-                    letterSpacing: 0.10,
-                  ),
-                ),
-              ],
-            ),
-            SvgPicture.asset('icon/Arrow.svg', width: 24, height: 24),
-          ],
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 12),
+      child: Text(
+        title,
+        style: const TextStyle(
+          color: Color(0xFF313131),
+          fontSize: 16,
+          fontFamily: 'Montserrat',
+          fontWeight: FontWeight.w700,
         ),
       ),
     );

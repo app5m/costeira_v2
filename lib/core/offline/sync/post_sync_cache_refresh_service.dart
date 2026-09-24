@@ -11,6 +11,7 @@ import 'package:costeira/features/animals/domain/usecases/get_animals_usecase.da
 import 'package:costeira/features/movimentacoes/domain/entities/movimentacao_filter_entity.dart';
 import 'package:costeira/features/movimentacoes/domain/usecases/get_compras_usecase.dart';
 import 'package:costeira/features/movimentacoes/infra/data/movimentacao_offline_cache_mutation.dart';
+import 'package:costeira/features/fazendas/domain/usecases/resolve_current_farm_id.dart';
 import 'package:costeira/features/potreiros/domain/entities/potreiros_filter_entity.dart';
 import 'package:costeira/features/potreiros/domain/usecases/get_potreiros_usecase.dart';
 
@@ -21,6 +22,7 @@ class PostSyncCacheRefreshService {
     this._getAnimalsUsecase,
     this._getComprasUsecase,
     this._mutationCacheService,
+    this._resolveCurrentFarmId,
   );
 
   final GetPotreirosUsecase _getPotreirosUsecase;
@@ -28,6 +30,7 @@ class PostSyncCacheRefreshService {
   final GetAnimalsUsecase _getAnimalsUsecase;
   final GetComprasUsecase _getComprasUsecase;
   final OfflineMutationCacheService _mutationCacheService;
+  final ResolveCurrentFarmId _resolveCurrentFarmId;
 
   Future<void> refreshMainCaches({
     List<SyncItem> successfulItems = const [],
@@ -41,20 +44,27 @@ class PostSyncCacheRefreshService {
       return;
     }
 
-    await _refresh(
-      description: 'potreiros',
-      action: () =>
-          _getPotreirosUsecase(PotreirosFilterEntity(appUsersId: userId)),
-    );
-    await _refresh(
-      description: 'lotes',
-      action: () =>
-          _getAnimalLotsUsecase(AnimalLotsFilterEntity(appUsersId: userId)),
-    );
-    await _refresh(
-      description: 'animais',
-      action: () => _getAnimalsUsecase(AnimalsFilterEntity(appUsersId: userId)),
-    );
+    final farmId = await _resolveCurrentFarmId(userId: userId);
+    if (farmId != null) {
+      await _refresh(
+        description: 'potreiros',
+        action: () => _getPotreirosUsecase(
+          PotreirosFilterEntity(appUsersId: userId, appFazendasId: farmId),
+        ),
+      );
+      await _refresh(
+        description: 'lotes',
+        action: () => _getAnimalLotsUsecase(
+          AnimalLotsFilterEntity(appUsersId: userId, appFazendasId: farmId),
+        ),
+      );
+      await _refresh(
+        description: 'animais',
+        action: () => _getAnimalsUsecase(
+          AnimalsFilterEntity(appUsersId: userId, appFazendasId: farmId),
+        ),
+      );
+    }
     await _refresh(
       description: 'movimentacoes',
       action: () =>

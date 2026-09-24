@@ -5,6 +5,8 @@ import 'package:costeira/core/components/app_snack.dart';
 import 'package:costeira/core/models/user_coordinates.dart';
 import 'package:costeira/core/services/push_token_service.dart';
 import 'package:costeira/core/storage/session_storage.dart';
+import 'package:costeira/features/auth/auth_bypass.dart';
+import 'package:costeira/features/auth/models/user_session.dart';
 import 'package:costeira/features/auth/repositories/auth_repository.dart';
 import 'package:costeira/theme/colors.dart';
 import 'package:costeira/core/components/app_buttons.dart';
@@ -21,6 +23,7 @@ class ValidationCodePage extends StatefulWidget {
     required this.lat,
     required this.long,
     required this.tipo,
+    this.pendingUser,
   });
 
   final String email;
@@ -28,6 +31,7 @@ class ValidationCodePage extends StatefulWidget {
   final String lat;
   final String long;
   final int tipo;
+  final UserSession? pendingUser;
 
   @override
   State<ValidationCodePage> createState() => _ValidationCodePageState();
@@ -268,13 +272,12 @@ class _ValidationCodePageState extends State<ValidationCodePage> {
         tipo: widget.tipo,
       );
 
-      _showMessage(result.message.message, isError: !result.message.isSuccess);
-
       if (!mounted) {
         return;
       }
 
-      if (result.message.status == '02') {
+      if (result.message.status == '02' &&
+          AuthBypass.isPendingApprovalMessage(result.message.message)) {
         Modular.to.navigate(
           AppRoutes.pendingApproval,
           arguments: PendingApprovalRouteData(
@@ -285,12 +288,52 @@ class _ValidationCodePageState extends State<ValidationCodePage> {
         return;
       }
 
-      if (!result.message.isSuccess || result.user == null) {
+      _showMessage(
+        result.message.message,
+        isError: !result.message.isSuccess &&
+            !AuthBypass.shouldBypass(
+              result.message.status,
+              result.message.message,
+            ),
+      );
+
+      var user = result.user;
+      if (user == null || user.id <= 0) {
+        final existing = await SessionStorage.getUserSession();
+        if (existing != null && existing.id > 0) {
+          user = existing;
+        }
+      }
+      if (user == null || user.id <= 0) {
+        final pending =
+            widget.pendingUser ??
+            await SessionStorage.getPendingUser(email: widget.email);
+        if (pending != null && pending.id > 0) {
+          user = pending;
+        }
+      }
+
+      if ((!result.message.isSuccess &&
+              !AuthBypass.shouldBypass(
+                result.message.status,
+                result.message.message,
+              )) ||
+          user == null ||
+          user.id <= 0) {
+        if (result.message.isSuccess ||
+            AuthBypass.shouldBypass(
+              result.message.status,
+              result.message.message,
+            )) {
+          _showMessage(
+            'Login não retornou app_users_id. Entre com uma conta aprovada.',
+          );
+        }
         return;
       }
 
-      await SessionStorage.saveUserSession(result.user!);
-      await _saveFcmIfAvailable(result.user!.id);
+      await SessionStorage.saveUserSession(user);
+      await _saveFcmIfAvailable(user.id);
 
       if (!mounted) {
         return;

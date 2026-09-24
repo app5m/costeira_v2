@@ -11,6 +11,7 @@ class PotreirosFilterRequestModel {
       {
         'token': WSConstantes.token,
         'app_users_id': filter.appUsersId,
+        'app_fazendas_id': filter.appFazendasId,
         'id': filter.id,
         'status_atual': filter.statusAtual,
       }..removeWhere((key, value) => value == null),

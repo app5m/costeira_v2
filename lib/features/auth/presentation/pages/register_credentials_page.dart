@@ -146,10 +146,10 @@ class _RegisterCredentialsPageState extends State<RegisterCredentialsPage> {
       );
 
       _showMessage(
-        registerResponse.message,
-        isError: !registerResponse.isSuccess,
+        registerResponse.message.message,
+        isError: !registerResponse.message.isSuccess,
       );
-      if (!registerResponse.isSuccess) {
+      if (!registerResponse.message.isSuccess) {
         return;
       }
 
@@ -172,6 +172,7 @@ class _RegisterCredentialsPageState extends State<RegisterCredentialsPage> {
           latitude: coordinates.latitude,
           longitude: coordinates.longitude,
           userType: widget.draft.tipoPessoa,
+          pendingUser: registerResponse.user,
         ),
       );
     } on ApiException catch (error) {

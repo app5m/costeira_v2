@@ -11,6 +11,7 @@ class AnimalLotUpsertRequestModel {
       {
         'token': WSConstantes.token,
         'app_users_id': lot.appUsersId,
+        'app_fazendas_id': lot.appFazendasId,
         'nome': lot.nome,
       }..removeWhere((key, value) => value == null),
     );
@@ -22,6 +23,7 @@ class AnimalLotUpsertRequestModel {
         'token': WSConstantes.token,
         'id': lot.id,
         'app_users_id': lot.appUsersId,
+        'app_fazendas_id': lot.appFazendasId,
         'nome': lot.nome,
       }..removeWhere((key, value) => value == null),
     );

@@ -1,14 +1,16 @@
 import 'package:costeira/core/api/api_exception.dart';
 import 'package:costeira/core/models/api_message.dart';
 import 'package:costeira/core/storage/session_storage.dart';
+import 'package:costeira/features/fazendas/domain/usecases/resolve_current_farm_id.dart';
 import 'package:costeira/features/movimentacoes/abigeatos/domain/entities/abigeato_upsert_entity.dart';
 import 'package:costeira/features/movimentacoes/abigeatos/domain/usecases/update_abigeato_usecase.dart';
 import 'package:flutter/foundation.dart';
 
 class EditAbigeatoController extends ChangeNotifier {
-  EditAbigeatoController(this._updateAbigeatoUsecase);
+  EditAbigeatoController(this._updateAbigeatoUsecase, this._resolveCurrentFarmId);
 
   final UpdateAbigeatoUsecase _updateAbigeatoUsecase;
+  final ResolveCurrentFarmId _resolveCurrentFarmId;
 
   bool _isLoading = false;
   String? _errorMessage;
@@ -26,8 +28,16 @@ class EditAbigeatoController extends ChangeNotifier {
         throw ApiException('Usuario nao autenticado.');
       }
 
+      final farmId = await _resolveCurrentFarmId(
+        preferred: abigeato.appFazendasId,
+        userId: user.id,
+      );
+      if (farmId == null) {
+        throw ApiException('Cadastre uma fazenda antes de editar o abigeato.');
+      }
+
       return await _updateAbigeatoUsecase(
-        abigeato.copyWith(appUsersId: user.id),
+        abigeato.copyWith(appUsersId: user.id, appFazendasId: farmId),
       );
     } on ApiException catch (error) {
       _errorMessage = error.message;

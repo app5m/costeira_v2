@@ -4,6 +4,7 @@ class NascimentoUpsertEntity {
   const NascimentoUpsertEntity({
     this.id,
     this.appUsersId,
+    this.appFazendasId,
     required this.appPotreirosId,
     required this.appAnimaisLotesId,
     required this.data,
@@ -14,6 +15,7 @@ class NascimentoUpsertEntity {
 
   final int? id;
   final int? appUsersId;
+  final int? appFazendasId;
   final int appPotreirosId;
   final int appAnimaisLotesId;
   final String data;
@@ -24,6 +26,7 @@ class NascimentoUpsertEntity {
   NascimentoUpsertEntity copyWith({
     int? id,
     int? appUsersId,
+    int? appFazendasId,
     int? appPotreirosId,
     int? appAnimaisLotesId,
     String? data,
@@ -34,6 +37,7 @@ class NascimentoUpsertEntity {
     return NascimentoUpsertEntity(
       id: id ?? this.id,
       appUsersId: appUsersId ?? this.appUsersId,
+      appFazendasId: appFazendasId ?? this.appFazendasId,
       appPotreirosId: appPotreirosId ?? this.appPotreirosId,
       appAnimaisLotesId: appAnimaisLotesId ?? this.appAnimaisLotesId,
       data: data ?? this.data,

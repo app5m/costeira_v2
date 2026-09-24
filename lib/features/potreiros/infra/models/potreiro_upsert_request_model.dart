@@ -11,6 +11,7 @@ class PotreiroUpsertRequestModel {
       {
         'token': WSConstantes.token,
         'app_users_id': potreiro.appUsersId,
+        'app_fazendas_id': potreiro.appFazendasId,
         'nome': potreiro.nome,
         'area_total': potreiro.areaTotal,
         'area_util': potreiro.areaUtil,
@@ -30,6 +31,7 @@ class PotreiroUpsertRequestModel {
         'token': WSConstantes.token,
         'id': potreiro.id,
         'app_users_id': potreiro.appUsersId,
+        'app_fazendas_id': potreiro.appFazendasId,
         'nome': potreiro.nome,
         'area_total': potreiro.areaTotal,
         'area_util': potreiro.areaUtil,

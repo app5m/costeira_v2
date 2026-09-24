@@ -1,14 +1,16 @@
 import 'package:costeira/core/api/api_exception.dart';
 import 'package:costeira/core/models/api_message.dart';
 import 'package:costeira/core/storage/session_storage.dart';
+import 'package:costeira/features/fazendas/domain/usecases/resolve_current_farm_id.dart';
 import 'package:costeira/features/movimentacoes/abortos/domain/entities/aborto_upsert_entity.dart';
 import 'package:costeira/features/movimentacoes/abortos/domain/usecases/create_aborto_usecase.dart';
 import 'package:flutter/foundation.dart';
 
 class AddAbortoController extends ChangeNotifier {
-  AddAbortoController(this._createAbortoUsecase);
+  AddAbortoController(this._createAbortoUsecase, this._resolveCurrentFarmId);
 
   final CreateAbortoUsecase _createAbortoUsecase;
+  final ResolveCurrentFarmId _resolveCurrentFarmId;
 
   bool _isLoading = false;
   String? _errorMessage;
@@ -26,7 +28,17 @@ class AddAbortoController extends ChangeNotifier {
         throw ApiException('Usuario nao autenticado.');
       }
 
-      return await _createAbortoUsecase(aborto.copyWith(appUsersId: user.id));
+      final farmId = await _resolveCurrentFarmId(
+        preferred: aborto.appFazendasId,
+        userId: user.id,
+      );
+      if (farmId == null) {
+        throw ApiException('Cadastre uma fazenda antes de registrar o aborto.');
+      }
+
+      return await _createAbortoUsecase(
+        aborto.copyWith(appUsersId: user.id, appFazendasId: farmId),
+      );
     } on ApiException catch (error) {
       _errorMessage = error.message;
       rethrow;

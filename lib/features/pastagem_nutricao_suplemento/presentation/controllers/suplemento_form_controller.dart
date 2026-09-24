@@ -6,6 +6,7 @@ import 'package:costeira/core/utils/app_logger.dart';
 import 'package:costeira/features/animals/domain/entities/animal_lot_entity.dart';
 import 'package:costeira/features/animals/domain/entities/animal_lots_filter_entity.dart';
 import 'package:costeira/features/animals/domain/usecases/get_animal_lots_usecase.dart';
+import 'package:costeira/features/fazendas/domain/usecases/resolve_current_farm_id.dart';
 import 'package:costeira/features/insumos/domain/entities/insumos.dart';
 import 'package:costeira/features/insumos/domain/usecases/get_insumos_tipo_usecase.dart';
 import 'package:costeira/features/pastagem_nutricao_suplemento/domain/entities/suplemento.dart';
@@ -24,6 +25,7 @@ class SuplementoFormController extends ChangeNotifier {
     this._getAnimalLotsUsecase,
     this._getInsumosTipoUsecase,
     this._formDependenciesCacheService,
+    this._resolveCurrentFarmId,
   ) {
     dataController.addListener(notifyListeners);
     quantidadeController.addListener(notifyListeners);
@@ -35,6 +37,7 @@ class SuplementoFormController extends ChangeNotifier {
   final GetAnimalLotsUsecase _getAnimalLotsUsecase;
   final GetInsumosTipoUsecase _getInsumosTipoUsecase;
   final FormDependenciesCacheService _formDependenciesCacheService;
+  final ResolveCurrentFarmId _resolveCurrentFarmId;
 
   final dataController = TextEditingController();
   final quantidadeController = TextEditingController();
@@ -100,8 +103,9 @@ class SuplementoFormController extends ChangeNotifier {
       }
 
       await _formDependenciesCacheService.preloadSuplementoFormDependencies();
-      await _loadPotreiros(_currentUserId!);
-      await _loadLotes(_currentUserId!);
+      final farmId = await _resolveCurrentFarmId(userId: _currentUserId);
+      await _loadPotreiros(_currentUserId!, farmId);
+      await _loadLotes(_currentUserId!, farmId);
       await _loadProdutos(_currentUserId!);
     } on ApiException catch (error) {
       _errorMessage = error.message;
@@ -110,10 +114,10 @@ class SuplementoFormController extends ChangeNotifier {
     }
   }
 
-  Future<void> _loadPotreiros(int userId) async {
+  Future<void> _loadPotreiros(int userId, int? farmId) async {
     try {
       final result = await _getPotreirosUsecase(
-        PotreirosFilterEntity(appUsersId: userId),
+        PotreirosFilterEntity(appUsersId: userId, appFazendasId: farmId),
       );
       _potreiros = result.data;
     } on ApiException catch (error) {
@@ -124,10 +128,10 @@ class SuplementoFormController extends ChangeNotifier {
     }
   }
 
-  Future<void> _loadLotes(int userId) async {
+  Future<void> _loadLotes(int userId, int? farmId) async {
     try {
       final result = await _getAnimalLotsUsecase(
-        AnimalLotsFilterEntity(appUsersId: userId),
+        AnimalLotsFilterEntity(appUsersId: userId, appFazendasId: farmId),
       );
       _lotes = result.data;
     } on ApiException catch (error) {

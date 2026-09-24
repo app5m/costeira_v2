@@ -36,4 +36,19 @@ class AppRoutes {
   static const String climateRain = '/climate-and-rain';
   static const String climateRainAdd = '/climate-and-rain/add';
   static const String climateRainEdit = '/climate-and-rain/edit';
+  static const String estoque = '/estoque';
+  static const String tasks = '/tasks';
+  static const String comingSoon = '/coming-soon';
+  static const String fazendasAdd = '/fazendas/add';
+  static const String fazendasEdit = '/fazendas/edit';
+  static const String fornecedores = '/fornecedores';
+  static const String fornecedoresAdd = '/fornecedores/add';
+  static const String fornecedoresEdit = '/fornecedores/edit';
+  static const String compradores = '/compradores';
+  static const String compradoresAdd = '/compradores/add';
+  static const String compradoresEdit = '/compradores/edit';
+  static const String usuarios = '/usuarios';
+  static const String usuariosAdd = '/usuarios/add';
+  static const String usuariosEdit = '/usuarios/edit';
+  static const String movimentacoes = '/movimentacoes';
 }

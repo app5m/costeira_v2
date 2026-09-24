@@ -2,6 +2,7 @@ import 'dart:math' as math;
 
 import 'package:costeira/core/components/app_select_overlay.dart';
 import 'package:costeira/core/components/app_snack.dart';
+import 'package:costeira/core/input_formatters/brazilian_currency_input_formatter.dart';
 import 'package:costeira/features/insumos/domain/entities/insumos.dart';
 import 'package:costeira/features/insumos/presentation/controllers/add_insumo_controller.dart';
 import 'package:costeira/theme/colors.dart';
@@ -19,6 +20,7 @@ class AddInsumo extends StatefulWidget {
 }
 
 class _AddInsumoState extends State<AddInsumo> {
+  static const _moneyFormatter = BrazilianCurrencyInputFormatter();
   final AddInsumoController _controller = Modular.get<AddInsumoController>();
 
   @override
@@ -120,13 +122,11 @@ class _AddInsumoState extends State<AddInsumo> {
                     _buildTextField(
                       controller: _controller.valorUnidadeController,
                       label: 'Valor por unidade',
-                      hint: '10,50',
+                      hint: 'R\$ 0,00',
                       keyboardType: const TextInputType.numberWithOptions(
                         decimal: true,
                       ),
-                      inputFormatters: [
-                        FilteringTextInputFormatter.allow(RegExp(r'[0-9,.]')),
-                      ],
+                      inputFormatters: const [_moneyFormatter],
                     ),
                     _buildQuantityField(
                       controller: _controller.qtdTotalController,

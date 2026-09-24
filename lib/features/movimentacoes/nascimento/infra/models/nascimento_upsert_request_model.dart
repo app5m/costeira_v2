@@ -31,6 +31,7 @@ class NascimentoUpsertRequestModel {
     return {
       'token': WSConstantes.token,
       'app_users_id': nascimento.appUsersId,
+      'app_fazendas_id': nascimento.appFazendasId,
       'app_potreiros_id': nascimento.appPotreirosId,
       'app_animais_lotes_id': nascimento.appAnimaisLotesId,
       'data': nascimento.data,

@@ -1,4 +1,5 @@
 import 'package:costeira/core/api/api_exception.dart';
+import 'package:costeira/core/input_formatters/brazilian_currency_input_formatter.dart';
 import 'package:costeira/core/models/api_message.dart';
 import 'package:costeira/core/storage/session_storage.dart';
 import 'package:costeira/core/utils/app_logger.dart';
@@ -57,7 +58,7 @@ class AddInsumoController extends ChangeNotifier {
     return (_selectedTipoInsumo?.trim().isNotEmpty ?? false) &&
         nomeController.text.trim().isNotEmpty &&
         _selectedUnidadeId != null &&
-        _parseDecimal(valorUnidadeController.text) != null &&
+        (BrazilianCurrency.parse(valorUnidadeController.text) ?? 0) > 0 &&
         _parseDecimal(qtdTotalController.text) != null;
   }
 
@@ -137,7 +138,7 @@ class AddInsumoController extends ChangeNotifier {
         appEstoquesInsumosSuplementosId: _selectedSuplementoId,
         nome: nomeController.text.trim(),
         appEstoquesInsumosUnidadesId: _selectedUnidadeId!,
-        valorUnidade: valorUnidadeController.text.trim(),
+        valorUnidade: BrazilianCurrency.toApi(valorUnidadeController.text),
         qtdTotal: _parseDecimal(qtdTotalController.text)!,
         obs: _emptyToNull(obsController.text),
         dataValidade: _emptyToNull(dataValidadeController.text),
@@ -193,8 +194,10 @@ class AddInsumoController extends ChangeNotifier {
     _selectedSuplementoId = insumo.appEstoquesInsumosSuplementosId;
     nomeController.text = insumo.nome;
     valorUnidadeController.text =
-        _formatDecimal(insumo.valorUnidadeRaw) ??
-        _formatDisplayValue(insumo.valorUnidade);
+        BrazilianCurrency.formatFromRaw(insumo.valorUnidade) ??
+        (insumo.valorUnidadeRaw != null
+            ? BrazilianCurrency.format(insumo.valorUnidadeRaw!)
+            : '');
     qtdTotalController.text = _formatDecimal(insumo.qtdTotal) ?? '';
     obsController.text = insumo.obs ?? '';
     dataValidadeController.text = insumo.dataValidade ?? '';
@@ -208,14 +211,6 @@ class AddInsumoController extends ChangeNotifier {
       return value.toInt().toString();
     }
     return value.toStringAsFixed(2).replaceAll('.', ',');
-  }
-
-  String _formatDisplayValue(String? value) {
-    final text = value?.trim() ?? '';
-    if (text.isEmpty) {
-      return '';
-    }
-    return text.replaceAll(RegExp(r'[^0-9,.]'), '').replaceAll('.', ',');
   }
 
   @override

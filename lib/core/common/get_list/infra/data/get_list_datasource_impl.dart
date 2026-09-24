@@ -21,8 +21,11 @@ class GetListDatasourceImpl implements GetListDatasource {
     return _offlineApiService.postCached<GetListEntity>(
       endpoint: WSConstantes.utilLista,
       payload: payload,
-      parser: (response) => GetListResponseModel.fromJson(responseAsMap(response)),
-      missingCacheMessage: 'Sem conexão e sem dados salvos para listas auxiliares.',
+      userId: params.userId,
+      parser: (response) =>
+          GetListResponseModel.fromJson(responseAsMap(response)),
+      missingCacheMessage:
+          'Sem conexão e sem dados salvos para listas auxiliares.',
       rawResponseLog: 'GET LIST DATASOURCE: RAW RESPONSE',
     );
   }

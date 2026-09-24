@@ -8,9 +8,11 @@ class SessionStorage {
   SessionStorage._();
 
   static const _userSessionKey = 'user_session';
+  static const _pendingUserKey = 'pending_user_session';
   static const _onboardingSeenKey = 'onboarding_seen';
   static const _lastCoordinatesKey = 'last_coordinates';
   static const _pendingPushTokenKey = 'pending_push_token';
+  static const _selectedFarmIdKey = 'selected_farm_id';
 
   static Future<void> saveUserSession(UserSession session) async {
     final prefs = await SharedPreferences.getInstance();
@@ -23,13 +25,52 @@ class SessionStorage {
     if (raw == null || raw.isEmpty) {
       return null;
     }
-    return UserSession.fromJson(
+    final session = UserSession.fromJson(
       Map<String, dynamic>.from(jsonDecode(raw) as Map),
     );
+    if (session.id <= 0) {
+      return null;
+    }
+    return session;
   }
 
   static Future<void> clearUserSession() async {
     await clearAuthData();
+  }
+
+  static Future<void> savePendingUser(UserSession session) async {
+    if (session.id <= 0) {
+      return;
+    }
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString(_pendingUserKey, jsonEncode(session.toJson()));
+  }
+
+  static Future<UserSession?> getPendingUser({String? email}) async {
+    final prefs = await SharedPreferences.getInstance();
+    final raw = prefs.getString(_pendingUserKey);
+    if (raw == null || raw.isEmpty) {
+      return null;
+    }
+    final session = UserSession.fromJson(
+      Map<String, dynamic>.from(jsonDecode(raw) as Map),
+    );
+    if (session.id <= 0) {
+      return null;
+    }
+    if (email != null && email.trim().isNotEmpty) {
+      final pendingEmail = session.email.trim().toLowerCase();
+      if (pendingEmail.isNotEmpty &&
+          pendingEmail != email.trim().toLowerCase()) {
+        return null;
+      }
+    }
+    return session;
+  }
+
+  static Future<void> clearPendingUser() async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.remove(_pendingUserKey);
   }
 
   static Future<void> clearAuthData() async {
@@ -38,6 +79,7 @@ class SessionStorage {
       prefs.remove(_userSessionKey),
       prefs.remove(_lastCoordinatesKey),
       prefs.remove(_pendingPushTokenKey),
+      prefs.remove(_selectedFarmIdKey),
     ]);
   }
 
@@ -87,5 +129,22 @@ class SessionStorage {
   static Future<void> clearPendingPushToken() async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.remove(_pendingPushTokenKey);
+  }
+
+  static Future<void> saveSelectedFarmId(int id) async {
+    if (id <= 0) {
+      return;
+    }
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setInt(_selectedFarmIdKey, id);
+  }
+
+  static Future<int?> getSelectedFarmId() async {
+    final prefs = await SharedPreferences.getInstance();
+    final id = prefs.getInt(_selectedFarmIdKey);
+    if (id == null || id <= 0) {
+      return null;
+    }
+    return id;
   }
 }

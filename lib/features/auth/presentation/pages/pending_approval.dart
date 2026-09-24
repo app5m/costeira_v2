@@ -1,6 +1,8 @@
 import 'package:costeira/app/app_routes.dart';
-import 'package:costeira/theme/colors.dart';
 import 'package:costeira/core/components/app_buttons.dart';
+import 'package:costeira/core/storage/session_storage.dart';
+import 'package:costeira/features/auth/auth_bypass.dart';
+import 'package:costeira/theme/colors.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_modular/flutter_modular.dart';
 
@@ -159,6 +161,27 @@ class PendingApprovalPage extends StatelessWidget {
                       ),
                     ),
                     const Spacer(),
+                    if (AuthBypass.pendingApproval)
+                      FutureBuilder(
+                        future: SessionStorage.getUserSession(),
+                        builder: (context, snapshot) {
+                          final session = snapshot.data;
+                          if (session == null || session.id <= 0) {
+                            return const SizedBox.shrink();
+                          }
+                          return Column(
+                            children: [
+                              PrimaryButton(
+                                label: 'Entrar mesmo assim',
+                                onPressed: () {
+                                  Modular.to.navigate(AppRoutes.appShell);
+                                },
+                              ),
+                              const SizedBox(height: 12),
+                            ],
+                          );
+                        },
+                      ),
                     PrimaryButton(
                       label: 'Voltar para o início',
                       onPressed: () {

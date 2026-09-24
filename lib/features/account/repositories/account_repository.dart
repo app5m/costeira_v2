@@ -2,6 +2,7 @@ import 'dart:io';
 
 import 'package:costeira/core/config/ws_constantes.dart';
 import 'package:costeira/core/api/api_client.dart';
+import 'package:costeira/core/api/api_exception.dart';
 import 'package:costeira/core/models/api_message.dart';
 import 'package:costeira/core/api/api_response_utils.dart';
 import 'package:costeira/features/account/models/account_profile.dart';
@@ -17,7 +18,13 @@ class AccountRepository {
       WSConstantes.perfil,
       data: {'id_user': userId, 'token': WSConstantes.token},
     );
-    return AccountProfile.fromJson(responseAsMap(response));
+    final map = responseAsMap(response);
+    if (map['id'] == null) {
+      throw ApiException(
+        map['msg']?.toString() ?? 'Perfil nao encontrado.',
+      );
+    }
+    return AccountProfile.fromJson(map);
   }
 
   Future<ApiMessage> deactivateAccount(int id) async {

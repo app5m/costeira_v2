@@ -1,14 +1,19 @@
 import 'package:costeira/core/api/api_exception.dart';
 import 'package:costeira/core/models/api_message.dart';
 import 'package:costeira/core/storage/session_storage.dart';
+import 'package:costeira/features/fazendas/domain/usecases/resolve_current_farm_id.dart';
 import 'package:costeira/features/potreiros/domain/entities/potreiro_upsert_entity.dart';
 import 'package:costeira/features/potreiros/domain/usecases/create_potreiro_usecase.dart';
 import 'package:flutter/foundation.dart';
 
 class AddPotreiroController extends ChangeNotifier {
-  AddPotreiroController(this._createPotreiroUsecase);
+  AddPotreiroController(
+    this._createPotreiroUsecase,
+    this._resolveCurrentFarmId,
+  );
 
   final CreatePotreiroUsecase _createPotreiroUsecase;
+  final ResolveCurrentFarmId _resolveCurrentFarmId;
 
   bool _isLoading = false;
   String? _errorMessage;
@@ -26,12 +31,20 @@ class AddPotreiroController extends ChangeNotifier {
 
     try {
       _currentUserId ??= (await SessionStorage.getUserSession())?.id;
-      if (_currentUserId == null) {
+      if (_currentUserId == null || _currentUserId! <= 0) {
         throw ApiException('Usuário não autenticado.');
       }
 
+      final farmId = await _resolveCurrentFarmId(
+        preferred: potreiro.appFazendasId,
+        userId: _currentUserId,
+      );
+      if (farmId == null) {
+        throw ApiException('Cadastre uma fazenda antes de criar o piquete.');
+      }
+
       final result = await _createPotreiroUsecase(
-        potreiro.copyWith(appUsersId: _currentUserId),
+        potreiro.copyWith(appUsersId: _currentUserId, appFazendasId: farmId),
       );
       _lastResult = result;
       return result;

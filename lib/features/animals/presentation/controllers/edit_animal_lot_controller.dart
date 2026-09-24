@@ -4,12 +4,17 @@ import 'package:costeira/core/storage/session_storage.dart';
 import 'package:costeira/features/animals/domain/entities/animal_lot_entity.dart';
 import 'package:costeira/features/animals/domain/entities/animal_lot_upsert_entity.dart';
 import 'package:costeira/features/animals/domain/usecases/update_animal_lot_usecase.dart';
+import 'package:costeira/features/fazendas/domain/usecases/resolve_current_farm_id.dart';
 import 'package:flutter/foundation.dart';
 
 class EditAnimalLotController extends ChangeNotifier {
-  EditAnimalLotController(this._updateAnimalLotUsecase);
+  EditAnimalLotController(
+    this._updateAnimalLotUsecase,
+    this._resolveCurrentFarmId,
+  );
 
   final UpdateAnimalLotUsecase _updateAnimalLotUsecase;
+  final ResolveCurrentFarmId _resolveCurrentFarmId;
 
   bool _isLoading = false;
   String? _errorMessage;
@@ -52,8 +57,16 @@ class EditAnimalLotController extends ChangeNotifier {
         throw ApiException('Usuário não autenticado.');
       }
 
+      final farmId = await _resolveCurrentFarmId(
+        preferred: lot.appFazendasId,
+        userId: _currentUserId,
+      );
+      if (farmId == null) {
+        throw ApiException('Cadastre uma fazenda antes de editar o lote.');
+      }
+
       final result = await _updateAnimalLotUsecase(
-        lot.copyWith(appUsersId: _currentUserId),
+        lot.copyWith(appUsersId: _currentUserId, appFazendasId: farmId),
       );
       _lastResult = result;
       return result;

@@ -1,4 +1,5 @@
 import 'package:costeira/core/api/api_client.dart';
+import 'package:costeira/core/api/api_exception.dart';
 import 'package:costeira/core/api/api_response_utils.dart';
 import 'package:costeira/core/config/ws_constantes.dart';
 import 'package:costeira/core/offline/cache/api_cache_service.dart';
@@ -6,6 +7,7 @@ import 'package:costeira/core/offline/offline_api_service.dart';
 import 'package:costeira/core/offline/sync/sync_operation.dart';
 import 'package:costeira/core/offline/sync/sync_queue_service.dart';
 import 'package:costeira/core/utils/app_logger.dart';
+import 'package:costeira/features/fazendas/domain/usecases/resolve_current_farm_id.dart';
 import 'package:costeira/features/movimentacoes/domain/entities/aborto_charts_entity.dart';
 import 'package:costeira/features/movimentacoes/domain/entities/aborto_entity.dart';
 import 'package:costeira/features/movimentacoes/domain/entities/abigeato_charts_entity.dart';
@@ -64,79 +66,86 @@ class MovimentacoesDatasourceImpl implements MovimentacoesDatasource {
     this._offlineApiService,
     this._syncQueueService,
     this._apiCacheService,
+    this._resolveCurrentFarmId,
   );
 
   final ApiClient _apiClient;
   final OfflineApiService _offlineApiService;
   final SyncQueueService _syncQueueService;
   final ApiCacheService _apiCacheService;
+  final ResolveCurrentFarmId _resolveCurrentFarmId;
 
   @override
   Future<MovimentacoesListEntity> getMovimentacoes(
     MovimentacaoFilterEntity filter,
   ) async {
-    final payload = MovimentacaoFilterRequestModel.fromEntity(filter).data;
+    final effectiveFilter = await _withFarmId(filter);
+    final payload = MovimentacaoFilterRequestModel.fromEntity(
+      effectiveFilter,
+    ).data;
     AppLogger.info('MOVIMENTACOES DATASOURCE: LIST PAYLOAD=$payload');
     final previousCache = _apiCacheService.getCache(
       endpoint: WSConstantes.movimentacoesListar,
       requestPayload: payload,
-      userId: filter.appUsersId,
+      userId: effectiveFilter.appUsersId,
     );
 
     final result = await _offlineApiService.postCached<MovimentacoesListEntity>(
       endpoint: WSConstantes.movimentacoesListar,
       payload: payload,
-      userId: filter.appUsersId,
-      parser: (response) => MovimentacoesListResponseModel.fromJson(
-        _movimentacoesResponseAsMap(response),
-      ),
+      userId: effectiveFilter.appUsersId,
+      parser: (response) {
+        final map = _movimentacoesResponseAsMap(response);
+        _ensureListSuccess(map);
+        return MovimentacoesListResponseModel.fromJson(map);
+      },
       missingCacheMessage: 'Sem conexão e sem dados salvos para movimentacoes.',
       rawResponseLog: 'MOVIMENTACOES DATASOURCE: LIST RAW RESPONSE',
     );
 
     final mergedCompras = _mergePendingCompras(
       result,
-      filter,
+      effectiveFilter,
       previousCache?.response,
     );
     final mergedVendas = _mergePendingVendas(
       mergedCompras,
-      filter,
+      effectiveFilter,
       previousCache?.response,
     );
     final merged = _mergePendingMortes(
       mergedVendas,
-      filter,
+      effectiveFilter,
       previousCache?.response,
     );
     final mergedNascimentos = _mergePendingNascimentos(
       merged,
-      filter,
+      effectiveFilter,
       previousCache?.response,
     );
     final mergedTrocas = _mergePendingTrocaCategoria(
       mergedNascimentos,
-      filter,
+      effectiveFilter,
       previousCache?.response,
     );
     final mergedTransferencias = _mergePendingTransferencias(
       mergedTrocas,
-      filter,
+      effectiveFilter,
       previousCache?.response,
     );
     final mergedAbigeatos = _mergePendingAbigeatos(
       mergedTransferencias,
-      filter,
+      effectiveFilter,
       previousCache?.response,
     );
     final mergedAbortos = _mergePendingAbortos(
       mergedAbigeatos,
-      filter,
+      effectiveFilter,
       previousCache?.response,
     );
     final mergedConsumos = _mergePendingConsumos(
       mergedAbortos,
-      filter,
+      effectiveFilter,
       previousCache?.response,
     );
     if (merged.compras.length != result.compras.length ||
@@ -165,11 +174,41 @@ class MovimentacoesDatasourceImpl implements MovimentacoesDatasource {
           mergedConsumos.consumos,
           mergedConsumos.rows,
         ),
-        userId: filter.appUsersId,
+        userId: effectiveFilter.appUsersId,
       );
     }
 
     return mergedConsumos;
+  }
+
+  Future<MovimentacaoFilterEntity> _withFarmId(
+    MovimentacaoFilterEntity filter,
+  ) async {
+    if (filter.appFazendasId != null && filter.appFazendasId! > 0) {
+      return filter;
+    }
+    final farmId = await _resolveCurrentFarmId(userId: filter.appUsersId);
+    if (farmId == null || farmId <= 0) {
+      throw ApiException(
+        'Selecione uma fazenda antes de listar movimentacoes.',
+      );
+    }
+    return MovimentacaoFilterEntity(
+      appUsersId: filter.appUsersId,
+      appFazendasId: farmId,
+      id: filter.id,
+      dataIn: filter.dataIn,
+      dataOut: filter.dataOut,
+    );
+  }
+
+  void _ensureListSuccess(Map<String, dynamic> map) {
+    final status = map['status']?.toString();
+    if (status == '02' || status == '2') {
+      throw ApiException(
+        map['msg']?.toString() ?? 'Erro ao listar movimentacoes.',
+      );
+    }
   }
 
   @override
@@ -309,8 +348,9 @@ class MovimentacoesDatasourceImpl implements MovimentacoesDatasource {
     }
 
     final existingIds = resultCompras.map((item) => item.id).toSet();
+    // So ids server (id >= 0) ausentes na API = excluidos. Nao ressuscita do cache.
     final uniqueCached = cachedCompras
-        .where((item) => !existingIds.contains(item.id))
+        .where((item) => !existingIds.contains(item.id) && item.id < 0)
         .toList(growable: false);
     final idsAfterCached = {
       ...existingIds,
@@ -394,8 +434,9 @@ class MovimentacoesDatasourceImpl implements MovimentacoesDatasource {
     }
 
     final existingIds = resultVendas.map((item) => item.id).toSet();
+    // So ids server (id >= 0) ausentes na API = excluidos. Nao ressuscita do cache.
     final uniqueCached = cachedVendas
-        .where((item) => !existingIds.contains(item.id))
+        .where((item) => !existingIds.contains(item.id) && item.id < 0)
         .toList(growable: false);
     final idsAfterCached = {
       ...existingIds,
@@ -479,8 +520,9 @@ class MovimentacoesDatasourceImpl implements MovimentacoesDatasource {
     }
 
     final existingIds = resultMortes.map((item) => item.id).toSet();
+    // So ids server (id >= 0) ausentes na API = excluidos. Nao ressuscita do cache.
     final uniqueCached = cachedMortes
-        .where((item) => !existingIds.contains(item.id))
+        .where((item) => !existingIds.contains(item.id) && item.id < 0)
         .toList(growable: false);
     final idsAfterCached = {
       ...existingIds,
@@ -589,8 +631,9 @@ class MovimentacoesDatasourceImpl implements MovimentacoesDatasource {
     }
 
     final existingIds = resultNascimentos.map((item) => item.id).toSet();
+    // So ids server (id >= 0) ausentes na API = excluidos. Nao ressuscita do cache.
     final uniqueCached = cachedNascimentos
-        .where((item) => !existingIds.contains(item.id))
+        .where((item) => !existingIds.contains(item.id) && item.id < 0)
         .toList(growable: false);
     final idsAfterCached = {
       ...existingIds,
@@ -885,8 +928,9 @@ class MovimentacoesDatasourceImpl implements MovimentacoesDatasource {
     }
 
     final existingIds = resultItems.map(itemId).toSet();
+    // So ids server (id >= 0) ausentes na API = excluidos. Nao ressuscita do cache.
     final uniqueCached = cached
-        .where((item) => !existingIds.contains(itemId(item)))
+        .where((item) => !existingIds.contains(itemId(item)) && itemId(item) < 0)
         .toList(growable: false);
     final idsAfterCached = {...existingIds, ...uniqueCached.map(itemId)};
     final uniquePending = pending

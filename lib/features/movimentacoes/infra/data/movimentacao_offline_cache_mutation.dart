@@ -52,7 +52,12 @@ class MovimentacaoOfflineCacheMutation {
     }
 
     return MovimentacaoFilterRequestModel.fromEntity(
-      MovimentacaoFilterEntity(appUsersId: userId),
+      MovimentacaoFilterEntity(
+        appUsersId: userId,
+        appFazendasId: int.tryParse(
+          payload['app_fazendas_id']?.toString() ?? '',
+        ),
+      ),
     ).data;
   }
 

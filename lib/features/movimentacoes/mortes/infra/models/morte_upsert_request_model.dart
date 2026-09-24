@@ -25,6 +25,7 @@ class MorteUpsertRequestModel {
     return {
       'token': WSConstantes.token,
       'app_users_id': morte.appUsersId,
+      'app_fazendas_id': morte.appFazendasId,
       'app_potreiros_id': morte.appPotreirosId,
       'data': morte.data,
     }..removeWhere((key, value) => value == null);

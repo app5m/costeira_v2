@@ -2,6 +2,7 @@ class PotreiroUpsertEntity {
   const PotreiroUpsertEntity({
     this.id,
     this.appUsersId,
+    this.appFazendasId,
     required this.nome,
     this.areaTotal,
     this.areaUtil,
@@ -15,6 +16,7 @@ class PotreiroUpsertEntity {
 
   final int? id;
   final int? appUsersId;
+  final int? appFazendasId;
   final String nome;
   final String? areaTotal;
   final String? areaUtil;
@@ -28,6 +30,7 @@ class PotreiroUpsertEntity {
   PotreiroUpsertEntity copyWith({
     int? id,
     int? appUsersId,
+    int? appFazendasId,
     String? nome,
     String? areaTotal,
     String? areaUtil,
@@ -41,6 +44,7 @@ class PotreiroUpsertEntity {
     return PotreiroUpsertEntity(
       id: id ?? this.id,
       appUsersId: appUsersId ?? this.appUsersId,
+      appFazendasId: appFazendasId ?? this.appFazendasId,
       nome: nome ?? this.nome,
       areaTotal: areaTotal ?? this.areaTotal,
       areaUtil: areaUtil ?? this.areaUtil,

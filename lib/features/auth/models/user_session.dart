@@ -31,7 +31,7 @@ class UserSession {
 
   factory UserSession.fromJson(Map<String, dynamic> json) {
     return UserSession(
-      id: int.tryParse(json['id']?.toString() ?? '') ?? 0,
+      id: parseId(json),
       name: json['name']?.toString() ?? json['nome']?.toString() ?? '',
       email: json['email']?.toString() ?? '',
       phone: json['phone']?.toString() ?? json['celular']?.toString(),
@@ -43,13 +43,39 @@ class UserSession {
 
   factory UserSession.fromLoginResponse(Map<String, dynamic> json, int tipo) {
     return UserSession(
-      id: int.tryParse(json['id']?.toString() ?? '') ?? 0,
-      name: json['nome']?.toString() ?? '',
+      id: parseId(json),
+      name: json['nome']?.toString() ?? json['name']?.toString() ?? '',
       email: json['email']?.toString() ?? '',
-      phone: json['celular']?.toString(),
-      document: json['documento']?.toString(),
-      nickname: json['apelido']?.toString(),
+      phone: json['celular']?.toString() ?? json['phone']?.toString(),
+      document: json['documento']?.toString() ?? json['document']?.toString(),
+      nickname: json['apelido']?.toString() ?? json['nickname']?.toString(),
       tipo: tipo.toString(),
     );
+  }
+
+  static int parseId(Map<String, dynamic> json) {
+    const keys = [
+      'id',
+      'app_users_id',
+      'app_user_id',
+      'user_id',
+      'id_user',
+      'usuarios_id',
+    ];
+    for (final key in keys) {
+      final value = int.tryParse(json[key]?.toString() ?? '');
+      if (value != null && value > 0) {
+        return value;
+      }
+    }
+
+    final data = json['data'] ?? json['msg2'] ?? json['user'];
+    if (data is Map) {
+      return parseId(Map<String, dynamic>.from(data));
+    }
+    if (data is List && data.isNotEmpty && data.first is Map) {
+      return parseId(Map<String, dynamic>.from(data.first as Map));
+    }
+    return 0;
   }
 }

@@ -3,6 +3,8 @@ import 'package:costeira/app/app_routes.dart';
 import 'package:costeira/core/api/api_exception.dart';
 import 'package:costeira/core/components/app_snack.dart';
 import 'package:costeira/core/services/location_service.dart';
+import 'package:costeira/core/storage/session_storage.dart';
+import 'package:costeira/features/auth/auth_bypass.dart';
 import 'package:costeira/features/auth/repositories/auth_repository.dart';
 import 'package:costeira/core/components/app_buttons.dart';
 import 'package:costeira/core/components/app_form_field.dart';
@@ -133,13 +135,12 @@ class _LoginPageState extends State<LoginPage> {
         coordinates: coordinates,
       );
 
-      _showMessage(response.message, isError: !response.isSuccess);
-
       if (!mounted) {
         return;
       }
 
-      if (response.status == '02') {
+      if (response.status == '02' &&
+          AuthBypass.isPendingApprovalMessage(response.message)) {
         await Modular.to.pushReplacementNamed(
           AppRoutes.pendingApproval,
           arguments: PendingApprovalRouteData(
@@ -150,7 +151,14 @@ class _LoginPageState extends State<LoginPage> {
         return;
       }
 
-      if (!response.isSuccess) {
+      _showMessage(
+        response.message,
+        isError: !response.isSuccess &&
+            !AuthBypass.shouldBypass(response.status, response.message),
+      );
+
+      if (!response.isSuccess &&
+          !AuthBypass.shouldBypass(response.status, response.message)) {
         return;
       }
 
@@ -162,6 +170,9 @@ class _LoginPageState extends State<LoginPage> {
           latitude: coordinates.latitude,
           longitude: coordinates.longitude,
           userType: 1,
+          pendingUser: await SessionStorage.getPendingUser(
+            email: _emailController.text.trim(),
+          ),
         ),
       );
     } on ApiException catch (error) {

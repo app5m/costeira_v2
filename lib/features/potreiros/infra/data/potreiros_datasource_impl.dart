@@ -9,6 +9,7 @@ import 'package:costeira/core/offline/network/network_status_service.dart';
 import 'package:costeira/core/offline/sync/sync_operation.dart';
 import 'package:costeira/core/offline/sync/sync_priority.dart';
 import 'package:costeira/core/offline/sync/sync_queue_service.dart';
+import 'package:costeira/core/storage/session_storage.dart';
 import 'package:costeira/core/utils/app_logger.dart';
 import 'package:costeira/features/potreiros/domain/entities/delete_potreiro_entity.dart';
 import 'package:costeira/features/potreiros/domain/entities/potreiro_charts_entity.dart';
@@ -23,6 +24,7 @@ import 'package:costeira/features/potreiros/infra/models/potreiro_charts_respons
 import 'package:costeira/features/potreiros/infra/models/potreiro_upsert_request_model.dart';
 import 'package:costeira/features/potreiros/infra/models/potreiros_filter_request_model.dart';
 import 'package:costeira/features/potreiros/infra/models/potreiros_list_response_model.dart';
+import 'package:costeira/features/potreiros/infra/models/potreiro_model.dart';
 
 class PotreirosDatasourceImpl implements PotreirosDatasource {
   const PotreirosDatasourceImpl(
@@ -58,6 +60,7 @@ class PotreirosDatasourceImpl implements PotreirosDatasource {
       );
       AppLogger.success('POTREIROS DATASOURCE: LIST RAW RESPONSE=$response');
 
+      final parsed = _parseList(response);
       await _apiCacheService.saveCache(
         endpoint: WSConstantes.potreirosListar,
         requestPayload: payload,
@@ -65,7 +68,7 @@ class PotreirosDatasourceImpl implements PotreirosDatasource {
         userId: filter.appUsersId,
       );
 
-      return PotreirosListResponseModel.fromJson(responseAsMap(response));
+      return parsed;
     } catch (error) {
       final canUseCacheFallback =
           !await _networkStatusService.hasConnection() ||
@@ -86,7 +89,7 @@ class PotreirosDatasourceImpl implements PotreirosDatasource {
 
   @override
   Future<ApiMessage> createPotreiro(PotreiroUpsertEntity potreiro) async {
-    if (potreiro.appUsersId == null) {
+    if (potreiro.appUsersId == null || potreiro.appUsersId! <= 0) {
       throw ApiException('Usuário não autenticado para cadastrar potreiro.');
     }
 
@@ -269,7 +272,7 @@ class PotreirosDatasourceImpl implements PotreirosDatasource {
     );
 
     if (!message.isSuccess) {
-      throw ApiException(message.message);
+      throw ApiException(message.message, statusCode: 422);
     }
 
     if (message.message.trim().isEmpty) {
@@ -280,6 +283,42 @@ class PotreirosDatasourceImpl implements PotreirosDatasource {
     }
 
     return message;
+  }
+
+  PotreirosListEntity _parseList(dynamic response) {
+    final map = responseAsMap(response);
+    final status = map['status']?.toString();
+    final looksLikeError =
+        status != null &&
+        status != '01' &&
+        map['id'] == null &&
+        map['nome'] == null &&
+        map['data'] == null;
+
+    if (looksLikeError) {
+      throw ApiException(
+        map['msg']?.toString() ?? 'Erro ao listar potreiros.',
+        statusCode: 422,
+      );
+    }
+
+    if (map['data'] is List || map['rows'] != null) {
+      return PotreirosListResponseModel.fromJson(map);
+    }
+
+    final items = responseAsList(response)
+        .where((item) => item['id'] != null)
+        .toList(growable: false);
+    if (items.isEmpty) {
+      return const PotreirosListResponseModel(rows: 0, data: []);
+    }
+
+    return PotreirosListResponseModel(
+      rows: items.length,
+      data: items
+          .map(PotreiroModel.fromJson)
+          .toList(growable: false),
+    );
   }
 
   PotreirosListEntity _getPotreirosFromCacheOrThrow({
@@ -312,7 +351,7 @@ class PotreirosDatasourceImpl implements PotreirosDatasource {
     AppLogger.success(
       'POTREIROS DATASOURCE: LIST USANDO CACHE KEY=${cache.key}',
     );
-    return PotreirosListResponseModel.fromJson(responseAsMap(cache.response));
+    return _parseList(cache.response);
   }
 
   bool _isConnectionFailure(Object error) {
@@ -338,7 +377,7 @@ class PotreirosDatasourceImpl implements PotreirosDatasource {
     await _mutationCacheService.applyMutation(
       action: action,
       listEndpoint: WSConstantes.potreirosListar,
-      listPayload: userId == null ? null : _defaultListPayload(userId),
+      listPayload: userId == null ? null : await _defaultListPayload(payload),
       userId: userId,
       item: action == SyncOperation.delete ? null : _cacheItemFrom(payload),
       itemId: payload['id'],
@@ -363,9 +402,22 @@ class PotreirosDatasourceImpl implements PotreirosDatasource {
     return Map<String, dynamic>.from(payload)..remove('token');
   }
 
-  Map<String, dynamic> _defaultListPayload(int userId) {
+  Future<Map<String, dynamic>?> _defaultListPayload(
+    Map<String, dynamic> payload,
+  ) async {
+    final userId = int.tryParse(payload['app_users_id']?.toString() ?? '');
+    if (userId == null) {
+      return null;
+    }
+
+    final farmId = int.tryParse(payload['app_fazendas_id']?.toString() ?? '') ??
+        await SessionStorage.getSelectedFarmId();
+    if (farmId == null || farmId <= 0) {
+      return null;
+    }
+
     return PotreirosFilterRequestModel.fromEntity(
-      PotreirosFilterEntity(appUsersId: userId),
+      PotreirosFilterEntity(appUsersId: userId, appFazendasId: farmId),
     ).data;
   }
 

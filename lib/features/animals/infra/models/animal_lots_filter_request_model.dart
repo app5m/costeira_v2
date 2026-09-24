@@ -13,6 +13,7 @@ class AnimalLotsFilterRequestModel {
       {
         'token': WSConstantes.token,
         'app_users_id': filter.appUsersId,
+        'app_fazendas_id': filter.appFazendasId,
         'id': filter.id,
         'nome': filter.nome,
       }..removeWhere((key, value) => value == null),

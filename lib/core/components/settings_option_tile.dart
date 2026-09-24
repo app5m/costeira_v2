@@ -6,11 +6,13 @@ class SettingsOptionTile extends StatelessWidget {
     super.key,
     required this.title,
     required this.onTap,
+    this.leading,
     this.textColor = const Color(0xFF313131),
   });
 
   final String title;
   final VoidCallback onTap;
+  final Widget? leading;
   final Color textColor;
 
   @override
@@ -35,15 +37,18 @@ class SettingsOptionTile extends StatelessWidget {
           ],
         ),
         child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            Text(
-              title,
-              style: TextStyle(
-                color: textColor,
-                fontSize: 14,
-                fontWeight: FontWeight.w500,
-                letterSpacing: 0.1,
+            if (leading != null) ...[leading!, const SizedBox(width: 12)],
+            Expanded(
+              child: Text(
+                title,
+                overflow: TextOverflow.ellipsis,
+                style: TextStyle(
+                  color: textColor,
+                  fontSize: 14,
+                  fontWeight: FontWeight.w500,
+                  letterSpacing: 0.1,
+                ),
               ),
             ),
             SvgPicture.asset('icon/Arrow.svg', width: 24, height: 24),

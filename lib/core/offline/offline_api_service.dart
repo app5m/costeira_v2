@@ -33,10 +33,13 @@ class OfflineApiService {
     required String rawResponseLog,
     int? userId,
     bool useLatestCacheFallback = false,
+    String? baseUrl,
   }) async {
+    final cacheEndpoint = _absoluteEndpoint(endpoint, baseUrl);
+
     if (!await _networkStatusService.hasConnection()) {
       return _getCachedOrThrow(
-        endpoint: endpoint,
+        endpoint: cacheEndpoint,
         payload: payload,
         userId: userId,
         parser: parser,
@@ -46,15 +49,22 @@ class OfflineApiService {
     }
 
     try {
-      final response = await _apiClient.post(endpoint, data: payload);
+      final response = await _apiClient.post(
+        endpoint,
+        data: payload,
+        baseUrl: baseUrl,
+      );
       AppLogger.success('$rawResponseLog=$response');
 
-      await _apiCacheService.saveCache(
-        endpoint: endpoint,
-        requestPayload: payload,
-        response: response,
-        userId: userId,
-      );
+      // Nao cacheia status 02 (erro de negocio) — polui listagens vazias.
+      if (!_isBusinessErrorResponse(response)) {
+        await _apiCacheService.saveCache(
+          endpoint: cacheEndpoint,
+          requestPayload: payload,
+          response: response,
+          userId: userId,
+        );
+      }
 
       return parser(response);
     } catch (error) {
@@ -64,7 +74,7 @@ class OfflineApiService {
 
       if (canUseCacheFallback) {
         final cached = _getCached(
-          endpoint: endpoint,
+          endpoint: cacheEndpoint,
           payload: payload,
           userId: userId,
           parser: parser,
@@ -87,12 +97,15 @@ class OfflineApiService {
     required FutureOr<ApiMessage> Function(dynamic response) parseResponse,
     required String rawResponseLog,
     OfflineCacheMutation? offlineCacheMutation,
+    String? baseUrl,
   }) async {
+    final queuedEndpoint = _absoluteEndpoint(endpoint, baseUrl);
+
     if (!await _networkStatusService.hasConnection()) {
       return _enqueue(
         module: module,
         action: action,
-        endpoint: endpoint,
+        endpoint: queuedEndpoint,
         payload: payload,
         priority: priority,
         message: pendingMessage,
@@ -101,7 +114,11 @@ class OfflineApiService {
     }
 
     try {
-      final response = await _apiClient.post(endpoint, data: payload);
+      final response = await _apiClient.post(
+        endpoint,
+        data: payload,
+        baseUrl: baseUrl,
+      );
       AppLogger.success('$rawResponseLog=$response');
       return await parseResponse(response);
     } catch (error) {
@@ -109,7 +126,7 @@ class OfflineApiService {
         return _enqueue(
           module: module,
           action: action,
-          endpoint: endpoint,
+          endpoint: queuedEndpoint,
           payload: payload,
           priority: priority,
           message: pendingMessage,
@@ -118,6 +135,18 @@ class OfflineApiService {
       }
       rethrow;
     }
+  }
+
+  String _absoluteEndpoint(String endpoint, String? baseUrl) {
+    if (baseUrl == null || baseUrl.trim().isEmpty) {
+      return endpoint;
+    }
+
+    final normalizedBase = baseUrl.endsWith('/')
+        ? baseUrl.substring(0, baseUrl.length - 1)
+        : baseUrl;
+    final normalizedPath = endpoint.startsWith('/') ? endpoint : '/$endpoint';
+    return '$normalizedBase$normalizedPath';
   }
 
   T _getCachedOrThrow<T>({
@@ -214,7 +243,22 @@ class OfflineApiService {
   }
 
   bool _isConnectionFailure(Object error) {
-    return error is ApiException && error.statusCode == null;
+    return error is ApiException &&
+        (error.isTimeout || error.isOfflineEligible);
+  }
+
+  bool _isBusinessErrorResponse(dynamic response) {
+    Map<String, dynamic>? map;
+    if (response is List && response.isNotEmpty && response.first is Map) {
+      map = Map<String, dynamic>.from(response.first as Map);
+    } else if (response is Map) {
+      map = Map<String, dynamic>.from(response);
+    }
+    if (map == null) {
+      return false;
+    }
+    final status = map['status']?.toString();
+    return status == '02' || status == '2';
   }
 
   Future<void> _applyOfflineCacheMutation({

@@ -9,6 +9,7 @@ import 'package:costeira/core/offline/network/network_status_service.dart';
 import 'package:costeira/core/offline/sync/sync_operation.dart';
 import 'package:costeira/core/offline/sync/sync_priority.dart';
 import 'package:costeira/core/offline/sync/sync_queue_service.dart';
+import 'package:costeira/core/storage/session_storage.dart';
 import 'package:costeira/core/utils/app_logger.dart';
 import 'package:costeira/features/animals/domain/entities/animal_charts_entity.dart';
 import 'package:costeira/features/animals/domain/entities/animal_charts_filter_entity.dart';
@@ -421,7 +422,7 @@ class AnimalsDatasourceImpl implements AnimalsDatasource {
     required String module,
     required Map<String, dynamic> payload,
     required String idLocal,
-  }) {
+  }) async {
     final userId = int.tryParse(payload['app_users_id']?.toString() ?? '');
     final listEndpoint = module == 'lotes'
         ? WSConstantes.animaisListarLotes
@@ -433,12 +434,12 @@ class AnimalsDatasourceImpl implements AnimalsDatasource {
     final listPayload = userId == null
         ? null
         : isAnimalsModule
-        ? _defaultAnimalsListPayload(userId)
+        ? await _defaultAnimalsListPayload(payload)
         : isLotsModule
-        ? _defaultLotsListPayload(userId)
+        ? await _defaultLotsListPayload(payload)
         : null;
 
-    return _mutationCacheService.applyMutation(
+    await _mutationCacheService.applyMutation(
       action: action,
       listEndpoint: listEndpoint,
       listPayload: listPayload,
@@ -456,12 +457,42 @@ class AnimalsDatasourceImpl implements AnimalsDatasource {
     return Map<String, dynamic>.from(payload)..remove('token');
   }
 
-  Map<String, dynamic> _defaultAnimalsListPayload(int userId) {
-    return AnimalsFilterRequestModel.fromEntity(AnimalsFilterEntity(appUsersId: userId)).data;
+  Future<Map<String, dynamic>?> _defaultAnimalsListPayload(
+    Map<String, dynamic> payload,
+  ) async {
+    final userId = int.tryParse(payload['app_users_id']?.toString() ?? '');
+    if (userId == null) {
+      return null;
+    }
+
+    final farmId = int.tryParse(payload['app_fazendas_id']?.toString() ?? '') ??
+        await SessionStorage.getSelectedFarmId();
+    if (farmId == null || farmId <= 0) {
+      return null;
+    }
+
+    return AnimalsFilterRequestModel.fromEntity(
+      AnimalsFilterEntity(appUsersId: userId, appFazendasId: farmId),
+    ).data;
   }
 
-  Map<String, dynamic> _defaultLotsListPayload(int userId) {
-    return AnimalLotsFilterRequestModel.fromEntity(AnimalLotsFilterEntity(appUsersId: userId)).data;
+  Future<Map<String, dynamic>?> _defaultLotsListPayload(
+    Map<String, dynamic> payload,
+  ) async {
+    final userId = int.tryParse(payload['app_users_id']?.toString() ?? '');
+    if (userId == null) {
+      return null;
+    }
+
+    final farmId = int.tryParse(payload['app_fazendas_id']?.toString() ?? '') ??
+        await SessionStorage.getSelectedFarmId();
+    if (farmId == null || farmId <= 0) {
+      return null;
+    }
+
+    return AnimalLotsFilterRequestModel.fromEntity(
+      AnimalLotsFilterEntity(appUsersId: userId, appFazendasId: farmId),
+    ).data;
   }
 
   Map<String, dynamic> _emptyListResponse() {

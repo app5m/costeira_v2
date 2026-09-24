@@ -29,6 +29,7 @@ class TrocaCategoriaUpsertRequestModel {
     return {
       'token': WSConstantes.token,
       'app_users_id': troca.appUsersId,
+      'app_fazendas_id': troca.appFazendasId,
       'data': troca.data,
       'catg_destino': troca.catgDestino,
       'app_potreiros_id': troca.appPotreirosId,

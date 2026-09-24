@@ -4,6 +4,7 @@ import 'package:costeira/core/config/ws_constantes.dart';
 import 'package:costeira/core/models/api_message.dart';
 import 'package:costeira/core/offline/cache/offline_mutation_cache_service.dart';
 import 'package:costeira/core/offline/offline_api_service.dart';
+import 'package:costeira/core/offline/sync/sync_item.dart';
 import 'package:costeira/core/offline/sync/sync_operation.dart';
 import 'package:costeira/core/offline/sync/sync_priority.dart';
 import 'package:costeira/core/offline/sync/sync_queue_service.dart';
@@ -65,6 +66,10 @@ class ComprasDatasourceImpl implements ComprasDatasource {
     final payload = CompraUpsertRequestModel.update(compra).data;
     AppLogger.info('COMPRAS DATASOURCE: UPDATE PAYLOAD=$payload');
 
+    if (compra.id! < 0) {
+      return _updatePendingLocalCompra(compra, payload);
+    }
+
     return _offlineApiService.postOrEnqueue(
       module: 'movimentacoes',
       action: SyncOperation.update,
@@ -107,6 +112,22 @@ class ComprasDatasourceImpl implements ComprasDatasource {
       ),
     );
 
+    // Online delete nao passa pelo enqueue — remove ghost do cache manualmente.
+    final isPendingSync =
+        result.extra is Map &&
+        (result.extra as Map)['sync_pending'] == true;
+    if (result.isSuccess && !isPendingSync) {
+      await _mutationCacheService.applyMutation(
+        action: SyncOperation.delete,
+        listEndpoint: WSConstantes.movimentacoesListar,
+        listPayload: _defaultListPayload(payload),
+        userId: compra.appUsersId,
+        itemId: compra.id,
+        listField: 'data.compras',
+        allowLatestCacheFallback: true,
+      );
+    }
+
     final pendingDeleteCount = _syncQueueService
         .getPendingItems()
         .where(
@@ -125,22 +146,53 @@ class ComprasDatasourceImpl implements ComprasDatasource {
     return result;
   }
 
+  Future<ApiMessage> _updatePendingLocalCompra(
+    CompraUpsertEntity compra,
+    Map<String, dynamic> updatePayload,
+  ) async {
+    final pendingCreate = _findPendingCreate(compra.appUsersId!, compra.id!);
+    if (pendingCreate == null) {
+      throw ApiException(
+        'Compra local nao encontrada na fila de sincronizacao.',
+      );
+    }
+
+    final merged = Map<String, dynamic>.from(pendingCreate.payload);
+    for (final entry in updatePayload.entries) {
+      if (entry.key == 'id' || entry.key == 'token') {
+        continue;
+      }
+      merged[entry.key] = entry.value;
+    }
+
+    await _syncQueueService.updateItemPayload(pendingCreate.idLocal, merged);
+    await _mutationCacheService.applyMutation(
+      action: SyncOperation.update,
+      listEndpoint: WSConstantes.movimentacoesListar,
+      listPayload: _defaultListPayload(merged),
+      userId: compra.appUsersId,
+      item: _buildCachedCompraItem(merged, pendingCreate.idLocal),
+      itemId: compra.id,
+      idLocal: pendingCreate.idLocal,
+      listField: 'data.compras',
+      allowLatestCacheFallback: true,
+    );
+
+    AppLogger.success(
+      'COMPRAS DATASOURCE: COMPRA LOCAL PENDENTE ATUALIZADA ID_LOCAL=${pendingCreate.idLocal}',
+    );
+
+    return const ApiMessage(
+      status: '01',
+      message: 'Compra local atualizada. Sincroniza quando online.',
+    );
+  }
+
   Future<ApiMessage> _cancelPendingLocalCompra(
     DeleteCompraEntity compra,
     Map<String, dynamic> payload,
   ) async {
-    final pendingCreate = _syncQueueService
-        .getPendingItems()
-        .where(
-          (item) =>
-              item.module == 'movimentacoes' &&
-              item.action == SyncOperation.create &&
-              item.endpoint == WSConstantes.movimentacoesAdicionarCompra &&
-              item.payload['app_users_id']?.toString() ==
-                  compra.appUsersId.toString() &&
-              _localIdFromIdLocal(item.idLocal) == compra.id,
-        )
-        .firstOrNull;
+    final pendingCreate = _findPendingCreate(compra.appUsersId, compra.id);
 
     if (pendingCreate == null) {
       await _mutationCacheService.applyMutation(
@@ -229,7 +281,12 @@ class ComprasDatasourceImpl implements ComprasDatasource {
     }
 
     return MovimentacaoFilterRequestModel.fromEntity(
-      MovimentacaoFilterEntity(appUsersId: userId),
+      MovimentacaoFilterEntity(
+        appUsersId: userId,
+        appFazendasId: int.tryParse(
+          payload['app_fazendas_id']?.toString() ?? '',
+        ),
+      ),
     ).data;
   }
 
@@ -265,14 +322,19 @@ class ComprasDatasourceImpl implements ComprasDatasource {
         })
         .toList(growable: false);
 
-    final pesoTotal = animais.fold<double>(
-      0,
-      (sum, animal) => sum + (_toDouble(animal['peso_total']) ?? 0),
-    );
+    final pesoTotal =
+        _toDouble(payload['peso_total']) ??
+        animais.fold<double>(
+          0,
+          (sum, animal) => sum + (_toDouble(animal['peso_total']) ?? 0),
+        );
+    final qtdAnimais =
+        int.tryParse(payload['qtd_animais']?.toString() ?? '') ??
+        animais.length;
     final valorUnitario = _toDouble(payload['valor_unitario']);
     final valorTotal = valorUnitario == null
         ? null
-        : valorUnitario * animais.length;
+        : valorUnitario * (qtdAnimais == 0 ? 1 : qtdAnimais);
 
     return <String, dynamic>{
       'id': _localIdFromIdLocal(idLocal),
@@ -286,12 +348,15 @@ class ComprasDatasourceImpl implements ComprasDatasource {
       'valor_unitario_raw': valorUnitario,
       'valor_total': valorTotal?.toStringAsFixed(2),
       'valor_total_raw': valorTotal,
-      'fornecedor': payload['fornecedor'],
-      'municipio': payload['municipio'],
+      'id_fornecedor': payload['id_fornecedor'],
+      'app_fazendas_id': payload['app_fazendas_id'],
+      'tipo_cadastro': payload['tipo_cadastro'],
       'obs': payload['obs'],
-      'qtd_animais': animais.length,
+      'qtd_animais': qtdAnimais,
       'peso_total': pesoTotal == 0 ? null : pesoTotal,
-      'peso_medio': animais.isEmpty ? null : pesoTotal / animais.length,
+      'peso_medio':
+          _toDouble(payload['peso_medio']) ??
+          (qtdAnimais == 0 ? null : pesoTotal / qtdAnimais),
       'animais': animais,
     }..removeWhere((key, value) => value == null);
   }
@@ -306,6 +371,22 @@ class ComprasDatasourceImpl implements ComprasDatasource {
         .replaceAll(',', '.')
         .trim();
     return double.tryParse(normalized);
+  }
+
+  SyncItem? _findPendingCreate(int userId, int localId) {
+    return _syncQueueService
+        .getPendingItems()
+        .where(
+          (item) =>
+              item.module == 'movimentacoes' &&
+              item.action == SyncOperation.create &&
+              item.endpoint.endsWith(
+                WSConstantes.movimentacoesAdicionarCompra,
+              ) &&
+              item.payload['app_users_id']?.toString() == userId.toString() &&
+              _localIdFromIdLocal(item.idLocal) == localId,
+        )
+        .firstOrNull;
   }
 
   static int _localIdFromIdLocal(String idLocal) {

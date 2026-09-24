@@ -1,50 +1,63 @@
-import 'package:costeira/features/movimentacoes/vendas/domain/entities/venda_destino_entity.dart';
 import 'package:costeira/features/movimentacoes/vendas/domain/entities/venda_upsert_animal_entity.dart';
 
 class VendaUpsertEntity {
   const VendaUpsertEntity({
     this.id,
     this.appUsersId,
+    required this.appFazendasId,
     required this.data,
+    required this.tipoCompra,
+    required this.tipoCadastro,
     required this.valorUnitario,
-    this.comprador,
-    this.municipio,
+    this.valorFrete,
+    this.valorComissao,
+    required this.idComprador,
     this.obs,
     this.animais = const [],
-    required this.destinos,
   });
 
   final int? id;
   final int? appUsersId;
+  final int appFazendasId;
   final String data;
+  final String tipoCompra;
+  final String tipoCadastro;
   final String valorUnitario;
-  final String? comprador;
-  final String? municipio;
+  final String? valorFrete;
+  final String? valorComissao;
+  final int idComprador;
   final String? obs;
   final List<VendaUpsertAnimalEntity> animais;
-  final List<VendaDestinoEntity> destinos;
+
+  bool get isIndividual => tipoCadastro == 'individual';
 
   VendaUpsertEntity copyWith({
     int? id,
     int? appUsersId,
+    int? appFazendasId,
     String? data,
+    String? tipoCompra,
+    String? tipoCadastro,
     String? valorUnitario,
-    String? comprador,
-    String? municipio,
+    String? valorFrete,
+    String? valorComissao,
+    int? idComprador,
     String? obs,
     List<VendaUpsertAnimalEntity>? animais,
-    List<VendaDestinoEntity>? destinos,
   }) {
     return VendaUpsertEntity(
       id: id ?? this.id,
       appUsersId: appUsersId ?? this.appUsersId,
+      appFazendasId: appFazendasId ?? this.appFazendasId,
       data: data ?? this.data,
+      tipoCompra: tipoCompra ?? this.tipoCompra,
+      tipoCadastro: tipoCadastro ?? this.tipoCadastro,
       valorUnitario: valorUnitario ?? this.valorUnitario,
-      comprador: comprador ?? this.comprador,
-      municipio: municipio ?? this.municipio,
+      valorFrete: valorFrete ?? this.valorFrete,
+      valorComissao: valorComissao ?? this.valorComissao,
+      idComprador: idComprador ?? this.idComprador,
       obs: obs ?? this.obs,
       animais: animais ?? this.animais,
-      destinos: destinos ?? this.destinos,
     );
   }
 }

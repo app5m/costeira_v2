@@ -4,6 +4,7 @@ import 'package:costeira/core/config/ws_constantes.dart';
 import 'package:costeira/core/models/api_message.dart';
 import 'package:costeira/core/offline/cache/offline_mutation_cache_service.dart';
 import 'package:costeira/core/offline/offline_api_service.dart';
+import 'package:costeira/core/offline/sync/sync_item.dart';
 import 'package:costeira/core/offline/sync/sync_operation.dart';
 import 'package:costeira/core/offline/sync/sync_priority.dart';
 import 'package:costeira/core/offline/sync/sync_queue_service.dart';
@@ -65,6 +66,10 @@ class VendasDatasourceImpl implements VendasDatasource {
     final payload = VendaUpsertRequestModel.update(venda).data;
     AppLogger.info('VENDAS DATASOURCE: UPDATE PAYLOAD=$payload');
 
+    if (venda.id! < 0) {
+      return _updatePendingLocalVenda(venda, payload);
+    }
+
     return _offlineApiService.postOrEnqueue(
       module: 'movimentacoes',
       action: SyncOperation.update,
@@ -109,6 +114,22 @@ class VendasDatasourceImpl implements VendasDatasource {
       ),
     );
 
+    // Online delete nao passa pelo enqueue — remove ghost do cache manualmente.
+    final isPendingSync =
+        result.extra is Map &&
+        (result.extra as Map)['sync_pending'] == true;
+    if (result.isSuccess && !isPendingSync) {
+      await _mutationCacheService.applyMutation(
+        action: SyncOperation.delete,
+        listEndpoint: WSConstantes.movimentacoesListar,
+        listPayload: _defaultListPayload(payload),
+        userId: venda.appUsersId,
+        itemId: venda.id,
+        listField: 'data.vendas',
+        allowLatestCacheFallback: true,
+      );
+    }
+
     final pendingDeleteItems = _syncQueueService
         .getPendingItems()
         .where(
@@ -127,22 +148,53 @@ class VendasDatasourceImpl implements VendasDatasource {
     return result;
   }
 
+  Future<ApiMessage> _updatePendingLocalVenda(
+    VendaUpsertEntity venda,
+    Map<String, dynamic> updatePayload,
+  ) async {
+    final pendingCreate = _findPendingCreate(venda.appUsersId!, venda.id!);
+    if (pendingCreate == null) {
+      throw ApiException(
+        'Venda local nao encontrada na fila de sincronizacao.',
+      );
+    }
+
+    final merged = Map<String, dynamic>.from(pendingCreate.payload);
+    for (final entry in updatePayload.entries) {
+      if (entry.key == 'id' || entry.key == 'token') {
+        continue;
+      }
+      merged[entry.key] = entry.value;
+    }
+
+    await _syncQueueService.updateItemPayload(pendingCreate.idLocal, merged);
+    await _mutationCacheService.applyMutation(
+      action: SyncOperation.update,
+      listEndpoint: WSConstantes.movimentacoesListar,
+      listPayload: _defaultListPayload(merged),
+      userId: venda.appUsersId,
+      item: _buildCachedVendaItem(merged, pendingCreate.idLocal),
+      itemId: venda.id,
+      idLocal: pendingCreate.idLocal,
+      listField: 'data.vendas',
+      allowLatestCacheFallback: true,
+    );
+
+    AppLogger.success(
+      'VENDAS DATASOURCE: VENDA LOCAL PENDENTE ATUALIZADA ID_LOCAL=${pendingCreate.idLocal}',
+    );
+
+    return const ApiMessage(
+      status: '01',
+      message: 'Venda local atualizada. Sincroniza quando online.',
+    );
+  }
+
   Future<ApiMessage> _cancelPendingLocalVenda(
     DeleteVendaEntity venda,
     Map<String, dynamic> payload,
   ) async {
-    final pendingCreate = _syncQueueService
-        .getPendingItems()
-        .where(
-          (item) =>
-              item.module == 'movimentacoes' &&
-              item.action == SyncOperation.create &&
-              item.endpoint == WSConstantes.movimentacoesAdicionarVenda &&
-              item.payload['app_users_id']?.toString() ==
-                  venda.appUsersId.toString() &&
-              _localIdFromIdLocal(item.idLocal) == venda.id,
-        )
-        .firstOrNull;
+    final pendingCreate = _findPendingCreate(venda.appUsersId, venda.id);
 
     await _mutationCacheService.applyMutation(
       action: SyncOperation.delete,
@@ -167,6 +219,22 @@ class VendasDatasourceImpl implements VendasDatasource {
     }
 
     return const ApiMessage(status: '01', message: 'Venda local removida.');
+  }
+
+  SyncItem? _findPendingCreate(int userId, int localId) {
+    return _syncQueueService
+        .getPendingItems()
+        .where(
+          (item) =>
+              item.module == 'movimentacoes' &&
+              item.action == SyncOperation.create &&
+              item.endpoint.endsWith(
+                WSConstantes.movimentacoesAdicionarVenda,
+              ) &&
+              item.payload['app_users_id']?.toString() == userId.toString() &&
+              _localIdFromIdLocal(item.idLocal) == localId,
+        )
+        .firstOrNull;
   }
 
   ApiMessage _parseMutationResponse(
@@ -221,7 +289,12 @@ class VendasDatasourceImpl implements VendasDatasource {
     }
 
     return MovimentacaoFilterRequestModel.fromEntity(
-      MovimentacaoFilterEntity(appUsersId: userId),
+      MovimentacaoFilterEntity(
+        appUsersId: userId,
+        appFazendasId: int.tryParse(
+          payload['app_fazendas_id']?.toString() ?? '',
+        ),
+      ),
     ).data;
   }
 
@@ -273,6 +346,12 @@ class VendasDatasourceImpl implements VendasDatasource {
       'valor_total': valorTotal?.toStringAsFixed(2),
       'valor_total_raw': valorTotal,
       'comprador': payload['comprador'],
+      'id_comprador': payload['id_comprador'],
+      'tipo_compra': payload['tipo_compra'],
+      'tipo_cadastro': payload['tipo_cadastro'],
+      'valor_frete': payload['valor_frete'],
+      'valor_comissao': payload['valor_comissao'],
+      'app_fazendas_id': payload['app_fazendas_id'],
       'municipio': payload['municipio'],
       'obs': payload['obs'],
       'qtd_animais': animais.length,

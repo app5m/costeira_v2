@@ -25,6 +25,7 @@ class AbigeatoUpsertRequestModel {
     return {
       'token': WSConstantes.token,
       'app_users_id': abigeato.appUsersId,
+      'app_fazendas_id': abigeato.appFazendasId,
       'data': abigeato.data,
       'obs': abigeato.obs,
     }..removeWhere((key, value) => value == null);
