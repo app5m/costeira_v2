@@ -1,5 +1,6 @@
 import 'package:costeira/app/app_routes.dart';
 import 'package:costeira/core/components/app_snack.dart';
+import 'package:costeira/core/components/sub_user_flag.dart';
 import 'package:costeira/features/potreiros/domain/entities/potreiro_entity.dart';
 import 'package:costeira/features/potreiros/presentation/page_controllers/potreiros_page_controller.dart';
 import 'package:costeira/features/potreiros/presentation/pages/potreiros/dados_potreiros.dart';
@@ -484,6 +485,7 @@ class _PotreirosState extends State<Potreiros>
                                                           FontWeight.w600,
                                                     ),
                                                   ),
+                                                  SubUserFlag(nome: potreiro.subUsuarioNome),
                                                   const SizedBox(height: 8),
                                                   _infoRow(
                                                     'Área útil',

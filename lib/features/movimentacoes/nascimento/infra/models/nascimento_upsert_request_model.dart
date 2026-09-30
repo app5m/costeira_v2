@@ -1,5 +1,5 @@
 import 'package:costeira/core/config/ws_constantes.dart';
-import 'package:costeira/features/movimentacoes/nascimento/domain/entities/nascimento_upsert_animal_entity.dart';
+import 'package:costeira/core/storage/sub_user_payload.dart';
 import 'package:costeira/features/movimentacoes/nascimento/domain/entities/nascimento_upsert_entity.dart';
 
 class NascimentoUpsertRequestModel {
@@ -11,11 +11,21 @@ class NascimentoUpsertRequestModel {
     NascimentoUpsertEntity nascimento,
   ) {
     return NascimentoUpsertRequestModel._(
-      _baseData(nascimento)..addAll({
-        'animais': nascimento.animais
-            .map(_animalToJson)
-            .toList(growable: false),
-      }),
+      withSubUser(
+        {
+          'token': WSConstantes.token,
+          'app_users_id': nascimento.appUsersId,
+          'app_fazendas_id': nascimento.appFazendasId,
+          'sexo': nascimento.sexo,
+          'id_animal_mae': nascimento.idAnimalMae,
+          'brinco_cria': nascimento.brincoCria,
+          'data': nascimento.data,
+          'peso_total': nascimento.pesoTotal,
+          'obs': nascimento.obs,
+          'app_potreiros_id': nascimento.appPotreirosId,
+          'app_animais_lotes_id': nascimento.appAnimaisLotesId,
+        }..removeWhere((key, value) => value == null),
+      ),
     );
   }
 
@@ -23,26 +33,19 @@ class NascimentoUpsertRequestModel {
     NascimentoUpsertEntity nascimento,
   ) {
     return NascimentoUpsertRequestModel._(
-      _baseData(nascimento)..addAll({'id': nascimento.id}),
+      withSubUser(
+        {
+          'token': WSConstantes.token,
+          'app_users_id': nascimento.appUsersId,
+          'app_fazendas_id': nascimento.appFazendasId,
+          'id': nascimento.id,
+          'app_potreiros_id': nascimento.appPotreirosId,
+          'app_animais_lotes_id': nascimento.appAnimaisLotesId,
+          'data': nascimento.data,
+          'peso_total': nascimento.pesoTotal,
+          'obs': nascimento.obs,
+        }..removeWhere((key, value) => value == null),
+      ),
     );
-  }
-
-  static Map<String, dynamic> _baseData(NascimentoUpsertEntity nascimento) {
-    return {
-      'token': WSConstantes.token,
-      'app_users_id': nascimento.appUsersId,
-      'app_fazendas_id': nascimento.appFazendasId,
-      'app_potreiros_id': nascimento.appPotreirosId,
-      'app_animais_lotes_id': nascimento.appAnimaisLotesId,
-      'data': nascimento.data,
-      'peso_total': nascimento.pesoTotal,
-      'obs': nascimento.obs,
-    }..removeWhere((key, value) => value == null);
-  }
-
-  static Map<String, dynamic> _animalToJson(
-    NascimentoUpsertAnimalEntity animal,
-  ) {
-    return {'id': animal.id, 'tipo': animal.tipo};
   }
 }

@@ -1,4 +1,5 @@
 import 'package:costeira/core/config/ws_constantes.dart';
+import 'package:costeira/core/storage/sub_user_payload.dart';
 import 'package:costeira/features/animals/domain/entities/animal_upsert_entity.dart';
 
 class AnimalUpsertRequestModel {
@@ -8,7 +9,7 @@ class AnimalUpsertRequestModel {
 
   factory AnimalUpsertRequestModel.create(AnimalUpsertEntity animal) {
     return AnimalUpsertRequestModel._(
-      {
+      withSubUser({
         'token': WSConstantes.token,
         'app_users_id': animal.appUsersId,
         'app_animais_categorias_id': animal.appAnimaisCategoriasId,
@@ -22,12 +23,13 @@ class AnimalUpsertRequestModel {
         'obs': animal.obs,
         'status': animal.status,
       }..removeWhere((key, value) => value == null),
+      ),
     );
   }
 
   factory AnimalUpsertRequestModel.update(AnimalUpsertEntity animal) {
     return AnimalUpsertRequestModel._(
-      {
+      withSubUser({
         'token': WSConstantes.token,
         'id': animal.id,
         'app_users_id': animal.appUsersId,
@@ -42,6 +44,7 @@ class AnimalUpsertRequestModel {
         'obs': animal.obs,
         'status': animal.status,
       }..removeWhere((key, value) => value == null),
+      ),
     );
   }
 }

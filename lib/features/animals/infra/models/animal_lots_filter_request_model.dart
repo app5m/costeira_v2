@@ -1,4 +1,5 @@
 import 'package:costeira/core/config/ws_constantes.dart';
+import 'package:costeira/core/storage/sub_user_payload.dart';
 import 'package:costeira/features/animals/domain/entities/animal_lots_filter_entity.dart';
 
 class AnimalLotsFilterRequestModel {
@@ -10,13 +11,13 @@ class AnimalLotsFilterRequestModel {
     AnimalLotsFilterEntity filter,
   ) {
     return AnimalLotsFilterRequestModel._(
-      {
+      withOwnerUser({
         'token': WSConstantes.token,
         'app_users_id': filter.appUsersId,
         'app_fazendas_id': filter.appFazendasId,
         'id': filter.id,
         'nome': filter.nome,
-      }..removeWhere((key, value) => value == null),
+      }..removeWhere((key, value) => value == null)),
     );
   }
 }

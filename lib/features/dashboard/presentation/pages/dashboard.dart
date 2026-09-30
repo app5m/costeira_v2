@@ -1,7 +1,9 @@
 import 'package:costeira/core/menus/app_menus_controller.dart';
 import 'package:costeira/core/offline/cache/form_dependencies_cache_service.dart';
 import 'package:costeira/core/storage/session_storage.dart';
-import 'package:costeira/features/dashboard/presentation/data/dashboard_mock_data.dart';
+import 'package:costeira/features/dashboard/domain/entities/dashboard_entity.dart';
+import 'package:costeira/features/dashboard/domain/entities/dashboard_filter_entity.dart';
+import 'package:costeira/features/dashboard/presentation/controllers/get_dashboard_controller.dart';
 import 'package:costeira/features/dashboard/presentation/widgets/dashboard_charts.dart';
 import 'package:costeira/features/fazendas/domain/entities/fazenda_entity.dart';
 import 'package:costeira/features/fazendas/domain/entities/fazenda_filter_entity.dart';
@@ -19,18 +21,35 @@ class Dashboard extends StatefulWidget {
 }
 
 class _DashboardState extends State<Dashboard> {
-  static const _data = DashboardMockData.demo;
+  late final GetDashboardController _dashboard;
+  late final List<AgriculturalYearRange> _years;
+  late AgriculturalYearRange _year;
 
   List<FazendaEntity> _farms = const [];
   int? _farmId;
   bool _loadingFarms = true;
-  late String _year;
 
   @override
   void initState() {
     super.initState();
-    _year = _data.years.first;
+    _year = AgriculturalYearRange.containing(DateTime.now());
+    _years = AgriculturalYearRange.options(DateTime.now());
+    _dashboard = Modular.get<GetDashboardController>();
+    _dashboard.addListener(_onDashboardChanged);
     _loadFarms();
+  }
+
+  @override
+  void dispose() {
+    _dashboard.removeListener(_onDashboardChanged);
+    _dashboard.dispose();
+    super.dispose();
+  }
+
+  void _onDashboardChanged() {
+    if (mounted) {
+      setState(() {});
+    }
   }
 
   String _farmLabel(FazendaEntity farm) {
@@ -85,11 +104,28 @@ class _DashboardState extends State<Dashboard> {
         _farmId = selectedId;
         _loadingFarms = false;
       });
+      await _loadDashboard();
     } catch (_) {
       if (mounted) {
         setState(() => _loadingFarms = false);
       }
     }
+  }
+
+  Future<void> _loadDashboard() async {
+    final farmId = _farmId;
+    if (farmId == null || farmId <= 0) {
+      return;
+    }
+    try {
+      await _dashboard.load(
+        filter: DashboardFilterEntity(
+          appFazendasId: farmId,
+          dataIn: _year.dataIn,
+          dataOut: _year.dataOut,
+        ),
+      );
+    } catch (_) {}
   }
 
   Future<void> _onRefresh() async {
@@ -174,18 +210,22 @@ class _DashboardState extends State<Dashboard> {
       return;
     }
     setState(() => _farmId = selected);
+    await _loadDashboard();
   }
 
   Future<void> _pickYear() async {
     final selected = await _pickOption(
       title: 'Ano agrícola',
-      options: _data.years,
-      current: _year,
+      options: _years.map((item) => item.label).toList(growable: false),
+      current: _year.label,
     );
     if (selected == null) {
       return;
     }
-    setState(() => _year = selected);
+    setState(() {
+      _year = _years.firstWhere((item) => item.label == selected);
+    });
+    await _loadDashboard();
   }
 
   Future<String?> _pickOption({
@@ -254,6 +294,80 @@ class _DashboardState extends State<Dashboard> {
     );
   }
 
+  DashboardEntity get _data => _dashboard.dashboard ?? DashboardEntity.empty;
+
+  DashboardTasksMonthEntity get _indicators => _data.indicadores.tarefasMes;
+
+  DashboardChartsEntity get _charts => _data.graficos;
+
+  List<_DashboardMetric> _metrics(DashboardEntity? dashboard) {
+    final data = dashboard ?? DashboardEntity.empty;
+    final indicators = data.indicadores;
+    return [
+      _DashboardMetric(
+        title: 'Total de animais',
+        value: '${indicators.totalAnimais}',
+        subtitle: indicators.totalAnimaisUnidade,
+        hint: indicators.estoqueRebanhoReais.valor,
+      ),
+      _DashboardMetric(
+        title: 'Lotação',
+        value: indicators.mediaFazenda.valor ?? '0',
+        subtitle: indicators.mediaFazenda.descricao ?? 'UA/ha',
+        hint: indicators.mediaFazenda.observacao,
+      ),
+      _DashboardMetric(
+        title: 'Mortalidade',
+        value: indicators.mortalidadePercentual.valor ?? '0',
+        subtitle: indicators.mortalidadePercentual.descricao ?? '%',
+        hint: indicators.mortalidadePercentual.observacao,
+      ),
+      _DashboardMetric(
+        title: 'GMD global',
+        value: indicators.ganhoMedioDiario.valor ?? '0',
+        subtitle: indicators.ganhoMedioDiario.descricao ?? 'kg/dia',
+        hint: indicators.ganhoMedioDiario.observacao,
+      ),
+      _DashboardMetric(
+        title: 'Produtividade',
+        value: indicators.kilosPorHectare.valor ?? '0',
+        subtitle: indicators.kilosPorHectare.descricao ?? 'kg/ha',
+        hint: indicators.kilosPorHectare.hectares == null
+            ? indicators.kilosPorHectare.observacao
+            : '${indicators.kilosPorHectare.hectares} ha',
+      ),
+      _DashboardMetric(
+        title: 'Kg produzidos',
+        value: indicators.quantidadeKilosProduzidos.valor ?? '0',
+        subtitle: indicators.quantidadeKilosProduzidos.descricao ?? 'no período',
+        hint: indicators.quantidadeKilosProduzidos.observacao,
+      ),
+    ];
+  }
+
+  List<DashboardTaskSlice> _taskSlices(DashboardTasksProgressEntity progress) {
+    return [
+      if (progress.pendentes > 0)
+        DashboardTaskSlice(
+          label: 'Pendentes',
+          value: progress.pendentes.toDouble(),
+          color: const Color(0xFF8B4A2B),
+        ),
+      if (progress.emAndamento > 0)
+        DashboardTaskSlice(
+          label: 'Em andamento',
+          value: progress.emAndamento.toDouble(),
+          color: const Color(0xFFD9762B),
+        ),
+      if (progress.concluidas > 0)
+        DashboardTaskSlice(
+          label: 'Concluídas',
+          value: progress.concluidas.toDouble(),
+          color: const Color(0xFF2F7A4A),
+        ),
+    ];
+  }
+
   @override
   Widget build(BuildContext context) {
     return ColoredBox(
@@ -278,28 +392,47 @@ class _DashboardState extends State<Dashboard> {
                 Expanded(
                   child: _FilterChip(
                     icon: LucideIcons.calendar,
-                    label: _year,
+                    label: _year.label,
                     onTap: _pickYear,
                   ),
                 ),
               ],
             ),
             const SizedBox(height: 16),
+            if (_dashboard.isLoading)
+              const Padding(
+                padding: EdgeInsets.only(bottom: 12),
+                child: LinearProgressIndicator(minHeight: 2),
+              ),
+            if (_dashboard.errorMessage != null)
+              Padding(
+                padding: const EdgeInsets.only(bottom: 12),
+                child: Text(
+                  _dashboard.errorMessage!,
+                  style: const TextStyle(
+                    fontFamily: 'Montserrat',
+                    fontSize: 12,
+                    fontWeight: FontWeight.w600,
+                    color: Color(0xFFC45C4A),
+                  ),
+                ),
+              ),
             _TasksSummary(
-              pending: _data.pendingTasks,
-              overdue: _data.overdueTasks,
-              urgent: _data.urgentTasks,
+              pending: _indicators.pendentes,
+              overdue: _indicators.emAtraso,
+              urgent: _indicators.urgentes,
             ),
             const SizedBox(height: 16),
             LayoutBuilder(
               builder: (context, constraints) {
                 const gap = 12.0;
                 final width = (constraints.maxWidth - gap) / 2;
+                final metrics = _metrics(_dashboard.dashboard);
                 return Wrap(
                   spacing: gap,
                   runSpacing: gap,
                   children: [
-                    for (final metric in _data.metrics)
+                    for (final metric in metrics)
                       SizedBox(
                         width: width,
                         child: _MetricCard(metric: metric),
@@ -309,11 +442,18 @@ class _DashboardState extends State<Dashboard> {
               },
             ),
             const SizedBox(height: 16),
-            DashboardCompositionChart(slices: _data.composition),
+            DashboardCompositionChart(
+              slices: _charts.animaisCategoria
+                  .where((item) => item.quantidade > 0)
+                  .toList(growable: false),
+            ),
             const SizedBox(height: 16),
-            DashboardEvolutionChart(months: _data.evolution),
+            DashboardEvolutionChart(months: _charts.producaoKgMes),
             const SizedBox(height: 16),
-            DashboardTasksChart(slices: _data.tasks, total: _data.tasksTotal),
+            DashboardTasksChart(
+              slices: _taskSlices(_charts.progressoTarefas),
+              total: _charts.progressoTarefas.total,
+            ),
           ],
         ),
       ),
@@ -558,10 +698,24 @@ class _TaskStat extends StatelessWidget {
   }
 }
 
+class _DashboardMetric {
+  const _DashboardMetric({
+    required this.title,
+    required this.value,
+    required this.subtitle,
+    this.hint,
+  });
+
+  final String title;
+  final String value;
+  final String subtitle;
+  final String? hint;
+}
+
 class _MetricCard extends StatelessWidget {
   const _MetricCard({required this.metric});
 
-  final DashboardMockMetric metric;
+  final _DashboardMetric metric;
 
   @override
   Widget build(BuildContext context) {

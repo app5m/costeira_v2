@@ -6,6 +6,7 @@ abstract class InsumosDatasource {
   Future<ApiMessage> createInsumo(InsumoUpsertEntity insumo);
   Future<ApiMessage> updateInsumo(InsumoUpsertEntity insumo);
   Future<ApiMessage> createInsumoRegistro(InsumoRegistroUpsertEntity registro);
+  Future<ApiMessage> movimentarEstoque(EstoqueMovimentoEntity movimento);
   Future<ApiMessage> updateInsumoRegistro(InsumoRegistroUpsertEntity registro);
   Future<ApiMessage> deleteInsumo(DeleteInsumoEntity insumo);
   Future<ApiMessage> deleteInsumoRegistro(DeleteInsumoEntity registro);

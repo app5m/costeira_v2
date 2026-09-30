@@ -1,3 +1,4 @@
+import 'package:costeira/core/storage/sub_usuario_nome.dart';
 import 'package:costeira/features/animals/domain/entities/animal_entity.dart';
 import 'package:costeira/features/animals/infra/models/animal_category_model.dart';
 import 'package:costeira/features/animals/infra/models/animal_reference_model.dart';
@@ -28,6 +29,7 @@ class AnimalModel extends AnimalEntity {
     super.syncStatus,
     super.pendingAction,
     super.isLocalOnly = false,
+    super.subUsuarioNome,
   });
 
   factory AnimalModel.fromJson(Map<String, dynamic> json) {
@@ -105,6 +107,7 @@ class AnimalModel extends AnimalEntity {
       syncStatus: json['syncStatus']?.toString(),
       pendingAction: json['pendingAction']?.toString(),
       isLocalOnly: json['isLocalOnly'] == true,
+      subUsuarioNome: subUsuarioNome(json),
     );
   }
 }

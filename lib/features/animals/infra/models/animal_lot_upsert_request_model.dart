@@ -1,4 +1,5 @@
 import 'package:costeira/core/config/ws_constantes.dart';
+import 'package:costeira/core/storage/sub_user_payload.dart';
 import 'package:costeira/features/animals/domain/entities/animal_lot_upsert_entity.dart';
 
 class AnimalLotUpsertRequestModel {
@@ -8,24 +9,24 @@ class AnimalLotUpsertRequestModel {
 
   factory AnimalLotUpsertRequestModel.create(AnimalLotUpsertEntity lot) {
     return AnimalLotUpsertRequestModel._(
-      {
+      withSubUser({
         'token': WSConstantes.token,
         'app_users_id': lot.appUsersId,
         'app_fazendas_id': lot.appFazendasId,
         'nome': lot.nome,
-      }..removeWhere((key, value) => value == null),
+      }..removeWhere((key, value) => value == null)),
     );
   }
 
   factory AnimalLotUpsertRequestModel.update(AnimalLotUpsertEntity lot) {
     return AnimalLotUpsertRequestModel._(
-      {
+      withSubUser({
         'token': WSConstantes.token,
         'id': lot.id,
         'app_users_id': lot.appUsersId,
         'app_fazendas_id': lot.appFazendasId,
         'nome': lot.nome,
-      }..removeWhere((key, value) => value == null),
+      }..removeWhere((key, value) => value == null)),
     );
   }
 }

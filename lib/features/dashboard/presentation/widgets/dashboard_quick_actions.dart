@@ -347,7 +347,7 @@ Future<void> _showEntradaSheet(BuildContext context) {
       ),
       _ActionItem(
         title: 'Estoque',
-        subtitle: 'Compra de insumo',
+        subtitle: 'Entrada de insumo',
         page: () => const AddCompraInsumo(tipo: 1),
       ),
     ],
@@ -378,7 +378,7 @@ Future<void> _showSaidaSheet(BuildContext context) {
       ),
       _ActionItem(
         title: 'Baixa de estoque',
-        subtitle: 'Uso de insumo',
+        subtitle: 'Saída de insumo',
         page: () => const AddCompraInsumo(tipo: 2),
       ),
     ],

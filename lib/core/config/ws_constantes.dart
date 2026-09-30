@@ -19,6 +19,10 @@ class WSConstantes {
   static const String dashboardListar = '/dashboard/listar';
   static const String movimentacoesListar = '/movimentacoes/listar';
   static const String movimentacoesGraficos = '/movimentacoes/graficos';
+  static const String movimentacoesAdicionarEstoque =
+      '/movimentacoes/adicionarEstoque';
+  static const String movimentacoesSubtrairEstoque =
+      '/movimentacoes/subtrairEstoque';
   static const String movimentacoesAdicionarCompra =
       '/movimentacoes/adicionarCompra';
   static const String movimentacoesAdicionarVenda =

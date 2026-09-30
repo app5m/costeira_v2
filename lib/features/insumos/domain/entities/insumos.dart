@@ -17,10 +17,13 @@ class InsumoEntity {
     this.updateAt,
     this.unidade,
     this.suplemento,
+    this.appEstoquesInsumosCategoriasId,
+    this.appEstoquesInsumosSubcategoriasId,
     this.idLocal,
     this.syncStatus,
     this.pendingAction,
     this.isLocalOnly = false,
+    this.subUsuarioNome,
   });
 
   final int id;
@@ -40,10 +43,13 @@ class InsumoEntity {
   final String? updateAt;
   final InsumoReferenceEntity? unidade;
   final InsumoReferenceEntity? suplemento;
+  final int? appEstoquesInsumosCategoriasId;
+  final int? appEstoquesInsumosSubcategoriasId;
   final String? idLocal;
   final String? syncStatus;
   final String? pendingAction;
   final bool isLocalOnly;
+  final String? subUsuarioNome;
 }
 
 class InsumoReferenceEntity {
@@ -56,11 +62,13 @@ class InsumoReferenceEntity {
 class InsumosFilterEntity {
   const InsumosFilterEntity({
     required this.appUsersId,
+    this.appFazendasId,
     this.id,
     this.tipoInsumo,
   });
 
   final int appUsersId;
+  final int? appFazendasId;
   final int? id;
   final String? tipoInsumo;
 }
@@ -100,6 +108,7 @@ class InsumoRegistroEntity {
     this.syncStatus,
     this.pendingAction,
     this.isLocalOnly = false,
+    this.subUsuarioNome,
   });
 
   final int id;
@@ -117,12 +126,14 @@ class InsumoRegistroEntity {
   final String? syncStatus;
   final String? pendingAction;
   final bool isLocalOnly;
+  final String? subUsuarioNome;
 }
 
 class InsumoUpsertEntity {
   const InsumoUpsertEntity({
     this.id,
     this.appUsersId,
+    this.appFazendasId,
     required this.tipoInsumo,
     this.appEstoquesInsumosSuplementosId,
     required this.nome,
@@ -131,10 +142,13 @@ class InsumoUpsertEntity {
     required this.qtdTotal,
     this.obs,
     this.dataValidade,
+    this.appEstoquesInsumosCategoriasId,
+    this.appEstoquesInsumosSubcategoriasId,
   });
 
   final int? id;
   final int? appUsersId;
+  final int? appFazendasId;
   final String tipoInsumo;
   final int? appEstoquesInsumosSuplementosId;
   final String nome;
@@ -143,11 +157,14 @@ class InsumoUpsertEntity {
   final double qtdTotal;
   final String? obs;
   final String? dataValidade;
+  final int? appEstoquesInsumosCategoriasId;
+  final int? appEstoquesInsumosSubcategoriasId;
 
-  InsumoUpsertEntity copyWith({int? appUsersId}) {
+  InsumoUpsertEntity copyWith({int? appUsersId, int? appFazendasId}) {
     return InsumoUpsertEntity(
       id: id,
       appUsersId: appUsersId ?? this.appUsersId,
+      appFazendasId: appFazendasId ?? this.appFazendasId,
       tipoInsumo: tipoInsumo,
       appEstoquesInsumosSuplementosId: appEstoquesInsumosSuplementosId,
       nome: nome,
@@ -156,6 +173,8 @@ class InsumoUpsertEntity {
       qtdTotal: qtdTotal,
       obs: obs,
       dataValidade: dataValidade,
+      appEstoquesInsumosCategoriasId: appEstoquesInsumosCategoriasId,
+      appEstoquesInsumosSubcategoriasId: appEstoquesInsumosSubcategoriasId,
     );
   }
 }
@@ -164,32 +183,84 @@ class InsumoRegistroUpsertEntity {
   const InsumoRegistroUpsertEntity({
     this.id,
     this.appUsersId,
+    this.appFazendasId,
     required this.appEstoquesInsumosId,
     required this.tipo,
     required this.appEstoquesInsumosUnidadesId,
     required this.qtd,
     this.obs,
+    this.appEstoquesInsumosMotivosId,
+    this.data,
+    this.dataValidade,
+    this.valorUnidade,
+    this.fornecedorId,
   });
 
   final int? id;
   final int? appUsersId;
+  final int? appFazendasId;
   final int appEstoquesInsumosId;
   final int tipo;
   final int appEstoquesInsumosUnidadesId;
   final double qtd;
   final String? obs;
+  final int? appEstoquesInsumosMotivosId;
+  final String? data;
+  final String? dataValidade;
+  final String? valorUnidade;
+  final int? fornecedorId;
 
-  InsumoRegistroUpsertEntity copyWith({int? appUsersId}) {
+  InsumoRegistroUpsertEntity copyWith({int? appUsersId, int? appFazendasId}) {
     return InsumoRegistroUpsertEntity(
       id: id,
       appUsersId: appUsersId ?? this.appUsersId,
+      appFazendasId: appFazendasId ?? this.appFazendasId,
       appEstoquesInsumosId: appEstoquesInsumosId,
       tipo: tipo,
       appEstoquesInsumosUnidadesId: appEstoquesInsumosUnidadesId,
       qtd: qtd,
       obs: obs,
+      appEstoquesInsumosMotivosId: appEstoquesInsumosMotivosId,
+      data: data,
+      dataValidade: dataValidade,
+      valorUnidade: valorUnidade,
+      fornecedorId: fornecedorId,
     );
   }
+}
+
+class EstoqueMovimentoEntity {
+  const EstoqueMovimentoEntity({
+    required this.saida,
+    required this.qtdTotal,
+    this.appUsersId,
+    this.appFazendasId,
+    this.nome,
+    this.categoriaId,
+    this.subcategoriaId,
+    this.unidadeId,
+    this.insumoId,
+    this.fornecedorId,
+    this.motivoId,
+    this.valorUnitario,
+    this.obs,
+    this.dataValidade,
+  });
+
+  final bool saida;
+  final double qtdTotal;
+  final int? appUsersId;
+  final int? appFazendasId;
+  final String? nome;
+  final int? categoriaId;
+  final int? subcategoriaId;
+  final int? unidadeId;
+  final int? insumoId;
+  final int? fornecedorId;
+  final int? motivoId;
+  final String? valorUnitario;
+  final String? obs;
+  final String? dataValidade;
 }
 
 class DeleteInsumoEntity {
@@ -202,11 +273,13 @@ class DeleteInsumoEntity {
 class InsumosTipoFilterEntity {
   const InsumosTipoFilterEntity({
     required this.appUsersId,
+    this.appFazendasId,
     this.tipo,
     this.nome,
   });
 
   final int appUsersId;
+  final int? appFazendasId;
   final String? tipo;
   final String? nome;
 }
@@ -239,10 +312,12 @@ class InsumosTipoListEntity {
 class InsumoChartsFilterEntity {
   const InsumoChartsFilterEntity({
     required this.appUsersId,
+    this.appFazendasId,
     required this.mesAno,
   });
 
   final int appUsersId;
+  final int? appFazendasId;
   final String mesAno;
 }
 

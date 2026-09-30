@@ -25,6 +25,7 @@ class VendaEntity {
     this.updateAt,
     this.animais = const [],
     this.destinos = const [],
+    this.subUsuarioNome,
   });
 
   final int id;
@@ -49,4 +50,5 @@ class VendaEntity {
   final String? updateAt;
   final List<VendaAnimalEntity> animais;
   final List<VendaDestinoEntity> destinos;
+  final String? subUsuarioNome;
 }

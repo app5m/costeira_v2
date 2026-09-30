@@ -25,9 +25,12 @@ class ResolveCurrentFarmId {
       return null;
     }
     final saved = await SessionStorage.getSelectedFarmId();
-    if (saved != null && result.data.any((farm) => farm.id == saved)) {
-      return saved;
+    final selected = saved != null && result.data.any((farm) => farm.id == saved)
+        ? saved
+        : result.data.first.id;
+    if (selected != saved) {
+      await SessionStorage.saveSelectedFarmId(selected);
     }
-    return result.data.first.id;
+    return selected;
   }
 }

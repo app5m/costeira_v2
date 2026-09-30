@@ -1042,9 +1042,7 @@ class CompraFormPageController extends ChangeNotifier {
       final total = _parseNumber(lotePesoTotalController.text);
       if (qtd > 0 && total != null) {
         _syncingLoteMedio = true;
-        lotePesoMedioController.text = (total / qtd)
-            .toStringAsFixed(2)
-            .replaceAll('.', ',');
+        lotePesoMedioController.text = (total / qtd).toStringAsFixed(2);
         _syncingLoteMedio = false;
       }
     }

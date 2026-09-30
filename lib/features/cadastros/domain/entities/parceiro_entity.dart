@@ -13,6 +13,7 @@ class ParceiroEntity {
     required this.endereco,
     required this.numero,
     required this.complemento,
+    this.subUsuarioNome,
   });
 
   final int id;
@@ -28,6 +29,7 @@ class ParceiroEntity {
   final String endereco;
   final String numero;
   final String complemento;
+  final String? subUsuarioNome;
 
   bool get isPessoaFisica => tipoPessoa == 1;
 }

@@ -1,4 +1,5 @@
 import 'package:costeira/core/config/ws_constantes.dart';
+import 'package:costeira/core/storage/sub_user_payload.dart';
 import 'package:costeira/features/cadastros/domain/entities/parceiro_filter_entity.dart';
 
 class ParceiroFilterRequestModel {
@@ -8,7 +9,7 @@ class ParceiroFilterRequestModel {
 
   factory ParceiroFilterRequestModel.fromEntity(ParceiroFilterEntity filter) {
     return ParceiroFilterRequestModel._(
-      {
+      withSubUser({
         'token': WSConstantes.token,
         'app_users_id': filter.appUsersId,
         'app_fazendas_id': filter.appFazendasId,
@@ -17,6 +18,7 @@ class ParceiroFilterRequestModel {
       }..removeWhere(
         (key, value) =>
             value == null || (value is String && value.trim().isEmpty),
+      ),
       ),
     );
   }

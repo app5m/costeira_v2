@@ -1,5 +1,6 @@
 import 'package:costeira/app/app_routes.dart';
 import 'package:costeira/core/components/app_snack.dart';
+import 'package:costeira/core/components/sub_user_flag.dart';
 import 'package:costeira/features/animals/domain/entities/animal_entity.dart';
 import 'package:costeira/features/animals/presentation/page_controllers/animal_list_page_controller.dart';
 import 'package:costeira/features/animals/presentation/widgets/animal_filter_sheet.dart';
@@ -380,6 +381,7 @@ class _AnimalListState extends State<AnimalList> {
                                                   ),
                                                 ),
                                               ),
+                                            SubUserFlag(nome: animal.subUsuarioNome),
                                             const SizedBox(height: 8),
                                             Text(
                                               _pageController.buildSummary(animal),

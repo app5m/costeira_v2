@@ -51,6 +51,45 @@ class AppWidget extends StatelessWidget {
         ),
       ),
       routerConfig: Modular.routerConfig,
+      builder: (context, child) {
+        return _DismissKeyboard(child: child ?? const SizedBox.shrink());
+      },
     );
+  }
+}
+
+class _DismissKeyboard extends StatelessWidget {
+  const _DismissKeyboard({required this.child});
+
+  final Widget child;
+
+  @override
+  Widget build(BuildContext context) {
+    return Listener(
+      behavior: HitTestBehavior.translucent,
+      onPointerDown: _unfocusIfOutside,
+      child: child,
+    );
+  }
+
+  void _unfocusIfOutside(PointerDownEvent event) {
+    final before = FocusManager.instance.primaryFocus;
+    final point = event.position;
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final after = FocusManager.instance.primaryFocus;
+      if (after == null || !after.hasFocus || !identical(before, after)) {
+        return;
+      }
+
+      final box = after.context?.findRenderObject();
+      if (box is! RenderBox || !box.attached || !box.hasSize) {
+        return;
+      }
+
+      final rect = (box.localToGlobal(Offset.zero) & box.size).inflate(32);
+      if (!rect.contains(point)) {
+        after.unfocus();
+      }
+    });
   }
 }

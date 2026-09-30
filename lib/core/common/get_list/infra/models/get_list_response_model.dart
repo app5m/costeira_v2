@@ -11,6 +11,10 @@ class GetListResponseModel extends GetListEntity {
     super.dashboardMenu,
     super.menu,
     super.menuNavigation,
+    super.menuMovimentacoes,
+    super.estoqueInsumosMotivos,
+    super.estoqueInsumosCategorias,
+    super.estoqueUnidadesMedidas,
   });
 
   factory GetListResponseModel.fromJson(Map<String, dynamic> json) {
@@ -39,13 +43,46 @@ class GetListResponseModel extends GetListEntity {
             )
             .toList(growable: false);
 
+    final estoqueCategorias =
+        (json['estoque_insumos_categorias'] as List<dynamic>? ?? const [])
+            .whereType<Map>()
+            .map(
+              (item) => ListCategoryModel.fromJson(
+                Map<String, dynamic>.from(item),
+              ),
+            )
+            .where((item) => item.id > 0 && item.nome.isNotEmpty)
+            .toList(growable: false);
+
+    final motivos =
+        (json['estoque_insumos_motivos'] as List<dynamic>? ?? const [])
+            .whereType<Map>()
+            .map(
+              (item) => ListItemModel.fromJson(Map<String, dynamic>.from(item)),
+            )
+            .where((item) => item.id > 0 && item.nome.isNotEmpty)
+            .toList(growable: false);
+
+    final unidades =
+        (json['estoque_unidades_medidas'] as List<dynamic>? ?? const [])
+            .whereType<Map>()
+            .map(
+              (item) => ListItemModel.fromJson(Map<String, dynamic>.from(item)),
+            )
+            .where((item) => item.id > 0 && item.nome.isNotEmpty)
+            .toList(growable: false);
+
     return GetListResponseModel(
       animaisCategorias: categorias,
       animaisBasesRaciais: basesRaciais,
       animaisSistemasProducoes: sistemasProducoes,
+      estoqueInsumosMotivos: motivos,
+      estoqueInsumosCategorias: estoqueCategorias,
+      estoqueUnidadesMedidas: unidades,
       dashboardMenu: AppMenuModel.parseTree(json['dashboard_menu']),
       menu: AppMenuModel.parseTree(json['menu']),
       menuNavigation: AppMenuModel.parseTree(json['menu_navigation']),
+      menuMovimentacoes: AppMenuModel.parseTree(json['menu_movimentacoes']),
     );
   }
 }

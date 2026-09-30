@@ -7,6 +7,8 @@ class UserSession {
     this.document,
     this.nickname,
     this.tipo = '1',
+    this.appSubUsersId,
+    this.ownerUserId,
   });
 
   final int id;
@@ -16,6 +18,8 @@ class UserSession {
   final String? document;
   final String? nickname;
   final String tipo;
+  final int? appSubUsersId;
+  final int? ownerUserId;
 
   Map<String, dynamic> toJson() {
     return {
@@ -26,7 +30,23 @@ class UserSession {
       'document': document,
       'nickname': nickname,
       'tipo': tipo,
+      'app_sub_users_id': appSubUsersId,
+      'owner_user_id': ownerUserId,
     };
+  }
+
+  UserSession withSubUser({int? appSubUsersId, int? ownerUserId}) {
+    return UserSession(
+      id: id,
+      name: name,
+      email: email,
+      phone: phone,
+      document: document,
+      nickname: nickname,
+      tipo: tipo,
+      appSubUsersId: appSubUsersId,
+      ownerUserId: ownerUserId,
+    );
   }
 
   factory UserSession.fromJson(Map<String, dynamic> json) {
@@ -38,7 +58,17 @@ class UserSession {
       document: json['document']?.toString() ?? json['documento']?.toString(),
       nickname: json['nickname']?.toString() ?? json['apelido']?.toString(),
       tipo: json['tipo']?.toString() ?? '1',
+      appSubUsersId: _positiveId(json['app_sub_users_id']),
+      ownerUserId: _positiveId(json['owner_user_id']),
     );
+  }
+
+  static int? _positiveId(dynamic value) {
+    final id = int.tryParse(value?.toString() ?? '');
+    if (id == null || id <= 0) {
+      return null;
+    }
+    return id;
   }
 
   factory UserSession.fromLoginResponse(Map<String, dynamic> json, int tipo) {

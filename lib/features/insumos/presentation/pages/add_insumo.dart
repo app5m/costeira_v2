@@ -75,7 +75,7 @@ class _AddInsumoState extends State<AddInsumo> {
               child: const Icon(Icons.arrow_back_ios, color: Colors.white),
             ),
             title: Text(
-              _controller.isEditing ? 'Editar insumo' : 'Adicionar insumo',
+              _controller.isEditing ? 'Editar insumo' : 'Entrada',
               style: TextStyle(
                 color: Colors.white,
                 fontSize: 16,

@@ -2,6 +2,7 @@ import 'package:costeira/app/app_route_data.dart';
 import 'package:costeira/app/app_routes.dart';
 import 'package:costeira/core/components/app_snack.dart';
 import 'package:costeira/core/components/primary_app_bar.dart';
+import 'package:costeira/core/components/sub_user_flag.dart';
 import 'package:costeira/features/cadastros/domain/entities/parceiro_entity.dart';
 import 'package:costeira/features/cadastros/domain/entities/parceiro_kind.dart';
 import 'package:costeira/features/cadastros/presentation/page_controllers/parceiros_list_page_controller.dart';
@@ -352,6 +353,7 @@ class _ParceirosListPageState extends State<ParceirosListPage> {
                         fontWeight: FontWeight.w600,
                       ),
                     ),
+                    SubUserFlag(nome: parceiro.subUsuarioNome),
                     Text(
                       parceiro.isPessoaFisica
                           ? 'Pessoa física'

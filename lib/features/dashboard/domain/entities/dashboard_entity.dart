@@ -23,11 +23,17 @@ class DashboardTasksMonthEntity {
   const DashboardTasksMonthEntity({
     required this.quantidade,
     required this.concluidas,
+    required this.pendentes,
+    required this.emAtraso,
+    required this.urgentes,
     required this.percentualConcluido,
   });
 
   final int quantidade;
   final int concluidas;
+  final int pendentes;
+  final int emAtraso;
+  final int urgentes;
   final String percentualConcluido;
 }
 
@@ -37,6 +43,7 @@ class DashboardIndicatorsEntity {
     required this.kilosPorHectare,
     required this.estoqueRebanhoReais,
     required this.totalAnimais,
+    this.totalAnimaisUnidade = 'cab.',
     required this.mediaFazenda,
     required this.mortalidadePercentual,
     required this.ganhoMedioDiario,
@@ -47,6 +54,7 @@ class DashboardIndicatorsEntity {
   final DashboardValueEntity kilosPorHectare;
   final DashboardValueEntity estoqueRebanhoReais;
   final int totalAnimais;
+  final String totalAnimaisUnidade;
   final DashboardValueEntity mediaFazenda;
   final DashboardValueEntity mortalidadePercentual;
   final DashboardValueEntity ganhoMedioDiario;
@@ -57,10 +65,16 @@ class DashboardProductionMonthEntity {
   const DashboardProductionMonthEntity({
     required this.label,
     required this.valor,
+    this.entradas,
+    this.saidas,
   });
 
   final String label;
   final double valor;
+  final double? entradas;
+  final double? saidas;
+
+  bool get hasFlow => entradas != null || saidas != null;
 }
 
 class DashboardAnimalCategoryEntity {
@@ -81,11 +95,15 @@ class DashboardTasksProgressEntity {
   const DashboardTasksProgressEntity({
     required this.total,
     required this.concluidas,
+    required this.pendentes,
+    required this.emAndamento,
     required this.percentual,
   });
 
   final int total;
   final int concluidas;
+  final int pendentes;
+  final int emAndamento;
   final String percentual;
 }
 
@@ -125,6 +143,9 @@ class DashboardEntity {
       tarefasMes: DashboardTasksMonthEntity(
         quantidade: 0,
         concluidas: 0,
+        pendentes: 0,
+        emAtraso: 0,
+        urgentes: 0,
         percentualConcluido: '0,00',
       ),
     ),
@@ -134,6 +155,8 @@ class DashboardEntity {
       progressoTarefas: DashboardTasksProgressEntity(
         total: 0,
         concluidas: 0,
+        pendentes: 0,
+        emAndamento: 0,
         percentual: '0,00',
       ),
     ),

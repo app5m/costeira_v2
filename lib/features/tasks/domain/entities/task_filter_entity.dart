@@ -1,6 +1,7 @@
 class TaskFilterEntity {
   const TaskFilterEntity({
     this.appUsersId,
+    this.appFazendasId,
     this.month,
     this.dataIn,
     this.dataOut,
@@ -9,6 +10,7 @@ class TaskFilterEntity {
   });
 
   final int? appUsersId;
+  final int? appFazendasId;
   final DateTime? month;
   final DateTime? dataIn;
   final DateTime? dataOut;
@@ -17,6 +19,7 @@ class TaskFilterEntity {
 
   TaskFilterEntity copyWith({
     int? appUsersId,
+    int? appFazendasId,
     DateTime? month,
     DateTime? dataIn,
     DateTime? dataOut,
@@ -26,6 +29,7 @@ class TaskFilterEntity {
   }) {
     return TaskFilterEntity(
       appUsersId: appUsersId ?? this.appUsersId,
+      appFazendasId: appFazendasId ?? this.appFazendasId,
       month: month ?? this.month,
       dataIn: clearDateRange ? null : dataIn ?? this.dataIn,
       dataOut: clearDateRange ? null : dataOut ?? this.dataOut,
@@ -35,5 +39,9 @@ class TaskFilterEntity {
   }
 
   TaskFilterEntity clearAdvanced() =>
-      TaskFilterEntity(appUsersId: appUsersId, month: month);
+      TaskFilterEntity(
+        appUsersId: appUsersId,
+        appFazendasId: appFazendasId,
+        month: month,
+      );
 }

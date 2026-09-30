@@ -6,7 +6,6 @@ import 'package:costeira/features/animals/presentation/page_controllers/page_act
 import 'package:costeira/core/utils/app_logger.dart';
 import 'package:costeira/core/offline/cache/form_dependencies_cache_service.dart';
 import 'package:costeira/features/movimentacoes/domain/entities/nascimento_entity.dart';
-import 'package:costeira/features/movimentacoes/nascimento/domain/entities/nascimento_upsert_animal_entity.dart';
 import 'package:costeira/features/movimentacoes/nascimento/domain/entities/nascimento_upsert_entity.dart';
 import 'package:costeira/features/movimentacoes/nascimento/presentation/controllers/add_nascimento_controller.dart';
 import 'package:costeira/features/movimentacoes/nascimento/presentation/controllers/edit_nascimento_controller.dart';
@@ -30,12 +29,13 @@ class NascimentoFormPageController extends ChangeNotifier {
     _potreirosController.addListener(notifyListeners);
     dataController.addListener(notifyListeners);
     pesoController.addListener(notifyListeners);
+    brincoCriaController.addListener(notifyListeners);
     obsController.addListener(notifyListeners);
     animalFilterController.addListener(notifyListeners);
   }
 
-  static const String tipoMatriz = 'nascimento matriz';
-  static const String tipoTerneiro = 'nascimento terneiro';
+  static const int sexoMacho = 1;
+  static const int sexoFemea = 2;
 
   final AddNascimentoController _addController;
   final EditNascimentoController _editController;
@@ -46,14 +46,20 @@ class NascimentoFormPageController extends ChangeNotifier {
 
   final TextEditingController dataController = TextEditingController();
   final TextEditingController pesoController = TextEditingController();
+  final TextEditingController brincoCriaController = TextEditingController();
   final TextEditingController obsController = TextEditingController();
   final TextEditingController animalFilterController = TextEditingController();
 
   NascimentoEntity? _editingNascimento;
-  AnimalEntity? _selectedMatriz;
-  AnimalEntity? _selectedTerneiro;
+  List<AnimalEntity> _prenheNoPotreiro = const [];
+  List<AnimalEntity> _maes = const [];
   int? selectedPotreiroId;
   int? selectedLotId;
+  int? selectedMaeId;
+  int? selectedSexoCria;
+  int? destPotreiroId;
+  int? destLotId;
+  int _listRequest = 0;
   _NascimentoFormSnapshot? _initialSnapshot;
 
   bool get isEdit => _editingNascimento != null;
@@ -69,24 +75,18 @@ class NascimentoFormPageController extends ChangeNotifier {
       _animalsController.errorMessage ??
       _lotsController.errorMessage ??
       _potreirosController.errorMessage;
-  List<AnimalEntity> get animais => _animalsController.animals;
-  List<AnimalLotEntity> get lots => _lotsController.lots;
+  List<AnimalLotEntity> get allLots => _lotsController.lots;
   List<PotreiroEntity> get potreiros => _potreirosController.potreiros;
-  AnimalEntity? get selectedMatriz => _selectedMatriz;
-  AnimalEntity? get selectedTerneiro => _selectedTerneiro;
+  List<AnimalEntity> get maes => _maes;
   NascimentoEntity? get editingNascimento => _editingNascimento;
 
   List<AnimalEntity> get filteredAnimais {
     final filter = animalFilterController.text.trim().toLowerCase();
     if (filter.isEmpty) {
-      return animais;
+      return maes;
     }
-    return animais
-        .where((animal) {
-          final brinco = animal.brinco?.toLowerCase() ?? '';
-          final peso = animal.peso?.toString() ?? '';
-          return brinco.contains(filter) || peso.contains(filter);
-        })
+    return maes
+        .where((animal) => (animal.brinco ?? '').toLowerCase().contains(filter))
         .toList(growable: false);
   }
 
@@ -99,51 +99,115 @@ class NascimentoFormPageController extends ChangeNotifier {
   }
 
   AnimalLotEntity? get selectedLot {
-    try {
-      return lots.firstWhere((item) => item.id == selectedLotId);
-    } catch (_) {
-      return null;
+    final source = isEdit ? allLots : eligibleLots;
+    for (final lot in source) {
+      if (lot.id == selectedLotId) {
+        return lot;
+      }
     }
+    return null;
+  }
+
+  List<AnimalLotEntity> get eligibleLots {
+    if (selectedPotreiroId == null) {
+      return const [];
+    }
+    final ids = <int>{};
+    for (final animal in _prenheNoPotreiro) {
+      final id = animal.appAnimaisLotesId ?? animal.lote?.id;
+      if (id != null) {
+        ids.add(id);
+      }
+    }
+    final known = {for (final lot in allLots) lot.id: lot};
+    final result = <AnimalLotEntity>[];
+    for (final id in ids) {
+      result.add(
+        known[id] ?? AnimalLotEntity(id: id, appUsersId: 0, nome: _lotName(id)),
+      );
+    }
+    result.sort((a, b) => a.nome.compareTo(b.nome));
+    return result;
+  }
+
+  List<AnimalLotEntity> get destinationLots {
+    final potreiroId = destPotreiroId ?? selectedPotreiroId;
+    if (potreiroId == null) {
+      return allLots;
+    }
+    return allLots
+        .where(
+          (lot) =>
+              lot.appPotreirosId == null || lot.appPotreirosId == potreiroId,
+        )
+        .toList(growable: false);
   }
 
   String get selectedPotreiroLabel =>
       selectedPotreiro?.nome ??
       _editingNascimento?.potreiro?.nome ??
-      'Selecionar potreiro';
-  String get selectedLotLabel =>
-      selectedLot?.nome ?? _editingNascimento?.lote?.nome ?? 'Selecionar lote';
-  String get selectedMatrizLabel => _selectedMatriz == null
-      ? 'Selecionar matriz'
-      : _animalLabel(_selectedMatriz!);
-  String get selectedTerneiroLabel => _selectedTerneiro == null
-      ? 'Selecionar terneiro'
-      : _animalLabel(_selectedTerneiro!);
+      'Selecionar piquete';
 
-  bool get hasRequiredFields =>
-      selectedPotreiroId != null &&
-      selectedLotId != null &&
-      dataController.text.trim().isNotEmpty;
+  String get selectedLotLabel {
+    if (isEdit) {
+      return selectedLot?.nome ??
+          _editingNascimento?.lote?.nome ??
+          'Selecionar lote';
+    }
+    if (selectedPotreiroId == null) {
+      return 'Selecione o piquete primeiro';
+    }
+    if (eligibleLots.isEmpty && !isLoading) {
+      return 'Nenhum lote com fêmea prenhe';
+    }
+    return selectedLot?.nome ?? 'Selecionar lote';
+  }
 
-  bool get canSelectAnimals => hasRequiredFields && !isLoading;
+  AnimalEntity? get selectedMae {
+    final id = selectedMaeId;
+    if (id == null) {
+      return null;
+    }
+    for (final animal in maes) {
+      if (animal.id == id) {
+        return animal;
+      }
+    }
+    return null;
+  }
 
-  bool get isFormValid =>
-      hasRequiredFields &&
-      (isEdit || (_selectedMatriz != null && _selectedTerneiro != null)) &&
-      hasChanges;
+  String get selectedMaeLabel {
+    final brinco = selectedMae?.brinco?.trim();
+    if (brinco == null || brinco.isEmpty) {
+      return 'Selecionar brinco da mãe';
+    }
+    return brinco;
+  }
 
-  String get formValidationDebug =>
-      'potreiro=$selectedPotreiroId '
-      'lote=$selectedLotId '
-      'data="${dataController.text.trim()}" '
-      'matriz=${_selectedMatriz?.id} '
-      'terneiro=${_selectedTerneiro?.id} '
-      'isEdit=$isEdit '
-      'hasChanges=$hasChanges '
-      'isFormValid=$isFormValid';
+  bool get showMaeSelect => !isEdit && selectedLotId != null;
+  bool get hasMaes => maes.isNotEmpty;
+  bool get showBirthFields => isEdit || (showMaeSelect && hasMaes);
+
   bool get hasChanges =>
       !isEdit ||
       _initialSnapshot == null ||
       _currentSnapshot() != _initialSnapshot;
+
+  bool get isFormValid {
+    if (!hasChanges) {
+      return false;
+    }
+    if (isEdit) {
+      return selectedPotreiroId != null &&
+          selectedLotId != null &&
+          dataController.text.trim().isNotEmpty;
+    }
+    return selectedPotreiroId != null &&
+        selectedLotId != null &&
+        selectedMaeId != null &&
+        selectedSexoCria != null &&
+        dataController.text.trim().isNotEmpty;
+  }
 
   Future<void> init({NascimentoEntity? nascimento}) async {
     _editingNascimento = nascimento;
@@ -155,88 +219,143 @@ class NascimentoFormPageController extends ChangeNotifier {
       obsController.text = nascimento.obs ?? '';
       _initialSnapshot = _currentSnapshot();
     } else {
+      dataController.text = _formatDate(DateTime.now());
       _initialSnapshot = null;
     }
 
     try {
       await _formDependenciesCacheService.preloadNascimentoFormDependencies();
-      await Future.wait([
-        _lotsController.load(),
-        _potreirosController.load(),
-        if (!isEdit) _animalsController.load(),
-      ]);
+      await Future.wait([_lotsController.load(), _potreirosController.load()]);
     } catch (_) {}
     notifyListeners();
   }
 
   Future<void> reloadLots() => _lotsController.load();
   Future<void> reloadPotreiros() => _potreirosController.load();
-  Future<void> reloadAnimais() => _animalsController.reload();
+  Future<void> reloadAnimais() => onLotChanged(selectedLotId);
 
-  void onPotreiroChanged(int? value) {
+  Future<void> onPotreiroChanged(int? value) async {
     selectedPotreiroId = value;
+    selectedLotId = null;
+    selectedMaeId = null;
+    _maes = const [];
+    _prenheNoPotreiro = const [];
+    final request = ++_listRequest;
+    notifyListeners();
+    if (value == null || isEdit) {
+      return;
+    }
+    try {
+      await _animalsController.load(
+        appPotreirosId: value,
+        status: 'prenhe',
+        brincoOnly: true,
+      );
+    } catch (_) {
+      if (request == _listRequest) {
+        notifyListeners();
+      }
+      return;
+    }
+    if (request != _listRequest) {
+      return;
+    }
+    _prenheNoPotreiro = _animalsController.animals
+        .where(_isPrenheMae)
+        .toList(growable: false);
     notifyListeners();
   }
 
-  void onLotChanged(int? value) {
+  Future<void> onLotChanged(int? value) async {
     selectedLotId = value;
+    selectedMaeId = null;
+    _maes = const [];
+    final request = ++_listRequest;
+    notifyListeners();
+    if (value == null || selectedPotreiroId == null || isEdit) {
+      return;
+    }
+    try {
+      await _animalsController.load(
+        appPotreirosId: selectedPotreiroId,
+        appAnimaisLotesId: value,
+        status: 'prenhe',
+        brincoOnly: true,
+      );
+    } catch (_) {
+      if (request == _listRequest) {
+        notifyListeners();
+      }
+      return;
+    }
+    if (request != _listRequest) {
+      return;
+    }
+    _maes = _animalsController.animals
+        .where(_isPrenheMae)
+        .toList(growable: false);
     notifyListeners();
   }
 
-  void selectMatriz(AnimalEntity animal) {
+  void selectMae(AnimalEntity animal) {
     if (isEdit) {
       return;
     }
-    _selectedMatriz = animal;
-    if (_selectedTerneiro?.id == animal.id) {
-      _selectedTerneiro = null;
-    }
+    selectedMaeId = animal.id;
     notifyListeners();
   }
 
-  void selectTerneiro(AnimalEntity animal) {
-    if (isEdit) {
-      return;
-    }
-    _selectedTerneiro = animal;
-    if (_selectedMatriz?.id == animal.id) {
-      _selectedMatriz = null;
-    }
+  bool isMaeSelected(int animalId) => selectedMaeId == animalId;
+
+  void onMaeChanged(int? value) {
+    selectedMaeId = value;
     notifyListeners();
   }
 
-  bool isMatrizSelected(int animalId) => _selectedMatriz?.id == animalId;
-  bool isTerneiroSelected(int animalId) => _selectedTerneiro?.id == animalId;
+  void onSexoCriaChanged(int? value) {
+    selectedSexoCria = value;
+    notifyListeners();
+  }
+
+  void onDestPotreiroChanged(int? value) {
+    destPotreiroId = value;
+    destLotId = null;
+    notifyListeners();
+  }
+
+  void onDestLotChanged(int? value) {
+    destLotId = value;
+    notifyListeners();
+  }
 
   Future<PageActionResult> submit() async {
     final validation = _validateForm();
     if (validation != null) {
       AppLogger.warning(
-        'NASCIMENTO FORM PAGE CONTROLLER: FORM INVALIDO $formValidationDebug',
+        'NASCIMENTO FORM PAGE CONTROLLER: FORM INVALIDO potreiro=$selectedPotreiroId lote=$selectedLotId mae=$selectedMaeId',
       );
       return validation;
     }
 
-    final entity = NascimentoUpsertEntity(
-      id: _editingNascimento?.id,
-      appPotreirosId: selectedPotreiroId!,
-      appAnimaisLotesId: selectedLotId!,
-      data: dataController.text.trim(),
-      pesoTotal: _emptyToNull(_normalizePeso(pesoController.text)),
-      obs: _emptyToNull(obsController.text),
-      animais: isEdit
-          ? const []
-          : [
-              NascimentoUpsertAnimalEntity(
-                id: _selectedMatriz!.id,
-                tipo: tipoMatriz,
-              ),
-              NascimentoUpsertAnimalEntity(
-                id: _selectedTerneiro!.id,
-                tipo: tipoTerneiro,
-              ),
-            ],
-    );
+    final entity = isEdit
+        ? NascimentoUpsertEntity(
+            id: _editingNascimento?.id,
+            appPotreirosId: selectedPotreiroId,
+            appAnimaisLotesId: selectedLotId,
+            data: dataController.text.trim(),
+            pesoTotal: _emptyToNull(_normalizePeso(pesoController.text)),
+            obs: _emptyToNull(obsController.text),
+          )
+        : NascimentoUpsertEntity(
+            data: dataController.text.trim(),
+            sexo: selectedSexoCria,
+            idAnimalMae: selectedMaeId,
+            brincoCria: _emptyToNull(brincoCriaController.text),
+            pesoTotal: _emptyToNull(_normalizePeso(pesoController.text)),
+            obs: _emptyToNull(obsController.text),
+            appPotreirosId: destPotreiroId ?? selectedPotreiroId,
+            appAnimaisLotesId: destLotId ?? selectedLotId,
+          );
 
     try {
       final result = isEdit
@@ -270,7 +389,7 @@ class NascimentoFormPageController extends ChangeNotifier {
     if (selectedPotreiroId == null) {
       return const PageActionResult(
         isSuccess: false,
-        message: 'Selecione o potreiro.',
+        message: 'Selecione o piquete.',
       );
     }
     if (selectedLotId == null) {
@@ -279,36 +398,55 @@ class NascimentoFormPageController extends ChangeNotifier {
         message: 'Selecione o lote.',
       );
     }
+    if (!isEdit && selectedMaeId == null) {
+      return const PageActionResult(
+        isSuccess: false,
+        message: 'Selecione o brinco da mãe.',
+      );
+    }
+    if (!isEdit && selectedSexoCria == null) {
+      return const PageActionResult(
+        isSuccess: false,
+        message: 'Selecione o sexo da cria.',
+      );
+    }
     if (dataController.text.trim().isEmpty) {
       return const PageActionResult(
         isSuccess: false,
         message: 'Informe a data do nascimento.',
       );
     }
-    if (!isEdit && _selectedMatriz == null) {
-      return const PageActionResult(
-        isSuccess: false,
-        message: 'Selecione a matriz.',
-      );
-    }
-    if (!isEdit && _selectedTerneiro == null) {
-      return const PageActionResult(
-        isSuccess: false,
-        message: 'Selecione o terneiro.',
-      );
-    }
-    if (!isEdit && _selectedMatriz?.id == _selectedTerneiro?.id) {
-      return const PageActionResult(
-        isSuccess: false,
-        message: 'Selecione animais diferentes para matriz e terneiro.',
-      );
-    }
     return null;
   }
 
-  String _animalLabel(AnimalEntity animal) {
-    final brinco = animal.brinco?.trim();
-    return brinco?.isNotEmpty == true ? brinco! : 'Animal ${animal.id}';
+  String _lotName(int id) {
+    for (final animal in _prenheNoPotreiro) {
+      if (animal.appAnimaisLotesId != id && animal.lote?.id != id) {
+        continue;
+      }
+      final nome = animal.lote?.nome.trim();
+      if (nome != null && nome.isNotEmpty) {
+        return nome;
+      }
+    }
+    return 'Lote $id';
+  }
+
+  bool _isPrenheMae(AnimalEntity animal) {
+    final status = animal.status?.trim().toLowerCase();
+    if (status != 'prenhe') {
+      return false;
+    }
+    if (animal.sexo != 0 && animal.sexo != sexoFemea) {
+      return false;
+    }
+    return (animal.brinco ?? '').trim().isNotEmpty;
+  }
+
+  String _formatDate(DateTime date) {
+    final day = date.day.toString().padLeft(2, '0');
+    final month = date.month.toString().padLeft(2, '0');
+    return '$day/$month/${date.year}';
   }
 
   String _normalizePeso(String value) {
@@ -326,13 +464,8 @@ class NascimentoFormPageController extends ChangeNotifier {
       selectedLotId: selectedLotId,
       data: dataController.text.trim(),
       pesoTotal: _normalizePeso(pesoController.text),
-      obs: _normalizeOptionalText(obsController.text),
+      obs: _emptyToNull(obsController.text),
     );
-  }
-
-  String? _normalizeOptionalText(String value) {
-    final trimmed = value.trim();
-    return trimmed.isEmpty ? null : trimmed;
   }
 
   @override
@@ -344,6 +477,7 @@ class NascimentoFormPageController extends ChangeNotifier {
     _potreirosController.removeListener(notifyListeners);
     dataController.dispose();
     pesoController.dispose();
+    brincoCriaController.dispose();
     obsController.dispose();
     animalFilterController.dispose();
     super.dispose();

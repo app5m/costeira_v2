@@ -1,4 +1,5 @@
 import 'package:costeira/core/config/ws_constantes.dart';
+import 'package:costeira/core/storage/sub_user_payload.dart';
 import 'package:costeira/features/movimentacoes/compras/domain/entities/compra_upsert_animal_entity.dart';
 import 'package:costeira/features/movimentacoes/compras/domain/entities/compra_upsert_entity.dart';
 
@@ -13,7 +14,7 @@ class CompraUpsertRequestModel {
 
   /// Postman Atualizar: identidade + campos editáveis. Sem animais/categoria/sexo.
   factory CompraUpsertRequestModel.update(CompraUpsertEntity compra) {
-    return CompraUpsertRequestModel._({
+    return CompraUpsertRequestModel._(withSubUser({
       'token': WSConstantes.token,
       'id': compra.id,
       'app_users_id': compra.appUsersId,
@@ -26,7 +27,7 @@ class CompraUpsertRequestModel {
       'valor_unitario': compra.valorUnitario,
       'valor_frete': compra.valorFrete,
       'valor_comissao': compra.valorComissao,
-    }..removeWhere((key, value) => value == null));
+    }..removeWhere((key, value) => value == null)));
   }
 
   static Map<String, dynamic> _createPayload(CompraUpsertEntity compra) {
@@ -61,7 +62,7 @@ class CompraUpsertRequestModel {
     }
 
     data.removeWhere((key, value) => value == null);
-    return data;
+    return withSubUser(data);
   }
 
   static Map<String, dynamic> _animalToJson(CompraUpsertAnimalEntity animal) {

@@ -3,22 +3,13 @@ import 'package:costeira/features/movimentacoes/nascimento/presentation/page_con
 import 'package:costeira/theme/colors.dart';
 import 'package:flutter/material.dart';
 
-enum NascimentoAnimalSelectionType { matriz, terneiro }
-
 class NascimentoAnimaisPage extends StatelessWidget {
-  const NascimentoAnimaisPage({
-    super.key,
-    required this.pageController,
-    required this.type,
-  });
+  const NascimentoAnimaisPage({super.key, required this.pageController});
 
   final NascimentoFormPageController pageController;
-  final NascimentoAnimalSelectionType type;
 
   @override
   Widget build(BuildContext context) {
-    final isMatriz = type == NascimentoAnimalSelectionType.matriz;
-
     return AnimatedBuilder(
       animation: pageController,
       builder: (context, _) {
@@ -32,9 +23,9 @@ class NascimentoAnimaisPage extends StatelessWidget {
               onPressed: () => Navigator.pop(context),
               icon: const Icon(Icons.arrow_back_ios, color: Colors.white),
             ),
-            title: Text(
-              isMatriz ? 'Selecionar matriz' : 'Selecionar terneiro',
-              style: const TextStyle(
+            title: const Text(
+              'Brinco da mãe',
+              style: TextStyle(
                 color: Colors.white,
                 fontSize: 16,
                 fontFamily: 'Montserrat',
@@ -91,17 +82,11 @@ class NascimentoAnimaisPage extends StatelessWidget {
                               final animal = animais[index];
                               return _AnimalSelectableTile(
                                 animal: animal,
-                                isSelected: isMatriz
-                                    ? pageController.isMatrizSelected(animal.id)
-                                    : pageController.isTerneiroSelected(
-                                        animal.id,
-                                      ),
+                                isSelected: pageController.isMaeSelected(
+                                  animal.id,
+                                ),
                                 onTap: () {
-                                  if (isMatriz) {
-                                    pageController.selectMatriz(animal);
-                                  } else {
-                                    pageController.selectTerneiro(animal);
-                                  }
+                                  pageController.selectMae(animal);
                                   Navigator.pop(context);
                                 },
                               );

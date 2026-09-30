@@ -110,34 +110,54 @@ class FormDependenciesCacheService {
       await _safe('clima e chuva', () {
         return _getClimatesUsecase(ClimateFilterEntity(appUsersId: userId));
       });
-      await _safe('insumos', () {
-        return _getInsumosUsecase(InsumosFilterEntity(appUsersId: userId));
-      });
-      await _safe('tipos de insumos', () {
-        return _getInsumosTipoUsecase(
-          InsumosTipoFilterEntity(appUsersId: userId),
-        );
-      });
-      await _safe('suplementos para formulario de suplementacao', () {
-        return _getInsumosTipoUsecase(
-          InsumosTipoFilterEntity(appUsersId: userId, tipo: 'suplementos'),
-        );
-      });
-      await _safe('suplemento para formulario de suplementacao', () {
-        return _getInsumosTipoUsecase(
-          InsumosTipoFilterEntity(appUsersId: userId, tipo: 'suplemento'),
-        );
-      });
-      await _safe('medicamentos para executar sanitario', () {
-        return _getInsumosTipoUsecase(
-          InsumosTipoFilterEntity(appUsersId: userId, tipo: 'medicamentos'),
-        );
-      });
-      await _safe('medicamento para executar sanitario', () {
-        return _getInsumosTipoUsecase(
-          InsumosTipoFilterEntity(appUsersId: userId, tipo: 'medicamento'),
-        );
-      });
+      if (farmId != null) {
+        await _safe('insumos', () {
+          return _getInsumosUsecase(
+            InsumosFilterEntity(appUsersId: userId, appFazendasId: farmId),
+          );
+        });
+        await _safe('tipos de insumos', () {
+          return _getInsumosTipoUsecase(
+            InsumosTipoFilterEntity(appUsersId: userId, appFazendasId: farmId),
+          );
+        });
+        await _safe('suplementos para formulario de suplementacao', () {
+          return _getInsumosTipoUsecase(
+            InsumosTipoFilterEntity(
+              appUsersId: userId,
+              appFazendasId: farmId,
+              tipo: 'suplementos',
+            ),
+          );
+        });
+        await _safe('suplemento para formulario de suplementacao', () {
+          return _getInsumosTipoUsecase(
+            InsumosTipoFilterEntity(
+              appUsersId: userId,
+              appFazendasId: farmId,
+              tipo: 'suplemento',
+            ),
+          );
+        });
+        await _safe('medicamentos para executar sanitario', () {
+          return _getInsumosTipoUsecase(
+            InsumosTipoFilterEntity(
+              appUsersId: userId,
+              appFazendasId: farmId,
+              tipo: 'medicamentos',
+            ),
+          );
+        });
+        await _safe('medicamento para executar sanitario', () {
+          return _getInsumosTipoUsecase(
+            InsumosTipoFilterEntity(
+              appUsersId: userId,
+              appFazendasId: farmId,
+              tipo: 'medicamento',
+            ),
+          );
+        });
+      }
       await _safe('suplementacao', () {
         return _getSuplementosUsecase(
           SuplementoFilterEntity(appUsersId: userId),
@@ -319,16 +339,26 @@ class FormDependenciesCacheService {
         );
       });
     }
-    await _safe('suplemento form produtos plural', () {
-      return _getInsumosTipoUsecase(
-        InsumosTipoFilterEntity(appUsersId: userId, tipo: 'suplementos'),
-      );
-    });
-    await _safe('suplemento form produtos singular', () {
-      return _getInsumosTipoUsecase(
-        InsumosTipoFilterEntity(appUsersId: userId, tipo: 'suplemento'),
-      );
-    });
+    if (farmId != null) {
+      await _safe('suplemento form produtos plural', () {
+        return _getInsumosTipoUsecase(
+          InsumosTipoFilterEntity(
+            appUsersId: userId,
+            appFazendasId: farmId,
+            tipo: 'suplementos',
+          ),
+        );
+      });
+      await _safe('suplemento form produtos singular', () {
+        return _getInsumosTipoUsecase(
+          InsumosTipoFilterEntity(
+            appUsersId: userId,
+            appFazendasId: farmId,
+            tipo: 'suplemento',
+          ),
+        );
+      });
+    }
   }
 
   Future<int> _currentUserId() async {

@@ -10,6 +10,7 @@ class AnimalsFilterEntity {
     this.utBasesRaciaisId,
     this.brinco,
     this.brincoOnly = false,
+    this.status,
   });
 
   final int appUsersId;
@@ -22,6 +23,7 @@ class AnimalsFilterEntity {
   final int? utBasesRaciaisId;
   final String? brinco;
   final bool brincoOnly;
+  final String? status;
 
   AnimalsFilterEntity copyWith({
     int? appUsersId,
@@ -34,6 +36,7 @@ class AnimalsFilterEntity {
     int? utBasesRaciaisId,
     String? brinco,
     bool? brincoOnly,
+    String? status,
   }) {
     return AnimalsFilterEntity(
       appUsersId: appUsersId ?? this.appUsersId,
@@ -48,6 +51,7 @@ class AnimalsFilterEntity {
       utBasesRaciaisId: utBasesRaciaisId ?? this.utBasesRaciaisId,
       brinco: brinco ?? this.brinco,
       brincoOnly: brincoOnly ?? this.brincoOnly,
+      status: status ?? this.status,
     );
   }
 }

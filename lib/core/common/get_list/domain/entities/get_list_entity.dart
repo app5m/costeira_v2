@@ -10,6 +10,10 @@ class GetListEntity {
     this.dashboardMenu = const [],
     this.menu = const [],
     this.menuNavigation = const [],
+    this.menuMovimentacoes = const [],
+    this.estoqueInsumosMotivos = const [],
+    this.estoqueInsumosCategorias = const [],
+    this.estoqueUnidadesMedidas = const [],
   });
 
   final List<ListCategoryEntity> animaisCategorias;
@@ -18,4 +22,8 @@ class GetListEntity {
   final List<AppMenuEntity> dashboardMenu;
   final List<AppMenuEntity> menu;
   final List<AppMenuEntity> menuNavigation;
+  final List<AppMenuEntity> menuMovimentacoes;
+  final List<ListItemEntity> estoqueInsumosMotivos;
+  final List<ListCategoryEntity> estoqueInsumosCategorias;
+  final List<ListItemEntity> estoqueUnidadesMedidas;
 }

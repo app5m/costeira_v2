@@ -1,3 +1,4 @@
+import 'package:costeira/core/storage/sub_usuario_nome.dart';
 import 'package:costeira/features/movimentacoes/infra/models/venda_animal_model.dart';
 import 'package:costeira/features/movimentacoes/infra/models/venda_destino_model.dart';
 import 'package:costeira/features/movimentacoes/vendas/domain/entities/venda_entity.dart';
@@ -26,6 +27,7 @@ class VendaModel extends VendaEntity {
     super.updateAt,
     super.animais,
     super.destinos,
+    super.subUsuarioNome,
   });
 
   factory VendaModel.fromJson(Map<String, dynamic> json) {
@@ -69,6 +71,7 @@ class VendaModel extends VendaEntity {
       updateAt: json['update_at']?.toString(),
       animais: animais,
       destinos: destinos,
+      subUsuarioNome: subUsuarioNome(json),
     );
   }
 

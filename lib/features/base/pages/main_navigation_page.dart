@@ -10,6 +10,7 @@ import 'package:costeira/core/menus/menu_icon.dart';
 import 'package:costeira/core/menus/menu_slug.dart';
 import 'package:costeira/core/offline/cache/form_dependencies_cache_service.dart';
 import 'package:costeira/core/storage/session_storage.dart';
+import 'package:costeira/features/account/repositories/account_repository.dart';
 import 'package:costeira/features/animals/presentation/pages/animals_page.dart';
 import 'package:costeira/features/base/pages/module_placeholder_page.dart';
 import 'package:costeira/features/dashboard/presentation/pages/dashboard.dart';
@@ -33,19 +34,13 @@ class _MainNavigationPageState extends State<MainNavigationPage>
     with WidgetsBindingObserver {
   static const _pollInterval = Duration(seconds: 60);
 
+  final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
+
   int _selectedIndex = 0;
   final PageController _pageController = PageController(initialPage: 0);
   late final AppMenusController _menusController;
   Timer? _pollTimer;
   String _lastHandledSignature = '';
-
-  static const _fallbackItems = [
-    _NavTab(slug: MenuSlug.dashboard, label: 'Dashboard'),
-    _NavTab(slug: MenuSlug.fazendas, label: 'Fazendas'),
-    _NavTab(slug: MenuSlug.animais, label: 'Animais'),
-    _NavTab(slug: MenuSlug.manejos, label: 'Manejos'),
-    _NavTab(slug: MenuSlug.perfil, label: 'Perfil'),
-  ];
 
   @override
   void initState() {
@@ -62,10 +57,20 @@ class _MainNavigationPageState extends State<MainNavigationPage>
     if (!mounted || user == null) {
       return;
     }
+    await _loadSubUser(user.id);
+    if (!mounted) {
+      return;
+    }
     unawaited(_menusController.load(force: true));
     unawaited(
       Modular.get<FormDependenciesCacheService>().preloadEssentialLists(),
     );
+  }
+
+  Future<void> _loadSubUser(int userId) async {
+    try {
+      await Modular.get<AccountRepository>().fetchProfile(userId: userId);
+    } catch (_) {}
   }
 
   void _startPollTimer() {
@@ -151,6 +156,9 @@ class _MainNavigationPageState extends State<MainNavigationPage>
   }
 
   bool _goToDashboardTab(List<_NavTab> tabs) {
+    if (tabs.isEmpty) {
+      return false;
+    }
     final dashboardIndex = tabs.indexWhere(
       (tab) => tab.slug == MenuSlug.dashboard,
     );
@@ -164,12 +172,8 @@ class _MainNavigationPageState extends State<MainNavigationPage>
   }
 
   List<_NavTab> get _tabs {
-    final items = _menusController.navigationMenu;
-    if (items.isEmpty) {
-      return _fallbackItems;
-    }
     return [
-      for (final item in items)
+      for (final item in _menusController.navigationMenu)
         _NavTab(
           slug: MenuActionResolver.slugOf(item),
           label: item.name,
@@ -190,12 +194,17 @@ class _MainNavigationPageState extends State<MainNavigationPage>
   @override
   Widget build(BuildContext context) {
     final tabs = _tabs;
+    if (tabs.isEmpty) {
+      return _emptyNavScaffold();
+    }
     final current = tabs[_selectedIndex.clamp(0, tabs.length - 1)];
 
     return Scaffold(
+      key: _scaffoldKey,
       backgroundColor: current.slug == MenuSlug.dashboard
           ? const Color(0xFFF6F4EE)
           : Colors.white,
+      endDrawer: _movementsDrawer(),
       appBar: AppBar(
         backgroundColor: MyColors.colorPrimary,
         leadingWidth: 20,
@@ -213,6 +222,17 @@ class _MainNavigationPageState extends State<MainNavigationPage>
           ),
         ),
         actions: [
+          IconButton(
+            tooltip: 'Movimentações',
+            icon: SvgPicture.asset(
+              'icon/arrow-left-right.svg',
+              colorFilter: const ColorFilter.mode(
+                Colors.white,
+                BlendMode.srcIn,
+              ),
+            ),
+            onPressed: () => _scaffoldKey.currentState?.openEndDrawer(),
+          ),
           IconButton(
             icon: SvgPicture.asset(
               'icon/noti.svg',
@@ -243,6 +263,66 @@ class _MainNavigationPageState extends State<MainNavigationPage>
         currentIndex: _selectedIndex,
         items: [for (final tab in tabs) (item: tab.item, label: tab.label)],
         onTap: _onNavItemTapped,
+      ),
+    );
+  }
+
+  Widget _movementsDrawer() {
+    return _MovementsDrawer(
+      menus: _menusController,
+      onOpen: (item) {
+        Navigator.of(context).pop();
+        MenuActionResolver.open(
+          context,
+          item,
+          surface: MenuSurface.movimentacoes,
+        );
+      },
+    );
+  }
+
+  Widget _emptyNavScaffold() {
+    return Scaffold(
+      key: _scaffoldKey,
+      backgroundColor: const Color(0xFFF6F4EE),
+      endDrawer: _movementsDrawer(),
+      appBar: AppBar(
+        backgroundColor: MyColors.colorPrimary,
+        title: const Text(
+          'Costeira',
+          style: TextStyle(
+            color: Colors.white,
+            fontSize: 16,
+            fontWeight: FontWeight.w600,
+            fontFamily: 'Montserrat',
+          ),
+        ),
+        actions: [
+          IconButton(
+            tooltip: 'Movimentações',
+            icon: SvgPicture.asset(
+              'icon/arrow-left-right.svg',
+              colorFilter: const ColorFilter.mode(
+                Colors.white,
+                BlendMode.srcIn,
+              ),
+            ),
+            onPressed: () => _scaffoldKey.currentState?.openEndDrawer(),
+          ),
+        ],
+      ),
+      body: Center(
+        child: _menusController.loaded
+            ? const Text(
+                'Nenhum menu de navegação disponível.',
+                style: TextStyle(
+                  fontFamily: 'Montserrat',
+                  fontSize: 14,
+                  fontWeight: FontWeight.w600,
+                  color: Color(0xFF8A8A8A),
+                ),
+              )
+            : const CircularProgressIndicator(),
       ),
     );
   }
@@ -380,3 +460,154 @@ class _BottomBarItem extends StatelessWidget {
 }
 
 typedef NavigationScreen = MainNavigationPage;
+
+class _MovementsDrawer extends StatelessWidget {
+  const _MovementsDrawer({required this.menus, required this.onOpen});
+
+  final AppMenusController menus;
+  final ValueChanged<AppMenuEntity> onOpen;
+
+  @override
+  Widget build(BuildContext context) {
+    final items = menus.movementMenu;
+    final width = MediaQuery.sizeOf(context).width;
+    return Drawer(
+      width: width > 420 ? 360 : width * 0.86,
+      backgroundColor: const Color(0xFFF6F4EE),
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.horizontal(left: Radius.circular(28)),
+      ),
+      child: SafeArea(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Padding(
+              padding: const EdgeInsets.fromLTRB(20, 18, 20, 6),
+              child: Row(
+                children: [
+                  const Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'Movimentações',
+                          style: TextStyle(
+                            fontFamily: 'Montserrat',
+                            fontSize: 18,
+                            fontWeight: FontWeight.w700,
+                            color: Color(0xFF1F3D2A),
+                          ),
+                        ),
+                        SizedBox(height: 2),
+                        Text(
+                          'Registros da fazenda',
+                          style: TextStyle(
+                            fontFamily: 'Montserrat',
+                            fontSize: 12,
+                            fontWeight: FontWeight.w500,
+                            color: Color(0xFF6B6B6B),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 8),
+            if (items.isEmpty)
+              const Padding(
+                padding: EdgeInsets.fromLTRB(20, 24, 20, 20),
+                child: Text(
+                  'Nenhuma movimentação disponível.',
+                  style: TextStyle(
+                    fontFamily: 'Montserrat',
+                    fontSize: 13,
+                    fontWeight: FontWeight.w600,
+                    color: Color(0xFF8A8A8A),
+                  ),
+                ),
+              )
+            else
+              Expanded(
+                child: ListView.separated(
+                  padding: const EdgeInsets.fromLTRB(16, 8, 16, 24),
+                  itemCount: items.length,
+                  separatorBuilder: (_, _) => const SizedBox(height: 10),
+                  itemBuilder: (context, index) {
+                    final item = items[index];
+                    return _MovementTile(
+                      item: item,
+                      onTap: () => onOpen(item),
+                    );
+                  },
+                ),
+              ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _MovementTile extends StatelessWidget {
+  const _MovementTile({required this.item, required this.onTap});
+
+  final AppMenuEntity item;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final icon = MenuIcon.maybe(
+      item: item,
+      size: 18,
+      color: MyColors.colorPrimary,
+    );
+    return Material(
+      color: Colors.white,
+      borderRadius: BorderRadius.circular(16),
+      child: InkWell(
+        borderRadius: BorderRadius.circular(16),
+        onTap: onTap,
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+          child: Row(
+            children: [
+              if (icon != null) ...[
+                Container(
+                  width: 40,
+                  height: 40,
+                  decoration: BoxDecoration(
+                    color: const Color(0x1400823A),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  alignment: Alignment.center,
+                  child: icon,
+                ),
+                const SizedBox(width: 12),
+              ],
+              Expanded(
+                child: Text(
+                  item.name,
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                  style: const TextStyle(
+                    fontFamily: 'Montserrat',
+                    fontSize: 14,
+                    fontWeight: FontWeight.w600,
+                    color: Color(0xFF313131),
+                  ),
+                ),
+              ),
+              const Icon(
+                Icons.chevron_right_rounded,
+                color: Color(0xFF8A8A8A),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+

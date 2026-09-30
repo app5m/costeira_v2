@@ -1,4 +1,5 @@
 import 'package:costeira/core/config/ws_constantes.dart';
+import 'package:costeira/core/storage/sub_user_payload.dart';
 import 'package:costeira/features/potreiros/domain/entities/potreiros_filter_entity.dart';
 
 class PotreirosFilterRequestModel {
@@ -8,13 +9,13 @@ class PotreirosFilterRequestModel {
 
   factory PotreirosFilterRequestModel.fromEntity(PotreirosFilterEntity filter) {
     return PotreirosFilterRequestModel._(
-      {
+      withOwnerUser({
         'token': WSConstantes.token,
         'app_users_id': filter.appUsersId,
         'app_fazendas_id': filter.appFazendasId,
         'id': filter.id,
         'status_atual': filter.statusAtual,
-      }..removeWhere((key, value) => value == null),
+      }..removeWhere((key, value) => value == null)),
     );
   }
 }

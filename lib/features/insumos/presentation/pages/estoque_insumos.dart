@@ -1,4 +1,5 @@
 import 'package:costeira/core/components/app_snack.dart';
+import 'package:costeira/core/components/sub_user_flag.dart';
 import 'package:costeira/features/insumos/domain/entities/insumos.dart';
 import 'package:costeira/features/insumos/presentation/controllers/delete_insumo_controller.dart';
 import 'package:costeira/features/insumos/presentation/controllers/list_insumos_controller.dart';
@@ -170,11 +171,14 @@ class _InsumosState extends State<Insumos> with SingleTickerProviderStateMixin {
                 SpeedDialChild(
                   shape: const CircleBorder(),
                   child: Icon(Icons.add_rounded, color: MyColors.colorPrimary2),
-                  labelWidget: const _SpeedDialLabel('Novo insumo'),
+                  labelWidget: const _SpeedDialLabel('Entrada (produto novo)'),
                   onTap: () async {
                     final result = await Navigator.push<Map<String, dynamic>?>(
                       context,
-                      MaterialPageRoute(builder: (_) => const AddInsumo()),
+                      MaterialPageRoute(
+                        builder: (_) =>
+                            const AddCompraInsumo(tipo: 1, produtoNovo: true),
+                      ),
                     );
                     if (!mounted || result?['success'] != true) {
                       return;
@@ -185,7 +189,9 @@ class _InsumosState extends State<Insumos> with SingleTickerProviderStateMixin {
                 SpeedDialChild(
                   shape: const CircleBorder(),
                   child: Icon(Icons.add_rounded, color: MyColors.colorPrimary2),
-                  labelWidget: const _SpeedDialLabel('Registro de compra'),
+                  labelWidget: const _SpeedDialLabel(
+                    'Entrada (produto existente)',
+                  ),
                   onTap: () async {
                     final result = await Navigator.push<Map<String, dynamic>?>(
                       context,
@@ -202,7 +208,7 @@ class _InsumosState extends State<Insumos> with SingleTickerProviderStateMixin {
                 SpeedDialChild(
                   shape: const CircleBorder(),
                   child: Icon(Icons.add_rounded, color: MyColors.colorPrimary2),
-                  labelWidget: const _SpeedDialLabel('Registro de utilização'),
+                  labelWidget: const _SpeedDialLabel('Saída'),
                   onTap: () async {
                     final result = await Navigator.push<Map<String, dynamic>?>(
                       context,
@@ -393,7 +399,14 @@ class _InsumosState extends State<Insumos> with SingleTickerProviderStateMixin {
           );
         }
 
-        if (_listController.registros.isEmpty) {
+        final entradas = _listController.registros
+            .where((registro) => registro.tipo.id?.toString() == '1')
+            .toList();
+        final saidas = _listController.registros
+            .where((registro) => registro.tipo.id?.toString() != '1')
+            .toList();
+
+        if (entradas.isEmpty && saidas.isEmpty) {
           return ListView(
             padding: const EdgeInsets.only(bottom: 64),
             children: const [
@@ -405,19 +418,24 @@ class _InsumosState extends State<Insumos> with SingleTickerProviderStateMixin {
 
         return RefreshIndicator(
           onRefresh: _listController.reload,
-          child: ListView.builder(
+          child: ListView(
             padding: const EdgeInsets.only(bottom: 64),
-            itemCount: _listController.registros.length,
-            itemBuilder: (context, index) {
-              final registro = _listController.registros[index];
-
-              return _RegistroCard(
-                registro: registro,
-                tipoLabel: _listController.tipoLabel(registro.tipoInsumo),
-                quantity: _listController.buildRegistroQuantity(registro),
-                onDelete: () => _confirmDeleteRegistro(registro),
-              );
-            },
+            children: [
+              _RegistroSection(
+                title: 'Entradas',
+                registros: entradas,
+                tipoLabel: _listController.tipoLabel,
+                quantity: _listController.buildRegistroQuantity,
+                onDelete: _confirmDeleteRegistro,
+              ),
+              _RegistroSection(
+                title: 'Saídas',
+                registros: saidas,
+                tipoLabel: _listController.tipoLabel,
+                quantity: _listController.buildRegistroQuantity,
+                onDelete: _confirmDeleteRegistro,
+              ),
+            ],
           ),
         );
       },
@@ -738,6 +756,7 @@ class _InsumoCard extends StatelessWidget {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         _CardText(tipoLabel, fontSize: 14),
+                        SubUserFlag(nome: insumo.subUsuarioNome),
                         const SizedBox(height: 8),
                         _CardText(
                           insumo.valorTotal?.trim().isNotEmpty == true
@@ -785,6 +804,64 @@ class _InsumoCard extends StatelessWidget {
           ],
         ),
       ),
+    );
+  }
+}
+
+class _RegistroSection extends StatelessWidget {
+  const _RegistroSection({
+    required this.title,
+    required this.registros,
+    required this.tipoLabel,
+    required this.quantity,
+    required this.onDelete,
+  });
+
+  final String title;
+  final List<InsumoRegistroEntity> registros;
+  final String Function(String tipoInsumo) tipoLabel;
+  final String Function(InsumoRegistroEntity registro) quantity;
+  final void Function(InsumoRegistroEntity registro) onDelete;
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Padding(
+          padding: const EdgeInsets.fromLTRB(20, 8, 20, 8),
+          child: Text(
+            title,
+            style: const TextStyle(
+              color: Color(0xFF313131),
+              fontSize: 14,
+              fontFamily: 'Montserrat',
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+        ),
+        if (registros.isEmpty)
+          const Padding(
+            padding: EdgeInsets.fromLTRB(20, 0, 20, 16),
+            child: Text(
+              'Nenhum registro.',
+              style: TextStyle(
+                color: Color(0xFF8C8C8C),
+                fontSize: 12,
+                fontFamily: 'Montserrat',
+              ),
+            ),
+          )
+        else
+          ...registros.map(
+            (registro) => _RegistroCard(
+              registro: registro,
+              tipoLabel: tipoLabel(registro.tipoInsumo),
+              quantity: quantity(registro),
+              onDelete: () => onDelete(registro),
+            ),
+          ),
+      ],
     );
   }
 }
@@ -850,6 +927,7 @@ class _RegistroCard extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 _CardText(registro.tipo.nome, fontSize: 14),
+                SubUserFlag(nome: registro.subUsuarioNome),
                 const SizedBox(height: 8),
                 _CardText(registro.estoqueNome, fontSize: 12),
                 const SizedBox(height: 8),

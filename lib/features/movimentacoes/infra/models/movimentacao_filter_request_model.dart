@@ -1,4 +1,5 @@
 import 'package:costeira/core/config/ws_constantes.dart';
+import 'package:costeira/core/storage/sub_user_payload.dart';
 import 'package:costeira/features/movimentacoes/domain/entities/movimentacao_filter_entity.dart';
 
 class MovimentacaoFilterRequestModel {
@@ -10,14 +11,14 @@ class MovimentacaoFilterRequestModel {
     MovimentacaoFilterEntity filter,
   ) {
     return MovimentacaoFilterRequestModel._(
-      {
+      withSubUser({
         'token': WSConstantes.token,
         'app_users_id': filter.appUsersId,
         'app_fazendas_id': filter.appFazendasId,
         'id': filter.id,
         'data_in': filter.dataIn,
         'data_out': filter.dataOut,
-      }..removeWhere((key, value) => value == null),
+      }..removeWhere((key, value) => value == null)),
     );
   }
 }

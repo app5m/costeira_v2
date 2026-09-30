@@ -1,3 +1,4 @@
+import 'package:costeira/core/storage/sub_usuario_nome.dart';
 import 'package:costeira/features/potreiros/domain/entities/potreiro_entity.dart';
 
 class PotreiroModel extends PotreiroEntity {
@@ -20,6 +21,7 @@ class PotreiroModel extends PotreiroEntity {
     super.syncStatus,
     super.pendingAction,
     super.isLocalOnly = false,
+    super.subUsuarioNome,
   });
 
   factory PotreiroModel.fromJson(Map<String, dynamic> json) {
@@ -44,6 +46,7 @@ class PotreiroModel extends PotreiroEntity {
       syncStatus: json['syncStatus']?.toString(),
       pendingAction: json['pendingAction']?.toString(),
       isLocalOnly: json['isLocalOnly'] == true,
+      subUsuarioNome: subUsuarioNome(json),
     );
   }
 

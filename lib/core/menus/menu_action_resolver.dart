@@ -4,23 +4,32 @@ import 'package:costeira/core/common/get_list/domain/entities/app_menu_entity.da
 import 'package:costeira/core/menus/menu_slug.dart';
 import 'package:costeira/core/utils/app_logger.dart';
 import 'package:costeira/features/insumos/presentation/pages/add_compra.dart';
+import 'package:costeira/features/movimentacoes/abigeatos/abigeatos.dart';
 import 'package:costeira/features/movimentacoes/abigeatos/add_abigeato.dart';
+import 'package:costeira/features/movimentacoes/abortos/abortos.dart';
 import 'package:costeira/features/movimentacoes/abortos/presentation/pages/add_aborto.dart';
 import 'package:costeira/features/movimentacoes/compras/presentation/pages/add_compra.dart';
+import 'package:costeira/features/movimentacoes/compras/presentation/pages/compras.dart';
+import 'package:costeira/features/movimentacoes/consumo/consumo.dart';
 import 'package:costeira/features/movimentacoes/consumo/presentation/pages/add_consumo.dart';
 import 'package:costeira/features/movimentacoes/mortes/presentation/pages/add_morte.dart';
-import 'package:costeira/features/movimentacoes/nascimento/presentation/pages/add_nascimento.dart';
-import 'package:costeira/features/movimentacoes/transferencias/add_transferencia.dart';
-import 'package:costeira/features/movimentacoes/troca_categoria/presentation/pages/add_trocacategoria.dart';
-import 'package:costeira/features/movimentacoes/vendas/presentation/pages/add_venda.dart';
+import 'package:costeira/features/movimentacoes/mortes/presentation/pages/mortes.dart';
 import 'package:costeira/features/movimentacoes/movimentacoes.dart';
+import 'package:costeira/features/movimentacoes/nascimento/presentation/pages/add_nascimento.dart';
+import 'package:costeira/features/movimentacoes/nascimento/presentation/pages/nascimentos.dart';
+import 'package:costeira/features/movimentacoes/transferencias/add_transferencia.dart';
+import 'package:costeira/features/movimentacoes/transferencias/transferencia.dart';
+import 'package:costeira/features/movimentacoes/troca_categoria/presentation/pages/add_trocacategoria.dart';
+import 'package:costeira/features/movimentacoes/troca_categoria/presentation/pages/trocas.dart';
+import 'package:costeira/features/movimentacoes/vendas/presentation/pages/add_venda.dart';
+import 'package:costeira/features/movimentacoes/vendas/presentation/pages/vendas.dart';
 import 'package:costeira/features/pastagem_nutricao_suplemento/presentation/pages/manejo/add_manejo.dart';
 import 'package:costeira/features/pastagem_nutricao_suplemento/presentation/pages/suplementacao/add_suplemento.dart';
 import 'package:costeira/features/sanitarios/presentation/pages/add_planejamento.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_modular/flutter_modular.dart';
 
-enum MenuSurface { dashboard, profile, nav }
+enum MenuSurface { dashboard, profile, nav, movimentacoes }
 
 class MenuActionResolver {
   const MenuActionResolver._();
@@ -75,6 +84,23 @@ class MenuActionResolver {
         return;
       }
       await Navigator.push(context, MaterialPageRoute(builder: (_) => page()));
+      return;
+    }
+
+    if (surface == MenuSurface.movimentacoes) {
+      final page = movimentacoesPage(slug);
+      if (page == null) {
+        Modular.to.pushNamed(
+          AppRoutes.comingSoon,
+          arguments: ComingSoonRouteData(
+            title: item.name,
+            message: 'Em breve.',
+            menu: item,
+          ),
+        );
+        return;
+      }
+      await Navigator.push(context, MaterialPageRoute(builder: (_) => page()));
     }
   }
 
@@ -88,6 +114,22 @@ class MenuActionResolver {
       MenuSlug.compradores => AppRoutes.compradores,
       MenuSlug.usuarios => AppRoutes.usuarios,
       MenuSlug.movimentacoes => AppRoutes.movimentacoes,
+      _ => null,
+    };
+  }
+
+  static Widget Function()? movimentacoesPage(String slug) {
+    return switch (slug) {
+      MenuSlug.compras => () => const Compras(),
+      MenuSlug.vendas => () => const Vendas(),
+      MenuSlug.mortes => () => const Mortes(),
+      MenuSlug.nascimentos => () => const Nascimentos(),
+      MenuSlug.trocasCategoria => () => const TrocaCategoria(),
+      'abigeato' => () => const Abigeatos(),
+      MenuSlug.abortos => () => const Abortos(),
+      'consumo' => () => const Consumo(),
+      MenuSlug.transferencias => () => const Transferencia(),
+      MenuSlug.movimentacoes => () => const Movimentacoes(),
       _ => null,
     };
   }

@@ -290,11 +290,10 @@ class _EditAnimalState extends State<EditAnimal> {
                     isLoading: _pageController.isLoading,
                     errorMessage: _pageController.errorMessage,
                   ),
-                  if (_pageController.shouldShowStatusField)
-                    _buildStatusDropdown(
-                      value: _pageController.selectedStatus,
-                      onChanged: _pageController.onStatusChanged,
-                    ),
+                  _buildStatusDropdown(
+                    value: _pageController.selectedStatus,
+                    onChanged: _pageController.onStatusChanged,
+                  ),
                   _buildTextField(
                     controller: _pageController.obsController,
                     label: 'Observações gerais',

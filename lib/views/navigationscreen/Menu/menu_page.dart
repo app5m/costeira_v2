@@ -256,43 +256,19 @@ class _MenuPageState extends State<MenuPage> {
   List<Widget> _buildApiOrFallbackSections() {
     final groups = _menusController.profileMenu;
     if (groups.isEmpty) {
-      return [
-        const SizedBox(height: 24),
-        const _SectionTitle('Módulos'),
-        SettingsOptionTile(
-          title: 'Potreiros',
-          onTap: () => Modular.to.pushNamed(AppRoutes.potreirosHub),
-        ),
-        const SizedBox(height: 12),
-        SettingsOptionTile(
-          title: 'Estoque',
-          onTap: () => Modular.to.pushNamed(AppRoutes.estoque),
-        ),
-        const SizedBox(height: 12),
-        SettingsOptionTile(
-          title: 'Tarefas',
-          onTap: () => Modular.to.pushNamed(AppRoutes.tasks),
-        ),
-        const SizedBox(height: 12),
-        SettingsOptionTile(
-          title: 'Pluviosidade',
-          onTap: () => Modular.to.pushNamed(AppRoutes.climateRain),
-        ),
-        const SizedBox(height: 24),
-        const _SectionTitle('Cadastros'),
-        SettingsOptionTile(
-          title: 'Fornecedores',
-          onTap: () => Modular.to.pushNamed(AppRoutes.fornecedores),
-        ),
-        const SizedBox(height: 12),
-        SettingsOptionTile(
-          title: 'Compradores',
-          onTap: () => Modular.to.pushNamed(AppRoutes.compradores),
-        ),
-        const SizedBox(height: 12),
-        SettingsOptionTile(
-          title: 'Usuários e Acessos',
-          onTap: () => Modular.to.pushNamed(AppRoutes.usuarios),
+      return const [
+        SizedBox(height: 24),
+        Padding(
+          padding: EdgeInsets.symmetric(horizontal: 4),
+          child: Text(
+            'Nenhum módulo disponível.',
+            style: TextStyle(
+              color: Color(0xFF8C8C8C),
+              fontSize: 14,
+              fontFamily: 'Montserrat',
+              fontWeight: FontWeight.w600,
+            ),
+          ),
         ),
       ];
     }

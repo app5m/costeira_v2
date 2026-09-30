@@ -1,4 +1,5 @@
 import 'package:costeira/core/components/app_snack.dart';
+import 'package:costeira/core/components/sub_user_flag.dart';
 import 'package:costeira/features/movimentacoes/compras/presentation/page_controllers/compras_list_page_controller.dart';
 import 'package:costeira/features/movimentacoes/compras/presentation/page_controllers/compras_page_controller.dart';
 import 'package:costeira/features/movimentacoes/domain/entities/compra_entity.dart';
@@ -515,6 +516,7 @@ class _CompraCard extends StatelessWidget {
                             fontWeight: FontWeight.w500,
                           ),
                         ),
+                        SubUserFlag(nome: compra.subUsuarioNome),
                         const SizedBox(height: 8),
                         Text(
                           compra.valorTotal?.trim().isNotEmpty == true

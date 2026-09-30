@@ -2,6 +2,7 @@ import 'package:costeira/core/components/app_select_overlay.dart';
 import 'package:costeira/core/components/app_snack.dart';
 import 'package:costeira/core/components/form_accordion.dart';
 import 'package:costeira/core/input_formatters/brazilian_currency_input_formatter.dart';
+import 'package:costeira/core/input_formatters/cpf_cnpj_input_formatter.dart';
 import 'package:costeira/core/input_formatters/fixed_two_decimal_input_formatter.dart';
 import 'package:costeira/features/animals/presentation/widgets/animal_lot_selector.dart';
 import 'package:costeira/features/fazendas/domain/entities/fazenda_entity.dart';
@@ -25,6 +26,7 @@ class VendaFormPage extends StatefulWidget {
 class _VendaFormPageState extends State<VendaFormPage> {
   static const _moneyFormatter = BrazilianCurrencyInputFormatter();
   static const _pesoFormatter = FixedTwoDecimalInputFormatter();
+  static const _documentFormatter = CpfCnpjInputFormatter();
 
   final VendaFormPageController _pageController =
       Modular.get<VendaFormPageController>();
@@ -431,8 +433,9 @@ class _VendaFormPageState extends State<VendaFormPage> {
         _buildTextField(
           controller: _pageController.novoDocumentoController,
           label: 'CPF/CNPJ',
-          hint: 'Opcional',
+          hint: '000.000.000-00',
           keyboardType: TextInputType.number,
+          inputFormatters: const [_documentFormatter],
         ),
         _buildTextField(
           controller: _pageController.novoContatoController,

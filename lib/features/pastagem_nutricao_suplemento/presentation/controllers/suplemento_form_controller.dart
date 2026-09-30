@@ -106,7 +106,7 @@ class SuplementoFormController extends ChangeNotifier {
       final farmId = await _resolveCurrentFarmId(userId: _currentUserId);
       await _loadPotreiros(_currentUserId!, farmId);
       await _loadLotes(_currentUserId!, farmId);
-      await _loadProdutos(_currentUserId!);
+      await _loadProdutos(_currentUserId!, farmId);
     } on ApiException catch (error) {
       _errorMessage = error.message;
     } finally {
@@ -142,12 +142,19 @@ class SuplementoFormController extends ChangeNotifier {
     }
   }
 
-  Future<void> _loadProdutos(int userId) async {
+  Future<void> _loadProdutos(int userId, int? farmId) async {
+    if (farmId == null || farmId <= 0) {
+      return;
+    }
     ApiException? lastError;
     for (final tipo in const ['suplementos', 'suplemento']) {
       try {
         final result = await _getInsumosTipoUsecase(
-          InsumosTipoFilterEntity(appUsersId: userId, tipo: tipo),
+          InsumosTipoFilterEntity(
+            appUsersId: userId,
+            appFazendasId: farmId,
+            tipo: tipo,
+          ),
         );
         AppLogger.info(
           'SUPLEMENTO FORM CONTROLLER: produtos tipo=$tipo carregados=${result.data.length}',

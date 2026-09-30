@@ -10,7 +10,9 @@ class TaskStatusRequestDto {
     return TaskStatusRequestDto._({
       'token': WSConstantes.token,
       'app_users_id': task.appUsersId,
+      'app_fazendas_id': task.appFazendasId,
       'id': task.id,
+      'status': task.status,
     });
   }
 }

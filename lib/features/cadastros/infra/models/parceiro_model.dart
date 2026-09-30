@@ -1,3 +1,4 @@
+import 'package:costeira/core/storage/sub_usuario_nome.dart';
 import 'package:costeira/features/cadastros/domain/entities/parceiro_entity.dart';
 
 class ParceiroModel extends ParceiroEntity {
@@ -15,6 +16,7 @@ class ParceiroModel extends ParceiroEntity {
     required super.endereco,
     required super.numero,
     required super.complemento,
+    super.subUsuarioNome,
   });
 
   factory ParceiroModel.fromJson(Map<String, dynamic> json) {
@@ -35,6 +37,7 @@ class ParceiroModel extends ParceiroEntity {
       endereco: json['endereco']?.toString() ?? '',
       numero: json['numero']?.toString() ?? '',
       complemento: json['complemento']?.toString() ?? '',
+      subUsuarioNome: subUsuarioNome(json),
     );
   }
 

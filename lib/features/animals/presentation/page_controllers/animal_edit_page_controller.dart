@@ -36,6 +36,11 @@ class AnimalEditPageController extends ChangeNotifier {
     'vazia',
     'descarte',
     'engorda',
+    'comprado',
+    'vendido',
+    'morto',
+    'abigeato',
+    'consumo',
   ];
 
   final EditAnimalController _controller;
@@ -104,10 +109,6 @@ class AnimalEditPageController extends ChangeNotifier {
       _animal?.potreiro?.nome ??
       'Selecionar potreiro';
   bool get requiresSubcategory => selectedCategoryId == matrixCategoryId;
-  bool get shouldShowStatusField =>
-      selectedSexo == 2 &&
-      selectedCategoryId == matrixCategoryId &&
-      selectedSubcategoryId != null;
   bool get isFormValid => selectedCategoryId != null && selectedSexo > 0;
 
   bool get hasChanges {
@@ -128,7 +129,7 @@ class AnimalEditPageController extends ChangeNotifier {
             _normalizedPesoValue(currentAnimal.peso?.toString()) ||
         _normalizedValue(obsController.text) !=
             _normalizedValue(currentAnimal.obs) ||
-        (shouldShowStatusField ? selectedStatus : null) != currentAnimal.status;
+        selectedStatus != currentAnimal.status;
   }
 
   Future<void> init(AnimalEntity animal) async {
@@ -179,7 +180,6 @@ class AnimalEditPageController extends ChangeNotifier {
     selectedSexo = value;
     selectedCategoryId = null;
     selectedSubcategoryId = null;
-    _syncStatusVisibility();
     notifyListeners();
     _loadSupportingData();
   }
@@ -187,13 +187,11 @@ class AnimalEditPageController extends ChangeNotifier {
   void onCategoryChanged(int? value) {
     selectedCategoryId = value;
     selectedSubcategoryId = null;
-    _syncStatusVisibility();
     notifyListeners();
   }
 
   void onSubcategoryChanged(int? value) {
     selectedSubcategoryId = value;
-    _syncStatusVisibility();
     notifyListeners();
   }
 
@@ -254,7 +252,7 @@ class AnimalEditPageController extends ChangeNotifier {
           brinco: _emptyToNull(brincoController.text),
           peso: _normalizePeso(pesoController.text),
           obs: _emptyToNull(obsController.text),
-          status: shouldShowStatusField ? selectedStatus : null,
+          status: selectedStatus,
         ),
       );
 
@@ -283,7 +281,6 @@ class AnimalEditPageController extends ChangeNotifier {
       selectedCategoryId = null;
       selectedSubcategoryId = null;
       selectedBaseRacialId = null;
-      _syncStatusVisibility();
       return;
     }
 
@@ -301,14 +298,6 @@ class AnimalEditPageController extends ChangeNotifier {
       selectedBaseRacialId = null;
     } else if (!basesRaciais.any((item) => item.id == selectedBaseRacialId)) {
       selectedBaseRacialId = basesRaciais.first.id;
-    }
-
-    _syncStatusVisibility();
-  }
-
-  void _syncStatusVisibility() {
-    if (!shouldShowStatusField) {
-      selectedStatus = null;
     }
   }
 

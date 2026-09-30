@@ -1,4 +1,5 @@
 import 'package:costeira/core/config/ws_constantes.dart';
+import 'package:costeira/core/storage/sub_user_payload.dart';
 import 'package:costeira/features/movimentacoes/vendas/domain/entities/venda_upsert_animal_entity.dart';
 import 'package:costeira/features/movimentacoes/vendas/domain/entities/venda_upsert_entity.dart';
 
@@ -9,18 +10,20 @@ class VendaUpsertRequestModel {
 
   factory VendaUpsertRequestModel.create(VendaUpsertEntity venda) {
     return VendaUpsertRequestModel._(
-      _createPayload(venda)
-        ..addAll({
-          'animais': venda.animais
-              .map(_animalToJson)
-              .toList(growable: false),
-        }),
+      withSubUser(
+        _createPayload(venda)
+          ..addAll({
+            'animais': venda.animais
+                .map(_animalToJson)
+                .toList(growable: false),
+          }),
+      ),
     );
   }
 
   /// Postman Atualizar: identidade + campos editáveis. Sem animais/tipo_*.
   factory VendaUpsertRequestModel.update(VendaUpsertEntity venda) {
-    return VendaUpsertRequestModel._({
+    return VendaUpsertRequestModel._(withSubUser({
       'token': WSConstantes.token,
       'id': venda.id,
       'app_users_id': venda.appUsersId,
@@ -31,7 +34,7 @@ class VendaUpsertRequestModel {
       'valor_frete': venda.valorFrete,
       'valor_comissao': venda.valorComissao,
       'obs': venda.obs,
-    }..removeWhere((key, value) => value == null));
+    }..removeWhere((key, value) => value == null)));
   }
 
   static Map<String, dynamic> _createPayload(VendaUpsertEntity venda) {

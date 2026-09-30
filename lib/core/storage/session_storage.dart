@@ -7,6 +7,24 @@ import 'package:shared_preferences/shared_preferences.dart';
 class SessionStorage {
   SessionStorage._();
 
+  static UserSession? _cached;
+
+  static int? get cachedSubUserId {
+    final id = _cached?.appSubUsersId;
+    if (id == null || id <= 0) {
+      return null;
+    }
+    return id;
+  }
+
+  static int? get cachedOwnerUserId {
+    final id = _cached?.ownerUserId;
+    if (id == null || id <= 0) {
+      return null;
+    }
+    return id;
+  }
+
   static const _userSessionKey = 'user_session';
   static const _pendingUserKey = 'pending_user_session';
   static const _onboardingSeenKey = 'onboarding_seen';
@@ -15,6 +33,7 @@ class SessionStorage {
   static const _selectedFarmIdKey = 'selected_farm_id';
 
   static Future<void> saveUserSession(UserSession session) async {
+    _cached = session;
     final prefs = await SharedPreferences.getInstance();
     await prefs.setString(_userSessionKey, jsonEncode(session.toJson()));
   }
@@ -29,8 +48,10 @@ class SessionStorage {
       Map<String, dynamic>.from(jsonDecode(raw) as Map),
     );
     if (session.id <= 0) {
+      _cached = null;
       return null;
     }
+    _cached = session;
     return session;
   }
 
@@ -74,6 +95,7 @@ class SessionStorage {
   }
 
   static Future<void> clearAuthData() async {
+    _cached = null;
     final prefs = await SharedPreferences.getInstance();
     await Future.wait([
       prefs.remove(_userSessionKey),

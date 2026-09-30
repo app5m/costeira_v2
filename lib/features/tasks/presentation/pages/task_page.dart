@@ -2,6 +2,7 @@ import 'package:costeira/core/api/api_exception.dart';
 import 'package:costeira/core/components/app_select_overlay.dart';
 import 'package:costeira/core/components/app_snack.dart';
 import 'package:costeira/core/components/custom_button.dart';
+import 'package:costeira/core/components/sub_user_flag.dart';
 import 'package:costeira/features/tasks/domain/entities/task_entity.dart';
 import 'package:costeira/features/tasks/domain/entities/task_filter_entity.dart';
 import 'package:costeira/features/tasks/presentation/pages/add_tarefa.dart';
@@ -363,7 +364,11 @@ class _TaskPageState extends State<TaskPage>
   }
 
   Widget _buildTaskCard(TaskEntity task) {
-    final statusColor = task.isDone ? MyColors.colorPrimary : Colors.red;
+    final statusColor = task.isDone
+        ? MyColors.colorPrimary
+        : task.isOverdue
+        ? const Color(0xFFC45C4A)
+        : const Color(0xFFD9762B);
 
     return GestureDetector(
       onTap: () {
@@ -427,6 +432,7 @@ class _TaskPageState extends State<TaskPage>
                             fontWeight: FontWeight.w500,
                           ),
                         ),
+                        SubUserFlag(nome: task.subUsuarioNome),
                         Text(
                           task.urgenciaNome,
                           style: const TextStyle(
@@ -480,8 +486,7 @@ class _TaskPageState extends State<TaskPage>
                   },
                   child: SvgPicture.asset('icon/square-pen.svg'),
                 ),
-                if (!task.isDone) ...[
-                  const SizedBox(height: 4),
+                if (!task.isDone)
                   GestureDetector(
                     onTap: () => _setDone(task),
                     child: const Icon(
@@ -489,8 +494,16 @@ class _TaskPageState extends State<TaskPage>
                       color: MyColors.colorPrimary,
                       size: 22,
                     ),
+                  )
+                else
+                  GestureDetector(
+                    onTap: () => _setDone(task),
+                    child: const Icon(
+                      Icons.undo,
+                      color: Color(0xFF8C8C8C),
+                      size: 22,
+                    ),
                   ),
-                ],
               ],
             ),
           ],
@@ -519,12 +532,19 @@ class _TaskPageState extends State<TaskPage>
   }
 
   String _taskDatesLabel(TaskEntity task) {
-    if (task.datas.isEmpty) {
+    final dates = task.datas.isEmpty
+        ? ''
+        : task.datas
+              .map((item) => item.mesAno ?? item.data.split(' ').first)
+              .join(', ');
+    final prazo = task.dataPrazo?.trim();
+    if (prazo != null && prazo.isNotEmpty) {
+      return dates.isEmpty ? 'Prazo $prazo' : 'Prazo $prazo · $dates';
+    }
+    if (dates.isEmpty) {
       return task.tipo == 2 ? 'Mensal' : 'Sem datas';
     }
-    return task.datas
-        .map((item) => item.mesAno ?? item.data.split(' ').first)
-        .join(', ');
+    return dates;
   }
 
   Future<bool> _showDeleteConfirmation() async {
@@ -786,8 +806,8 @@ class _TaskFilterSheetState extends State<_TaskFilterSheet> {
               value: _status,
               placeholder: 'Status',
               options: const [
-                AppSelectOption(value: 1, label: 'Programado'),
-                AppSelectOption(value: 3, label: 'Realizado'),
+                AppSelectOption(value: 1, label: 'Pendente'),
+                AppSelectOption(value: 3, label: 'Concluído'),
               ],
               onChanged: (value) => setState(() => _status = value),
             ),

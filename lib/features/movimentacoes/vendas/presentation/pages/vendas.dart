@@ -1,4 +1,5 @@
 import 'package:costeira/core/components/app_snack.dart';
+import 'package:costeira/core/components/sub_user_flag.dart';
 import 'package:costeira/features/movimentacoes/presentation/widgets/movimentacao_date_filter_sheet.dart';
 import 'package:costeira/features/movimentacoes/vendas/domain/entities/venda_entity.dart';
 import 'package:costeira/features/movimentacoes/vendas/presentation/page_controllers/vendas_list_page_controller.dart';
@@ -515,6 +516,7 @@ class _VendaCard extends StatelessWidget {
                             fontWeight: FontWeight.w500,
                           ),
                         ),
+                        SubUserFlag(nome: venda.subUsuarioNome),
                         const SizedBox(height: 8),
                         Text(
                           venda.valorTotal?.trim().isNotEmpty == true

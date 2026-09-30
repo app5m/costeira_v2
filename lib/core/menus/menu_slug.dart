@@ -20,6 +20,13 @@ class MenuSlug {
   static const manejos = 'manejos';
   static const perfil = 'perfil';
   static const movimentacoes = 'movimentacoes';
+  static const compras = 'compras';
+  static const vendas = 'vendas';
+  static const mortes = 'mortes';
+  static const nascimentos = 'nascimentos';
+  static const trocasCategoria = 'trocas_categoria';
+  static const abortos = 'abortos';
+  static const transferencias = 'transferencias';
 
   static const _aliases = {
     'venda_de_animais': venda,
@@ -31,6 +38,9 @@ class MenuSlug {
     'climas_chuvas': pluviosidade,
     'entradas': 'entrada',
     'saidas': 'saida',
+    'trocas_de_categoria': trocasCategoria,
+    'transferencias_de_campo': transferencias,
+    'consumo_carnear': 'consumo',
   };
 
   static String resolve({String? action, required String name}) {

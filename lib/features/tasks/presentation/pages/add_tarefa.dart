@@ -160,6 +160,9 @@ class _AddTaskState extends State<AddTask> {
         obs: _obsController.text.trim(),
         urgencia: _selectedUrgency!,
         datas: datas,
+        dataPrazo: _selectedType == 1 && _endDate != null
+            ? formatTaskDate(_endDate!)
+            : null,
       );
 
       if (!mounted) {

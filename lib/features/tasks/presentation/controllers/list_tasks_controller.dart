@@ -2,6 +2,7 @@ import 'package:costeira/core/api/api_exception.dart';
 import 'package:costeira/core/models/api_message.dart';
 import 'package:costeira/core/storage/session_storage.dart';
 import 'package:costeira/core/utils/app_logger.dart';
+import 'package:costeira/features/fazendas/domain/usecases/resolve_current_farm_id.dart';
 import 'package:costeira/features/tasks/domain/entities/delete_task_entity.dart';
 import 'package:costeira/features/tasks/domain/entities/task_entity.dart';
 import 'package:costeira/features/tasks/domain/entities/task_filter_entity.dart';
@@ -16,11 +17,13 @@ class ListTasksController extends ChangeNotifier {
     this._getTasksUsecase,
     this._deleteTaskUsecase,
     this._setTaskDoneUsecase,
+    this._resolveCurrentFarmId,
   );
 
   final GetTasksUsecase _getTasksUsecase;
   final DeleteTaskUsecase _deleteTaskUsecase;
   final SetTaskDoneUsecase _setTaskDoneUsecase;
+  final ResolveCurrentFarmId _resolveCurrentFarmId;
 
   bool _isLoading = false;
   String? _errorMessage;
@@ -44,7 +47,11 @@ class ListTasksController extends ChangeNotifier {
 
     try {
       final userId = await _getUserId('carregar tarefas');
-      final requestFilter = nextFilter.copyWith(appUsersId: userId);
+      final farmId = await _farmId(userId);
+      final requestFilter = nextFilter.copyWith(
+        appUsersId: userId,
+        appFazendasId: farmId,
+      );
 
       final result = await _getTasksUsecase(requestFilter);
       AppLogger.info(
@@ -93,12 +100,28 @@ class ListTasksController extends ChangeNotifier {
   }
 
   Future<ApiMessage> setDone(TaskEntity task) async {
-    final userId = await _getUserId('concluir tarefa');
+    final userId = await _getUserId('atualizar status da tarefa');
+    final farmId = await _farmId(userId);
     final message = await _setTaskDoneUsecase(
-      TaskStatusEntity(appUsersId: userId, id: task.id),
+      TaskStatusEntity(
+        appUsersId: userId,
+        appFazendasId: farmId,
+        id: task.id,
+        status: task.isDone
+            ? TaskStatusEntity.pendente
+            : TaskStatusEntity.concluido,
+      ),
     );
     await reload();
     return message;
+  }
+
+  Future<int> _farmId(int userId) async {
+    final farmId = await _resolveCurrentFarmId(userId: userId);
+    if (farmId == null || farmId <= 0) {
+      throw ApiException('Selecione uma fazenda antes de ver as tarefas.');
+    }
+    return farmId;
   }
 
   Future<int> _getUserId(String action) async {

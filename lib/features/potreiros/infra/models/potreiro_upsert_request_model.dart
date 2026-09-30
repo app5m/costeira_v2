@@ -1,4 +1,5 @@
 import 'package:costeira/core/config/ws_constantes.dart';
+import 'package:costeira/core/storage/sub_user_payload.dart';
 import 'package:costeira/features/potreiros/domain/entities/potreiro_upsert_entity.dart';
 
 class PotreiroUpsertRequestModel {
@@ -8,7 +9,7 @@ class PotreiroUpsertRequestModel {
 
   factory PotreiroUpsertRequestModel.create(PotreiroUpsertEntity potreiro) {
     return PotreiroUpsertRequestModel._(
-      {
+      withSubUser({
         'token': WSConstantes.token,
         'app_users_id': potreiro.appUsersId,
         'app_fazendas_id': potreiro.appFazendasId,
@@ -21,13 +22,13 @@ class PotreiroUpsertRequestModel {
         'acesso_sombra': potreiro.acessoSombra,
         'lotacao_media': potreiro.lotacaoMedia,
         'obs': potreiro.obs,
-      }..removeWhere((key, value) => value == null),
+      }..removeWhere((key, value) => value == null)),
     );
   }
 
   factory PotreiroUpsertRequestModel.update(PotreiroUpsertEntity potreiro) {
     return PotreiroUpsertRequestModel._(
-      {
+      withSubUser({
         'token': WSConstantes.token,
         'id': potreiro.id,
         'app_users_id': potreiro.appUsersId,
@@ -41,7 +42,7 @@ class PotreiroUpsertRequestModel {
         'acesso_sombra': potreiro.acessoSombra,
         'lotacao_media': potreiro.lotacaoMedia,
         'obs': potreiro.obs,
-      }..removeWhere((key, value) => value == null),
+      }..removeWhere((key, value) => value == null)),
     );
   }
 }

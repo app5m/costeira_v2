@@ -1,13 +1,18 @@
 import 'package:costeira/core/api/api_exception.dart';
 import 'package:costeira/core/storage/session_storage.dart';
+import 'package:costeira/features/fazendas/domain/usecases/resolve_current_farm_id.dart';
 import 'package:costeira/features/insumos/domain/entities/insumos.dart';
 import 'package:costeira/features/insumos/domain/usecases/get_insumo_charts_usecase.dart';
 import 'package:flutter/foundation.dart';
 
 class GetInsumoChartsController extends ChangeNotifier {
-  GetInsumoChartsController(this._getChartsUsecase);
+  GetInsumoChartsController(
+    this._getChartsUsecase,
+    this._resolveCurrentFarmId,
+  );
 
   final GetInsumoChartsUsecase _getChartsUsecase;
+  final ResolveCurrentFarmId _resolveCurrentFarmId;
 
   bool _isLoading = false;
   String? _errorMessage;
@@ -31,8 +36,17 @@ class GetInsumoChartsController extends ChangeNotifier {
         throw ApiException('Usuario nao autenticado.');
       }
 
+      final farmId = await _resolveCurrentFarmId(userId: user.id);
+      if (farmId == null || farmId <= 0) {
+        throw ApiException('Selecione uma fazenda antes de ver os graficos.');
+      }
+
       _charts = await _getChartsUsecase(
-        InsumoChartsFilterEntity(appUsersId: user.id, mesAno: mesAno),
+        InsumoChartsFilterEntity(
+          appUsersId: user.id,
+          appFazendasId: farmId,
+          mesAno: mesAno,
+        ),
       );
     } on ApiException catch (error) {
       _errorMessage = error.message;

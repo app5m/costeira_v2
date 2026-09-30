@@ -2,6 +2,7 @@ import 'package:costeira/core/api/api_exception.dart';
 import 'package:costeira/core/models/api_message.dart';
 import 'package:costeira/core/storage/session_storage.dart';
 import 'package:costeira/core/utils/app_logger.dart';
+import 'package:costeira/features/fazendas/domain/usecases/resolve_current_farm_id.dart';
 import 'package:costeira/features/insumos/domain/entities/insumos.dart';
 import 'package:costeira/features/insumos/domain/usecases/get_insumos_tipo_usecase.dart';
 import 'package:costeira/features/sanitarios/domain/entities/sanitario.dart';
@@ -9,12 +10,17 @@ import 'package:costeira/features/sanitarios/domain/usecases/executar_sanitario_
 import 'package:flutter/material.dart';
 
 class ExecutarSanitarioController extends ChangeNotifier {
-  ExecutarSanitarioController(this._executarSanitarioUsecase, this._getInsumosTipoUsecase) {
+  ExecutarSanitarioController(
+    this._executarSanitarioUsecase,
+    this._getInsumosTipoUsecase,
+    this._resolveCurrentFarmId,
+  ) {
     quantidadeController.addListener(_onQuantidadeChanged);
   }
 
   final ExecutarSanitarioUsecase _executarSanitarioUsecase;
   final GetInsumosTipoUsecase _getInsumosTipoUsecase;
+  final ResolveCurrentFarmId _resolveCurrentFarmId;
   final quantidadeController = TextEditingController();
 
   bool _isLoading = false;
@@ -216,11 +222,20 @@ class ExecutarSanitarioController extends ChangeNotifier {
       throw ApiException('Usuario nao autenticado.');
     }
 
+    final farmId = await _resolveCurrentFarmId(userId: userId);
+    if (farmId == null || farmId <= 0) {
+      throw ApiException('Selecione uma fazenda antes de listar os medicamentos.');
+    }
+
     ApiException? lastError;
     for (final tipo in const ['medicamentos', 'medicamento']) {
       try {
         final result = await _getInsumosTipoUsecase(
-          InsumosTipoFilterEntity(appUsersId: userId, tipo: tipo),
+          InsumosTipoFilterEntity(
+            appUsersId: userId,
+            appFazendasId: farmId,
+            tipo: tipo,
+          ),
         );
         AppLogger.info(
           'EXECUTAR SANITARIO CONTROLLER: medicamentos tipo=$tipo carregados=${result.data.length}',

@@ -1,0 +1,114 @@
+{
+  "menu_movimentacoes": {
+    "menus": [
+      {
+        "id": 11,
+        "app_permissoes_id": 2,
+        "categoria": "movimentacoes",
+        "nome": "Compras",
+        "descricao": null,
+        "action": "compras",
+        "icon": "compras.svg",
+        "ordem": 1,
+        "status": 1,
+        "menus_n1": []
+      },
+      {
+        "id": 12,
+        "app_permissoes_id": 2,
+        "categoria": "movimentacoes",
+        "nome": "Vendas",
+        "descricao": null,
+        "action": "vendas",
+        "icon": "vendas.svg",
+        "ordem": 2,
+        "status": 1,
+        "menus_n1": []
+      },
+      {
+        "id": 13,
+        "app_permissoes_id": 2,
+        "categoria": "movimentacoes",
+        "nome": "Mortes",
+        "descricao": null,
+        "action": "mortes",
+        "icon": "mortes.svg",
+        "ordem": 3,
+        "status": 1,
+        "menus_n1": []
+      },
+      {
+        "id": 14,
+        "app_permissoes_id": 2,
+        "categoria": "movimentacoes",
+        "nome": "Nascimentos",
+        "descricao": null,
+        "action": "nascimentos",
+        "icon": "nascimentos.svg",
+        "ordem": 4,
+        "status": 1,
+        "menus_n1": []
+      },
+      {
+        "id": 15,
+        "app_permissoes_id": 5,
+        "categoria": "movimentacoes",
+        "nome": "Trocas de Categoria",
+        "descricao": null,
+        "action": "trocas_categoria",
+        "icon": "trocas_categoria.svg",
+        "ordem": 5,
+        "status": 1,
+        "menus_n1": []
+      },
+      {
+        "id": 16,
+        "app_permissoes_id": 2,
+        "categoria": "movimentacoes",
+        "nome": "Abigeato",
+        "descricao": null,
+        "action": "abigeato",
+        "icon": "abigeato.svg",
+        "ordem": 6,
+        "status": 1,
+        "menus_n1": []
+      },
+      {
+        "id": 17,
+        "app_permissoes_id": 2,
+        "categoria": "movimentacoes",
+        "nome": "Abortos",
+        "descricao": null,
+        "action": "abortos",
+        "icon": "abortos.svg",
+        "ordem": 7,
+        "status": 1,
+        "menus_n1": []
+      },
+      {
+        "id": 18,
+        "app_permissoes_id": 2,
+        "categoria": "movimentacoes",
+        "nome": "Consumo (carnear)",
+        "descricao": null,
+        "action": "consumo",
+        "icon": "consumo.svg",
+        "ordem": 8,
+        "status": 1,
+        "menus_n1": []
+      },
+      {
+        "id": 19,
+        "app_permissoes_id": 5,
+        "categoria": "movimentacoes",
+        "nome": "Transferências de campo",
+        "descricao": null,
+        "action": "transferencias",
+        "icon": "transferencias.svg",
+        "ordem": 9,
+        "status": 1,
+        "menus_n1": []
+      }
+    ]
+  }
+}

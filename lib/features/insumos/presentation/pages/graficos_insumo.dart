@@ -1,6 +1,7 @@
 import 'dart:math' as math;
 
 import 'package:costeira/core/components/app_snack.dart';
+import 'package:costeira/features/fazendas/domain/usecases/resolve_current_farm_id.dart';
 import 'package:costeira/features/insumos/domain/entities/insumos.dart';
 import 'package:costeira/features/insumos/domain/usecases/get_insumo_charts_usecase.dart';
 import 'package:costeira/features/insumos/presentation/controllers/get_insumo_charts_controller.dart';
@@ -31,6 +32,7 @@ class _GraficosInsumoState extends State<GraficosInsumo> {
     super.initState();
     _controller = GetInsumoChartsController(
       Modular.get<GetInsumoChartsUsecase>(),
+      Modular.get<ResolveCurrentFarmId>(),
     );
     WidgetsBinding.instance.addPostFrameCallback((_) => _loadCharts());
   }

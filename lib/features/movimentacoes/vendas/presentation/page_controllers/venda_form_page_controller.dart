@@ -615,7 +615,7 @@ class VendaFormPageController extends ChangeNotifier {
                   .map(
                     (row) => VendaUpsertAnimalEntity(
                       id: row.animal.id,
-                      pesoTotal: row.pesoSaidaController.text.trim(),
+                      pesoTotal: _pesoApi(row.pesoSaidaController.text),
                     ),
                   )
                   .toList(growable: false),
@@ -723,6 +723,10 @@ class VendaFormPageController extends ChangeNotifier {
     if ((animal.brinco ?? '').trim().isEmpty) {
       return false;
     }
+    final status = animal.status?.trim().toLowerCase();
+    if (status != null && _blockedSaleStatuses.contains(status)) {
+      return false;
+    }
     if (selectedCategoryId != null &&
         animal.appAnimaisCategoriasId != selectedCategoryId) {
       return false;
@@ -792,9 +796,7 @@ class VendaFormPageController extends ChangeNotifier {
       if (_pesagemRows.containsKey(animal.id)) {
         continue;
       }
-      final peso = animal.peso == null
-          ? ''
-          : animal.peso!.toStringAsFixed(1).replaceAll('.', ',');
+      final peso = animal.peso == null ? '' : animal.peso!.toStringAsFixed(2);
       final row = VendaPesagemRow(animal: animal, pesoSaida: peso);
       row.pesoSaidaController.addListener(notifyListeners);
       _pesagemRows[animal.id] = row;
@@ -985,6 +987,21 @@ class VendaFormPageController extends ChangeNotifier {
   }
 
   double? _parseNumber(String value) => BrazilianCurrency.parse(value);
+
+  static const _blockedSaleStatuses = {
+    'vendido',
+    'morto',
+    'abigeato',
+    'consumo',
+  };
+
+  String? _pesoApi(String value) {
+    final parsed = _parsePeso(value);
+    if (parsed == null) {
+      return _emptyToNull(value);
+    }
+    return parsed.toStringAsFixed(2);
+  }
 
   double? _parsePeso(String value) {
     var normalized = value.replaceAll('R\$', '').replaceAll(' ', '').trim();

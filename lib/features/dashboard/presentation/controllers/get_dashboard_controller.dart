@@ -1,5 +1,6 @@
 import 'package:costeira/core/api/api_exception.dart';
 import 'package:costeira/core/storage/session_storage.dart';
+import 'package:costeira/core/storage/sub_user_payload.dart';
 import 'package:costeira/features/dashboard/domain/entities/dashboard_entity.dart';
 import 'package:costeira/features/dashboard/domain/entities/dashboard_filter_entity.dart';
 import 'package:costeira/features/dashboard/domain/usecases/get_dashboard_usecase.dart';
@@ -32,7 +33,7 @@ class GetDashboardController extends ChangeNotifier {
 
     try {
       final user = await SessionStorage.getUserSession();
-      final userId = user?.id ?? 0;
+      final userId = sessionAccountUserId(user?.id ?? 0);
       if (userId <= 0) {
         throw ApiException('Usuario nao autenticado para carregar dashboard.');
       }
@@ -63,12 +64,12 @@ class GetDashboardController extends ChangeNotifier {
 
   Future<void> previousYear() {
     final year = _filter.dataIn.year - 1;
-    return load(filter: _yearFilter(year));
+    return load(filter: _yearFilter(year, _filter));
   }
 
   Future<void> nextYear() {
     final year = _filter.dataIn.year + 1;
-    return load(filter: _yearFilter(year));
+    return load(filter: _yearFilter(year, _filter));
   }
 
   Future<void> previousPeriod() {
@@ -89,6 +90,7 @@ class GetDashboardController extends ChangeNotifier {
     final selectedDate = DateTime(date.year, date.month, date.day);
     return load(
       filter: DashboardFilterEntity(
+        appFazendasId: _filter.appFazendasId,
         dataIn: selectedDate,
         dataOut: selectedDate,
       ),
@@ -101,15 +103,20 @@ class GetDashboardController extends ChangeNotifier {
   }
 
   static DashboardFilterEntity _initialFilter() {
-    final today = DateTime.now();
-    final selectedDate = DateTime(today.year, today.month, today.day);
-    return DashboardFilterEntity(dataIn: selectedDate, dataOut: selectedDate);
+    final range = AgriculturalYearRange.containing(DateTime.now());
+    return DashboardFilterEntity(dataIn: range.dataIn, dataOut: range.dataOut);
   }
 
-  static DashboardFilterEntity _yearFilter(int year) {
+  static DashboardFilterEntity _yearFilter(
+    int year,
+    DashboardFilterEntity current,
+  ) {
+    final range = AgriculturalYearRange.forStartYear(year);
     return DashboardFilterEntity(
-      dataIn: DateTime(year),
-      dataOut: DateTime(year, 12, 31),
+      appUsersId: current.appUsersId,
+      appFazendasId: current.appFazendasId,
+      dataIn: range.dataIn,
+      dataOut: range.dataOut,
     );
   }
 

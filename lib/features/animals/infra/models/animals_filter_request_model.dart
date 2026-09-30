@@ -1,4 +1,5 @@
 import 'package:costeira/core/config/ws_constantes.dart';
+import 'package:costeira/core/storage/sub_user_payload.dart';
 import 'package:costeira/features/animals/domain/entities/animals_filter_entity.dart';
 
 class AnimalsFilterRequestModel {
@@ -27,10 +28,9 @@ class AnimalsFilterRequestModel {
       'ut_bases_raciais_id': filter.utBasesRaciaisId,
       if (filter.brincoOnly) 'brincos': true,
       if (!filter.brincoOnly) 'brinco': filter.brinco,
+      'status': filter.status,
     };
-    data.removeWhere(
-      (key, value) => key != 'app_fazendas_id' && value == null,
-    );
-    return AnimalsFilterRequestModel._(data);
+    data.removeWhere((key, value) => key != 'app_fazendas_id' && value == null);
+    return AnimalsFilterRequestModel._(withSubUser(data));
   }
 }

@@ -1,4 +1,5 @@
 import 'package:costeira/core/config/ws_constantes.dart';
+import 'package:costeira/core/storage/sub_user_payload.dart';
 import 'package:costeira/features/cadastros/domain/entities/parceiro_upsert_entity.dart';
 
 class ParceiroUpsertRequestModel {
@@ -18,7 +19,7 @@ class ParceiroUpsertRequestModel {
 
   static Map<String, dynamic> _baseData(ParceiroUpsertEntity parceiro) {
     final isPf = parceiro.tipoPessoa == WSConstantes.tipoPessoaFisica;
-    return {
+    final data = {
       'token': WSConstantes.token,
       'app_users_id': parceiro.appUsersId,
       'app_fazendas_id': parceiro.appFazendasId,
@@ -36,5 +37,6 @@ class ParceiroUpsertRequestModel {
         'nome_fantasia': parceiro.nomeFantasia ?? '',
       },
     }..removeWhere((key, value) => value == null);
+    return withSubUser(data);
   }
 }

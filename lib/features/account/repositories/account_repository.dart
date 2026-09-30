@@ -5,7 +5,10 @@ import 'package:costeira/core/api/api_client.dart';
 import 'package:costeira/core/api/api_exception.dart';
 import 'package:costeira/core/models/api_message.dart';
 import 'package:costeira/core/api/api_response_utils.dart';
+import 'package:costeira/core/storage/session_storage.dart';
+import 'package:costeira/core/utils/app_logger.dart';
 import 'package:costeira/features/account/models/account_profile.dart';
+import 'package:costeira/features/account/models/profile_sub_user.dart';
 import 'package:dio/dio.dart';
 
 class AccountRepository {
@@ -19,9 +22,28 @@ class AccountRepository {
       data: {'id_user': userId, 'token': WSConstantes.token},
     );
     final map = responseAsMap(response);
+    AppLogger.success('PERFIL RAW RESPONSE=$map');
     if (map['id'] == null) {
       throw ApiException(
         map['msg']?.toString() ?? 'Perfil nao encontrado.',
+      );
+    }
+    final subUser = ProfileSubUser.fromProfile(map);
+    AppLogger.info(
+      'PERFIL DIFF keys=${map.keys.join(",")} id=${map['id']} '
+      'app_users_id=${map['app_users_id']} '
+      'app_sub_users_id=${map['app_sub_users_id']} '
+      'vinculo=${map['vinculo']} '
+      'tipo=${map['tipo']} tipo_pessoa=${map['tipo_pessoa']} '
+      'mappedSub=${subUser.appSubUsersId} mappedOwner=${subUser.ownerUserId}',
+    );
+    final session = await SessionStorage.getUserSession();
+    if (session != null && session.id == userId) {
+      await SessionStorage.saveUserSession(
+        session.withSubUser(
+          appSubUsersId: subUser.appSubUsersId,
+          ownerUserId: subUser.ownerUserId,
+        ),
       );
     }
     return AccountProfile.fromJson(map);

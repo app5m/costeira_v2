@@ -35,6 +35,7 @@ class ListAnimalsController extends ChangeNotifier {
     int? utBasesRaciaisId,
     String? brinco,
     bool brincoOnly = false,
+    String? status,
   }) async {
     AppLogger.info(
       'ANIMAIS LIST CONTROLLER: INICIANDO CARREGAMENTO DE ANIMAIS',
@@ -57,9 +58,7 @@ class ListAnimalsController extends ChangeNotifier {
         AppLogger.error(
           'ANIMAIS LIST CONTROLLER: app_fazendas_id OBRIGATORIO AUSENTE',
         );
-        throw ApiException(
-          'Selecione uma fazenda antes de listar os animais.',
-        );
+        throw ApiException('Selecione uma fazenda antes de listar os animais.');
       }
 
       _currentFilter = AnimalsFilterEntity(
@@ -73,6 +72,7 @@ class ListAnimalsController extends ChangeNotifier {
         utBasesRaciaisId: utBasesRaciaisId,
         brinco: brinco,
         brincoOnly: brincoOnly,
+        status: status,
       );
 
       final result = await _getAnimalsUsecase(_currentFilter!);

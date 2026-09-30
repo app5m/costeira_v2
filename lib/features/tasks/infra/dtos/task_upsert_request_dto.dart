@@ -1,4 +1,5 @@
 import 'package:costeira/core/config/ws_constantes.dart';
+import 'package:costeira/core/storage/sub_user_payload.dart';
 import 'package:costeira/features/tasks/domain/entities/task_upsert_entity.dart';
 
 class TaskUpsertRequestDto {
@@ -7,9 +8,10 @@ class TaskUpsertRequestDto {
   final Map<String, dynamic> data;
 
   factory TaskUpsertRequestDto.fromEntity(TaskUpsertEntity task) {
-    return TaskUpsertRequestDto._({
+    return TaskUpsertRequestDto._(withSubUser({
       'token': WSConstantes.token,
       'app_users_id': task.appUsersId,
+      'app_fazendas_id': task.appFazendasId,
       if (task.id != null) 'id': task.id,
       if (task.responsavelId != null)
         'app_tarefas_responsaveis_id': task.responsavelId,
@@ -18,6 +20,7 @@ class TaskUpsertRequestDto {
       'obs': task.obs,
       'urgencia': task.urgencia,
       'datas': task.datas,
-    });
+      if (task.dataPrazo != null) 'data_prazo': task.dataPrazo,
+    }));
   }
 }

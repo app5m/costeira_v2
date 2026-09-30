@@ -27,6 +27,7 @@ class AnimalEntity {
     this.syncStatus,
     this.pendingAction,
     this.isLocalOnly = false,
+    this.subUsuarioNome,
   });
 
   final int id;
@@ -53,4 +54,5 @@ class AnimalEntity {
   final String? syncStatus;
   final String? pendingAction;
   final bool isLocalOnly;
+  final String? subUsuarioNome;
 }

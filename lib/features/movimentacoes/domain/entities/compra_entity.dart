@@ -30,6 +30,7 @@ class CompraEntity {
     this.appAnimaisLotesId,
     this.potreiro,
     this.lote,
+    this.subUsuarioNome,
   });
 
   final int id;
@@ -59,4 +60,5 @@ class CompraEntity {
   final int? appAnimaisLotesId;
   final MovimentacaoReferenceEntity? potreiro;
   final MovimentacaoReferenceEntity? lote;
+  final String? subUsuarioNome;
 }

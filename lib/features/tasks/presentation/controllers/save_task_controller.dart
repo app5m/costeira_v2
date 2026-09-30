@@ -1,15 +1,17 @@
 import 'package:costeira/core/api/api_exception.dart';
 import 'package:costeira/core/models/api_message.dart';
 import 'package:costeira/core/storage/session_storage.dart';
+import 'package:costeira/features/fazendas/domain/usecases/resolve_current_farm_id.dart';
 import 'package:costeira/features/tasks/domain/entities/task_entity.dart';
 import 'package:costeira/features/tasks/domain/entities/task_upsert_entity.dart';
 import 'package:costeira/features/tasks/domain/usecases/save_task_usecase.dart';
 import 'package:flutter/foundation.dart';
 
 class SaveTaskController extends ChangeNotifier {
-  SaveTaskController(this._saveTaskUsecase);
+  SaveTaskController(this._saveTaskUsecase, this._resolveCurrentFarmId);
 
   final SaveTaskUsecase _saveTaskUsecase;
+  final ResolveCurrentFarmId _resolveCurrentFarmId;
 
   bool _isLoading = false;
 
@@ -23,14 +25,20 @@ class SaveTaskController extends ChangeNotifier {
     required String obs,
     required int urgencia,
     required List<String> datas,
+    String? dataPrazo,
   }) async {
     _setLoading(true);
     try {
       final userId = await _getUserId();
+      final farmId = await _resolveCurrentFarmId(userId: userId);
+      if (farmId == null || farmId <= 0) {
+        throw ApiException('Selecione uma fazenda antes de salvar a tarefa.');
+      }
       return _saveTaskUsecase(
         TaskUpsertEntity(
           id: task?.id,
           appUsersId: userId,
+          appFazendasId: farmId,
           responsavelId: responsavelId != null && responsavelId > 0
               ? responsavelId
               : null,
@@ -39,6 +47,7 @@ class SaveTaskController extends ChangeNotifier {
           obs: obs,
           urgencia: urgencia,
           datas: datas,
+          dataPrazo: tipo == 1 ? dataPrazo : null,
         ),
       );
     } finally {

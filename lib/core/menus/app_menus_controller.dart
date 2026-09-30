@@ -15,6 +15,7 @@ class AppMenusController extends ChangeNotifier {
   List<AppMenuEntity> dashboardMenu = const [];
   List<AppMenuEntity> profileMenu = const [];
   List<AppMenuEntity> navigationMenu = const [];
+  List<AppMenuEntity> movementMenu = const [];
   bool isLoading = false;
   bool loaded = false;
   String _signature = '';
@@ -51,13 +52,15 @@ class AppMenusController extends ChangeNotifier {
       final nextDash = _visible(result.dashboardMenu);
       final nextProfile = _visible(result.menu);
       final nextNav = _visible(result.menuNavigation, keepDashboard: true);
+      final nextMoves = _movementItems(result.menuMovimentacoes);
       final nextSignature =
-          'dash=${_slugTree(nextDash)}|perfil=${_slugTree(nextProfile)}|nav=${_slugTree(nextNav)}';
+          'dash=${_slugTree(nextDash)}|perfil=${_slugTree(nextProfile)}|nav=${_slugTree(nextNav)}|mov=${_slugTree(nextMoves)}';
 
       final changed = nextSignature != _signature;
       dashboardMenu = nextDash;
       profileMenu = nextProfile;
       navigationMenu = nextNav;
+      movementMenu = nextMoves;
       loaded = true;
       _signature = nextSignature;
 
@@ -81,6 +84,12 @@ class AppMenusController extends ChangeNotifier {
         notifyListeners();
       }
     }
+  }
+
+  List<AppMenuEntity> _movementItems(List<AppMenuEntity> items) {
+    return items
+        .where((item) => item.isEnabled && item.name.trim().isNotEmpty)
+        .toList(growable: false);
   }
 
   List<AppMenuEntity> _visible(

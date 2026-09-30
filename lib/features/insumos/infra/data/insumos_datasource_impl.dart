@@ -10,6 +10,7 @@ import 'package:costeira/core/utils/app_logger.dart';
 import 'package:costeira/features/insumos/domain/entities/insumos.dart';
 import 'package:costeira/features/insumos/domain/repository/insumos_datasource.dart';
 import 'package:costeira/features/insumos/infra/models/delete_insumo_request_model.dart';
+import 'package:costeira/features/insumos/infra/models/estoque_movimento_request_model.dart';
 import 'package:costeira/features/insumos/infra/models/insumo_charts_filter_request_model.dart';
 import 'package:costeira/features/insumos/infra/models/insumo_charts_response_model.dart';
 import 'package:costeira/features/insumos/infra/models/insumo_registro_upsert_request_model.dart';
@@ -122,6 +123,46 @@ class InsumosDatasourceImpl implements InsumosDatasource {
         response,
         operationName: 'UPDATE INSUMO',
         expectedSuccessMessage: 'Insumo atualizado com sucesso',
+      ),
+    );
+  }
+
+  @override
+  Future<ApiMessage> movimentarEstoque(EstoqueMovimentoEntity movimento) async {
+    final payload = EstoqueMovimentoRequestModel.fromEntity(movimento).data;
+    final saida = movimento.saida;
+    AppLogger.info(
+      'INSUMOS DATASOURCE: ${saida ? 'BAIXA' : 'ENTRADA'} PAYLOAD=$payload',
+    );
+
+    return _offlineApiService.postOrEnqueue(
+      module: 'insumos',
+      action: SyncOperation.create,
+      endpoint: saida
+          ? WSConstantes.movimentacoesSubtrairEstoque
+          : WSConstantes.movimentacoesAdicionarEstoque,
+      payload: payload,
+      priority: SyncPriority.insumos,
+      pendingMessage: saida
+          ? 'Baixa de estoque salva localmente para sincronizar.'
+          : 'Entrada de estoque salva localmente para sincronizar.',
+      rawResponseLog: saida
+          ? 'INSUMOS DATASOURCE: BAIXA RAW RESPONSE'
+          : 'INSUMOS DATASOURCE: ENTRADA RAW RESPONSE',
+      offlineCacheMutation: OfflineCacheMutation(
+        listEndpoint: WSConstantes.insumosListar,
+        listPayloadBuilder: _defaultInsumosListPayload,
+        listField: 'data.lista',
+        createCacheWhenMissing: true,
+        emptyResponse: _emptyInsumosListResponse,
+        allowLatestCacheFallback: false,
+      ),
+      parseResponse: (response) => _parseMutationResponse(
+        response,
+        operationName: saida ? 'BAIXA ESTOQUE' : 'ENTRADA ESTOQUE',
+        expectedSuccessMessage: saida
+            ? 'Baixa registrada com sucesso'
+            : 'Entrada registrada com sucesso',
       ),
     );
   }
@@ -255,7 +296,13 @@ class InsumosDatasourceImpl implements InsumosDatasource {
     }
 
     if (message.message.trim().isEmpty) {
-      return ApiMessage(status: message.status, message: expectedSuccessMessage);
+      return ApiMessage(
+        status: message.status,
+        message: expectedSuccessMessage,
+        type: message.type,
+        extra: message.extra,
+        resourceId: message.resourceId,
+      );
     }
 
     return message;
@@ -268,7 +315,13 @@ Map<String, dynamic> _defaultInsumosListPayload(Map<String, dynamic> payload) {
     return <String, dynamic>{};
   }
 
-  return InsumosFilterRequestModel.fromEntity(InsumosFilterEntity(appUsersId: userId)).data;
+  final farmId = int.tryParse(payload['app_fazendas_id']?.toString() ?? '');
+  return InsumosFilterRequestModel.fromEntity(
+    InsumosFilterEntity(
+      appUsersId: userId,
+      appFazendasId: farmId != null && farmId > 0 ? farmId : null,
+    ),
+  ).data;
 }
 
 const Map<String, dynamic> _emptyInsumosListResponse = {

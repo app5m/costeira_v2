@@ -20,6 +20,8 @@ class TaskEntity {
     this.syncStatus,
     this.pendingAction,
     this.isLocalOnly = false,
+    this.dataPrazo,
+    this.subUsuarioNome,
   });
 
   final int id;
@@ -39,6 +41,25 @@ class TaskEntity {
   final String? syncStatus;
   final String? pendingAction;
   final bool isLocalOnly;
+  final String? dataPrazo;
+  final String? subUsuarioNome;
 
-  bool get isDone => statusId == 3 || statusNome.toLowerCase() == 'realizado';
+  bool get isDone {
+    final name = _plainStatus(statusNome);
+    return statusId == 3 || name.contains('conclu') || name == 'realizado';
+  }
+
+  bool get isOverdue => _plainStatus(statusNome).contains('atras');
+}
+
+String _plainStatus(String value) {
+  return value
+      .toLowerCase()
+      .replaceAll('í', 'i')
+      .replaceAll('ú', 'u')
+      .replaceAll('á', 'a')
+      .replaceAll('é', 'e')
+      .replaceAll('ó', 'o')
+      .replaceAll('ã', 'a')
+      .replaceAll('õ', 'o');
 }

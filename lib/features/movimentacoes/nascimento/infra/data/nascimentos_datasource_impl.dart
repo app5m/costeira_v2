@@ -32,9 +32,6 @@ class NascimentosDatasourceImpl implements NascimentosDatasource {
     if (nascimento.appUsersId == null) {
       throw ApiException('Usuario nao autenticado para cadastrar nascimento.');
     }
-    if (nascimento.animais.length != 2) {
-      throw ApiException('O nascimento deve conter uma matriz e um terneiro.');
-    }
 
     final payload = NascimentoUpsertRequestModel.create(nascimento).data;
     AppLogger.info('NASCIMENTOS DATASOURCE: CREATE PAYLOAD=$payload');

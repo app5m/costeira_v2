@@ -1,3 +1,4 @@
+import 'package:costeira/core/storage/sub_usuario_nome.dart';
 import 'package:costeira/features/tasks/domain/entities/task_entity.dart';
 import 'package:costeira/features/tasks/infra/models/task_date_info_model.dart';
 import 'package:costeira/features/tasks/infra/models/task_responsavel_model.dart';
@@ -21,6 +22,8 @@ class TaskModel extends TaskEntity {
     super.syncStatus,
     super.pendingAction,
     super.isLocalOnly = false,
+    super.dataPrazo,
+    super.subUsuarioNome,
   });
 
   factory TaskModel.fromJson(Map<String, dynamic> json) {
@@ -57,6 +60,8 @@ class TaskModel extends TaskEntity {
       syncStatus: json['syncStatus']?.toString(),
       pendingAction: json['pendingAction']?.toString(),
       isLocalOnly: json['isLocalOnly'] == true,
+      dataPrazo: json['data_prazo']?.toString(),
+      subUsuarioNome: subUsuarioNome(json),
     );
   }
 }

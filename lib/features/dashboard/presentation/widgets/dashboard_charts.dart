@@ -1,30 +1,68 @@
-import 'package:costeira/features/dashboard/presentation/data/dashboard_mock_data.dart';
+import 'dart:math' as math;
+
+import 'package:costeira/features/dashboard/domain/entities/dashboard_entity.dart';
 import 'package:costeira/theme/colors.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
 
+const _sliceColors = <Color>[
+  Color(0xFF0B5C38),
+  Color(0xFF1E8A55),
+  Color(0xFF3CB371),
+  Color(0xFF7DCFB6),
+  Color(0xFFB8E6C8),
+  Color(0xFFD9762B),
+  Color(0xFFC45C4A),
+  Color(0xFF8B4A2B),
+];
+
 class DashboardCompositionChart extends StatefulWidget {
   const DashboardCompositionChart({super.key, required this.slices});
 
-  final List<DashboardMockCategorySlice> slices;
+  final List<DashboardAnimalCategoryEntity> slices;
 
   @override
   State<DashboardCompositionChart> createState() =>
       _DashboardCompositionChartState();
 }
 
-class _DashboardCompositionChartState extends State<DashboardCompositionChart> {
+class _DashboardCompositionChartState extends State<DashboardCompositionChart>
+    with SingleTickerProviderStateMixin {
+  late final AnimationController _enter;
   int? _touched;
 
   int get _total =>
-      widget.slices.fold<int>(0, (sum, item) => sum + item.value.round());
+      widget.slices.fold<int>(0, (sum, item) => sum + item.quantidade);
+
+  @override
+  void initState() {
+    super.initState();
+    _enter = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 700),
+    )..forward();
+  }
+
+  @override
+  void dispose() {
+    _enter.dispose();
+    super.dispose();
+  }
+
+  double get _rise => Curves.easeOutCubic.transform(_enter.value);
 
   @override
   Widget build(BuildContext context) {
-    return _ChartCard(
+    return AnimatedBuilder(
+      animation: _enter,
+      builder: (context, _) => Opacity(
+        opacity: 0.25 + (0.75 * _rise),
+        child: _ChartCard(
       title: 'Composição do rebanho',
       subtitle: 'Distribuição por categoria',
-      child: Column(
+      child: _total == 0
+          ? const _EmptyChart(label: 'Sem composição no período')
+          : Column(
         children: [
           SizedBox(
             height: 220,
@@ -53,8 +91,8 @@ class _DashboardCompositionChartState extends State<DashboardCompositionChart> {
                     sections: [
                       for (var i = 0; i < widget.slices.length; i++)
                         PieChartSectionData(
-                          value: widget.slices[i].value,
-                          color: widget.slices[i].color,
+                          value: math.max(widget.slices[i].quantidade, 0) * _rise,
+                          color: _sliceColors[i % _sliceColors.length],
                           radius: _touched == i ? 58 : 46,
                           title: '',
                         ),
@@ -65,7 +103,7 @@ class _DashboardCompositionChartState extends State<DashboardCompositionChart> {
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     Text(
-                      '$_total',
+                      '${(_total * _rise).round()}',
                       style: const TextStyle(
                         fontFamily: 'Montserrat',
                         fontSize: 28,
@@ -104,12 +142,14 @@ class _DashboardCompositionChartState extends State<DashboardCompositionChart> {
                     ),
                     decoration: BoxDecoration(
                       color: _touched == i
-                          ? widget.slices[i].color.withValues(alpha: 0.16)
+                          ? _sliceColors[i % _sliceColors.length].withValues(
+                              alpha: 0.16,
+                            )
                           : const Color(0xFFF3F1EA),
                       borderRadius: BorderRadius.circular(20),
                       border: Border.all(
                         color: _touched == i
-                            ? widget.slices[i].color
+                            ? _sliceColors[i % _sliceColors.length]
                             : Colors.transparent,
                       ),
                     ),
@@ -120,13 +160,13 @@ class _DashboardCompositionChartState extends State<DashboardCompositionChart> {
                           width: 8,
                           height: 8,
                           decoration: BoxDecoration(
-                            color: widget.slices[i].color,
+                            color: _sliceColors[i % _sliceColors.length],
                             shape: BoxShape.circle,
                           ),
                         ),
                         const SizedBox(width: 6),
                         Text(
-                          '${widget.slices[i].label} · ${widget.slices[i].value.round()}',
+                          '${widget.slices[i].nome} · ${widget.slices[i].quantidade}',
                           style: const TextStyle(
                             fontFamily: 'Montserrat',
                             fontSize: 10,
@@ -142,6 +182,8 @@ class _DashboardCompositionChartState extends State<DashboardCompositionChart> {
           ),
         ],
       ),
+      ),
+      ),
     );
   }
 }
@@ -149,27 +191,49 @@ class _DashboardCompositionChartState extends State<DashboardCompositionChart> {
 class DashboardEvolutionChart extends StatelessWidget {
   const DashboardEvolutionChart({super.key, required this.months});
 
-  final List<DashboardMockMonthFlow> months;
+  final List<DashboardProductionMonthEntity> months;
+
+  bool get _hasFlow => months.any((month) => month.hasFlow);
+
+  double get _maxValue {
+    var maxValue = 0.0;
+    for (final month in months) {
+      maxValue = math.max(maxValue, month.entradas ?? month.valor);
+      maxValue = math.max(maxValue, month.saidas ?? 0);
+    }
+    if (maxValue <= 0) {
+      return 4;
+    }
+    return maxValue * 1.25;
+  }
 
   @override
   Widget build(BuildContext context) {
+    final maxY = _maxValue;
+    final interval = maxY / 3;
+    final hasFlow = _hasFlow;
     return _ChartCard(
       title: 'Evolução do rebanho',
-      subtitle: 'Entradas e saídas no ano agrícola',
-      child: Column(
+      subtitle: hasFlow
+          ? 'Entradas e saídas no ano agrícola'
+          : 'Produção no ano agrícola',
+      child: months.isEmpty
+          ? const _EmptyChart(label: 'Sem dados no período')
+          : _Rise(
+              builder: (rise) => Column(
         children: [
           SizedBox(
             height: 220,
             child: BarChart(
               BarChartData(
-                maxY: 120,
+                maxY: maxY,
                 minY: 0,
                 alignment: BarChartAlignment.spaceAround,
                 groupsSpace: 8,
                 gridData: FlGridData(
                   show: true,
                   drawVerticalLine: false,
-                  horizontalInterval: 40,
+                  horizontalInterval: interval,
                   getDrawingHorizontalLine: (_) =>
                       FlLine(color: const Color(0xFFE8E4D9), strokeWidth: 1),
                 ),
@@ -180,8 +244,8 @@ class DashboardEvolutionChart extends StatelessWidget {
                   leftTitles: AxisTitles(
                     sideTitles: SideTitles(
                       showTitles: true,
-                      reservedSize: 28,
-                      interval: 40,
+                      reservedSize: 36,
+                      interval: interval,
                       getTitlesWidget: (value, _) => Text(
                         value.toInt().toString(),
                         style: const TextStyle(
@@ -219,7 +283,9 @@ class DashboardEvolutionChart extends StatelessWidget {
                     getTooltipColor: (_) => const Color(0xFF1F3D2A),
                     getTooltipItem: (group, _, rod, rodIndex) {
                       final month = months[group.x];
-                      final label = rodIndex == 0 ? 'Entradas' : 'Saídas';
+                      final label = !hasFlow
+                          ? 'Produção'
+                          : (rodIndex == 0 ? 'Entradas' : 'Saídas');
                       return BarTooltipItem(
                         '${month.label}\n$label ${rod.toY.toInt()}',
                         const TextStyle(
@@ -239,21 +305,26 @@ class DashboardEvolutionChart extends StatelessWidget {
                       barsSpace: 2,
                       barRods: [
                         BarChartRodData(
-                          toY: months[i].entradas,
+                          toY:
+                              (hasFlow
+                                  ? (months[i].entradas ?? 0)
+                                  : months[i].valor) *
+                              rise,
                           width: 7,
                           borderRadius: const BorderRadius.vertical(
                             top: Radius.circular(6),
                           ),
                           color: MyColors.colorPrimary,
                         ),
-                        BarChartRodData(
-                          toY: months[i].saidas,
-                          width: 7,
-                          borderRadius: const BorderRadius.vertical(
-                            top: Radius.circular(6),
+                        if (hasFlow)
+                          BarChartRodData(
+                            toY: (months[i].saidas ?? 0) * rise,
+                            width: 7,
+                            borderRadius: const BorderRadius.vertical(
+                              top: Radius.circular(6),
+                            ),
+                            color: const Color(0xFFC45C4A),
                           ),
-                          color: const Color(0xFFC45C4A),
-                        ),
                       ],
                     ),
                 ],
@@ -261,18 +332,39 @@ class DashboardEvolutionChart extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 8),
-          const Row(
+          Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              _LegendDot(color: MyColors.colorPrimary, label: 'Entradas'),
-              SizedBox(width: 16),
-              _LegendDot(color: Color(0xFFC45C4A), label: 'Saídas'),
+              _LegendDot(
+                color: MyColors.colorPrimary,
+                label: hasFlow ? 'Entradas' : 'Produção',
+              ),
+              if (hasFlow) ...[
+                const SizedBox(width: 16),
+                const _LegendDot(
+                  color: Color(0xFFC45C4A),
+                  label: 'Saídas',
+                ),
+              ],
             ],
           ),
         ],
       ),
+            ),
     );
   }
+}
+
+class DashboardTaskSlice {
+  const DashboardTaskSlice({
+    required this.label,
+    required this.value,
+    required this.color,
+  });
+
+  final String label;
+  final double value;
+  final Color color;
 }
 
 class DashboardTasksChart extends StatefulWidget {
@@ -282,22 +374,49 @@ class DashboardTasksChart extends StatefulWidget {
     required this.total,
   });
 
-  final List<DashboardMockTaskSlice> slices;
+  final List<DashboardTaskSlice> slices;
   final int total;
 
   @override
   State<DashboardTasksChart> createState() => _DashboardTasksChartState();
 }
 
-class _DashboardTasksChartState extends State<DashboardTasksChart> {
+class _DashboardTasksChartState extends State<DashboardTasksChart>
+    with SingleTickerProviderStateMixin {
+  late final AnimationController _enter;
   int? _touched;
 
   @override
+  void initState() {
+    super.initState();
+    _enter = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 700),
+    )..forward();
+  }
+
+  @override
+  void dispose() {
+    _enter.dispose();
+    super.dispose();
+  }
+
+  double get _rise => Curves.easeOutCubic.transform(_enter.value);
+
+  @override
   Widget build(BuildContext context) {
-    return _ChartCard(
+    return AnimatedBuilder(
+      animation: _enter,
+      builder: (context, _) {
+        final rise = _rise;
+        return Opacity(
+          opacity: 0.25 + (0.75 * rise),
+          child: _ChartCard(
       title: 'Tarefas',
       subtitle: 'Pendentes · Em andamento · Concluídas',
-      child: Column(
+      child: widget.slices.every((slice) => slice.value <= 0)
+          ? const _EmptyChart(label: 'Sem tarefas no período')
+          : Column(
         children: [
           SizedBox(
             height: 220,
@@ -326,7 +445,7 @@ class _DashboardTasksChartState extends State<DashboardTasksChart> {
                     sections: [
                       for (var i = 0; i < widget.slices.length; i++)
                         PieChartSectionData(
-                          value: widget.slices[i].value,
+                          value: widget.slices[i].value * rise,
                           color: widget.slices[i].color,
                           radius: _touched == i ? 28 : 22,
                           title: '',
@@ -338,7 +457,7 @@ class _DashboardTasksChartState extends State<DashboardTasksChart> {
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     Text(
-                      '${widget.total}',
+                      '${(widget.total * rise).round()}',
                       style: const TextStyle(
                         fontFamily: 'Montserrat',
                         fontSize: 28,
@@ -373,6 +492,75 @@ class _DashboardTasksChartState extends State<DashboardTasksChart> {
             ],
           ),
         ],
+      ),
+          ),
+        );
+      },
+    );
+  }
+}
+
+class _Rise extends StatefulWidget {
+  const _Rise({required this.builder});
+
+  final Widget Function(double rise) builder;
+
+  @override
+  State<_Rise> createState() => _RiseState();
+}
+
+class _RiseState extends State<_Rise> with SingleTickerProviderStateMixin {
+  late final AnimationController _enter;
+
+  @override
+  void initState() {
+    super.initState();
+    _enter = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 700),
+    )..forward();
+  }
+
+  @override
+  void dispose() {
+    _enter.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AnimatedBuilder(
+      animation: _enter,
+      builder: (context, _) {
+        final rise = Curves.easeOutCubic.transform(_enter.value);
+        return Opacity(
+          opacity: 0.25 + (0.75 * rise),
+          child: widget.builder(rise),
+        );
+      },
+    );
+  }
+}
+
+class _EmptyChart extends StatelessWidget {
+  const _EmptyChart({required this.label});
+
+  final String label;
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 28),
+      child: Center(
+        child: Text(
+          label,
+          style: const TextStyle(
+            fontFamily: 'Montserrat',
+            fontSize: 12,
+            fontWeight: FontWeight.w600,
+            color: Color(0xFF8A8A8A),
+          ),
+        ),
       ),
     );
   }

@@ -3,7 +3,9 @@ import 'package:costeira/core/input_formatters/brazilian_currency_input_formatte
 import 'package:costeira/core/models/api_message.dart';
 import 'package:costeira/core/storage/session_storage.dart';
 import 'package:costeira/core/utils/app_logger.dart';
+import 'package:costeira/features/fazendas/domain/usecases/resolve_current_farm_id.dart';
 import 'package:costeira/features/insumos/domain/entities/insumos.dart';
+import 'package:costeira/features/insumos/domain/usecases/create_insumo_registro_usecase.dart';
 import 'package:costeira/features/insumos/domain/usecases/create_insumo_usecase.dart';
 import 'package:costeira/features/insumos/domain/usecases/get_insumos_usecase.dart';
 import 'package:costeira/features/insumos/domain/usecases/update_insumo_usecase.dart';
@@ -12,8 +14,10 @@ import 'package:flutter/material.dart';
 class AddInsumoController extends ChangeNotifier {
   AddInsumoController(
     this._createInsumoUsecase,
+    this._createRegistroUsecase,
     this._getInsumosUsecase,
     this._updateInsumoUsecase,
+    this._resolveCurrentFarmId,
   ) {
     nomeController.addListener(notifyListeners);
     valorUnidadeController.addListener(notifyListeners);
@@ -23,8 +27,10 @@ class AddInsumoController extends ChangeNotifier {
   }
 
   final CreateInsumoUsecase _createInsumoUsecase;
+  final CreateInsumoRegistroUsecase _createRegistroUsecase;
   final GetInsumosUsecase _getInsumosUsecase;
   final UpdateInsumoUsecase _updateInsumoUsecase;
+  final ResolveCurrentFarmId _resolveCurrentFarmId;
 
   final nomeController = TextEditingController();
   final valorUnidadeController = TextEditingController();
@@ -35,6 +41,7 @@ class AddInsumoController extends ChangeNotifier {
   bool _isLoading = false;
   String? _errorMessage;
   int? _currentUserId;
+  int? _farmId;
   InsumoEntity? _editingInsumo;
   String? _selectedTipoInsumo;
   int? _selectedUnidadeId;
@@ -78,9 +85,13 @@ class AddInsumoController extends ChangeNotifier {
       if (_currentUserId == null) {
         throw ApiException('Usuario nao autenticado.');
       }
+      _farmId = await _resolveCurrentFarmId(userId: _currentUserId);
+      if (_farmId == null || _farmId! <= 0) {
+        throw ApiException('Selecione uma fazenda antes de registrar a entrada.');
+      }
 
       final result = await _getInsumosUsecase(
-        InsumosFilterEntity(appUsersId: _currentUserId!),
+        InsumosFilterEntity(appUsersId: _currentUserId!, appFazendasId: _farmId),
       );
       _tipoInsumos = result.tipoInsumos;
       _unidades = result.unidades;
@@ -130,27 +141,57 @@ class AddInsumoController extends ChangeNotifier {
       if (_currentUserId == null) {
         throw ApiException('Usuario nao autenticado.');
       }
+      _farmId ??= await _resolveCurrentFarmId(userId: _currentUserId);
+      if (_farmId == null || _farmId! <= 0) {
+        throw ApiException('Selecione uma fazenda antes de registrar a entrada.');
+      }
 
+      final quantidade = _parseDecimal(qtdTotalController.text)!;
       final insumo = InsumoUpsertEntity(
         id: _editingInsumo?.id,
         appUsersId: _currentUserId,
+        appFazendasId: _farmId,
         tipoInsumo: _selectedTipoInsumo!,
         appEstoquesInsumosSuplementosId: _selectedSuplementoId,
         nome: nomeController.text.trim(),
         appEstoquesInsumosUnidadesId: _selectedUnidadeId!,
         valorUnidade: BrazilianCurrency.toApi(valorUnidadeController.text),
-        qtdTotal: _parseDecimal(qtdTotalController.text)!,
+        qtdTotal: quantidade,
         obs: _emptyToNull(obsController.text),
         dataValidade: _emptyToNull(dataValidadeController.text),
       );
 
-      final result = isEditing
-          ? await _updateInsumoUsecase(insumo)
-          : await _createInsumoUsecase(insumo);
-      AppLogger.success(
-        'INSUMOS ADD CONTROLLER: INSUMO SALVO STATUS=${result.status} MSG=${result.message}',
+      if (isEditing) {
+        final result = await _updateInsumoUsecase(insumo);
+        AppLogger.success(
+          'INSUMOS ADD CONTROLLER: INSUMO SALVO STATUS=${result.status} MSG=${result.message}',
+        );
+        return result;
+      }
+
+      final created = await _createInsumoUsecase(insumo);
+      final insumoId = created.resourceId;
+      if (insumoId == null) {
+        throw ApiException(
+          'Produto cadastrado sem id para registrar a entrada.',
+        );
+      }
+
+      final registro = await _createRegistroUsecase(
+        InsumoRegistroUpsertEntity(
+          appUsersId: _currentUserId,
+          appFazendasId: _farmId,
+          appEstoquesInsumosId: insumoId,
+          tipo: 1,
+          appEstoquesInsumosUnidadesId: _selectedUnidadeId!,
+          qtd: quantidade,
+          obs: _emptyToNull(obsController.text),
+        ),
       );
-      return result;
+      AppLogger.success(
+        'INSUMOS ADD CONTROLLER: ENTRADA SALVA STATUS=${registro.status} INSUMO=$insumoId',
+      );
+      return registro;
     } on ApiException catch (error) {
       _errorMessage = error.message;
       AppLogger.error(

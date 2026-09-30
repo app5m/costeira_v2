@@ -1,3 +1,4 @@
+import 'package:costeira/core/storage/sub_usuario_nome.dart';
 import 'package:costeira/features/movimentacoes/domain/entities/compra_entity.dart';
 import 'package:costeira/features/movimentacoes/infra/models/compra_animal_model.dart';
 import 'package:costeira/features/movimentacoes/infra/models/movimentacao_reference_model.dart';
@@ -31,6 +32,7 @@ class CompraModel extends CompraEntity {
     super.appAnimaisLotesId,
     super.potreiro,
     super.lote,
+    super.subUsuarioNome,
   });
 
   factory CompraModel.fromJson(Map<String, dynamic> json) {
@@ -77,6 +79,7 @@ class CompraModel extends CompraEntity {
       ),
       potreiro: MovimentacaoReferenceModel.maybeFromJson(json['potreiro']),
       lote: MovimentacaoReferenceModel.maybeFromJson(json['lote']),
+      subUsuarioNome: subUsuarioNome(json),
     );
   }
 

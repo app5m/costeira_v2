@@ -5,12 +5,12 @@ import 'package:costeira/features/insumos/domain/usecases/delete_insumo_usecase.
 import 'package:costeira/features/insumos/domain/repository/insumos_datasource.dart';
 import 'package:costeira/features/insumos/domain/usecases/get_insumo_charts_usecase.dart';
 import 'package:costeira/features/insumos/domain/usecases/get_insumos_usecase.dart';
+import 'package:costeira/features/insumos/domain/usecases/movimentar_estoque_usecase.dart';
 import 'package:costeira/features/insumos/domain/usecases/get_insumos_tipo_usecase.dart';
 import 'package:costeira/features/insumos/domain/usecases/update_insumo_registro_usecase.dart';
 import 'package:costeira/features/insumos/domain/usecases/update_insumo_usecase.dart';
 import 'package:costeira/features/insumos/infra/data/insumos_datasource_impl.dart';
 import 'package:costeira/features/insumos/presentation/controllers/add_insumo_controller.dart';
-import 'package:costeira/features/insumos/presentation/controllers/add_insumo_registro_controller.dart';
 import 'package:costeira/features/insumos/presentation/controllers/delete_insumo_controller.dart';
 import 'package:costeira/features/insumos/presentation/controllers/get_insumo_charts_controller.dart';
 import 'package:costeira/features/insumos/presentation/controllers/list_insumos_controller.dart';
@@ -25,12 +25,12 @@ class InsumosBinds {
     i.addLazySingleton(CreateInsumoUsecase.new);
     i.addLazySingleton(UpdateInsumoUsecase.new);
     i.addLazySingleton(CreateInsumoRegistroUsecase.new);
+    i.addLazySingleton(MovimentarEstoqueUsecase.new);
     i.addLazySingleton(UpdateInsumoRegistroUsecase.new);
     i.addLazySingleton(DeleteInsumoUsecase.new);
     i.addLazySingleton(DeleteInsumoRegistroUsecase.new);
     i.add<ListInsumosController>(ListInsumosController.new);
     i.add<AddInsumoController>(AddInsumoController.new);
-    i.add<AddInsumoRegistroController>(AddInsumoRegistroController.new);
     i.add<DeleteInsumoController>(DeleteInsumoController.new);
     i.add<GetInsumoChartsController>(GetInsumoChartsController.new);
   }
