@@ -10,10 +10,22 @@ class CacheKeyBuilder {
   }) {
     final normalizedPayload = _normalize(requestPayload ?? const {});
     final payloadJson = jsonEncode(normalizedPayload);
-    final encodedPayload = base64Url.encode(utf8.encode(payloadJson));
     final userPart = userId?.toString() ?? 'anonymous';
 
-    return '$userPart::$endpoint::$encodedPayload';
+    return '$userPart::$endpoint::${_digest(payloadJson)}';
+  }
+
+  static String _digest(String value) {
+    var h1 = 0x811c9dc5;
+    var h2 = 0x811c9dc5;
+    final bytes = utf8.encode(value);
+    for (var i = 0; i < bytes.length; i++) {
+      final byte = bytes[i];
+      h1 = ((h1 ^ byte) * 0x01000193) & 0xFFFFFFFF;
+      h2 = ((h2 ^ (byte + i)) * 0x01000193) & 0xFFFFFFFF;
+    }
+    return '${h1.toRadixString(16).padLeft(8, '0')}'
+        '${h2.toRadixString(16).padLeft(8, '0')}';
   }
 
   static dynamic _normalize(dynamic value) {

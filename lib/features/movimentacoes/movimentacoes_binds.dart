@@ -109,16 +109,25 @@ import 'package:costeira/features/movimentacoes/troca_categoria/presentation/pag
 import 'package:costeira/features/movimentacoes/troca_categoria/presentation/page_controllers/troca_categoria_list_page_controller.dart';
 import 'package:costeira/features/movimentacoes/troca_categoria/presentation/page_controllers/troca_categoria_page_controller.dart';
 import 'package:costeira/features/movimentacoes/transferencias/domain/repository/transferencias_datasource.dart';
+import 'package:costeira/features/movimentacoes/transferencias/domain/usecases/aceitar_transferencia_fazenda_usecase.dart';
+import 'package:costeira/features/movimentacoes/transferencias/domain/usecases/create_transferencia_fazenda_usecase.dart';
 import 'package:costeira/features/movimentacoes/transferencias/domain/usecases/create_transferencia_usecase.dart';
 import 'package:costeira/features/movimentacoes/transferencias/domain/usecases/delete_transferencia_usecase.dart';
+import 'package:costeira/features/movimentacoes/transferencias/domain/usecases/get_transferencias_fazenda_usecase.dart';
+import 'package:costeira/features/movimentacoes/transferencias/domain/usecases/update_transferencia_fazenda_usecase.dart';
 import 'package:costeira/features/movimentacoes/transferencias/domain/usecases/update_transferencia_usecase.dart';
 import 'package:costeira/features/movimentacoes/transferencias/infra/data/transferencias_datasource_impl.dart';
+import 'package:costeira/features/movimentacoes/transferencias/presentation/controllers/aceitar_transferencia_fazenda_controller.dart';
 import 'package:costeira/features/movimentacoes/transferencias/presentation/controllers/add_transferencia_controller.dart';
+import 'package:costeira/features/movimentacoes/transferencias/presentation/controllers/add_transferencia_fazenda_controller.dart';
+import 'package:costeira/features/movimentacoes/transferencias/presentation/controllers/edit_transferencia_fazenda_controller.dart';
 import 'package:costeira/features/movimentacoes/transferencias/presentation/controllers/delete_transferencia_controller.dart';
 import 'package:costeira/features/movimentacoes/transferencias/presentation/controllers/edit_transferencia_controller.dart';
 import 'package:costeira/features/movimentacoes/transferencias/presentation/controllers/get_transferencia_charts_controller.dart';
 import 'package:costeira/features/movimentacoes/transferencias/presentation/controllers/list_transferencias_controller.dart';
+import 'package:costeira/features/movimentacoes/transferencias/presentation/page_controllers/transferencia_fazenda_form_page_controller.dart';
 import 'package:costeira/features/movimentacoes/transferencias/presentation/page_controllers/transferencia_form_page_controller.dart';
+import 'package:costeira/features/movimentacoes/transferencias/presentation/page_controllers/transferencias_fazenda_list_page_controller.dart';
 import 'package:costeira/features/movimentacoes/transferencias/presentation/page_controllers/transferencias_list_page_controller.dart';
 import 'package:costeira/features/movimentacoes/transferencias/presentation/page_controllers/transferencias_page_controller.dart';
 import 'package:costeira/features/movimentacoes/vendas/domain/repository/vendas_datasource.dart';
@@ -189,6 +198,10 @@ class MovimentacoesBinds {
     i.addLazySingleton(CreateTransferenciaUsecase.new);
     i.addLazySingleton(UpdateTransferenciaUsecase.new);
     i.addLazySingleton(DeleteTransferenciaUsecase.new);
+    i.addLazySingleton(CreateTransferenciaFazendaUsecase.new);
+    i.addLazySingleton(UpdateTransferenciaFazendaUsecase.new);
+    i.addLazySingleton(AceitarTransferenciaFazendaUsecase.new);
+    i.addLazySingleton(GetTransferenciasFazendaUsecase.new);
     i.addLazySingleton(CreateAbigeatoUsecase.new);
     i.addLazySingleton(UpdateAbigeatoUsecase.new);
     i.addLazySingleton(DeleteAbigeatoUsecase.new);
@@ -216,6 +229,15 @@ class MovimentacoesBinds {
     i.add<EditNascimentoController>(EditNascimentoController.new);
     i.add<DeleteNascimentoController>(DeleteNascimentoController.new);
     i.add<AddTransferenciaController>(AddTransferenciaController.new);
+    i.add<AddTransferenciaFazendaController>(
+      AddTransferenciaFazendaController.new,
+    );
+    i.add<EditTransferenciaFazendaController>(
+      EditTransferenciaFazendaController.new,
+    );
+    i.add<AceitarTransferenciaFazendaController>(
+      AceitarTransferenciaFazendaController.new,
+    );
     i.add<EditTransferenciaController>(EditTransferenciaController.new);
     i.add<DeleteTransferenciaController>(DeleteTransferenciaController.new);
     i.add<ListTransferenciasController>(ListTransferenciasController.new);
@@ -265,6 +287,12 @@ class MovimentacoesBinds {
       TrocaCategoriaFormPageController.new,
     );
     i.add<TransferenciaFormPageController>(TransferenciaFormPageController.new);
+    i.add<TransferenciaFazendaFormPageController>(
+      TransferenciaFazendaFormPageController.new,
+    );
+    i.add<TransferenciasFazendaListPageController>(
+      TransferenciasFazendaListPageController.new,
+    );
     i.add<TransferenciasPageController>(TransferenciasPageController.new);
     i.add<TransferenciasListPageController>(
       TransferenciasListPageController.new,

@@ -7,6 +7,7 @@ import 'package:costeira/features/movimentacoes/infra/models/morte_model.dart';
 import 'package:costeira/features/movimentacoes/infra/models/nascimento_model.dart';
 import 'package:costeira/features/movimentacoes/infra/models/troca_categoria_model.dart';
 import 'package:costeira/features/movimentacoes/infra/models/transferencia_model.dart';
+import 'package:costeira/features/movimentacoes/transferencias/infra/models/transferencia_fazenda_model.dart';
 import 'package:costeira/features/movimentacoes/infra/models/venda_model.dart';
 import 'package:costeira/core/utils/app_logger.dart';
 
@@ -22,6 +23,8 @@ class MovimentacoesListResponseModel extends MovimentacoesListEntity {
     super.abortos,
     super.consumos,
     super.transferencias,
+    super.transferenciasRecebidas,
+    super.transferenciasEnviadas,
   });
 
   factory MovimentacoesListResponseModel.fromJson(Map<String, dynamic> json) {
@@ -58,10 +61,21 @@ class MovimentacoesListResponseModel extends MovimentacoesListEntity {
       'consumos',
       ConsumoModel.fromJson,
     );
+    final transferenciasRaw = data['transferencias'];
     final transferencias = _parseList(
-      data['transferencias'],
+      transferenciasRaw,
       'transferencias',
       TransferenciaModel.fromJson,
+    );
+    final recebidas = _parseBucket(
+      transferenciasRaw,
+      'recebidas',
+      TransferenciaFazendaModel.fromJson,
+    );
+    final enviadas = _parseBucket(
+      transferenciasRaw,
+      'enviadas',
+      TransferenciaFazendaModel.fromJson,
     );
 
     return MovimentacoesListResponseModel(
@@ -76,6 +90,8 @@ class MovimentacoesListResponseModel extends MovimentacoesListEntity {
       abortos: abortos,
       consumos: consumos,
       transferencias: transferencias,
+      transferenciasRecebidas: recebidas,
+      transferenciasEnviadas: enviadas,
     );
   }
 
@@ -87,6 +103,17 @@ class MovimentacoesListResponseModel extends MovimentacoesListEntity {
       return Map<String, dynamic>.from(raw);
     }
     return <String, dynamic>{};
+  }
+
+  static List<T> _parseBucket<T>(
+    dynamic raw,
+    String key,
+    T Function(Map<String, dynamic> json) parser,
+  ) {
+    if (raw is! Map) {
+      return <T>[];
+    }
+    return _parseList(raw[key], key, parser);
   }
 
   static List<T> _parseList<T>(

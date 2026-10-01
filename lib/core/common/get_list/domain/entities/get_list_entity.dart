@@ -1,6 +1,7 @@
 import 'package:costeira/core/common/get_list/domain/entities/app_menu_entity.dart';
 import 'package:costeira/core/common/get_list/domain/entities/list_category_entity.dart';
 import 'package:costeira/core/common/get_list/domain/entities/list_item_entity.dart';
+import 'package:costeira/features/dashboard/domain/entities/dashboard_filter_entity.dart';
 
 class GetListEntity {
   const GetListEntity({
@@ -14,6 +15,7 @@ class GetListEntity {
     this.estoqueInsumosMotivos = const [],
     this.estoqueInsumosCategorias = const [],
     this.estoqueUnidadesMedidas = const [],
+    this.anosAgricolas = const [],
   });
 
   final List<ListCategoryEntity> animaisCategorias;
@@ -26,4 +28,5 @@ class GetListEntity {
   final List<ListItemEntity> estoqueInsumosMotivos;
   final List<ListCategoryEntity> estoqueInsumosCategorias;
   final List<ListItemEntity> estoqueUnidadesMedidas;
+  final List<AgriculturalYearRange> anosAgricolas;
 }

@@ -385,6 +385,8 @@ class MovimentacoesDatasourceImpl implements MovimentacoesDatasource {
       abortos: result.abortos,
       consumos: result.consumos,
       transferencias: result.transferencias,
+      transferenciasRecebidas: result.transferenciasRecebidas,
+      transferenciasEnviadas: result.transferenciasEnviadas,
     );
   }
 
@@ -471,6 +473,8 @@ class MovimentacoesDatasourceImpl implements MovimentacoesDatasource {
       abortos: result.abortos,
       consumos: result.consumos,
       transferencias: result.transferencias,
+      transferenciasRecebidas: result.transferenciasRecebidas,
+      transferenciasEnviadas: result.transferenciasEnviadas,
     );
   }
 
@@ -557,6 +561,8 @@ class MovimentacoesDatasourceImpl implements MovimentacoesDatasource {
       abortos: result.abortos,
       consumos: result.consumos,
       transferencias: result.transferencias,
+      transferenciasRecebidas: result.transferenciasRecebidas,
+      transferenciasEnviadas: result.transferenciasEnviadas,
     );
   }
 
@@ -668,6 +674,8 @@ class MovimentacoesDatasourceImpl implements MovimentacoesDatasource {
       abortos: result.abortos,
       consumos: result.consumos,
       transferencias: result.transferencias,
+      transferenciasRecebidas: result.transferenciasRecebidas,
+      transferenciasEnviadas: result.transferenciasEnviadas,
     );
   }
 
@@ -702,6 +710,8 @@ class MovimentacoesDatasourceImpl implements MovimentacoesDatasource {
         abortos: entity.abortos,
         consumos: entity.consumos,
         transferencias: entity.transferencias,
+        transferenciasRecebidas: entity.transferenciasRecebidas,
+        transferenciasEnviadas: entity.transferenciasEnviadas,
       ),
     );
   }
@@ -737,6 +747,8 @@ class MovimentacoesDatasourceImpl implements MovimentacoesDatasource {
         abortos: entity.abortos,
         consumos: entity.consumos,
         transferencias: items,
+        transferenciasRecebidas: entity.transferenciasRecebidas,
+        transferenciasEnviadas: entity.transferenciasEnviadas,
       ),
     );
   }
@@ -770,6 +782,8 @@ class MovimentacoesDatasourceImpl implements MovimentacoesDatasource {
         abortos: entity.abortos,
         consumos: entity.consumos,
         transferencias: entity.transferencias,
+        transferenciasRecebidas: entity.transferenciasRecebidas,
+        transferenciasEnviadas: entity.transferenciasEnviadas,
       ),
     );
   }
@@ -803,6 +817,8 @@ class MovimentacoesDatasourceImpl implements MovimentacoesDatasource {
         abortos: items,
         consumos: entity.consumos,
         transferencias: entity.transferencias,
+        transferenciasRecebidas: entity.transferenciasRecebidas,
+        transferenciasEnviadas: entity.transferenciasEnviadas,
       ),
     );
   }
@@ -836,6 +852,8 @@ class MovimentacoesDatasourceImpl implements MovimentacoesDatasource {
         abortos: entity.abortos,
         consumos: items,
         transferencias: entity.transferencias,
+        transferenciasRecebidas: entity.transferenciasRecebidas,
+        transferenciasEnviadas: entity.transferenciasEnviadas,
       ),
     );
   }
@@ -2061,13 +2079,16 @@ class MovimentacoesDatasourceImpl implements MovimentacoesDatasource {
               .whereType<Map>()
               .where(_looksLikeTrocaCategoriaItem),
         ];
-        final transferencias = [
-          ...(data['transferencias'] as List<dynamic>? ?? const []),
-          ...response
-              .skip(1)
-              .whereType<Map>()
-              .where(_looksLikeTransferenciaItem),
-        ];
+        final rawTransferencias = data['transferencias'];
+        final transferencias = rawTransferencias is List
+            ? [
+                ...rawTransferencias,
+                ...response
+                    .skip(1)
+                    .whereType<Map>()
+                    .where(_looksLikeTransferenciaItem),
+              ]
+            : null;
         final abigeatos = [
           ...(data['abigeatos'] as List<dynamic>? ?? const []),
           ...response.skip(1).whereType<Map>().where(_looksLikeAbigeatoItem),
@@ -2085,7 +2106,9 @@ class MovimentacoesDatasourceImpl implements MovimentacoesDatasource {
         data['mortes'] = mortes;
         data['nascimentos'] = nascimentos;
         data['troca_categoria'] = trocaCategoria;
-        data['transferencias'] = transferencias;
+        if (transferencias != null) {
+          data['transferencias'] = transferencias;
+        }
         data['abigeatos'] = abigeatos;
         data['abortos'] = abortos;
         data['consumos'] = consumos;

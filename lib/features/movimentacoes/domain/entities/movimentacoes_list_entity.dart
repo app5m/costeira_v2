@@ -6,6 +6,7 @@ import 'package:costeira/features/movimentacoes/domain/entities/morte_entity.dar
 import 'package:costeira/features/movimentacoes/domain/entities/nascimento_entity.dart';
 import 'package:costeira/features/movimentacoes/domain/entities/troca_categoria_entity.dart';
 import 'package:costeira/features/movimentacoes/domain/entities/transferencia_entity.dart';
+import 'package:costeira/features/movimentacoes/transferencias/domain/entities/transferencia_fazenda_list_item.dart';
 import 'package:costeira/features/movimentacoes/vendas/domain/entities/venda_entity.dart';
 
 class MovimentacoesListEntity {
@@ -20,6 +21,8 @@ class MovimentacoesListEntity {
     this.abortos = const [],
     this.consumos = const [],
     this.transferencias = const [],
+    this.transferenciasRecebidas = const [],
+    this.transferenciasEnviadas = const [],
   });
 
   final int rows;
@@ -32,4 +35,6 @@ class MovimentacoesListEntity {
   final List<AbortoEntity> abortos;
   final List<ConsumoEntity> consumos;
   final List<TransferenciaEntity> transferencias;
+  final List<TransferenciaFazendaListItem> transferenciasRecebidas;
+  final List<TransferenciaFazendaListItem> transferenciasEnviadas;
 }

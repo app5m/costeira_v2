@@ -18,6 +18,8 @@ import 'package:costeira/features/movimentacoes/movimentacoes.dart';
 import 'package:costeira/features/movimentacoes/nascimento/presentation/pages/add_nascimento.dart';
 import 'package:costeira/features/movimentacoes/nascimento/presentation/pages/nascimentos.dart';
 import 'package:costeira/features/movimentacoes/transferencias/add_transferencia.dart';
+import 'package:costeira/features/movimentacoes/transferencias/add_transferencia_fazenda.dart';
+import 'package:costeira/features/movimentacoes/transferencias/presentation/pages/transferencias_fazenda_page.dart';
 import 'package:costeira/features/movimentacoes/transferencias/transferencia.dart';
 import 'package:costeira/features/movimentacoes/troca_categoria/presentation/pages/add_trocacategoria.dart';
 import 'package:costeira/features/movimentacoes/troca_categoria/presentation/pages/trocas.dart';
@@ -139,8 +141,9 @@ class MenuActionResolver {
       MenuSlug.movimentacoes => () => const Movimentacoes(),
       MenuSlug.compra => () => const AddCompra(),
       MenuSlug.nascimento || 'parto' => () => const AddNascimento(),
-      MenuSlug.transferenciaRecebida ||
-      'transferencia_enviada' ||
+      MenuSlug.transferenciaRecebida => () =>
+          const TransferenciasFazendaPage(initialTab: 0),
+      'transferencia_enviada' => () => const AddTransferenciaFazenda(),
       'movimentacao_de_piquete' => () => const AddTransferencia(),
       MenuSlug.venda => () => const AddVenda(),
       MenuSlug.morte => () => const AddMorte(),

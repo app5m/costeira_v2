@@ -1,4 +1,5 @@
 import 'package:costeira/core/common/get_list/domain/entities/get_list_entity.dart';
+import 'package:costeira/features/dashboard/domain/entities/dashboard_filter_entity.dart';
 import 'package:costeira/core/common/get_list/infra/models/app_menu_model.dart';
 import 'package:costeira/core/common/get_list/infra/models/list_category_model.dart';
 import 'package:costeira/core/common/get_list/infra/models/list_item_model.dart';
@@ -15,6 +16,7 @@ class GetListResponseModel extends GetListEntity {
     super.estoqueInsumosMotivos,
     super.estoqueInsumosCategorias,
     super.estoqueUnidadesMedidas,
+    super.anosAgricolas,
   });
 
   factory GetListResponseModel.fromJson(Map<String, dynamic> json) {
@@ -79,6 +81,9 @@ class GetListResponseModel extends GetListEntity {
       estoqueInsumosMotivos: motivos,
       estoqueInsumosCategorias: estoqueCategorias,
       estoqueUnidadesMedidas: unidades,
+      anosAgricolas: AgriculturalYearRange.fromApiList(
+        json['ano_agricola'] as List<dynamic>?,
+      ),
       dashboardMenu: AppMenuModel.parseTree(json['dashboard_menu']),
       menu: AppMenuModel.parseTree(json['menu']),
       menuNavigation: AppMenuModel.parseTree(json['menu_navigation']),

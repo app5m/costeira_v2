@@ -1,21 +1,16 @@
 import 'package:costeira/core/common/get_list/domain/entities/app_menu_entity.dart';
-import 'package:costeira/core/components/app_snack.dart';
 import 'package:costeira/core/menus/app_menus_controller.dart';
 import 'package:costeira/core/menus/menu_action_resolver.dart';
 import 'package:costeira/core/menus/menu_icon.dart';
+import 'package:costeira/core/menus/menu_slug.dart';
 import 'package:costeira/features/insumos/presentation/pages/add_compra.dart';
 import 'package:costeira/features/movimentacoes/abigeatos/add_abigeato.dart';
-import 'package:costeira/features/movimentacoes/abortos/presentation/pages/add_aborto.dart';
 import 'package:costeira/features/movimentacoes/compras/presentation/pages/add_compra.dart';
 import 'package:costeira/features/movimentacoes/consumo/presentation/pages/add_consumo.dart';
 import 'package:costeira/features/movimentacoes/mortes/presentation/pages/add_morte.dart';
 import 'package:costeira/features/movimentacoes/nascimento/presentation/pages/add_nascimento.dart';
 import 'package:costeira/features/movimentacoes/transferencias/add_transferencia.dart';
-import 'package:costeira/features/movimentacoes/troca_categoria/presentation/pages/add_trocacategoria.dart';
 import 'package:costeira/features/movimentacoes/vendas/presentation/pages/add_venda.dart';
-import 'package:costeira/features/pastagem_nutricao_suplemento/presentation/pages/manejo/add_manejo.dart';
-import 'package:costeira/features/pastagem_nutricao_suplemento/presentation/pages/suplementacao/add_suplemento.dart';
-import 'package:costeira/features/sanitarios/presentation/pages/add_planejamento.dart';
 import 'package:costeira/theme/colors.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_modular/flutter_modular.dart';
@@ -314,7 +309,7 @@ class _ActionItem {
     this.page,
     this.menu,
     this.children,
-    this.comingSoon = false,
+    this.inDevelopment = false,
   });
 
   final String title;
@@ -322,7 +317,7 @@ class _ActionItem {
   final Widget Function()? page;
   final AppMenuEntity? menu;
   final List<_ActionItem>? children;
-  final bool comingSoon;
+  final bool inDevelopment;
 }
 
 Future<void> _showEntradaSheet(BuildContext context) {
@@ -390,44 +385,20 @@ Future<void> _showManejoSheet(BuildContext context) {
     context: context,
     title: 'Manejo',
     items: [
-      _ActionItem(
+      const _ActionItem(
         title: 'Manejo animal',
         subtitle: 'Sanitário, suplemento, piquete, categoria',
-        children: [
-          _ActionItem(title: 'Sanitário', page: () => const AddPlanejamento()),
-          _ActionItem(
-            title: 'Suplementação',
-            page: () => const AddSuplemento(),
-          ),
-          _ActionItem(
-            title: 'Movimentação de piquete',
-            page: () => const AddTransferencia(),
-          ),
-          _ActionItem(
-            title: 'Troca de categoria',
-            page: () => const AddTrocaCategoria(),
-          ),
-          const _ActionItem(title: 'Pesagem', comingSoon: true),
-          const _ActionItem(title: 'Castração', comingSoon: true),
-          const _ActionItem(title: 'Identificação', comingSoon: true),
-        ],
+        inDevelopment: true,
       ),
-      _ActionItem(
+      const _ActionItem(
         title: 'Manejo reprodutivo',
         subtitle: 'Parto, aborto e estação de monta',
-        children: [
-          _ActionItem(title: 'Parto', page: () => const AddNascimento()),
-          _ActionItem(title: 'Aborto', page: () => const AddAborto()),
-          const _ActionItem(title: 'Entrada de touro', comingSoon: true),
-          const _ActionItem(title: 'Retirada de touro', comingSoon: true),
-          const _ActionItem(title: 'IATF', comingSoon: true),
-          const _ActionItem(title: 'Diagnóstico de gestação', comingSoon: true),
-        ],
+        inDevelopment: true,
       ),
-      _ActionItem(
+      const _ActionItem(
         title: 'Manejo de campo',
         subtitle: 'Adubação, calagem, roçada, pastagem',
-        page: () => const AddManejo(),
+        inDevelopment: true,
       ),
     ],
   );
@@ -499,14 +470,99 @@ Future<void> _showActionSheet({
   );
 }
 
+bool _manejoEmDesenvolvimento(_ActionItem item) {
+  if (item.inDevelopment) {
+    return true;
+  }
+  final menu = item.menu;
+  if (menu == null) {
+    return false;
+  }
+  final slug = MenuActionResolver.slugOf(menu);
+  return slug == MenuSlug.manejoAnimal ||
+      slug == 'manejo_reprodutivo' ||
+      slug == 'manejo_campo';
+}
+
+Future<void> _showEmDesenvolvimento(BuildContext context) {
+  return showDialog<void>(
+    context: context,
+    builder: (dialogContext) {
+      return Dialog(
+        backgroundColor: Colors.white,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(20, 24, 20, 16),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Container(
+                width: 48,
+                height: 48,
+                decoration: const BoxDecoration(
+                  color: Color(0xFFE7F6EC),
+                  shape: BoxShape.circle,
+                ),
+                child: const Icon(
+                  LucideIcons.construction,
+                  color: MyColors.colorPrimary,
+                  size: 22,
+                ),
+              ),
+              const SizedBox(height: 16),
+              const Text(
+                'Em desenvolvimento',
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  fontFamily: 'Montserrat',
+                  fontSize: 16,
+                  fontWeight: FontWeight.w700,
+                  color: Color(0xFF1C1C1C),
+                ),
+              ),
+              const SizedBox(height: 8),
+              const Text(
+                'Essa opção ainda não está disponível.',
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  fontFamily: 'Montserrat',
+                  fontSize: 13,
+                  color: Color(0xFF5C5C5C),
+                ),
+              ),
+              const SizedBox(height: 20),
+              SizedBox(
+                width: double.infinity,
+                child: FilledButton(
+                  onPressed: () => Navigator.pop(dialogContext),
+                  style: FilledButton.styleFrom(
+                    backgroundColor: MyColors.colorPrimary,
+                    foregroundColor: Colors.white,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    padding: const EdgeInsets.symmetric(vertical: 14),
+                  ),
+                  child: const Text(
+                    'OK',
+                    style: TextStyle(
+                      fontFamily: 'Montserrat',
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      );
+    },
+  );
+}
+
 Future<void> _handleItem(BuildContext context, _ActionItem item) async {
-  if (item.comingSoon) {
-    Navigator.pop(context);
-    AppSnackBar.show(
-      context: context,
-      message: '${item.title} em breve.',
-      isError: false,
-    );
+  if (_manejoEmDesenvolvimento(item)) {
+    await _showEmDesenvolvimento(context);
     return;
   }
 
@@ -593,7 +649,7 @@ class _ActionTile extends StatelessWidget {
                 ),
               ),
               Icon(
-                item.comingSoon ? LucideIcons.clock : LucideIcons.chevronRight,
+                LucideIcons.chevronRight,
                 size: 18,
                 color: const Color(0xFF9A9A9A),
               ),

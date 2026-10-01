@@ -10,9 +10,11 @@ import 'package:costeira/core/offline/sync/sync_queue_service.dart';
 import 'package:costeira/core/utils/app_logger.dart';
 import 'package:costeira/features/movimentacoes/infra/data/movimentacao_offline_datasource_support.dart';
 import 'package:costeira/features/movimentacoes/transferencias/domain/entities/delete_transferencia_entity.dart';
+import 'package:costeira/features/movimentacoes/transferencias/domain/entities/transferencia_fazenda_upsert_entity.dart';
 import 'package:costeira/features/movimentacoes/transferencias/domain/entities/transferencia_upsert_entity.dart';
 import 'package:costeira/features/movimentacoes/transferencias/domain/repository/transferencias_datasource.dart';
 import 'package:costeira/features/movimentacoes/transferencias/infra/models/delete_transferencia_request_model.dart';
+import 'package:costeira/features/movimentacoes/transferencias/infra/models/transferencia_fazenda_request_model.dart';
 import 'package:costeira/features/movimentacoes/transferencias/infra/models/transferencia_upsert_request_model.dart';
 
 class TransferenciasDatasourceImpl implements TransferenciasDatasource {
@@ -149,6 +151,100 @@ class TransferenciasDatasourceImpl implements TransferenciasDatasource {
         .toList(growable: false);
     AppLogger.info(
       'TRANSFERENCIAS DATASOURCE: EXCLUSOES PENDENTES NA FILA=${ids.length} IDS=$ids',
+    );
+  }
+
+  @override
+  Future<ApiMessage> createTransferenciaFazenda(
+    TransferenciaFazendaUpsertEntity transferencia,
+  ) async {
+    if (transferencia.appUsersId == null) {
+      throw ApiException(
+        'Usuario nao autenticado para cadastrar transferencia.',
+      );
+    }
+
+    final payload = TransferenciaFazendaRequestModel.create(
+      transferencia,
+    ).data;
+    AppLogger.info('TRANSFERENCIAS FAZENDA: CREATE PAYLOAD=$payload');
+
+    return _offlineApiService.postOrEnqueue(
+      module: 'movimentacoes',
+      action: SyncOperation.create,
+      endpoint: WSConstantes.movimentacoesAdicionarTransferencia,
+      payload: payload,
+      priority: SyncPriority.movimentacoes,
+      pendingMessage: 'Transferencia salva localmente para sincronizar.',
+      rawResponseLog: 'TRANSFERENCIAS FAZENDA: CREATE RAW RESPONSE',
+      parseResponse: (response) => _parseMutationResponse(
+        response,
+        operationName: 'CREATE TRANSFERENCIA FAZENDA',
+        expectedSuccessMessage: 'Transferencia cadastrada com sucesso',
+      ),
+    );
+  }
+
+  @override
+  Future<ApiMessage> updateTransferenciaFazenda(
+    TransferenciaFazendaUpsertEntity transferencia,
+  ) async {
+    if (transferencia.id == null) {
+      throw ApiException('Informe o id da transferencia para atualizar.');
+    }
+    if (transferencia.appUsersId == null) {
+      throw ApiException(
+        'Usuario nao autenticado para atualizar transferencia.',
+      );
+    }
+
+    final payload = TransferenciaFazendaRequestModel.update(
+      transferencia,
+    ).data;
+    AppLogger.info('TRANSFERENCIAS FAZENDA: UPDATE PAYLOAD=$payload');
+
+    return _offlineApiService.postOrEnqueue(
+      module: 'movimentacoes',
+      action: SyncOperation.update,
+      endpoint: WSConstantes.movimentacoesAdicionarTransferencia,
+      payload: payload,
+      priority: SyncPriority.movimentacoes,
+      pendingMessage: 'Alteração da transferencia salva para sincronizar.',
+      rawResponseLog: 'TRANSFERENCIAS FAZENDA: UPDATE RAW RESPONSE',
+      parseResponse: (response) => _parseMutationResponse(
+        response,
+        operationName: 'UPDATE TRANSFERENCIA FAZENDA',
+        expectedSuccessMessage: 'Transferencia atualizada com sucesso',
+      ),
+    );
+  }
+
+  @override
+  Future<ApiMessage> aceitarTransferenciaFazenda({
+    required int id,
+    required int statusTransferencia,
+  }) async {
+    final payload = TransferenciaFazendaRequestModel.aceitar(
+      id: id,
+      statusTransferencia: statusTransferencia,
+    ).data;
+    AppLogger.info('TRANSFERENCIAS FAZENDA: ACEITAR PAYLOAD=$payload');
+
+    return _offlineApiService.postOrEnqueue(
+      module: 'movimentacoes',
+      action: SyncOperation.update,
+      endpoint: WSConstantes.movimentacoesAceitarTransferencia,
+      payload: payload,
+      priority: SyncPriority.movimentacoes,
+      pendingMessage: 'Decisão da transferencia salva para sincronizar.',
+      rawResponseLog: 'TRANSFERENCIAS FAZENDA: ACEITAR RAW RESPONSE',
+      parseResponse: (response) => _parseMutationResponse(
+        response,
+        operationName: 'ACEITAR TRANSFERENCIA',
+        expectedSuccessMessage: statusTransferencia == 1
+            ? 'Transferencia aprovada'
+            : 'Transferencia recusada',
+      ),
     );
   }
 

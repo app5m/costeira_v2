@@ -6,10 +6,14 @@ class TransferenciasPageController extends ChangeNotifier {
 
   TabController get tabController => _tabController!;
   int get tabIndex => _tabIndex;
-  bool get shouldShowFab => _tabIndex == 0;
+  bool get shouldShowFab => _tabIndex < 2;
 
   void init(TickerProvider vsync) {
-    _tabController ??= TabController(length: 2, vsync: vsync);
+    if (_tabController != null && _tabController!.length == 3) {
+      return;
+    }
+    _tabController?.dispose();
+    _tabController = TabController(length: 3, vsync: vsync);
   }
 
   void setTabIndex(int index) {

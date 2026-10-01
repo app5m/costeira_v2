@@ -260,12 +260,18 @@ class AnimalsDatasourceImpl implements AnimalsDatasource {
       final response = await _apiClient.post(endpoint, data: payload);
       AppLogger.success('$rawResponseLog=$response');
 
-      await _apiCacheService.saveCache(
-        endpoint: endpoint,
-        requestPayload: payload,
-        response: response,
-        userId: userId,
-      );
+      try {
+        await _apiCacheService.saveCache(
+          endpoint: endpoint,
+          requestPayload: payload,
+          response: response,
+          userId: userId,
+        );
+      } catch (error) {
+        AppLogger.warning(
+          'ANIMAIS DATASOURCE: FALHA AO SALVAR CACHE endpoint=$endpoint error=$error',
+        );
+      }
 
       return parser(response);
     } catch (error) {

@@ -35,6 +35,8 @@ class WSConstantes {
       '/movimentacoes/adicionarTrocaCategoria';
   static const String movimentacoesAdicionarTransferencia =
       '/movimentacoes/adicionarTransferencia';
+  static const String movimentacoesAceitarTransferencia =
+      '/movimentacoes/aceitarTransferencia';
   static const String movimentacoesAdicionarAbigeato =
       '/movimentacoes/adicionarAbigeato';
   static const String movimentacoesAdicionarAborto =

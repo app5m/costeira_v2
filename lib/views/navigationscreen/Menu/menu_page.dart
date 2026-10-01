@@ -112,64 +112,52 @@ class _MenuPageState extends State<MenuPage> {
     return Scaffold(
       backgroundColor: Colors.white,
       body: SafeArea(
-        child: Column(
+        child: ListView(
+          padding: const EdgeInsets.fromLTRB(20, 16, 20, 32),
           children: [
-            const SizedBox(height: 16),
             _buildProfileHeader(),
             const SizedBox(height: 24),
-            Expanded(
-              child: ListView(
-                padding: const EdgeInsets.fromLTRB(20, 0, 20, 16),
-                children: [
-                  const _SectionTitle('Dados'),
-                  SettingsOptionTile(
-                    title: 'Alterar dados cadastrais',
-                    leading: _localIcon(
-                      'icon/user-round.svg',
-                      color: Colors.black,
-                    ),
-                    onTap: () => Modular.to.pushNamed(AppRoutes.profile),
-                  ),
-                  const SizedBox(height: 12),
-                  SettingsOptionTile(
-                    title: 'Alterar Senha',
-                    leading: const Icon(
-                      LucideIcons.lock,
-                      size: 22,
-                      color: Color(0xFF313131),
-                    ),
-                    onTap: () => Modular.to.pushNamed(AppRoutes.updatePassword),
-                  ),
-                  const SizedBox(height: 12),
-                  SettingsOptionTile(
-                    title: 'Desativar Conta',
-                    textColor: Colors.red,
-                    leading: _localIcon('icon/trash.svg', color: Colors.red),
-                    onTap: _confirmDeactivateAccount,
-                  ),
-                  ..._buildApiOrFallbackSections(),
-                ],
-              ),
+            const _SectionTitle('Dados'),
+            SettingsOptionTile(
+              title: 'Alterar dados cadastrais',
+              leading: _localIcon('icon/user-round.svg', color: Colors.black),
+              onTap: () => Modular.to.pushNamed(AppRoutes.profile),
             ),
-            Padding(
-              padding: const EdgeInsets.fromLTRB(20, 0, 20, 32),
-              child: OutlinedButton(
-                onPressed: _isDeactivating ? null : _showExitBottomSheet,
-                style: OutlinedButton.styleFrom(
-                  minimumSize: const Size.fromHeight(48),
-                  side: const BorderSide(color: Color(0xFFFF3B30)),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(8),
-                  ),
+            const SizedBox(height: 12),
+            SettingsOptionTile(
+              title: 'Alterar Senha',
+              leading: const Icon(
+                LucideIcons.lock,
+                size: 22,
+                color: Color(0xFF313131),
+              ),
+              onTap: () => Modular.to.pushNamed(AppRoutes.updatePassword),
+            ),
+            const SizedBox(height: 12),
+            SettingsOptionTile(
+              title: 'Desativar Conta',
+              textColor: Colors.red,
+              leading: _localIcon('icon/trash.svg', color: Colors.red),
+              onTap: _confirmDeactivateAccount,
+            ),
+            ..._buildApiOrFallbackSections(),
+            const SizedBox(height: 24),
+            OutlinedButton(
+              onPressed: _isDeactivating ? null : _showExitBottomSheet,
+              style: OutlinedButton.styleFrom(
+                minimumSize: const Size.fromHeight(48),
+                side: const BorderSide(color: Color(0xFFFF3B30)),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(8),
                 ),
-                child: const Text(
-                  'Sair',
-                  style: TextStyle(
-                    color: Color(0xFFFF3B30),
-                    fontSize: 12,
-                    fontFamily: 'Montserrat',
-                    fontWeight: FontWeight.w600,
-                  ),
+              ),
+              child: const Text(
+                'Sair',
+                style: TextStyle(
+                  color: Color(0xFFFF3B30),
+                  fontSize: 12,
+                  fontFamily: 'Montserrat',
+                  fontWeight: FontWeight.w600,
                 ),
               ),
             ),

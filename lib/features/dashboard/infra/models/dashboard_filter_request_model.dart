@@ -12,6 +12,7 @@ class DashboardFilterRequestModel {
         'token': WSConstantes.token,
         'app_users_id': filter.appUsersId,
         'app_fazendas_id': filter.appFazendasId,
+        'id_ano_agricola': filter.idAnoAgricola,
         'data_in': _formatDate(filter.dataIn),
         'data_out': _formatDate(filter.dataOut),
       }..removeWhere((key, value) => value == null),

@@ -17,47 +17,29 @@ const _sliceColors = <Color>[
 ];
 
 class DashboardCompositionChart extends StatefulWidget {
-  const DashboardCompositionChart({super.key, required this.slices});
+  const DashboardCompositionChart({
+    super.key,
+    required this.slices,
+    this.playToken = 0,
+  });
 
   final List<DashboardAnimalCategoryEntity> slices;
+  final int playToken;
 
   @override
   State<DashboardCompositionChart> createState() =>
       _DashboardCompositionChartState();
 }
 
-class _DashboardCompositionChartState extends State<DashboardCompositionChart>
-    with SingleTickerProviderStateMixin {
-  late final AnimationController _enter;
+class _DashboardCompositionChartState extends State<DashboardCompositionChart> {
   int? _touched;
 
   int get _total =>
       widget.slices.fold<int>(0, (sum, item) => sum + item.quantidade);
 
   @override
-  void initState() {
-    super.initState();
-    _enter = AnimationController(
-      vsync: this,
-      duration: const Duration(milliseconds: 700),
-    )..forward();
-  }
-
-  @override
-  void dispose() {
-    _enter.dispose();
-    super.dispose();
-  }
-
-  double get _rise => Curves.easeOutCubic.transform(_enter.value);
-
-  @override
   Widget build(BuildContext context) {
-    return AnimatedBuilder(
-      animation: _enter,
-      builder: (context, _) => Opacity(
-        opacity: 0.25 + (0.75 * _rise),
-        child: _ChartCard(
+    return _ChartCard(
       title: 'Composição do rebanho',
       subtitle: 'Distribuição por categoria',
       child: _total == 0
@@ -66,63 +48,34 @@ class _DashboardCompositionChartState extends State<DashboardCompositionChart>
         children: [
           SizedBox(
             height: 220,
-            child: Stack(
-              alignment: Alignment.center,
-              children: [
-                PieChart(
-                  PieChartData(
-                    sectionsSpace: 3,
-                    centerSpaceRadius: 58,
-                    startDegreeOffset: -90,
-                    pieTouchData: PieTouchData(
-                      touchCallback: (event, response) {
-                        if (!event.isInterestedForInteractions ||
-                            response?.touchedSection == null) {
-                          setState(() => _touched = null);
-                          return;
-                        }
-                        final index =
-                            response!.touchedSection!.touchedSectionIndex;
-                        setState(() {
-                          _touched = index < 0 ? null : index;
-                        });
-                      },
-                    ),
-                    sections: [
-                      for (var i = 0; i < widget.slices.length; i++)
-                        PieChartSectionData(
-                          value: math.max(widget.slices[i].quantidade, 0) * _rise,
-                          color: _sliceColors[i % _sliceColors.length],
-                          radius: _touched == i ? 58 : 46,
-                          title: '',
-                        ),
-                    ],
+            child: _PieGrow(
+              playToken: widget.playToken,
+              sectionsSpace: 3,
+              centerSpaceRadius: 58,
+              total: _total,
+              caption: 'cabeças',
+              sections: [
+                for (var i = 0; i < widget.slices.length; i++)
+                  PieChartSectionData(
+                    value: widget.slices[i].quantidade.toDouble(),
+                    color: _sliceColors[i % _sliceColors.length],
+                    radius: _touched == i ? 58 : 46,
+                    title: '',
                   ),
-                ),
-                Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Text(
-                      '${(_total * _rise).round()}',
-                      style: const TextStyle(
-                        fontFamily: 'Montserrat',
-                        fontSize: 28,
-                        fontWeight: FontWeight.w800,
-                        color: Color(0xFF1F3D2A),
-                      ),
-                    ),
-                    const Text(
-                      'cabeças',
-                      style: TextStyle(
-                        fontFamily: 'Montserrat',
-                        fontSize: 11,
-                        fontWeight: FontWeight.w600,
-                        color: Color(0xFF6B6B6B),
-                      ),
-                    ),
-                  ],
-                ),
               ],
+              touch: PieTouchData(
+                touchCallback: (event, response) {
+                  if (!event.isInterestedForInteractions ||
+                      response?.touchedSection == null) {
+                    setState(() => _touched = null);
+                    return;
+                  }
+                  final index = response!.touchedSection!.touchedSectionIndex;
+                  setState(() {
+                    _touched = index < 0 ? null : index;
+                  });
+                },
+              ),
             ),
           ),
           const SizedBox(height: 8),
@@ -182,16 +135,19 @@ class _DashboardCompositionChartState extends State<DashboardCompositionChart>
           ),
         ],
       ),
-      ),
-      ),
     );
   }
 }
 
 class DashboardEvolutionChart extends StatelessWidget {
-  const DashboardEvolutionChart({super.key, required this.months});
+  const DashboardEvolutionChart({
+    super.key,
+    required this.months,
+    this.playToken = 0,
+  });
 
   final List<DashboardProductionMonthEntity> months;
+  final int playToken;
 
   bool get _hasFlow => months.any((month) => month.hasFlow);
 
@@ -220,6 +176,7 @@ class DashboardEvolutionChart extends StatelessWidget {
       child: months.isEmpty
           ? const _EmptyChart(label: 'Sem dados no período')
           : _Rise(
+              playToken: playToken,
               builder: (rise) => Column(
         children: [
           SizedBox(
@@ -372,111 +329,61 @@ class DashboardTasksChart extends StatefulWidget {
     super.key,
     required this.slices,
     required this.total,
+    this.playToken = 0,
   });
 
   final List<DashboardTaskSlice> slices;
   final int total;
+  final int playToken;
 
   @override
   State<DashboardTasksChart> createState() => _DashboardTasksChartState();
 }
 
-class _DashboardTasksChartState extends State<DashboardTasksChart>
-    with SingleTickerProviderStateMixin {
-  late final AnimationController _enter;
+class _DashboardTasksChartState extends State<DashboardTasksChart> {
   int? _touched;
 
-  @override
-  void initState() {
-    super.initState();
-    _enter = AnimationController(
-      vsync: this,
-      duration: const Duration(milliseconds: 700),
-    )..forward();
-  }
-
-  @override
-  void dispose() {
-    _enter.dispose();
-    super.dispose();
-  }
-
-  double get _rise => Curves.easeOutCubic.transform(_enter.value);
+  bool get _hasData => widget.slices.any((slice) => slice.value > 0);
 
   @override
   Widget build(BuildContext context) {
-    return AnimatedBuilder(
-      animation: _enter,
-      builder: (context, _) {
-        final rise = _rise;
-        return Opacity(
-          opacity: 0.25 + (0.75 * rise),
-          child: _ChartCard(
+    return _ChartCard(
       title: 'Tarefas',
       subtitle: 'Pendentes · Em andamento · Concluídas',
-      child: widget.slices.every((slice) => slice.value <= 0)
+      child: !_hasData
           ? const _EmptyChart(label: 'Sem tarefas no período')
           : Column(
         children: [
           SizedBox(
             height: 220,
-            child: Stack(
-              alignment: Alignment.center,
-              children: [
-                PieChart(
-                  PieChartData(
-                    sectionsSpace: 4,
-                    centerSpaceRadius: 62,
-                    startDegreeOffset: -90,
-                    pieTouchData: PieTouchData(
-                      touchCallback: (event, response) {
-                        if (!event.isInterestedForInteractions ||
-                            response?.touchedSection == null) {
-                          setState(() => _touched = null);
-                          return;
-                        }
-                        final index =
-                            response!.touchedSection!.touchedSectionIndex;
-                        setState(() {
-                          _touched = index < 0 ? null : index;
-                        });
-                      },
-                    ),
-                    sections: [
-                      for (var i = 0; i < widget.slices.length; i++)
-                        PieChartSectionData(
-                          value: widget.slices[i].value * rise,
-                          color: widget.slices[i].color,
-                          radius: _touched == i ? 28 : 22,
-                          title: '',
-                        ),
-                    ],
+            child: _PieGrow(
+              playToken: widget.playToken,
+              sectionsSpace: 4,
+              centerSpaceRadius: 62,
+              total: widget.total,
+              caption: 'tarefas',
+              sections: [
+                for (var i = 0; i < widget.slices.length; i++)
+                  PieChartSectionData(
+                    value: widget.slices[i].value,
+                    color: widget.slices[i].color,
+                    radius: _touched == i ? 28 : 22,
+                    title: '',
                   ),
-                ),
-                Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Text(
-                      '${(widget.total * rise).round()}',
-                      style: const TextStyle(
-                        fontFamily: 'Montserrat',
-                        fontSize: 28,
-                        fontWeight: FontWeight.w800,
-                        color: Color(0xFF1F3D2A),
-                      ),
-                    ),
-                    const Text(
-                      'tarefas',
-                      style: TextStyle(
-                        fontFamily: 'Montserrat',
-                        fontSize: 11,
-                        fontWeight: FontWeight.w600,
-                        color: Color(0xFF6B6B6B),
-                      ),
-                    ),
-                  ],
-                ),
               ],
+              touch: PieTouchData(
+                touchCallback: (event, response) {
+                  if (!event.isInterestedForInteractions ||
+                      response?.touchedSection == null) {
+                    setState(() => _touched = null);
+                    return;
+                  }
+                  final index = response!.touchedSection!.touchedSectionIndex;
+                  setState(() {
+                    _touched = index < 0 ? null : index;
+                  });
+                },
+              ),
             ),
           ),
           Wrap(
@@ -493,52 +400,294 @@ class _DashboardTasksChartState extends State<DashboardTasksChart>
           ),
         ],
       ),
+    );
+  }
+}
+
+class _PieGrow extends StatefulWidget {
+  const _PieGrow({
+    required this.playToken,
+    required this.sectionsSpace,
+    required this.centerSpaceRadius,
+    required this.sections,
+    required this.total,
+    required this.caption,
+    required this.touch,
+  });
+
+  final int playToken;
+  final double sectionsSpace;
+  final double centerSpaceRadius;
+  final List<PieChartSectionData> sections;
+  final int total;
+  final String caption;
+  final PieTouchData touch;
+
+  @override
+  State<_PieGrow> createState() => _PieGrowState();
+}
+
+class _PieGrowState extends State<_PieGrow> {
+  ScrollPosition? _scroll;
+  bool _onScreen = false;
+  bool _show = false;
+  Duration _duration = Duration.zero;
+  int _run = 0;
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    final next = Scrollable.maybeOf(context)?.position;
+    if (!identical(next, _scroll)) {
+      _scroll?.removeListener(_onScroll);
+      _scroll = next;
+      _scroll?.addListener(_onScroll);
+    }
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) {
+        _onScroll();
+      }
+    });
+  }
+
+  @override
+  void didUpdateWidget(covariant _PieGrow oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.playToken != widget.playToken) {
+      _begin();
+    }
+  }
+
+  @override
+  void dispose() {
+    _scroll?.removeListener(_onScroll);
+    super.dispose();
+  }
+
+  void _onScroll() {
+    if (!mounted || widget.sections.isEmpty) {
+      return;
+    }
+    final on = _visible();
+    final entered = on && !_onScreen;
+    _onScreen = on;
+    if (entered) {
+      _begin();
+    }
+  }
+
+  void _begin() {
+    final run = ++_run;
+    setState(() {
+      _show = false;
+      _duration = Duration.zero;
+    });
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted || run != _run || !_visible()) {
+        return;
+      }
+      setState(() {
+        _show = true;
+        _duration = const Duration(milliseconds: 900);
+      });
+      Future<void>.delayed(const Duration(milliseconds: 900), () {
+        if (!mounted || run != _run) {
+          return;
+        }
+        setState(() => _duration = const Duration(milliseconds: 180));
+      });
+    });
+  }
+
+  bool _visible() {
+    final box = context.findRenderObject();
+    if (box is! RenderBox || !box.attached || !box.hasSize) {
+      return false;
+    }
+    final top = box.localToGlobal(Offset.zero).dy;
+    final bottom = top + box.size.height;
+    final viewport = MediaQuery.sizeOf(context).height;
+    return bottom > 72 && top < viewport - 24;
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Stack(
+      alignment: Alignment.center,
+      children: [
+        PieChart(
+          duration: _duration,
+          curve: Curves.easeOutCubic,
+          PieChartData(
+            sectionsSpace: widget.sectionsSpace,
+            centerSpaceRadius: widget.centerSpaceRadius,
+            startDegreeOffset: -90,
+            pieTouchData: widget.touch,
+            sections: [
+              for (final section in widget.sections)
+                PieChartSectionData(
+                  value: _show ? section.value : 0.001,
+                  color: section.color,
+                  radius: _show ? section.radius : 0,
+                  title: '',
+                ),
+            ],
           ),
-        );
-      },
+        ),
+        TweenAnimationBuilder<double>(
+          tween: Tween<double>(
+            begin: 0,
+            end: _show ? widget.total.toDouble() : 0,
+          ),
+          duration: _duration,
+          curve: Curves.easeOutCubic,
+          builder: (context, value, _) {
+            return Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(
+                  '${value.round()}',
+                  style: const TextStyle(
+                    fontFamily: 'Montserrat',
+                    fontSize: 28,
+                    fontWeight: FontWeight.w800,
+                    color: Color(0xFF1F3D2A),
+                  ),
+                ),
+                Text(
+                  widget.caption,
+                  style: const TextStyle(
+                    fontFamily: 'Montserrat',
+                    fontSize: 11,
+                    fontWeight: FontWeight.w600,
+                    color: Color(0xFF6B6B6B),
+                  ),
+                ),
+              ],
+            );
+          },
+        ),
+      ],
     );
   }
 }
 
 class _Rise extends StatefulWidget {
-  const _Rise({required this.builder});
+  const _Rise({required this.builder, required this.playToken});
 
   final Widget Function(double rise) builder;
+  final int playToken;
 
   @override
   State<_Rise> createState() => _RiseState();
 }
 
-class _RiseState extends State<_Rise> with SingleTickerProviderStateMixin {
-  late final AnimationController _enter;
-
+class _RiseState extends State<_Rise>
+    with SingleTickerProviderStateMixin, _PlaysWhenVisible {
   @override
   void initState() {
     super.initState();
-    _enter = AnimationController(
-      vsync: this,
-      duration: const Duration(milliseconds: 700),
-    )..forward();
+    initPlay(this);
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    bindPlay();
+  }
+
+  @override
+  void didUpdateWidget(covariant _Rise oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.playToken != widget.playToken) {
+      restartPlay();
+    }
   }
 
   @override
   void dispose() {
-    _enter.dispose();
+    disposePlay();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
     return AnimatedBuilder(
-      animation: _enter,
+      animation: play,
       builder: (context, _) {
-        final rise = Curves.easeOutCubic.transform(_enter.value);
         return Opacity(
           opacity: 0.25 + (0.75 * rise),
           child: widget.builder(rise),
         );
       },
     );
+  }
+}
+
+mixin _PlaysWhenVisible<T extends StatefulWidget> on State<T> {
+  late final AnimationController _play;
+  ScrollPosition? _scroll;
+
+  AnimationController get play => _play;
+
+  double get rise => Curves.easeOutCubic.transform(_play.value);
+
+  void initPlay(TickerProvider vsync) {
+    _play = AnimationController(
+      vsync: vsync,
+      duration: const Duration(milliseconds: 700),
+    );
+  }
+
+  void bindPlay() {
+    final next = Scrollable.maybeOf(context)?.position;
+    if (!identical(next, _scroll)) {
+      _scroll?.removeListener(_onPlayScroll);
+      _scroll = next;
+      _scroll?.addListener(_onPlayScroll);
+    }
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) {
+        _onPlayScroll();
+      }
+    });
+  }
+
+  void restartPlay() {
+    _play.value = 0;
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) {
+        return;
+      }
+      if (_isOnScreen()) {
+        _play.forward();
+      }
+    });
+  }
+
+  void _onPlayScroll() {
+    if (!mounted || _play.isAnimating || _play.isCompleted) {
+      return;
+    }
+    if (_isOnScreen()) {
+      _play.forward();
+    }
+  }
+
+  bool _isOnScreen() {
+    final box = context.findRenderObject();
+    if (box is! RenderBox || !box.attached || !box.hasSize) {
+      return false;
+    }
+    final top = box.localToGlobal(Offset.zero).dy;
+    final bottom = top + box.size.height;
+    final viewport = MediaQuery.sizeOf(context).height;
+    return bottom > 72 && top < viewport - 24;
+  }
+
+  void disposePlay() {
+    _scroll?.removeListener(_onPlayScroll);
+    _play.dispose();
   }
 }
 
