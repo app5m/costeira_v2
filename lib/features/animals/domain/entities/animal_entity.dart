@@ -13,6 +13,7 @@ class AnimalEntity {
     required this.sexo,
     this.brinco,
     this.peso,
+    this.ultimoPeso,
     this.createAt,
     this.updateAt,
     this.ultimaPesagem,
@@ -40,6 +41,7 @@ class AnimalEntity {
   final int sexo;
   final String? brinco;
   final double? peso;
+  final AnimalUltimoPeso? ultimoPeso;
   final String? createAt;
   final String? updateAt;
   final String? ultimaPesagem;
@@ -55,4 +57,20 @@ class AnimalEntity {
   final String? pendingAction;
   final bool isLocalOnly;
   final String? subUsuarioNome;
+}
+
+class AnimalUltimoPeso {
+  const AnimalUltimoPeso({
+    required this.rows,
+    this.dataBr,
+    this.peso,
+    this.qtdDias,
+  });
+
+  final int rows;
+  final String? dataBr;
+  final double? peso;
+  final int? qtdDias;
+
+  bool get temPesagem => rows > 0 && peso != null;
 }

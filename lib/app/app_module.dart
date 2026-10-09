@@ -42,6 +42,7 @@ import 'package:costeira/features/animals/domain/entities/animal_lot_entity.dart
 import 'package:costeira/features/auth/models/register_draft.dart';
 import 'package:costeira/features/auth/repositories/auth_repository.dart';
 import 'package:costeira/features/notifications/repositories/notifications_repository.dart';
+import 'package:costeira/features/manejos_animais/manejos_animais_binds.dart';
 import 'package:costeira/features/movimentacoes/movimentacoes_binds.dart';
 import 'package:costeira/features/movimentacoes/movimentacoes.dart';
 import 'package:costeira/features/utils/repositories/utils_repository.dart';
@@ -130,6 +131,7 @@ class AppModule extends Module {
     DashboardBinds.register(i);
     InsumosBinds.register(i);
     MovimentacoesBinds.register(i);
+    ManejosAnimaisBinds.register(i);
     PastagemNutricaoSuplementoBinds.register(i);
     SanitariosBinds.register(i);
     TasksBinds.register(i);

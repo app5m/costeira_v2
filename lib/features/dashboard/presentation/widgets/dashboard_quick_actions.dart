@@ -3,6 +3,7 @@ import 'package:costeira/core/menus/app_menus_controller.dart';
 import 'package:costeira/core/menus/menu_action_resolver.dart';
 import 'package:costeira/core/menus/menu_icon.dart';
 import 'package:costeira/core/menus/menu_slug.dart';
+import 'package:costeira/features/manejos_animais/presentation/pages/manejo_animal_sessao_page.dart';
 import 'package:costeira/features/insumos/presentation/pages/add_compra.dart';
 import 'package:costeira/features/movimentacoes/abigeatos/add_abigeato.dart';
 import 'package:costeira/features/movimentacoes/compras/presentation/pages/add_compra.dart';
@@ -78,6 +79,10 @@ Future<void> _openDashboardItem(
   BuildContext context,
   AppMenuEntity item,
 ) async {
+  if (MenuActionResolver.slugOf(item) == MenuSlug.manejoAnimal) {
+    await MenuActionResolver.open(context, item, surface: MenuSurface.dashboard);
+    return;
+  }
   if (item.children.isNotEmpty) {
     await _showMenuSheet(context, item);
     return;
@@ -385,10 +390,10 @@ Future<void> _showManejoSheet(BuildContext context) {
     context: context,
     title: 'Manejo',
     items: [
-      const _ActionItem(
+      _ActionItem(
         title: 'Manejo animal',
-        subtitle: 'Sanitário, suplemento, piquete, categoria',
-        inDevelopment: true,
+        subtitle: 'Pesagem, sanitário, nutrição e movimentação',
+        page: () => const ManejoAnimalSessaoPage(),
       ),
       const _ActionItem(
         title: 'Manejo reprodutivo',
@@ -479,9 +484,7 @@ bool _manejoEmDesenvolvimento(_ActionItem item) {
     return false;
   }
   final slug = MenuActionResolver.slugOf(menu);
-  return slug == MenuSlug.manejoAnimal ||
-      slug == 'manejo_reprodutivo' ||
-      slug == 'manejo_campo';
+  return slug == 'manejo_reprodutivo' || slug == 'manejo_campo';
 }
 
 Future<void> _showEmDesenvolvimento(BuildContext context) {
@@ -566,6 +569,17 @@ Future<void> _handleItem(BuildContext context, _ActionItem item) async {
     return;
   }
 
+  final menu = item.menu;
+  if (menu != null && MenuActionResolver.slugOf(menu) == MenuSlug.manejoAnimal) {
+    Navigator.pop(context);
+    await MenuActionResolver.open(
+      context,
+      menu,
+      surface: MenuSurface.dashboard,
+    );
+    return;
+  }
+
   if (item.children != null) {
     Navigator.pop(context);
     await _showActionSheet(
@@ -577,7 +591,6 @@ Future<void> _handleItem(BuildContext context, _ActionItem item) async {
   }
 
   Navigator.pop(context);
-  final menu = item.menu;
   if (menu != null) {
     await MenuActionResolver.open(
       context,

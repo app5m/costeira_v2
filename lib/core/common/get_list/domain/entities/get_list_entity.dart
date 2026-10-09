@@ -16,6 +16,7 @@ class GetListEntity {
     this.estoqueInsumosCategorias = const [],
     this.estoqueUnidadesMedidas = const [],
     this.anosAgricolas = const [],
+    this.manejosCategorias = const [],
   });
 
   final List<ListCategoryEntity> animaisCategorias;
@@ -29,4 +30,17 @@ class GetListEntity {
   final List<ListCategoryEntity> estoqueInsumosCategorias;
   final List<ListItemEntity> estoqueUnidadesMedidas;
   final List<AgriculturalYearRange> anosAgricolas;
+  final List<ManejoCategoriaLista> manejosCategorias;
+}
+
+class ManejoCategoriaLista {
+  const ManejoCategoriaLista({
+    required this.id,
+    required this.nome,
+    this.tipos = const [],
+  });
+
+  final int id;
+  final String nome;
+  final List<ListItemEntity> tipos;
 }

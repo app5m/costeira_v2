@@ -3,6 +3,7 @@ import 'package:costeira/app/app_routes.dart';
 import 'package:costeira/core/common/get_list/domain/entities/app_menu_entity.dart';
 import 'package:costeira/core/menus/menu_slug.dart';
 import 'package:costeira/core/utils/app_logger.dart';
+import 'package:costeira/features/manejos_animais/presentation/pages/manejo_animal_sessao_page.dart';
 import 'package:costeira/features/insumos/presentation/pages/add_compra.dart';
 import 'package:costeira/features/movimentacoes/abigeatos/abigeatos.dart';
 import 'package:costeira/features/movimentacoes/abigeatos/add_abigeato.dart';
@@ -152,7 +153,8 @@ class MenuActionResolver {
       MenuSlug.estoque ||
       'estoque_entrada' => () => const AddCompraInsumo(tipo: 1),
       'baixa_estoque' => () => const AddCompraInsumo(tipo: 2),
-      MenuSlug.manejoAnimal || 'sanitario' => () => const AddPlanejamento(),
+      MenuSlug.manejoAnimal => () => const ManejoAnimalSessaoPage(),
+      'sanitario' => () => const AddPlanejamento(),
       'suplementacao' => () => const AddSuplemento(),
       'troca_de_categoria' => () => const AddTrocaCategoria(),
       'aborto' => () => const AddAborto(),

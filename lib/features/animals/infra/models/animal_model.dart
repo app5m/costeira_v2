@@ -15,6 +15,7 @@ class AnimalModel extends AnimalEntity {
     required super.sexo,
     super.brinco,
     super.peso,
+    super.ultimoPeso,
     super.createAt,
     super.updateAt,
     super.ultimaPesagem,
@@ -52,6 +53,7 @@ class AnimalModel extends AnimalEntity {
       sexo: int.tryParse(json['sexo']?.toString() ?? '') ?? 0,
       brinco: json['brinco']?.toString(),
       peso: double.tryParse(json['peso']?.toString() ?? ''),
+      ultimoPeso: _ultimoPeso(json['ultimo_peso']),
       createAt: json['create_at']?.toString(),
       updateAt: json['update_at']?.toString(),
       ultimaPesagem:
@@ -108,6 +110,23 @@ class AnimalModel extends AnimalEntity {
       pendingAction: json['pendingAction']?.toString(),
       isLocalOnly: json['isLocalOnly'] == true,
       subUsuarioNome: subUsuarioNome(json),
+    );
+  }
+
+  static AnimalUltimoPeso? _ultimoPeso(dynamic raw) {
+    if (raw is! Map) {
+      return null;
+    }
+    final map = Map<String, dynamic>.from(raw);
+    final rows = int.tryParse(map['rows']?.toString() ?? '') ?? 0;
+    if (rows <= 0) {
+      return const AnimalUltimoPeso(rows: 0);
+    }
+    return AnimalUltimoPeso(
+      rows: rows,
+      dataBr: map['data_br']?.toString(),
+      peso: double.tryParse(map['peso']?.toString() ?? ''),
+      qtdDias: int.tryParse(map['qtd_dias']?.toString() ?? ''),
     );
   }
 }

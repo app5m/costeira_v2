@@ -8,12 +8,16 @@ class FormAccordion extends StatefulWidget {
     required this.title,
     required this.child,
     this.initiallyExpanded = true,
+    this.expanded,
+    this.onToggle,
     this.complete = false,
   });
 
   final String title;
   final Widget child;
   final bool initiallyExpanded;
+  final bool? expanded;
+  final VoidCallback? onToggle;
 
   /// `true` = ok (verde), `false` = pendente (amarelo), `null` = opcional/neutro.
   final bool? complete;
@@ -25,12 +29,14 @@ class FormAccordion extends StatefulWidget {
 class _FormAccordionState extends State<FormAccordion> {
   late bool _expanded = widget.initiallyExpanded;
 
+  bool get _isExpanded => widget.expanded ?? _expanded;
+
   @override
   Widget build(BuildContext context) {
     final complete = widget.complete;
     final border = switch (complete) {
       true => const Color(0xFF8CC9A6),
-      false => _expanded ? const Color(0xFFE8C56B) : const Color(0xFFE8D48A),
+      false => _isExpanded ? const Color(0xFFE8C56B) : const Color(0xFFE8D48A),
       null => const Color(0xFFD0D5DD),
     };
     final accent = switch (complete) {
@@ -50,7 +56,13 @@ class _FormAccordionState extends State<FormAccordion> {
       child: Column(
         children: [
           InkWell(
-            onTap: () => setState(() => _expanded = !_expanded),
+            onTap: () {
+              if (widget.onToggle != null) {
+                widget.onToggle!();
+                return;
+              }
+              setState(() => _expanded = !_expanded);
+            },
             borderRadius: BorderRadius.circular(12),
             child: Padding(
               padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
@@ -72,7 +84,7 @@ class _FormAccordionState extends State<FormAccordion> {
                     ),
                   ),
                   Icon(
-                    _expanded
+                    _isExpanded
                         ? Icons.keyboard_arrow_up
                         : Icons.keyboard_arrow_down,
                     color: accent,
@@ -81,7 +93,7 @@ class _FormAccordionState extends State<FormAccordion> {
               ),
             ),
           ),
-          if (_expanded)
+          if (_isExpanded)
             Padding(
               padding: const EdgeInsets.fromLTRB(14, 0, 14, 12),
               child: widget.child,

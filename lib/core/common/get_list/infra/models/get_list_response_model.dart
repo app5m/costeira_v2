@@ -17,6 +17,7 @@ class GetListResponseModel extends GetListEntity {
     super.estoqueInsumosCategorias,
     super.estoqueUnidadesMedidas,
     super.anosAgricolas,
+    super.manejosCategorias,
   });
 
   factory GetListResponseModel.fromJson(Map<String, dynamic> json) {
@@ -88,6 +89,28 @@ class GetListResponseModel extends GetListEntity {
       menu: AppMenuModel.parseTree(json['menu']),
       menuNavigation: AppMenuModel.parseTree(json['menu_navigation']),
       menuMovimentacoes: AppMenuModel.parseTree(json['menu_movimentacoes']),
+      manejosCategorias: _manejosCategorias(json['manejos_categorias']),
     );
+  }
+
+  static List<ManejoCategoriaLista> _manejosCategorias(dynamic raw) {
+    if (raw is! List) {
+      return const [];
+    }
+    return raw.whereType<Map>().map((item) {
+      final map = Map<String, dynamic>.from(item);
+      final tipos = (map['tipos'] as List<dynamic>? ?? const [])
+          .whereType<Map>()
+          .map(
+            (tipo) => ListItemModel.fromJson(Map<String, dynamic>.from(tipo)),
+          )
+          .where((tipo) => tipo.id > 0 && tipo.nome.isNotEmpty)
+          .toList(growable: false);
+      return ManejoCategoriaLista(
+        id: int.tryParse(map['id']?.toString() ?? '') ?? 0,
+        nome: map['nome']?.toString() ?? '',
+        tipos: tipos,
+      );
+    }).where((item) => item.id > 0).toList(growable: false);
   }
 }
