@@ -61,7 +61,10 @@ class ManejoAnimalSessaoController extends ChangeNotifier {
     this._getList,
     this._adicionar,
     this._resolveFarm,
-  );
+  ) {
+    dose.addListener(notifyListeners);
+    novoBrinco.addListener(notifyListeners);
+  }
 
   final GetAnimalsUsecase _getAnimals;
   final GetInsumosUsecase _getInsumos;
@@ -78,6 +81,7 @@ class ManejoAnimalSessaoController extends ChangeNotifier {
   final novoBrinco = TextEditingController();
   final motivoTroca = TextEditingController();
   final pesos = <int, TextEditingController>{};
+  final brincosNovos = <int, TextEditingController>{};
 
   bool loading = true;
   bool sessionOn = false;
@@ -145,14 +149,38 @@ class ManejoAnimalSessaoController extends ChangeNotifier {
     }).toList(growable: false);
   }
 
-  List<AnimalEntity> get escopoAnimais {
-    if (escopo == ManejoEscopo.lote) {
-      return grupo;
+  bool get cadastrandoBrinco {
+    if (painel != ManejoPainel.identificacao) {
+      return false;
     }
-    return grupo
+    if (identificacaoModo != ManejoIdentificacaoModo.nova) {
+      return false;
+    }
+    final nome = tiposDe(5)
+        .where((item) => item.id == tipoId)
+        .map((item) => item.nome)
+        .firstOrNull;
+    return tipoId == 6 || (nome ?? '').toLowerCase().contains('brinco');
+  }
+
+  List<AnimalEntity> get animaisDaAcao {
+    if (cadastrandoBrinco) {
+      return grupo.where((animal) => !_temBrinco(animal)).toList(growable: false);
+    }
+    return grupo.where(_temBrinco).toList(growable: false);
+  }
+
+  List<AnimalEntity> get escopoAnimais {
+    final base = animaisDaAcao;
+    if (escopo == ManejoEscopo.lote) {
+      return base;
+    }
+    return base
         .where((animal) => selecionados.contains(animal.id))
         .toList(growable: false);
   }
+
+  bool _temBrinco(AnimalEntity animal) => (animal.brinco ?? '').trim().isNotEmpty;
 
   String get categoriaNome => _nome(categorias, categoriaId);
   String get faseNome => _nome(fases, faseId);
@@ -278,7 +306,10 @@ class ManejoAnimalSessaoController extends ChangeNotifier {
   }
 
   void abrir(ManejoPainel value) {
-    painel = painel == value ? ManejoPainel.nenhum : value;
+    if (painel == value) {
+      return;
+    }
+    painel = value;
     formError = null;
     escopo = ManejoEscopo.lote;
     selecionados.clear();
@@ -299,12 +330,26 @@ class ManejoAnimalSessaoController extends ChangeNotifier {
     novoBrinco.clear();
     motivoTroca.clear();
     _syncPesos();
+    _syncBrincos();
+    notifyListeners();
+  }
+
+  void setTipo(int? id) {
+    tipoId = id;
+    _syncBrincos();
+    notifyListeners();
+  }
+
+  void setModo(ManejoIdentificacaoModo value) {
+    identificacaoModo = value;
+    _syncBrincos();
     notifyListeners();
   }
 
   void setEscopo(ManejoEscopo value) {
     escopo = value;
     _syncPesos();
+    _syncBrincos();
     notifyListeners();
   }
 
@@ -313,6 +358,23 @@ class ManejoAnimalSessaoController extends ChangeNotifier {
       selecionados.remove(id);
     }
     _syncPesos();
+    _syncBrincos();
+    notifyListeners();
+  }
+
+  void selectAllParcial() {
+    selecionados
+      ..clear()
+      ..addAll(animaisDaAcao.map((animal) => animal.id));
+    _syncPesos();
+    _syncBrincos();
+    notifyListeners();
+  }
+
+  void clearParcial() {
+    selecionados.clear();
+    _syncPesos();
+    _syncBrincos();
     notifyListeners();
   }
 
@@ -339,6 +401,76 @@ class ManejoAnimalSessaoController extends ChangeNotifier {
   double get dosePorAnimal => _numero(dose.text);
 
   double get doseTotal => dosePorAnimal * escopoAnimais.length;
+
+  bool get podeRegistrar {
+    return switch (painel) {
+      ManejoPainel.pesagem => _pesosCompletos,
+      ManejoPainel.sanitario => _doseValida(1),
+      ManejoPainel.nutricao => _doseValida(2),
+      ManejoPainel.veterinario => _vetValido,
+      ManejoPainel.identificacao => _identificacaoValida,
+      ManejoPainel.trocaCategoria =>
+        novaCategoriaId != null &&
+            novaFaseId != null &&
+            loteId != null &&
+            escopoAnimais.isNotEmpty,
+      ManejoPainel.movimentacao =>
+        escopoAnimais.isNotEmpty &&
+            (destino == ManejoDestino.piquete
+                ? piqueteDestinoId != null
+                : loteDestinoId != null),
+      ManejoPainel.nenhum => false,
+    };
+  }
+
+  bool get _pesosCompletos {
+    if (escopoAnimais.isEmpty) {
+      return false;
+    }
+    return escopoAnimais.every((animal) {
+      final texto = pesos[animal.id]?.text.trim() ?? '';
+      return texto.isNotEmpty && _numero(texto) > 0;
+    });
+  }
+
+  bool _doseValida(int estoqueCategoria) {
+    if (insumosDaCategoria(estoqueCategoria).isEmpty) {
+      return false;
+    }
+    if (escopoAnimais.isEmpty || insumoId == null || dosePorAnimal <= 1) {
+      return false;
+    }
+    return !saldoInsuficiente;
+  }
+
+  bool get _vetValido {
+    if (tipoId == null || escopoAnimais.isEmpty) {
+      return false;
+    }
+    if (!usarProduto) {
+      return true;
+    }
+    return _doseValida(1);
+  }
+
+  bool get _identificacaoValida {
+    if (tipoId == null) {
+      return false;
+    }
+    if (identificacaoModo == ManejoIdentificacaoModo.troca) {
+      final animalValido = animaisDaAcao.any((animal) => animal.id == animalTrocaId);
+      return animalValido && novoBrinco.text.trim().isNotEmpty;
+    }
+    if (escopoAnimais.isEmpty) {
+      return false;
+    }
+    if (!cadastrandoBrinco) {
+      return true;
+    }
+    return escopoAnimais.every((animal) {
+      return (brincosNovos[animal.id]?.text.trim().isNotEmpty ?? false);
+    });
+  }
 
   bool get saldoInsuficiente {
     final saldo = insumoSelecionado?.qtdTotal;
@@ -367,7 +499,7 @@ class ManejoAnimalSessaoController extends ChangeNotifier {
     }).toList(growable: false);
   }
 
-  void registrarPainel() {
+  Future<String?> registrarPainel() async {
     formError = null;
     final acao = switch (painel) {
       ManejoPainel.pesagem => _pesagem(),
@@ -381,39 +513,92 @@ class ManejoAnimalSessaoController extends ChangeNotifier {
     };
     if (acao == null) {
       notifyListeners();
-      return;
+      return formError ?? 'Nao foi possivel registrar.';
+    }
+    final corpos = _corposParaPost(acao);
+    if (corpos.isEmpty) {
+      return 'Nao foi possivel montar o manejo.';
+    }
+    saving = true;
+    notifyListeners();
+    for (final fields in corpos) {
+      final result = await _adicionar.submit(fields);
+      if (result == null || !result.isSuccess) {
+        saving = false;
+        notifyListeners();
+        return _adicionar.errorMessage ?? 'Nao foi possivel registrar.';
+      }
     }
     acoes.add(acao);
     painel = ManejoPainel.nenhum;
+    saving = false;
     notifyListeners();
+    if (acao.fields['id_categoria'] == 5) {
+      await refreshAnimais();
+    }
+    if (acao.fields['id_estoque'] != null) {
+      await refreshInsumos();
+    }
+    return null;
+  }
+
+  Future<void> refreshInsumos() async {
+    try {
+      final user = await SessionStorage.getUserSession();
+      if (user == null) {
+        return;
+      }
+      final farmId = await _resolveFarm(userId: user.id);
+      final lista = await _getInsumos(
+        InsumosFilterEntity(appUsersId: user.id, appFazendasId: farmId),
+      );
+      insumos = lista.lista;
+      notifyListeners();
+    } catch (_) {}
+  }
+
+  List<Map<String, dynamic>> _corposParaPost(ManejoSessaoAcao acao) {
+    final fields = acao.fields;
+    final animais = fields['animais'];
+    final novaIdentificacao = fields['id_categoria'] == 5 &&
+        fields['id'] == null &&
+        animais is List &&
+        animais.any((raw) => raw is Map && raw['novo_brinco'] != null);
+    if (!novaIdentificacao) {
+      return [fields];
+    }
+    return [
+      for (final raw in animais)
+        if (raw is Map)
+          () {
+            final animal = Map<String, dynamic>.from(raw);
+            return <String, dynamic>{
+              'id_categoria': 5,
+              'id_tipo': fields['id_tipo'],
+              'data': fields['data'],
+              'novo_brinco': animal['novo_brinco'],
+              'animais': [
+                {'id': animal['id']},
+              ],
+            };
+          }(),
+    ];
   }
 
   Future<String?> finalizar() async {
     if (acoes.isEmpty) {
       return 'Registre ao menos uma ação.';
     }
-    saving = true;
-    notifyListeners();
-    while (acoes.isNotEmpty) {
-      final result = await _adicionar.submit(acoes.first.fields);
-      if (result == null || !result.isSuccess) {
-        saving = false;
-        notifyListeners();
-        return _adicionar.errorMessage ?? 'Nao foi possivel finalizar a sessao.';
-      }
-      acoes.removeAt(0);
-    }
-    saving = false;
-    notifyListeners();
     return null;
   }
 
   ManejoSessaoAcao? _pesagem() {
-    final preenchidas = linhasPesagem
-        .where((linha) => (pesos[linha.animal.id]?.text.trim().isNotEmpty ?? false))
-        .toList(growable: false);
-    if (preenchidas.isEmpty) {
-      formError = 'Informe o peso atual de ao menos um animal.';
+    final preenchidas = linhasPesagem.where((linha) {
+      final texto = pesos[linha.animal.id]?.text.trim() ?? '';
+      return texto.isNotEmpty && linha.pesoAtual > 0;
+    }).toList(growable: false);
+    if (escopoAnimais.isEmpty || preenchidas.length != escopoAnimais.length) {
+      formError = 'Informe o peso atual de todos os animais do escopo.';
       return null;
     }
     return ManejoSessaoAcao(
@@ -445,8 +630,10 @@ class ManejoAnimalSessaoController extends ChangeNotifier {
           'Nenhum produto cadastrado na categoria de estoque "${nomeCategoriaEstoque(estoqueCategoria)}".';
       return null;
     }
-    if (escopoAnimais.isEmpty || insumoId == null || dosePorAnimal <= 0) {
-      formError = 'Escolha o produto, a dose e os animais.';
+    if (escopoAnimais.isEmpty || insumoId == null || dosePorAnimal <= 1) {
+      formError = categoria == 2 || categoria == 3
+          ? 'A quantidade por animal precisa ser maior que 1.'
+          : 'A dose por animal precisa ser maior que 1.';
       return null;
     }
     if (saldoInsuficiente) {
@@ -510,15 +697,15 @@ class ManejoAnimalSessaoController extends ChangeNotifier {
       return null;
     }
     if (identificacaoModo == ManejoIdentificacaoModo.troca) {
-      if (animalTrocaId == null || novoBrinco.text.trim().isEmpty) {
-        formError = 'Escolha um animal e informe o novo brinco.';
+      final animalValido = animaisDaAcao.any((animal) => animal.id == animalTrocaId);
+      if (!animalValido || novoBrinco.text.trim().isEmpty) {
+        formError = 'Escolha um animal com brinco e informe o novo brinco.';
         return null;
       }
       return ManejoSessaoAcao(
         titulo: 'Troca de brinco',
         detalhe: novoBrinco.text.trim(),
         fields: {
-          'id': animalTrocaId,
           'id_categoria': 5,
           'id_tipo': tipoId,
           'novo_brinco': novoBrinco.text.trim(),
@@ -530,14 +717,18 @@ class ManejoAnimalSessaoController extends ChangeNotifier {
         },
       );
     }
-    final alvo = escopoAnimais.where((animal) {
-      if (tipoId == 6) {
-        return (animal.brinco ?? '').trim().isEmpty;
-      }
-      return true;
-    }).toList(growable: false);
+    final alvo = escopoAnimais;
     if (alvo.isEmpty) {
-      formError = 'Todos os animais do grupo já possuem brinco.';
+      formError = cadastrandoBrinco
+          ? 'Nenhum animal sem brinco neste grupo.'
+          : 'Nenhum animal com brinco neste grupo.';
+      return null;
+    }
+    final incompleto = alvo.any(
+      (animal) => (brincosNovos[animal.id]?.text.trim().isEmpty ?? true),
+    );
+    if (cadastrandoBrinco && incompleto) {
+      formError = 'Informe o brinco de todos os animais selecionados.';
       return null;
     }
     return ManejoSessaoAcao(
@@ -547,7 +738,14 @@ class ManejoAnimalSessaoController extends ChangeNotifier {
         'id_categoria': 5,
         'id_tipo': tipoId,
         'data': data.text,
-        'animais': _ids(alvo),
+        'animais': alvo
+            .map(
+              (animal) => {
+                'id': animal.id,
+                if (cadastrandoBrinco) 'novo_brinco': brincosNovos[animal.id]!.text.trim(),
+              },
+            )
+            .toList(growable: false),
       },
     );
   }
@@ -607,11 +805,37 @@ class ManejoAnimalSessaoController extends ChangeNotifier {
     final ids = escopoAnimais.map((animal) => animal.id).toSet();
     for (final id in pesos.keys.toList()) {
       if (!ids.contains(id)) {
-        pesos.remove(id)?.dispose();
+        final controller = pesos.remove(id);
+      controller?.removeListener(notifyListeners);
+      controller?.dispose();
       }
     }
     for (final animal in escopoAnimais) {
-      pesos.putIfAbsent(animal.id, TextEditingController.new);
+      pesos.putIfAbsent(animal.id, () {
+        final controller = TextEditingController();
+        controller.addListener(notifyListeners);
+        return controller;
+      });
+    }
+  }
+
+  void _syncBrincos() {
+    final ids = identificacaoModo == ManejoIdentificacaoModo.nova
+        ? escopoAnimais.map((animal) => animal.id).toSet()
+        : <int>{};
+    for (final id in brincosNovos.keys.toList()) {
+      if (!ids.contains(id)) {
+        final controller = brincosNovos.remove(id);
+        controller?.removeListener(notifyListeners);
+        controller?.dispose();
+      }
+    }
+    for (final id in ids) {
+      brincosNovos.putIfAbsent(id, () {
+        final controller = TextEditingController();
+        controller.addListener(notifyListeners);
+        return controller;
+      });
     }
   }
 
@@ -674,11 +898,18 @@ class ManejoAnimalSessaoController extends ChangeNotifier {
   void dispose() {
     data.dispose();
     obs.dispose();
+    dose.removeListener(notifyListeners);
     dose.dispose();
     responsavel.dispose();
+    novoBrinco.removeListener(notifyListeners);
     novoBrinco.dispose();
     motivoTroca.dispose();
     for (final controller in pesos.values) {
+      controller.removeListener(notifyListeners);
+      controller.dispose();
+    }
+    for (final controller in brincosNovos.values) {
+      controller.removeListener(notifyListeners);
       controller.dispose();
     }
     super.dispose();

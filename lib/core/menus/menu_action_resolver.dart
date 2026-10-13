@@ -4,6 +4,8 @@ import 'package:costeira/core/common/get_list/domain/entities/app_menu_entity.da
 import 'package:costeira/core/menus/menu_slug.dart';
 import 'package:costeira/core/utils/app_logger.dart';
 import 'package:costeira/features/manejos_animais/presentation/pages/manejo_animal_sessao_page.dart';
+import 'package:costeira/features/manejos_animais/presentation/pages/manejo_campo_page.dart';
+import 'package:costeira/features/manejos_animais/presentation/pages/manejo_reprodutivo_page.dart';
 import 'package:costeira/features/insumos/presentation/pages/add_compra.dart';
 import 'package:costeira/features/movimentacoes/abigeatos/abigeatos.dart';
 import 'package:costeira/features/movimentacoes/abigeatos/add_abigeato.dart';
@@ -26,7 +28,6 @@ import 'package:costeira/features/movimentacoes/troca_categoria/presentation/pag
 import 'package:costeira/features/movimentacoes/troca_categoria/presentation/pages/trocas.dart';
 import 'package:costeira/features/movimentacoes/vendas/presentation/pages/add_venda.dart';
 import 'package:costeira/features/movimentacoes/vendas/presentation/pages/vendas.dart';
-import 'package:costeira/features/pastagem_nutricao_suplemento/presentation/pages/manejo/add_manejo.dart';
 import 'package:costeira/features/pastagem_nutricao_suplemento/presentation/pages/suplementacao/add_suplemento.dart';
 import 'package:costeira/features/sanitarios/presentation/pages/add_planejamento.dart';
 import 'package:flutter/material.dart';
@@ -158,7 +159,8 @@ class MenuActionResolver {
       'suplementacao' => () => const AddSuplemento(),
       'troca_de_categoria' => () => const AddTrocaCategoria(),
       'aborto' => () => const AddAborto(),
-      'manejo_campo' => () => const AddManejo(),
+      'manejo_campo' => () => const ManejoCampoPage(),
+      'manejo_reprodutivo' => () => const ManejoReprodutivoPage(),
       _ => null,
     };
   }

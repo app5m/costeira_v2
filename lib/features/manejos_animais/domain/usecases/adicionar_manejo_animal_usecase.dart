@@ -17,4 +17,28 @@ class AdicionarManejoAnimalUsecase {
       fields: fields,
     );
   }
+
+  Future<ApiMessage> campo({
+    required int appUsersId,
+    required int appFazendasId,
+    required Map<String, dynamic> fields,
+  }) {
+    return _datasource.adicionarCampo(
+      appUsersId: appUsersId,
+      appFazendasId: appFazendasId,
+      fields: fields,
+    );
+  }
+
+  Future<ApiMessage> reprodutivo({
+    required int appUsersId,
+    required int appFazendasId,
+    required Map<String, dynamic> fields,
+  }) {
+    return _datasource.adicionarReprodutivo(
+      appUsersId: appUsersId,
+      appFazendasId: appFazendasId,
+      fields: fields,
+    );
+  }
 }

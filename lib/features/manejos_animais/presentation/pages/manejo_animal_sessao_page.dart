@@ -3,10 +3,12 @@ import 'package:costeira/core/components/app_snack.dart';
 import 'package:costeira/core/components/custom_button.dart';
 import 'package:costeira/core/components/form_accordion.dart';
 import 'package:costeira/features/animals/domain/entities/animal_entity.dart';
+import 'package:costeira/features/insumos/domain/entities/insumos.dart';
 import 'package:costeira/features/manejos_animais/presentation/page_controllers/manejo_animal_sessao_controller.dart';
 import 'package:costeira/theme/colors.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_modular/flutter_modular.dart';
+import 'package:lucide_icons/lucide_icons.dart';
 
 class ManejoAnimalSessaoPage extends StatefulWidget {
   const ManejoAnimalSessaoPage({super.key});
@@ -18,7 +20,7 @@ class ManejoAnimalSessaoPage extends StatefulWidget {
 class _ManejoAnimalSessaoPageState extends State<ManejoAnimalSessaoPage> {
   late final ManejoAnimalSessaoController _controller;
   bool _verMaisPesagem = false;
-  bool _verMaisAnimais = false;
+  bool _gradeAberta = true;
   ManejoPainel _painel = ManejoPainel.nenhum;
 
   @override
@@ -34,7 +36,7 @@ class _ManejoAnimalSessaoPageState extends State<ManejoAnimalSessaoPage> {
     }
     if (_painel != _controller.painel) {
       _verMaisPesagem = false;
-      _verMaisAnimais = false;
+      _gradeAberta = _controller.painel == ManejoPainel.nenhum;
       _painel = _controller.painel;
     }
     setState(() {});
@@ -47,15 +49,31 @@ class _ManejoAnimalSessaoPageState extends State<ManejoAnimalSessaoPage> {
     super.dispose();
   }
 
+  void _voltar() {
+    if (_controller.sessionOn) {
+      _controller.trocarGrupo();
+      setState(() => _gradeAberta = true);
+      return;
+    }
+    Navigator.pop(context);
+  }
+
   @override
   Widget build(BuildContext context) {
     final titulo = _controller.sessionOn ? 'Sessão de manejo' : 'Seleção do grupo';
-    return Scaffold(
+    return PopScope(
+      canPop: !_controller.sessionOn,
+      onPopInvokedWithResult: (didPop, _) {
+        if (!didPop) {
+          _voltar();
+        }
+      },
+      child: Scaffold(
       backgroundColor: Colors.white,
       appBar: AppBar(
         backgroundColor: MyColors.colorPrimary,
         leading: IconButton(
-          onPressed: () => Navigator.pop(context),
+          onPressed: _voltar,
           icon: const Icon(Icons.arrow_back_ios, color: Colors.white),
         ),
         title: Text(
@@ -68,18 +86,16 @@ class _ManejoAnimalSessaoPageState extends State<ManejoAnimalSessaoPage> {
           ),
         ),
       ),
-      body: SafeArea(
-        top: false,
-        child: _controller.loading && _controller.animais.isEmpty && !_controller.sessionOn
-            ? const Center(child: CircularProgressIndicator())
-            : ListView(
-                padding: const EdgeInsets.fromLTRB(20, 16, 20, 32),
-                children: [
-                  if (_controller.error != null) _erro(_controller.error!),
-                  if (!_controller.sessionOn) ..._grupo() else ..._hub(),
-                ],
-              ),
-      ),
+      body: _controller.loading && _controller.animais.isEmpty && !_controller.sessionOn
+          ? const Center(child: CircularProgressIndicator())
+          : ListView(
+              padding: const EdgeInsets.fromLTRB(20, 16, 20, 0),
+              children: [
+                if (_controller.error != null) _erro(_controller.error!),
+                if (!_controller.sessionOn) ..._grupo() else ..._hub(),
+              ],
+            ),
+    ),
     );
   }
 
@@ -187,49 +203,37 @@ class _ManejoAnimalSessaoPageState extends State<ManejoAnimalSessaoPage> {
             ),
           ),
         ),
-      for (final item in _acoes)
-        FormAccordion(
-          title: item.$2,
-          expanded: _controller.painel == item.$1,
-          complete: _registrada(item.$1) ? true : null,
-          initiallyExpanded: false,
-          onToggle: () => _controller.abrir(item.$1),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              if (_controller.formError != null) _erro(_controller.formError!),
-              ..._painelDe(item.$1),
-            ],
-          ),
+      FormAccordion(
+        title: _tituloAcao,
+        expanded: _gradeAberta,
+        complete: _controller.painel == ManejoPainel.nenhum ? null : true,
+        onToggle: () => setState(() => _gradeAberta = !_gradeAberta),
+        child: GridView.count(
+          crossAxisCount: 3,
+          shrinkWrap: true,
+          physics: const NeverScrollableScrollPhysics(),
+          mainAxisSpacing: 8,
+          crossAxisSpacing: 8,
+          childAspectRatio: 0.95,
+          children: [
+            for (final item in _acoes)
+              _AcaoGrade(
+                label: item.$2,
+                icon: item.$3,
+                selected: _controller.painel == item.$1,
+                onTap: () {
+                  _controller.abrir(item.$1);
+                  setState(() => _gradeAberta = false);
+                },
+              ),
+          ],
         ),
+      ),
+      if (_controller.painel != ManejoPainel.nenhum) ...[
+        if (_controller.formError != null) _erro(_controller.formError!),
+        ..._painelDe(_controller.painel),
+      ],
       const SizedBox(height: 12),
-      SizedBox(
-        width: double.infinity,
-        child: OutlinedButton(
-          onPressed: () => Navigator.of(context).pop(),
-          style: OutlinedButton.styleFrom(
-            foregroundColor: MyColors.colorPrimary,
-            side: const BorderSide(color: MyColors.colorPrimary),
-            minimumSize: const Size(double.infinity, 48),
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-          ),
-          child: const Text(
-            'Cancelar sessão',
-            style: TextStyle(fontFamily: 'Montserrat', fontWeight: FontWeight.w600),
-          ),
-        ),
-      ),
-      TextButton(
-        onPressed: _controller.trocarGrupo,
-        child: const Text(
-          'Trocar grupo',
-          style: TextStyle(
-            color: MyColors.colorPrimary,
-            fontFamily: 'Montserrat',
-            fontWeight: FontWeight.w600,
-          ),
-        ),
-      ),
       CustomButton(
         text: 'Finalizar sessão',
         isLoading: _controller.saving,
@@ -239,37 +243,30 @@ class _ManejoAnimalSessaoPageState extends State<ManejoAnimalSessaoPage> {
     ];
   }
 
-  static const _acoes = [
-    (ManejoPainel.pesagem, 'Pesagem'),
-    (ManejoPainel.sanitario, 'Sanitário'),
-    (ManejoPainel.nutricao, 'Nutrição'),
-    (ManejoPainel.veterinario, 'Veterinário'),
-    (ManejoPainel.identificacao, 'Identificação'),
-    (ManejoPainel.trocaCategoria, 'Troca de categoria'),
-    (ManejoPainel.movimentacao, 'Movimentação de piquete'),
-  ];
-
-  bool _registrada(ManejoPainel painel) {
-    return _controller.acoes.any((acao) {
-      return switch (painel) {
-        ManejoPainel.pesagem => acao.titulo == 'Pesagem',
-        ManejoPainel.sanitario => acao.titulo == 'Sanitário',
-        ManejoPainel.nutricao => acao.titulo == 'Nutrição',
-        ManejoPainel.veterinario => acao.titulo == 'Veterinário',
-        ManejoPainel.identificacao =>
-          acao.titulo == 'Identificação' || acao.titulo == 'Troca de brinco',
-        ManejoPainel.trocaCategoria => acao.titulo == 'Troca de categoria',
-        ManejoPainel.movimentacao => acao.titulo == 'Movimentação',
-        ManejoPainel.nenhum => false,
-      };
-    });
+  String get _tituloAcao {
+    for (final item in _acoes) {
+      if (item.$1 == _controller.painel) {
+        return item.$2;
+      }
+    }
+    return 'Escolher ação';
   }
+
+  static const _acoes = [
+    (ManejoPainel.pesagem, 'Pesagem', LucideIcons.scale),
+    (ManejoPainel.sanitario, 'Sanitário', LucideIcons.syringe),
+    (ManejoPainel.nutricao, 'Nutrição', LucideIcons.wheat),
+    (ManejoPainel.veterinario, 'Veterinário', LucideIcons.stethoscope),
+    (ManejoPainel.identificacao, 'Identificação', LucideIcons.tag),
+    (ManejoPainel.trocaCategoria, 'Categoria', LucideIcons.replace),
+    (ManejoPainel.movimentacao, 'Piquete', LucideIcons.mapPin),
+  ];
 
   List<Widget> _painelDe(ManejoPainel painel) {
     return switch (painel) {
       ManejoPainel.pesagem => _pesagem(),
-      ManejoPainel.sanitario => _estoque(1, 'Produto'),
-      ManejoPainel.nutricao => _estoque(2, 'Produto'),
+      ManejoPainel.sanitario => _estoque(1, 'Produto', usarUnidade: true),
+      ManejoPainel.nutricao => _estoque(2, 'Produto', usarUnidade: true),
       ManejoPainel.veterinario => _veterinario(),
       ManejoPainel.identificacao => _identificacao(),
       ManejoPainel.trocaCategoria => _trocaCategoria(),
@@ -322,7 +319,7 @@ class _ManejoAnimalSessaoPageState extends State<ManejoAnimalSessaoPage> {
         onTap: () => setState(() => _verMaisPesagem = !_verMaisPesagem),
       ),
       _resumo(
-        'Peso médio ${_fmt(media)} · Pesados ${pesos.length} · Grupo ${_controller.grupo.length}',
+        'Peso médio ${_fmt(media)} · Pesados ${pesos.length} · Grupo ${_controller.animaisDaAcao.length}',
       ),
       _obs(),
       _registrar('Registrar na sessão'),
@@ -422,6 +419,7 @@ class _ManejoAnimalSessaoPageState extends State<ManejoAnimalSessaoPage> {
     bool comEscopo = true,
     bool comObs = true,
     bool comRegistrar = true,
+    bool usarUnidade = false,
   }) {
     final produtos = _controller.insumosDaCategoria(categoriaEstoque);
     if (produtos.isEmpty) {
@@ -455,7 +453,7 @@ class _ManejoAnimalSessaoPageState extends State<ManejoAnimalSessaoPage> {
             style: const TextStyle(color: Color(0xFF313131), fontSize: 13, fontFamily: 'Montserrat'),
           ),
         ),
-      const _Label('Dose por animal'),
+      _Label(_rotuloQuantidade(produto, usarUnidade)),
       _input(
         controller: _controller.dose,
         hint: '0',
@@ -465,10 +463,34 @@ class _ManejoAnimalSessaoPageState extends State<ManejoAnimalSessaoPage> {
       if (_controller.saldoInsuficiente)
         _erro('Saldo insuficiente no estoque para esta aplicação.')
       else
-        _resumo('Total ${_controller.doseTotal} · ${_controller.escopoAnimais.length} animal(is)'),
+        _resumo(
+          'Total ${_controller.doseTotal}${_sufixoUnidade(produto, usarUnidade)} · ${_controller.escopoAnimais.length} animal(is)',
+        ),
       if (comObs) _obs(),
       if (comRegistrar) _registrar('Registrar na sessão'),
     ];
+  }
+
+  String _rotuloQuantidade(InsumoEntity? produto, bool usarUnidade) {
+    if (!usarUnidade) {
+      return 'Dose por animal';
+    }
+    final unidade = produto?.unidade?.nome.trim() ?? '';
+    if (unidade.isEmpty) {
+      return 'Quantidade por animal';
+    }
+    return '${unidade[0].toUpperCase()}${unidade.substring(1)} por animal';
+  }
+
+  String _sufixoUnidade(InsumoEntity? produto, bool usarUnidade) {
+    if (!usarUnidade) {
+      return '';
+    }
+    final unidade = produto?.unidade?.nome.trim() ?? '';
+    if (unidade.isEmpty) {
+      return '';
+    }
+    return ' $unidade';
   }
 
   List<Widget> _veterinario() {
@@ -514,47 +536,23 @@ class _ManejoAnimalSessaoPageState extends State<ManejoAnimalSessaoPage> {
         leftLabel: 'Nova',
         rightLabel: 'Troca de brinco',
         leftSelected: nova,
-        onLeft: () {
-          _controller.identificacaoModo = ManejoIdentificacaoModo.nova;
-          _controller.refresh();
-        },
-        onRight: () {
-          _controller.identificacaoModo = ManejoIdentificacaoModo.troca;
-          _controller.refresh();
-        },
+        onLeft: () => _controller.setModo(ManejoIdentificacaoModo.nova),
+        onRight: () => _controller.setModo(ManejoIdentificacaoModo.troca),
       ),
       const SizedBox(height: 18),
       _select(
         'Tipo',
         _controller.tipoId,
         _controller.tiposDe(5).map((item) => AppSelectOption(value: item.id, label: item.nome)).toList(),
-        (id) {
-          _controller.tipoId = id;
-          _controller.refresh();
-        },
+        (id) => _controller.setTipo(id),
         placeholder: 'Selecionar',
       ),
       if (nova) ...[
         _escopo(),
+        if (_controller.cadastrandoBrinco && _controller.escopoAnimais.isNotEmpty) ..._camposBrinco(),
         _registrar('Registrar na sessão'),
       ] else ...[
-        _select(
-          'Animal',
-          _controller.animalTrocaId,
-          _controller.grupo
-              .map(
-                (animal) => AppSelectOption(
-                  value: animal.id,
-                  label: animal.brinco ?? 'Sem brinco',
-                ),
-              )
-              .toList(),
-          (id) {
-            _controller.animalTrocaId = id;
-            _controller.refresh();
-          },
-          placeholder: 'Selecionar',
-        ),
+        _chipsTroca(),
         const _Label('Novo brinco'),
         _input(controller: _controller.novoBrinco, hint: 'Brinco'),
         const _Label('Motivo'),
@@ -698,21 +696,70 @@ class _ManejoAnimalSessaoPageState extends State<ManejoAnimalSessaoPage> {
     );
   }
 
-  Widget _linhaAnimal(AnimalEntity animal) {
-    final brinco = animal.brinco ?? '${animal.id}';
-    final selected = _controller.selecionados.contains(animal.id);
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 8),
-      child: _AcaoBotao(
-        label: brinco,
-        selected: selected,
-        onTap: () => _controller.toggleAnimal(animal.id),
-      ),
-    );
+  List<Widget> _camposBrinco() {
+    final tipo = _controller.tiposDe(5)
+        .where((item) => item.id == _controller.tipoId)
+        .map((item) => item.nome)
+        .firstOrNull;
+    return [
+      _Label(tipo == null || tipo.isEmpty ? 'Brinco' : tipo),
+      for (final animal in _controller.escopoAnimais)
+        if (_controller.brincosNovos[animal.id] != null)
+          Padding(
+            padding: const EdgeInsets.only(bottom: 8),
+            child: Row(
+              children: [
+                Expanded(
+                  child: Text(
+                    _brinco(animal),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: const TextStyle(
+                      color: Color(0xFF313131),
+                      fontSize: 13,
+                      fontFamily: 'Montserrat',
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 8),
+                Expanded(
+                  flex: 2,
+                  child: TextField(
+                    controller: _controller.brincosNovos[animal.id],
+                    style: const TextStyle(fontFamily: 'Montserrat', fontSize: 14),
+                    decoration: InputDecoration(
+                      hintText: 'Digite o brinco',
+                      isDense: true,
+                      hintStyle: const TextStyle(color: Color(0xFF8C8C8C), fontSize: 13),
+                      filled: true,
+                      fillColor: const Color(0xFFEBEBEB),
+                      contentPadding: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(8),
+                        borderSide: BorderSide.none,
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+      const SizedBox(height: 10),
+    ];
+  }
+
+  String _brinco(AnimalEntity animal) {
+    final brinco = animal.brinco?.trim();
+    if (brinco == null || brinco.isEmpty) {
+      return '#${animal.id}';
+    }
+    return brinco;
   }
 
   Widget _escopo() {
     final lote = _controller.escopo == ManejoEscopo.lote;
+    final animals = _controller.animaisDaAcao;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -725,16 +772,150 @@ class _ManejoAnimalSessaoPageState extends State<ManejoAnimalSessaoPage> {
           onRight: () => _controller.setEscopo(ManejoEscopo.parcial),
         ),
         const SizedBox(height: 12),
-        if (!lote) ...[
-          for (final animal in _fatia(_controller.grupo, _verMaisAnimais))
-            _linhaAnimal(animal),
-          _verMais(
-            total: _controller.grupo.length,
-            aberto: _verMaisAnimais,
-            onTap: () => setState(() => _verMaisAnimais = !_verMaisAnimais),
+        if (animals.isEmpty)
+          Padding(
+            padding: const EdgeInsets.only(bottom: 18),
+            child: Text(
+              _controller.cadastrandoBrinco
+                  ? 'Nenhum animal sem brinco neste grupo.'
+                  : 'Nenhum animal com brinco neste grupo.',
+              style: const TextStyle(color: Color(0xFF8C8C8C), fontSize: 13),
+            ),
+          )
+        else if (lote)
+          _chipsLote(animals)
+        else
+          _chipsParcial(animals),
+      ],
+    );
+  }
+
+  Widget _chipsLote(List<AnimalEntity> animals) {
+    return Container(
+      width: double.infinity,
+      margin: const EdgeInsets.only(bottom: 18),
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: const Color(0xFFF7F8F8),
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            'Serão incluídos ${animals.length} animal(is):',
+            style: const TextStyle(fontSize: 13),
+          ),
+          const SizedBox(height: 8),
+          Wrap(
+            spacing: 8,
+            runSpacing: 8,
+            children: [
+              for (final animal in animals) Chip(label: Text(_brinco(animal))),
+            ],
           ),
         ],
-        const SizedBox(height: 18),
+      ),
+    );
+  }
+
+  Widget _chipsTroca() {
+    final animals = _controller.animaisDaAcao;
+    if (animals.isEmpty) {
+      return const Padding(
+        padding: EdgeInsets.only(bottom: 18),
+        child: Text(
+          'Nenhum animal com brinco neste grupo.',
+          style: TextStyle(color: Color(0xFF8C8C8C), fontSize: 13),
+        ),
+      );
+    }
+    final selecionado = animals.where((animal) => animal.id == _controller.animalTrocaId).length;
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          'Selecione o animal (${animals.length} disponíveis)',
+          style: const TextStyle(fontSize: 13),
+        ),
+        const SizedBox(height: 8),
+        Wrap(
+          spacing: 8,
+          runSpacing: 8,
+          children: [
+            for (final animal in animals)
+              FilterChip(
+                label: Text(_rotuloChip(animal)),
+                selected: _controller.animalTrocaId == animal.id,
+                onSelected: (_) {
+                  _controller.animalTrocaId =
+                      _controller.animalTrocaId == animal.id ? null : animal.id;
+                  _controller.refresh();
+                },
+                selectedColor: const Color(0xFFD9EDE1),
+                checkmarkColor: MyColors.colorPrimary,
+              ),
+          ],
+        ),
+        Padding(
+          padding: const EdgeInsets.only(top: 8, bottom: 18),
+          child: Text(
+            '$selecionado de ${animals.length} animal(is) selecionado(s)',
+            style: const TextStyle(color: Color(0xFF8C8C8C), fontSize: 12),
+          ),
+        ),
+      ],
+    );
+  }
+
+  String _rotuloChip(AnimalEntity animal) {
+    final peso = animal.peso == null ? '' : '  ${animal.peso!.toStringAsFixed(0)}kg';
+    return '${_brinco(animal)}$peso';
+  }
+
+  Widget _chipsParcial(List<AnimalEntity> animals) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          children: [
+            Expanded(
+              child: Text(
+                'Selecione os animais (${animals.length} disponíveis)',
+                style: const TextStyle(fontSize: 13),
+              ),
+            ),
+            TextButton(
+              onPressed: _controller.selectAllParcial,
+              child: const Text('Todos'),
+            ),
+            TextButton(
+              onPressed: _controller.clearParcial,
+              child: const Text('Limpar'),
+            ),
+          ],
+        ),
+        Wrap(
+          spacing: 8,
+          runSpacing: 8,
+          children: [
+            for (final animal in animals)
+              FilterChip(
+                label: Text(_rotuloChip(animal)),
+                selected: _controller.selecionados.contains(animal.id),
+                onSelected: (_) => _controller.toggleAnimal(animal.id),
+                selectedColor: const Color(0xFFD9EDE1),
+                checkmarkColor: MyColors.colorPrimary,
+              ),
+          ],
+        ),
+        Padding(
+          padding: const EdgeInsets.only(top: 8, bottom: 18),
+          child: Text(
+            '${_controller.escopoAnimais.length} de ${animals.length} animal(is) selecionado(s)',
+            style: const TextStyle(color: Color(0xFF8C8C8C), fontSize: 12),
+          ),
+        ),
       ],
     );
   }
@@ -752,7 +933,12 @@ class _ManejoAnimalSessaoPageState extends State<ManejoAnimalSessaoPage> {
   Widget _registrar(String label) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 8),
-      child: CustomButton(text: label, onPressed: _controller.registrarPainel),
+      child: CustomButton(
+        text: label,
+        enabled: _controller.podeRegistrar && !_controller.saving,
+        isLoading: _controller.saving,
+        onPressed: _registrarAcao,
+      ),
     );
   }
 
@@ -872,6 +1058,18 @@ class _ManejoAnimalSessaoPageState extends State<ManejoAnimalSessaoPage> {
     return value.toStringAsFixed(2);
   }
 
+  Future<void> _registrarAcao() async {
+    final erro = await _controller.registrarPainel();
+    if (!mounted) {
+      return;
+    }
+    if (erro != null) {
+      AppSnackBar.show(context: context, message: erro);
+      return;
+    }
+    AppSnackBar.show(context: context, message: 'Ação registrada.', isError: false);
+  }
+
   Future<void> _finalizar() async {
     final erro = await _controller.finalizar();
     if (!mounted) {
@@ -920,6 +1118,59 @@ class _Label extends StatelessWidget {
           color: Color(0xFF313131),
           fontSize: 14,
           fontFamily: 'Montserrat',
+        ),
+      ),
+    );
+  }
+}
+
+class _AcaoGrade extends StatelessWidget {
+  const _AcaoGrade({
+    required this.label,
+    required this.icon,
+    required this.selected,
+    required this.onTap,
+  });
+
+  final String label;
+  final IconData icon;
+  final bool selected;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final color = selected ? MyColors.colorPrimary : const Color(0xFF5A5A5A);
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 10),
+        decoration: BoxDecoration(
+          color: selected ? const Color(0xFFD9EDE1) : const Color(0xFFF5F5F5),
+          borderRadius: BorderRadius.circular(8),
+          border: Border.all(
+            color: selected ? MyColors.colorPrimary : const Color(0xFFE2E2E2),
+            width: selected ? 2 : 1,
+          ),
+        ),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(icon, size: 22, color: color),
+            const SizedBox(height: 6),
+            Text(
+              label,
+              textAlign: TextAlign.center,
+              maxLines: 2,
+              overflow: TextOverflow.ellipsis,
+              style: TextStyle(
+                color: color,
+                fontSize: 11,
+                height: 1.15,
+                fontFamily: 'Montserrat',
+                fontWeight: selected ? FontWeight.w700 : FontWeight.w600,
+              ),
+            ),
+          ],
         ),
       ),
     );

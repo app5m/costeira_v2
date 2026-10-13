@@ -9,6 +9,10 @@ class AnimalLotModel extends AnimalLotEntity {
     super.createAt,
     super.updateAt,
     super.animalsCount,
+    super.sexo,
+    super.categoriaNome,
+    super.animalIds,
+    super.temBrinco,
     super.idLocal,
     super.syncStatus,
     super.pendingAction,
@@ -17,6 +21,20 @@ class AnimalLotModel extends AnimalLotEntity {
 
   factory AnimalLotModel.fromJson(Map<String, dynamic> json) {
     final animals = json['animais'] as List<dynamic>? ?? const [];
+    final sexos = animals
+        .whereType<Map>()
+        .map((item) => int.tryParse(item['sexo']?.toString() ?? ''))
+        .whereType<int>()
+        .toSet();
+    final mapas = animals.whereType<Map>().toList();
+    final categorias = mapas
+        .map((item) => item['categoria_nome']?.toString().trim() ?? '')
+        .where((item) => item.isNotEmpty)
+        .toSet();
+    final ids = <int>[
+      for (final item in mapas)
+        if (int.tryParse(item['id']?.toString() ?? '') case final int id) id,
+    ];
 
     return AnimalLotModel(
       id: int.tryParse(json['id']?.toString() ?? '') ?? 0,
@@ -28,6 +46,13 @@ class AnimalLotModel extends AnimalLotEntity {
       createAt: json['create_at']?.toString(),
       updateAt: json['update_at']?.toString(),
       animalsCount: animals.length,
+      sexo: sexos.length == 1 ? sexos.first : null,
+      categoriaNome: categorias.length == 1 ? categorias.first : null,
+      animalIds: ids,
+      temBrinco: mapas.any((item) {
+        final brinco = item['brinco']?.toString().trim() ?? '';
+        return brinco.isNotEmpty && brinco != 'null';
+      }),
       idLocal: json['idLocal']?.toString(),
       syncStatus: json['syncStatus']?.toString(),
       pendingAction: json['pendingAction']?.toString(),

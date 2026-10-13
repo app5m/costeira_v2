@@ -4,6 +4,8 @@ import 'package:costeira/core/menus/menu_action_resolver.dart';
 import 'package:costeira/core/menus/menu_icon.dart';
 import 'package:costeira/core/menus/menu_slug.dart';
 import 'package:costeira/features/manejos_animais/presentation/pages/manejo_animal_sessao_page.dart';
+import 'package:costeira/features/manejos_animais/presentation/pages/manejo_campo_page.dart';
+import 'package:costeira/features/manejos_animais/presentation/pages/manejo_reprodutivo_page.dart';
 import 'package:costeira/features/insumos/presentation/pages/add_compra.dart';
 import 'package:costeira/features/movimentacoes/abigeatos/add_abigeato.dart';
 import 'package:costeira/features/movimentacoes/compras/presentation/pages/add_compra.dart';
@@ -314,7 +316,6 @@ class _ActionItem {
     this.page,
     this.menu,
     this.children,
-    this.inDevelopment = false,
   });
 
   final String title;
@@ -322,7 +323,6 @@ class _ActionItem {
   final Widget Function()? page;
   final AppMenuEntity? menu;
   final List<_ActionItem>? children;
-  final bool inDevelopment;
 }
 
 Future<void> _showEntradaSheet(BuildContext context) {
@@ -395,15 +395,15 @@ Future<void> _showManejoSheet(BuildContext context) {
         subtitle: 'Pesagem, sanitário, nutrição e movimentação',
         page: () => const ManejoAnimalSessaoPage(),
       ),
-      const _ActionItem(
+      _ActionItem(
         title: 'Manejo reprodutivo',
         subtitle: 'Parto, aborto e estação de monta',
-        inDevelopment: true,
+        page: () => const ManejoReprodutivoPage(),
       ),
-      const _ActionItem(
+      _ActionItem(
         title: 'Manejo de campo',
         subtitle: 'Adubação, calagem, roçada, pastagem',
-        inDevelopment: true,
+        page: () => const ManejoCampoPage(),
       ),
     ],
   );
@@ -475,100 +475,7 @@ Future<void> _showActionSheet({
   );
 }
 
-bool _manejoEmDesenvolvimento(_ActionItem item) {
-  if (item.inDevelopment) {
-    return true;
-  }
-  final menu = item.menu;
-  if (menu == null) {
-    return false;
-  }
-  final slug = MenuActionResolver.slugOf(menu);
-  return slug == 'manejo_reprodutivo' || slug == 'manejo_campo';
-}
-
-Future<void> _showEmDesenvolvimento(BuildContext context) {
-  return showDialog<void>(
-    context: context,
-    builder: (dialogContext) {
-      return Dialog(
-        backgroundColor: Colors.white,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-        child: Padding(
-          padding: const EdgeInsets.fromLTRB(20, 24, 20, 16),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Container(
-                width: 48,
-                height: 48,
-                decoration: const BoxDecoration(
-                  color: Color(0xFFE7F6EC),
-                  shape: BoxShape.circle,
-                ),
-                child: const Icon(
-                  LucideIcons.construction,
-                  color: MyColors.colorPrimary,
-                  size: 22,
-                ),
-              ),
-              const SizedBox(height: 16),
-              const Text(
-                'Em desenvolvimento',
-                textAlign: TextAlign.center,
-                style: TextStyle(
-                  fontFamily: 'Montserrat',
-                  fontSize: 16,
-                  fontWeight: FontWeight.w700,
-                  color: Color(0xFF1C1C1C),
-                ),
-              ),
-              const SizedBox(height: 8),
-              const Text(
-                'Essa opção ainda não está disponível.',
-                textAlign: TextAlign.center,
-                style: TextStyle(
-                  fontFamily: 'Montserrat',
-                  fontSize: 13,
-                  color: Color(0xFF5C5C5C),
-                ),
-              ),
-              const SizedBox(height: 20),
-              SizedBox(
-                width: double.infinity,
-                child: FilledButton(
-                  onPressed: () => Navigator.pop(dialogContext),
-                  style: FilledButton.styleFrom(
-                    backgroundColor: MyColors.colorPrimary,
-                    foregroundColor: Colors.white,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    padding: const EdgeInsets.symmetric(vertical: 14),
-                  ),
-                  child: const Text(
-                    'OK',
-                    style: TextStyle(
-                      fontFamily: 'Montserrat',
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
-                ),
-              ),
-            ],
-          ),
-        ),
-      );
-    },
-  );
-}
-
 Future<void> _handleItem(BuildContext context, _ActionItem item) async {
-  if (_manejoEmDesenvolvimento(item)) {
-    await _showEmDesenvolvimento(context);
-    return;
-  }
-
   final menu = item.menu;
   if (menu != null && MenuActionResolver.slugOf(menu) == MenuSlug.manejoAnimal) {
     Navigator.pop(context);

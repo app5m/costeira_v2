@@ -16,6 +16,7 @@ import 'package:costeira/features/base/pages/module_placeholder_page.dart';
 import 'package:costeira/features/dashboard/presentation/pages/dashboard.dart';
 import 'package:costeira/features/dashboard/presentation/widgets/dashboard_quick_actions.dart';
 import 'package:costeira/features/fazendas/presentation/pages/fazendas_page.dart';
+import 'package:costeira/features/manejos_animais/presentation/pages/manejos_animais_page.dart';
 import 'package:costeira/features/movimentacoes/movimentacoes.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_modular/flutter_modular.dart';
@@ -333,12 +334,7 @@ class _MainNavigationPageState extends State<MainNavigationPage>
       MenuSlug.fazendas => const FazendasPage(),
       MenuSlug.animais => const AnimalsPage(),
       MenuSlug.movimentacoes => const Movimentacoes(),
-      MenuSlug.manejos => ModulePlaceholderPage(
-        title: tab.label,
-        item: tab.item,
-        message:
-            'Em breve. Use o botão + do Dashboard para registrar um manejo.',
-      ),
+      MenuSlug.manejos => const ManejosAnimaisPage(),
       MenuSlug.perfil => const Menu(),
       _ => ModulePlaceholderPage(
         title: tab.label,
