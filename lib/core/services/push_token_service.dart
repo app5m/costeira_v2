@@ -1,9 +1,9 @@
 import 'dart:async';
-import 'dart:io';
 
 import 'package:costeira/core/config/ws_constantes.dart';
 import 'package:costeira/core/storage/session_storage.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
+import 'package:flutter/foundation.dart';
 
 class PushTokenService {
   PushTokenService._();
@@ -13,6 +13,10 @@ class PushTokenService {
   StreamSubscription<String>? _tokenSubscription;
 
   Future<void> initialize() async {
+    if (kIsWeb) {
+      return;
+    }
+
     final messaging = FirebaseMessaging.instance;
 
     try {
@@ -37,6 +41,10 @@ class PushTokenService {
   }
 
   Future<String?> getDeviceToken() async {
+    if (kIsWeb) {
+      return SessionStorage.getPendingPushToken();
+    }
+
     try {
       final token = await FirebaseMessaging.instance.getToken();
       if (token != null && token.isNotEmpty) {
@@ -50,12 +58,16 @@ class PushTokenService {
   }
 
   int get platformType {
-    if (Platform.isAndroid) {
-      return WSConstantes.fcmTypeAndroid;
+    if (kIsWeb) {
+      return 0;
     }
-    if (Platform.isIOS) {
-      return WSConstantes.fcmTypeIos;
+    switch (defaultTargetPlatform) {
+      case TargetPlatform.android:
+        return WSConstantes.fcmTypeAndroid;
+      case TargetPlatform.iOS:
+        return WSConstantes.fcmTypeIos;
+      default:
+        return 0;
     }
-    return 0;
   }
 }

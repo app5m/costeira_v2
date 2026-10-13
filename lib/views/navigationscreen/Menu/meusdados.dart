@@ -1,6 +1,5 @@
-import 'dart:io';
-
 import 'package:costeira/core/api/api_exception.dart';
+import 'package:costeira/core/platform/local_file.dart';
 import 'package:costeira/core/components/app_snack.dart';
 import 'package:costeira/core/storage/session_storage.dart';
 import 'package:costeira/core/services/image_picker_service.dart';
@@ -192,7 +191,7 @@ class _ResponsibleDataTabState extends State<_ResponsibleDataTab> {
     filter: {'#': RegExp(r'[0-9]')},
   );
 
-  File? _selectedImage;
+  ImageProvider<Object>? _selectedImage;
   bool _isUploadingImage = false;
   bool _isSaving = false;
 
@@ -253,9 +252,7 @@ class _ResponsibleDataTabState extends State<_ResponsibleDataTab> {
                   CircleAvatar(
                     radius: 40,
                     backgroundColor: const Color(0xFFEBEBEB),
-                    backgroundImage: _selectedImage != null
-                        ? FileImage(_selectedImage!)
-                        : null,
+                    backgroundImage: _selectedImage,
                     child: _selectedImage == null
                         ? SvgPicture.asset(
                             'icon/user-round.svg',
@@ -411,15 +408,20 @@ class _ResponsibleDataTabState extends State<_ResponsibleDataTab> {
       return;
     }
 
+    final preview = await imageProviderFromPath(pickedFile.path);
+    if (!mounted) {
+      return;
+    }
+
     setState(() {
       _isUploadingImage = true;
-      _selectedImage = File(pickedFile.path);
+      _selectedImage = preview;
     });
 
     try {
       final response = await _accountRepository.updateAvatar(
         userId: session.id,
-        imageFile: File(pickedFile.path),
+        imagePath: pickedFile.path,
       );
       _showMessage(response.message, isError: !response.isSuccess);
       await widget.onReloadProfile();
