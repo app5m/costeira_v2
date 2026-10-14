@@ -3,7 +3,6 @@ import 'package:costeira/core/api/api_response_utils.dart';
 import 'package:costeira/core/config/ws_constantes.dart';
 import 'package:costeira/core/utils/app_logger.dart';
 import 'package:dio/dio.dart';
-import 'package:flutter/foundation.dart';
 
 class ApiClient {
   ApiClient._internal()
@@ -52,7 +51,7 @@ class ApiClient {
       AppLogger.success('API CLIENT: RESPOSTA BRUTA PATH=$path');
       AppLogger.success('API CLIENT RAW RESPONSE: ${response.data}');
 
-      return kIsWeb ? recoverEmbeddedJson(response.data) : response.data;
+      return recoverEmbeddedJson(response.data);
     } on DioException catch (error) {
       AppLogger.error(
         'API CLIENT: ERRO PATH=$path STATUS=${error.response?.statusCode} RAW=${error.response?.data}',

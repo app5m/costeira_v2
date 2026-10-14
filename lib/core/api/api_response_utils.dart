@@ -40,16 +40,7 @@ dynamic recoverEmbeddedJson(dynamic data) {
 
 dynamic _normalizeResponse(dynamic data) {
   if (data is String) {
-    final trimmed = data.trim();
-    if (trimmed.isEmpty) {
-      return data;
-    }
-
-    try {
-      return jsonDecode(trimmed);
-    } catch (_) {
-      return data;
-    }
+    return recoverEmbeddedJson(data);
   }
 
   return data;
