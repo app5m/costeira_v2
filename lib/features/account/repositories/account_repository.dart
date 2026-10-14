@@ -1,6 +1,5 @@
-import 'dart:io';
-
 import 'package:costeira/core/config/ws_constantes.dart';
+import 'package:costeira/core/platform/local_file.dart';
 import 'package:costeira/core/api/api_client.dart';
 import 'package:costeira/core/api/api_exception.dart';
 import 'package:costeira/core/models/api_message.dart';
@@ -65,10 +64,13 @@ class AccountRepository {
     return ApiMessage.fromResponse(response);
   }
 
-  Future<ApiMessage> updateAvatar({required int userId, required File imageFile}) async {
+  Future<ApiMessage> updateAvatar({
+    required int userId,
+    required String imagePath,
+  }) async {
     final formData = FormData.fromMap({
       'id_user': userId.toString(),
-      'url': await MultipartFile.fromFile(imageFile.path),
+      'url': await multipartFileFromPath(imagePath),
       'token': WSConstantes.token,
     });
 

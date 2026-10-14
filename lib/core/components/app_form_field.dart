@@ -17,6 +17,8 @@ class AppFormField extends StatelessWidget {
     this.inputFormatters,
     this.autofillHints,
     this.readOnly = false,
+    this.autocorrect = true,
+    this.enableSuggestions = true,
   });
 
   final String label;
@@ -32,6 +34,8 @@ class AppFormField extends StatelessWidget {
   final List<TextInputFormatter>? inputFormatters;
   final Iterable<String>? autofillHints;
   final bool readOnly;
+  final bool autocorrect;
+  final bool enableSuggestions;
 
   @override
   Widget build(BuildContext context) {
@@ -56,6 +60,8 @@ class AppFormField extends StatelessWidget {
           textInputAction: textInputAction,
           obscureText: obscureText,
           readOnly: readOnly,
+          autocorrect: autocorrect,
+          enableSuggestions: enableSuggestions,
           maxLength: maxLength,
           onChanged: onChanged,
           inputFormatters: inputFormatters,

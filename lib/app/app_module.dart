@@ -61,6 +61,16 @@ import 'package:costeira/features/auth/presentation/pages/register_responsible_p
 import 'package:costeira/features/auth/presentation/pages/login_page.dart';
 import 'package:costeira/features/auth/presentation/pages/pending_approval.dart';
 import 'package:costeira/features/auth/presentation/pages/recivery_password_page.dart';
+import 'package:costeira/features/auth/presentation/web/auth_web_frame.dart';
+import 'package:costeira/features/auth/presentation/web/login_web_page.dart';
+import 'package:costeira/features/auth/presentation/web/onboarding_web_page.dart';
+import 'package:costeira/features/auth/presentation/web/pending_approval_web_page.dart';
+import 'package:costeira/features/auth/presentation/web/recover_password_web_page.dart';
+import 'package:costeira/features/auth/presentation/web/register_company_web_page.dart';
+import 'package:costeira/features/auth/presentation/web/register_credentials_web_page.dart';
+import 'package:costeira/features/auth/presentation/web/register_responsible_web_page.dart';
+import 'package:costeira/features/auth/presentation/web/splash_web_page.dart';
+import 'package:costeira/features/auth/presentation/web/validation_code_web_page.dart';
 import 'package:costeira/views/navigationscreen/Menu/menu_page.dart';
 import 'package:costeira/views/navigationscreen/Menu/Modulos/modulos.dart';
 import 'package:costeira/views/navigationscreen/Menu/extras/extras.dart';
@@ -82,9 +92,11 @@ import 'package:costeira/features/tasks/tasks_binds.dart';
 import 'package:costeira/features/auth/presentation/pages/onboarding.view.dart';
 import 'package:costeira/features/auth/presentation/pages/splash.dart';
 import 'package:costeira/features/auth/presentation/pages/welcome_page.dart';
+import 'package:costeira/features/auth/presentation/web/welcome_web_page.dart';
 import 'package:costeira/features/auth/presentation/pages/validation_code_page.dart';
 import 'package:costeira/features/insumos/insumos_binds.dart';
 import 'package:costeira/features/pastagem_nutricao_suplemento/pastagem_nutricao_suplemento_binds.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter_modular/flutter_modular.dart';
 
 class AppModule extends Module {
@@ -149,36 +161,94 @@ class AppModule extends Module {
 
   @override
   void routes(RouteManager r) {
-    r.child(AppRoutes.splash, child: (_) => const SplashPage());
-    r.child(AppRoutes.onboarding, child: (_) => const OnboardingPage());
-    r.child(AppRoutes.welcome, child: (_) => const WelcomePage());
-    r.child(AppRoutes.login, child: (_) => const LoginPage());
+    r.child(
+      AppRoutes.splash,
+      child: (_) => kIsWeb ? const SplashWebPage() : const SplashPage(),
+    );
+    r.child(
+      AppRoutes.onboarding,
+      child: (_) => kIsWeb ? const OnboardingWebPage() : const OnboardingPage(),
+    );
+    r.child(
+      AppRoutes.welcome,
+      child: (_) => kIsWeb ? const WelcomeWebPage() : const WelcomePage(),
+    );
+    r.child(
+      AppRoutes.login,
+      child: (_) => kIsWeb ? const LoginWebPage() : const LoginPage(),
+    );
     r.child(
       AppRoutes.recoverPassword,
-      child: (_) => const RecoverPasswordPage(),
+      child: (_) =>
+          kIsWeb ? const RecoverPasswordWebPage() : const RecoverPasswordPage(),
     );
     r.child(
       AppRoutes.registerCompany,
-      child: (_) => const RegisterCompanyPage(),
+      child: (_) =>
+          kIsWeb ? const RegisterCompanyWebPage() : const RegisterCompanyPage(),
     );
     r.child(
       AppRoutes.registerResponsible,
       child: (_) {
-        final draft = _requireArgs<RegisterDraft>(r.args.data);
-        return RegisterResponsiblePage(draft: draft);
+        final data = r.args.data;
+        if (data is! RegisterDraft) {
+          if (kIsWeb) {
+            return const AuthRouteRedirect(route: AppRoutes.registerCompany);
+          }
+          return RegisterResponsiblePage(
+            draft: _requireArgs<RegisterDraft>(data),
+          );
+        }
+        return kIsWeb
+            ? RegisterResponsibleWebPage(draft: data)
+            : RegisterResponsiblePage(draft: data);
       },
     );
     r.child(
       AppRoutes.registerCredentials,
       child: (_) {
-        final draft = _requireArgs<RegisterDraft>(r.args.data);
-        return RegisterCredentialsPage(draft: draft);
+        final data = r.args.data;
+        if (data is! RegisterDraft) {
+          if (kIsWeb) {
+            return const AuthRouteRedirect(route: AppRoutes.registerCompany);
+          }
+          return RegisterCredentialsPage(
+            draft: _requireArgs<RegisterDraft>(data),
+          );
+        }
+        return kIsWeb
+            ? RegisterCredentialsWebPage(draft: data)
+            : RegisterCredentialsPage(draft: data);
       },
     );
     r.child(
       AppRoutes.validationCode,
       child: (_) {
-        final data = _requireArgs<ValidationCodeRouteData>(r.args.data);
+        final data = r.args.data;
+        if (data is! ValidationCodeRouteData) {
+          if (kIsWeb) {
+            return const AuthRouteRedirect(route: AppRoutes.login);
+          }
+          final required = _requireArgs<ValidationCodeRouteData>(data);
+          return ValidationCodePage(
+            email: required.email,
+            password: required.password,
+            lat: required.latitude,
+            long: required.longitude,
+            tipo: required.userType,
+            pendingUser: required.pendingUser,
+          );
+        }
+        if (kIsWeb) {
+          return ValidationCodeWebPage(
+            email: data.email,
+            password: data.password,
+            lat: data.latitude,
+            long: data.longitude,
+            tipo: data.userType,
+            pendingUser: data.pendingUser,
+          );
+        }
         return ValidationCodePage(
           email: data.email,
           password: data.password,
@@ -192,8 +262,18 @@ class AppModule extends Module {
     r.child(
       AppRoutes.pendingApproval,
       child: (_) {
-        final data = r.args.data as PendingApprovalRouteData?;
-        return PendingApprovalPage(message: data?.message, email: data?.email);
+        final data = r.args.data;
+        final routeData = data is PendingApprovalRouteData ? data : null;
+        if (kIsWeb) {
+          return PendingApprovalWebPage(
+            message: routeData?.message,
+            email: routeData?.email,
+          );
+        }
+        return PendingApprovalPage(
+          message: routeData?.message,
+          email: routeData?.email,
+        );
       },
     );
     r.child(AppRoutes.appShell, child: (_) => const MainNavigationPage());

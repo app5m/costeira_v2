@@ -42,4 +42,22 @@ class LocationService {
     return permission == LocationPermission.always ||
         permission == LocationPermission.whileInUse;
   }
+
+  Future<LocationRequestResult> requestLocationAccess() async {
+    try {
+      final serviceEnabled = await Geolocator.isLocationServiceEnabled();
+      if (!serviceEnabled) {
+        return LocationRequestResult.unavailable;
+      }
+      final granted = await requestPermission();
+      if (!granted) {
+        return LocationRequestResult.denied;
+      }
+      return LocationRequestResult.granted;
+    } catch (_) {
+      return LocationRequestResult.failed;
+    }
+  }
 }
+
+enum LocationRequestResult { granted, denied, unavailable, failed }

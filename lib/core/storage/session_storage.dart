@@ -27,6 +27,7 @@ class SessionStorage {
 
   static const _userSessionKey = 'user_session';
   static const _pendingUserKey = 'pending_user_session';
+  static const _webPendingApprovalKey = 'web_pending_approval_session';
   static const _onboardingSeenKey = 'onboarding_seen';
   static const _lastCoordinatesKey = 'last_coordinates';
   static const _pendingPushTokenKey = 'pending_push_token';
@@ -94,6 +95,41 @@ class SessionStorage {
     await prefs.remove(_pendingUserKey);
   }
 
+  static Future<void> saveWebPendingApproval({
+    required String message,
+    required String email,
+  }) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString(
+      _webPendingApprovalKey,
+      jsonEncode({'message': message, 'email': email}),
+    );
+  }
+
+  static Future<Map<String, String>?> getWebPendingApproval() async {
+    final prefs = await SharedPreferences.getInstance();
+    final raw = prefs.getString(_webPendingApprovalKey);
+    if (raw == null || raw.isEmpty) {
+      return null;
+    }
+
+    try {
+      final value = Map<String, dynamic>.from(jsonDecode(raw) as Map);
+      return {
+        'message': value['message']?.toString() ?? '',
+        'email': value['email']?.toString() ?? '',
+      };
+    } catch (_) {
+      await prefs.remove(_webPendingApprovalKey);
+      return null;
+    }
+  }
+
+  static Future<void> clearWebPendingApproval() async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.remove(_webPendingApprovalKey);
+  }
+
   static Future<void> clearAuthData() async {
     _cached = null;
     final prefs = await SharedPreferences.getInstance();
@@ -102,6 +138,7 @@ class SessionStorage {
       prefs.remove(_lastCoordinatesKey),
       prefs.remove(_pendingPushTokenKey),
       prefs.remove(_selectedFarmIdKey),
+      prefs.remove(_webPendingApprovalKey),
     ]);
   }
 
