@@ -11,6 +11,18 @@
             "type": "dart"
         },
         {
+            "name": "costeira (web)",
+            "request": "launch",
+            "type": "dart",
+            "deviceId": "chrome",
+            "args": [
+                "--web-hostname",
+                "localhost",
+                "--web-port",
+                "3000"
+            ]
+        },
+        {
             "name": "costeira (profile mode)",
             "request": "launch",
             "type": "dart",
