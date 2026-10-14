@@ -133,10 +133,12 @@ class ManejoReprodutivoController extends ChangeNotifier {
       !saving && loteId != null && etapaId != null && data.text.isNotEmpty;
 
   bool get podeRegistrarDiagnostico {
-    if (saving || loteId == null || resultadoId == null || data.text.isEmpty || !quantidadeValida) {
-      return false;
-    }
-    return !resultadoPrenha || classificacao != null;
+    return !saving &&
+        loteId != null &&
+        resultadoId != null &&
+        classificacao != null &&
+        data.text.isNotEmpty &&
+        quantidadeValida;
   }
 
   bool get podeRegistrarAborto {
@@ -240,9 +242,6 @@ class ManejoReprodutivoController extends ChangeNotifier {
 
   void setResultado(int? id) {
     resultadoId = id;
-    if (!resultadoPrenha) {
-      classificacao = null;
-    }
     notifyListeners();
   }
 
@@ -415,7 +414,7 @@ class ManejoReprodutivoController extends ChangeNotifier {
         'id_tipo': resultadoId,
         'data': data.text,
         'app_animais_lotes_id': loteId,
-        if (resultadoPrenha && classificacao != null) 'classificacao': classificacao,
+        'classificacao': classificacao,
         if (_animaisLote != null) 'animais': _animaisLote,
       },
       'Nao foi possivel registrar o diagnóstico.',

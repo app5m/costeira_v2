@@ -151,7 +151,7 @@ class _ManejoCampoPageState extends State<ManejoCampoPage> {
       if (_controller.saldoInsuficiente)
         _erro('Saldo insuficiente no estoque para esta aplicação.')
       else
-        _caixa('Total ${_fmt(_controller.quantidadeTotal)} ${produto?.unidade?.nome ?? ''}'),
+        _caixa('Total ${_controller.quantidadeInteira} ${produto?.unidade?.nome ?? ''}'),
     ];
   }
 

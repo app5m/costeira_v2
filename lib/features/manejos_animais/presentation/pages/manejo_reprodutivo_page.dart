@@ -313,20 +313,18 @@ class _ManejoReprodutivoPageState extends State<ManejoReprodutivoPage> {
             ],
           ),
         ),
-      if (_controller.resultadoPrenha) ...[
-        _select(
-          'Classificação',
-          _controller.classificacao,
-          const [
-            AppSelectOption(value: 1, label: 'Precoce (~30 dias)'),
-            AppSelectOption(value: 2, label: 'Tardia (~60 dias)'),
-          ],
-          _controller.setClassificacao,
-        ),
-        if (_controller.mesPrevisto != null) ...[
-          const _Label('Mês previsto do parto'),
-          _leitura(_controller.mesPrevisto!),
+      _select(
+        'Classificação',
+        _controller.classificacao,
+        const [
+          AppSelectOption(value: 1, label: 'Precoce (~30 dias)'),
+          AppSelectOption(value: 2, label: 'Tardia (~60 dias)'),
         ],
+        _controller.setClassificacao,
+      ),
+      if (_controller.resultadoPrenha && _controller.mesPrevisto != null) ...[
+        const _Label('Mês previsto do parto'),
+        _leitura(_controller.mesPrevisto!),
       ],
       CustomButton(
         text: 'Registrar diagnóstico',

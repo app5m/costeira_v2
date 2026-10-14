@@ -61,12 +61,14 @@ class ManejoCampoController extends ChangeNotifier {
     return quantidadeInformada * (area ?? 0);
   }
 
+  int get quantidadeInteira => quantidadeTotal.round();
+
   bool get saldoInsuficiente {
     final saldo = insumo?.qtdTotal;
     if (!usarProduto || saldo == null || quantidade.text.trim().isEmpty) {
       return false;
     }
-    return quantidadeTotal > saldo;
+    return quantidadeInteira > saldo;
   }
 
   bool get podeRegistrar {
@@ -76,7 +78,7 @@ class ManejoCampoController extends ChangeNotifier {
     if (!usarProduto) {
       return true;
     }
-    if (insumoId == null || quantidadeInformada <= 0 || saldoInsuficiente) {
+    if (insumoId == null || quantidadeInformada <= 0 || quantidadeInteira < 1 || saldoInsuficiente) {
       return false;
     }
     if (dosagem == ManejoCampoDosagem.hectare && (area ?? 0) <= 0) {
@@ -192,7 +194,7 @@ class ManejoCampoController extends ChangeNotifier {
           if (usarProduto) ...{
             'id_estoque': insumoId,
             'tipo_dosagem': dosagem == ManejoCampoDosagem.hectare ? 3 : 4,
-            'quantidade': quantidadeTotal,
+            'quantidade': quantidadeInteira,
           },
         },
       );
