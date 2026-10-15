@@ -20,6 +20,12 @@ abstract class ManejosAnimaisDatasource {
     required Map<String, dynamic> fields,
   });
 
+  Future<ApiMessage> excluir({
+    required int appUsersId,
+    required int appFazendasId,
+    required int id,
+  });
+
   Future<ManejoAnimalListaEntity> listar({
     required int appUsersId,
     required int appFazendasId,

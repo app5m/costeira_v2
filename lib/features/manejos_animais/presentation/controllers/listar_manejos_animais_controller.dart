@@ -11,22 +11,71 @@ class ListarManejosAnimaisController extends ChangeNotifier {
   final ListarManejosAnimaisUsecase _usecase;
   final ResolveCurrentFarmId _resolveFarm;
 
-  int categoriaId = ManejoAnimalCategoria.lista.first.id;
+  int? categoriaId;
   List<ManejoAnimalListaItem> itens = const [];
-  bool loading = true;
+  bool loading = false;
+  bool excluindo = false;
   String? error;
 
-  Future<void> init() => load();
+  Future<void> init() async {}
+
+  void limpar() {
+    categoriaId = null;
+    itens = const [];
+    error = null;
+    loading = false;
+    notifyListeners();
+  }
 
   Future<void> setCategoria(int id) async {
-    if (categoriaId == id) {
+    if (categoriaId == id && !loading) {
       return;
     }
     categoriaId = id;
     await load();
   }
 
+  Future<String?> excluir(int id) async {
+    final categoria = categoriaId;
+    if (categoria == null || excluindo) {
+      return 'Escolha uma categoria.';
+    }
+    excluindo = true;
+    notifyListeners();
+    try {
+      final user = await SessionStorage.getUserSession();
+      if (user == null) {
+        throw ApiException('Usuario nao autenticado.');
+      }
+      final farmId = await _resolveFarm(userId: user.id);
+      if (farmId == null) {
+        throw ApiException('Cadastre uma fazenda antes de excluir o manejo.');
+      }
+      final result = await _usecase.excluir(
+        appUsersId: user.id,
+        appFazendasId: farmId,
+        id: id,
+      );
+      if (!result.isSuccess) {
+        return result.message;
+      }
+      await load();
+      return null;
+    } on ApiException catch (e) {
+      return e.message;
+    } catch (_) {
+      return 'Nao foi possivel excluir o manejo.';
+    } finally {
+      excluindo = false;
+      notifyListeners();
+    }
+  }
+
   Future<void> load() async {
+    final categoria = categoriaId;
+    if (categoria == null) {
+      return;
+    }
     loading = true;
     error = null;
     notifyListeners();
@@ -42,7 +91,7 @@ class ListarManejosAnimaisController extends ChangeNotifier {
       final result = await _usecase(
         appUsersId: user.id,
         appFazendasId: farmId,
-        idCategoria: categoriaId,
+        idCategoria: categoria,
       );
       itens = result.itens;
     } on ApiException catch (e) {

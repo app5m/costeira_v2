@@ -22,8 +22,12 @@ class ManejoAnimalCategoria {
     ManejoAnimalCategoria(13, 'Aborto'),
   ];
 
+  static const campo = <ManejoAnimalCategoria>[
+    ManejoAnimalCategoria(14, 'Campo'),
+  ];
+
   static String nomeDe(int? id) {
-    return [...lista, ...reprodutivo]
+    return [...lista, ...reprodutivo, ...campo]
             .where((item) => item.id == id)
             .map((item) => item.nome)
             .firstOrNull ??
@@ -40,6 +44,7 @@ class ManejoAnimalListaItem {
     this.lote = '',
     this.duracao = '',
     this.brinco = '',
+    this.dados = const {},
   });
 
   final int? id;
@@ -49,6 +54,7 @@ class ManejoAnimalListaItem {
   final String lote;
   final String duracao;
   final String brinco;
+  final Map<String, dynamic> dados;
 }
 
 class ManejoAnimalListaEntity {

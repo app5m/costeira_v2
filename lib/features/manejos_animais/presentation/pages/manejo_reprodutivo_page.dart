@@ -192,21 +192,11 @@ class _ManejoReprodutivoPageState extends State<ManejoReprodutivoPage> {
   }
 
   Widget _cardEstacao(ManejoAnimalListaItem estacao) {
-    final linhas = <String>[
-      if (estacao.data.isNotEmpty) 'Entrada: ${estacao.data}',
-      if (estacao.lote.isNotEmpty) 'Lote: ${estacao.lote}',
-      if (estacao.duracao.isNotEmpty) 'Duração: ${estacao.duracao} dias',
-      if (estacao.brinco.isNotEmpty) 'Brinco: ${estacao.brinco}',
-      if (estacao.lote.isEmpty &&
-          estacao.duracao.isEmpty &&
-          estacao.brinco.isEmpty &&
-          estacao.detalhe.isNotEmpty)
-        estacao.detalhe,
-    ];
+    final titulo = estacao.lote.isNotEmpty ? estacao.lote : 'Estação de monta';
     return Container(
       width: double.infinity,
       margin: const EdgeInsets.only(bottom: 12),
-      padding: const EdgeInsets.all(14),
+      padding: const EdgeInsets.fromLTRB(14, 14, 14, 12),
       decoration: BoxDecoration(
         color: const Color(0xFFF7F8F8),
         borderRadius: BorderRadius.circular(12),
@@ -214,21 +204,51 @@ class _ManejoReprodutivoPageState extends State<ManejoReprodutivoPage> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          for (final linha in linhas)
-            Padding(
-              padding: const EdgeInsets.only(bottom: 4),
-              child: Text(
-                linha,
-                style: const TextStyle(
-                  fontFamily: 'Montserrat',
-                  fontSize: 13,
-                  color: Color(0xFF313131),
+          Text(
+            titulo,
+            style: const TextStyle(
+              fontFamily: 'Montserrat',
+              fontSize: 15,
+              fontWeight: FontWeight.w700,
+              color: Color(0xFF313131),
+            ),
+          ),
+          const SizedBox(height: 12),
+          Row(
+            children: [
+              Expanded(child: _dadoEstacao('Entrada', estacao.data)),
+              const SizedBox(width: 12),
+              Expanded(
+                child: _dadoEstacao(
+                  'Duração',
+                  estacao.duracao.isEmpty ? '' : '${estacao.duracao} dias',
                 ),
               ),
+            ],
+          ),
+          if (estacao.brinco.isNotEmpty) ...[
+            const SizedBox(height: 12),
+            _dadoEstacao('Brinco do touro', estacao.brinco),
+          ],
+          if (estacao.lote.isEmpty &&
+              estacao.duracao.isEmpty &&
+              estacao.brinco.isEmpty &&
+              estacao.detalhe.isNotEmpty) ...[
+            const SizedBox(height: 8),
+            Text(
+              estacao.detalhe,
+              style: const TextStyle(
+                fontFamily: 'Montserrat',
+                fontSize: 13,
+                color: Color(0xFF6B6B6B),
+              ),
             ),
-          if (estacao.id != null)
+          ],
+          if (estacao.id != null) ...[
+            const SizedBox(height: 14),
             CustomButton(
               text: 'Encerrar estação',
+              height: 44,
               enabled: !_controller.saving,
               isLoading: _controller.saving,
               onPressed: () => _salvar(
@@ -237,8 +257,35 @@ class _ManejoReprodutivoPageState extends State<ManejoReprodutivoPage> {
                 reabrir: false,
               ),
             ),
+          ],
         ],
       ),
+    );
+  }
+
+  Widget _dadoEstacao(String rotulo, String valor) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          rotulo,
+          style: const TextStyle(
+            fontFamily: 'Montserrat',
+            fontSize: 12,
+            color: Color(0xFF8C8C8C),
+          ),
+        ),
+        const SizedBox(height: 2),
+        Text(
+          valor.isEmpty ? '—' : valor,
+          style: const TextStyle(
+            fontFamily: 'Montserrat',
+            fontSize: 14,
+            fontWeight: FontWeight.w600,
+            color: Color(0xFF313131),
+          ),
+        ),
+      ],
     );
   }
 

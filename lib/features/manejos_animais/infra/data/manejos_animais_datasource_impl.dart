@@ -62,12 +62,31 @@ class ManejosAnimaisDatasourceImpl implements ManejosAnimaisDatasource {
     );
   }
 
+  @override
+  Future<ApiMessage> excluir({
+    required int appUsersId,
+    required int appFazendasId,
+    required int id,
+  }) {
+    return _post(
+      appUsersId: appUsersId,
+      appFazendasId: appFazendasId,
+      fields: {'id': id},
+      endpoint: WSConstantes.manejosExcluir,
+      log: 'MANEJO EXCLUIR',
+      action: SyncOperation.delete,
+      pendingMessage: 'Exclusão do manejo salva para sincronizar.',
+    );
+  }
+
   Future<ApiMessage> _post({
     required int appUsersId,
     required int appFazendasId,
     required Map<String, dynamic> fields,
     required String endpoint,
     required String log,
+    String action = SyncOperation.create,
+    String pendingMessage = 'Manejo salvo localmente para sincronizar.',
   }) {
     final payload = ManejoAnimalRequestModel.create(
       appUsersId: appUsersId,
@@ -78,11 +97,11 @@ class ManejosAnimaisDatasourceImpl implements ManejosAnimaisDatasource {
 
     return _offlineApiService.postOrEnqueue(
       module: 'manejos',
-      action: SyncOperation.create,
+      action: action,
       endpoint: endpoint,
       payload: payload,
       priority: SyncPriority.movimentacoes,
-      pendingMessage: 'Manejo salvo localmente para sincronizar.',
+      pendingMessage: pendingMessage,
       rawResponseLog: '$log: RAW RESPONSE',
       parseResponse: (response) {
         final map = responseAsMap(response);

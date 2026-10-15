@@ -32,17 +32,20 @@ class ManejoAnimalListaItemModel extends ManejoAnimalListaItem {
     super.lote,
     super.duracao,
     super.brinco,
+    super.dados,
   });
 
   factory ManejoAnimalListaItemModel.fromJson(Map<String, dynamic> json) {
     return ManejoAnimalListaItemModel(
       id: int.tryParse(json['id']?.toString() ?? ''),
-      idCategoria: int.tryParse(json['id_categoria']?.toString() ?? ''),
+      idCategoria: int.tryParse(json['id_categoria']?.toString() ?? '') ??
+          int.tryParse(json['app_manejos_categorias_id']?.toString() ?? ''),
       data: _data(json),
       detalhe: _detalhe(json),
       lote: _lote(json),
       duracao: _duracao(json),
       brinco: _brinco(json),
+      dados: json,
     );
   }
 }
@@ -61,11 +64,35 @@ List<Map<String, dynamic>> _itens(Map<String, dynamic> envelope) {
     if (map['lista'] is List) {
       return _maps(map['lista']);
     }
+    final agrupados = _manejosAgrupados(map);
+    if (agrupados.isNotEmpty) {
+      return agrupados;
+    }
   }
   if (envelope.containsKey('id_categoria') || envelope.containsKey('id')) {
     return [envelope];
   }
   return const [];
+}
+
+List<Map<String, dynamic>> _manejosAgrupados(Map<String, dynamic> json) {
+  final itens = <Map<String, dynamic>>[];
+  for (final value in json.values) {
+    if (value is List) {
+      itens.addAll(
+        value.whereType<Map>().map(Map<String, dynamic>.from).where(_ehManejo),
+      );
+      continue;
+    }
+    if (value is Map) {
+      itens.addAll(_manejosAgrupados(Map<String, dynamic>.from(value)));
+    }
+  }
+  return itens;
+}
+
+bool _ehManejo(Map<String, dynamic> json) {
+  return json.containsKey('app_manejos_categorias_id') || json.containsKey('id_categoria');
 }
 
 List<Map<String, dynamic>> _maps(dynamic raw) {
@@ -125,6 +152,13 @@ String _lote(Map<String, dynamic> json) {
   if (direto.isNotEmpty) {
     return direto;
   }
+  final destino = json['lote_destino'];
+  if (destino is Map) {
+    final nome = destino['nome']?.toString().trim() ?? '';
+    if (nome.isNotEmpty && nome != 'null') {
+      return nome;
+    }
+  }
   final lote = json['lote'];
   if (lote is Map) {
     return lote['nome']?.toString().trim() ?? '';
@@ -137,7 +171,7 @@ String _lote(Map<String, dynamic> json) {
 }
 
 String _duracao(Map<String, dynamic> json) {
-  return _texto(json, ['duracao_estacao', 'duracao']);
+  return _texto(json, ['duracao_estacao', 'duracao', 'duracao_touro']);
 }
 
 String _brinco(Map<String, dynamic> json) {
