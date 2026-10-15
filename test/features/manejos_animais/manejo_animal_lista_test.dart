@@ -152,7 +152,18 @@ void main() {
     expect(corpo['score'], 3);
     expect(corpo['obs'], 'aaaaa');
     expect(corpo.containsKey('animais'), isFalse);
-    expect(corpo.containsKey('id_categoria'), isFalse);
+    expect(corpo['id_categoria'], 1);
+  });
+
+  test('campo lê quantidade em dosagem e modo pelo nome', () {
+    final json = {
+      'dosagem': 10,
+      'tipo_dosagem': {'nome': 'Area total'},
+    };
+
+    expect(quantidadeManejoApi(json), '10');
+    expect(tipoDosagemApi(json['tipo_dosagem']), 4);
+    expect(tipoDosagemApi({'nome': 'Por hectare'}), 3);
   });
 
   test('lista guarda o json do item', () {

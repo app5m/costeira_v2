@@ -195,9 +195,9 @@ class ManejoEditarController extends ChangeNotifier {
         ? _texto(json['duracao_estacao'])
         : _texto(json['duracao_touro']);
     semen.text = _texto(json['semen_utilizado']);
-    quantidade.text = _texto(json['quantidade']);
+    quantidade.text = quantidadeManejoApi(json);
     tipoId = _inteiro(json['app_manejos_tipos_id']) ?? _idMapa(json['tipo']);
-    tipoDosagem = _inteiro(json['tipo_dosagem']);
+    tipoDosagem = tipoDosagemApi(json['tipo_dosagem']);
     loteId = _inteiro(json['app_animais_lotes_id']) ?? _idMapa(json['lote_destino']) ?? _idMapa(json['lote']);
     piqueteId = _inteiro(json['app_potreiros_id']) ?? _idMapa(json['potreiro_destino']);
     categoriaAnimalId =
@@ -401,3 +401,4 @@ int? _idMapa(dynamic valor) {
   }
   return null;
 }
+
