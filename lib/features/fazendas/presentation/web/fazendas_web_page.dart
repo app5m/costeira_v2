@@ -1,4 +1,5 @@
 import 'package:costeira/core/components/app_snack.dart';
+import 'package:costeira/core/storage/session_storage.dart';
 import 'package:costeira/features/fazendas/domain/entities/fazenda_entity.dart';
 import 'package:costeira/features/fazendas/presentation/page_controllers/fazendas_list_page_controller.dart';
 import 'package:costeira/features/fazendas/presentation/web/fazenda_form_web_dialog.dart';
@@ -8,7 +9,9 @@ import 'package:flutter_modular/flutter_modular.dart';
 import 'package:lucide_icons/lucide_icons.dart';
 
 class FazendasWebPage extends StatefulWidget {
-  const FazendasWebPage({super.key});
+  const FazendasWebPage({super.key, this.onFarmChanged});
+
+  final Future<void> Function()? onFarmChanged;
 
   @override
   State<FazendasWebPage> createState() => _FazendasWebPageState();
@@ -16,14 +19,22 @@ class FazendasWebPage extends StatefulWidget {
 
 class _FazendasWebPageState extends State<FazendasWebPage> {
   late final FazendasListPageController _controller;
+  int? _selectedFarmId;
+  int? _switchingFarmId;
 
   @override
   void initState() {
     super.initState();
     _controller = Modular.get<FazendasListPageController>();
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (mounted) _controller.loadInitialData();
+      if (mounted) _loadInitialData();
     });
+  }
+
+  Future<void> _loadInitialData() async {
+    final selectedFarmId = await SessionStorage.getSelectedFarmId();
+    if (mounted) setState(() => _selectedFarmId = selectedFarmId);
+    await _controller.loadInitialData();
   }
 
   @override
@@ -56,6 +67,21 @@ class _FazendasWebPageState extends State<FazendasWebPage> {
     final result = await _controller.reload();
     if (!mounted || result == null || result.isSuccess) return;
     AppSnackBar.show(context: context, message: result.message, isError: true);
+  }
+
+  Future<void> _accessFarm(FazendaEntity fazenda) async {
+    if (_switchingFarmId != null || fazenda.id == _selectedFarmId) return;
+    setState(() => _switchingFarmId = fazenda.id);
+    await SessionStorage.saveSelectedFarmId(fazenda.id);
+    if (!mounted) return;
+    setState(() => _selectedFarmId = fazenda.id);
+    AppSnackBar.show(
+      context: context,
+      message: '${_farmName(fazenda)} selecionada.',
+      isError: false,
+    );
+    await widget.onFarmChanged?.call();
+    if (mounted) setState(() => _switchingFarmId = null);
   }
 
   @override
@@ -145,7 +171,7 @@ class _FazendasWebPageState extends State<FazendasWebPage> {
     }
     return LayoutBuilder(
       builder: (context, constraints) {
-        final table = constraints.maxWidth >= 720;
+        final wide = constraints.maxWidth >= 900;
         return Scrollbar(
           child: ListView(
             padding: EdgeInsets.fromLTRB(
@@ -155,11 +181,22 @@ class _FazendasWebPageState extends State<FazendasWebPage> {
               32,
             ),
             children: [
-              Center(
-                child: ConstrainedBox(
-                  constraints: const BoxConstraints(maxWidth: 1400),
-                  child: table ? _table() : _stackedRows(),
-                ),
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Text(
+                    'Fazendas cadastradas',
+                    style: TextStyle(
+                      fontFamily: 'Montserrat',
+                      fontSize: 12,
+                      fontWeight: FontWeight.w700,
+                      letterSpacing: .25,
+                      color: MyColors.colorPrimary,
+                    ),
+                  ),
+                  const SizedBox(height: 10),
+                  wide ? _table() : _stackedRows(),
+                ],
               ),
             ],
           ),
@@ -186,7 +223,10 @@ class _FazendasWebPageState extends State<FazendasWebPage> {
             if (index > 0) const Divider(height: 1, color: Color(0xFFE7E4DD)),
             _FarmTableRow(
               fazenda: _controller.fazendas[index],
-              onTap: () => _openForm(_controller.fazendas[index]),
+              selected: _controller.fazendas[index].id == _selectedFarmId,
+              switching: _controller.fazendas[index].id == _switchingFarmId,
+              onAccess: () => _accessFarm(_controller.fazendas[index]),
+              onEdit: () => _openForm(_controller.fazendas[index]),
             ),
           ],
         ],
@@ -211,7 +251,10 @@ class _FazendasWebPageState extends State<FazendasWebPage> {
             if (index > 0) const Divider(height: 1, color: Color(0xFFE7E4DD)),
             _FarmStackedRow(
               fazenda: _controller.fazendas[index],
-              onTap: () => _openForm(_controller.fazendas[index]),
+              selected: _controller.fazendas[index].id == _selectedFarmId,
+              switching: _controller.fazendas[index].id == _switchingFarmId,
+              onAccess: () => _accessFarm(_controller.fazendas[index]),
+              onEdit: () => _openForm(_controller.fazendas[index]),
             ),
           ],
         ],
@@ -237,7 +280,7 @@ class _TableHeader extends StatelessWidget {
           Expanded(flex: 4, child: _HeaderText('E-mail')),
           SizedBox(width: 16),
           Expanded(flex: 3, child: _HeaderText('Celular')),
-          SizedBox(width: 28),
+          SizedBox(width: 224),
         ],
       ),
     );
@@ -265,99 +308,218 @@ class _HeaderText extends StatelessWidget {
 }
 
 class _FarmTableRow extends StatelessWidget {
-  const _FarmTableRow({required this.fazenda, required this.onTap});
+  const _FarmTableRow({
+    required this.fazenda,
+    required this.selected,
+    required this.switching,
+    required this.onAccess,
+    required this.onEdit,
+  });
 
   final FazendaEntity fazenda;
-  final VoidCallback onTap;
+  final bool selected;
+  final bool switching;
+  final VoidCallback onAccess;
+  final VoidCallback onEdit;
 
   @override
   Widget build(BuildContext context) {
-    return Material(
-      color: Colors.white,
-      child: InkWell(
-        onTap: onTap,
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 15),
-          child: Row(
-            children: [
-              const _FarmIcon(),
-              const SizedBox(width: 12),
-              Expanded(flex: 4, child: _ValueText(_farmName(fazenda))),
-              const SizedBox(width: 16),
-              Expanded(flex: 4, child: _ValueText(_value(fazenda.email))),
-              const SizedBox(width: 16),
-              Expanded(flex: 3, child: _ValueText(_value(fazenda.celular))),
-              const SizedBox(width: 8),
-              const Icon(
-                LucideIcons.pencil,
-                size: 18,
-                color: MyColors.colorPrimary,
-              ),
-            ],
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
+      child: Row(
+        children: [
+          const _FarmIcon(),
+          const SizedBox(width: 12),
+          Expanded(flex: 4, child: _FarmName(fazenda, selected: selected)),
+          const SizedBox(width: 16),
+          Expanded(flex: 4, child: _ValueText(_value(fazenda.email))),
+          const SizedBox(width: 16),
+          Expanded(flex: 3, child: _ValueText(_value(fazenda.celular))),
+          const SizedBox(width: 16),
+          _FarmActions(
+            selected: selected,
+            switching: switching,
+            onAccess: onAccess,
+            onEdit: onEdit,
           ),
-        ),
+        ],
       ),
     );
   }
 }
 
 class _FarmStackedRow extends StatelessWidget {
-  const _FarmStackedRow({required this.fazenda, required this.onTap});
+  const _FarmStackedRow({
+    required this.fazenda,
+    required this.selected,
+    required this.switching,
+    required this.onAccess,
+    required this.onEdit,
+  });
 
   final FazendaEntity fazenda;
-  final VoidCallback onTap;
+  final bool selected;
+  final bool switching;
+  final VoidCallback onAccess;
+  final VoidCallback onEdit;
 
   @override
   Widget build(BuildContext context) {
-    return Material(
-      color: Colors.white,
-      child: InkWell(
-        onTap: onTap,
-        child: Padding(
-          padding: const EdgeInsets.all(16),
-          child: Row(
+    return Padding(
+      padding: const EdgeInsets.all(16),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               const _FarmIcon(),
               const SizedBox(width: 12),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      _farmName(fazenda),
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: const TextStyle(
-                        fontFamily: 'Montserrat',
-                        fontSize: 14,
-                        fontWeight: FontWeight.w700,
-                        color: Color(0xFF313131),
-                      ),
-                    ),
-                    const SizedBox(height: 6),
-                    _CompactValue(
-                      icon: LucideIcons.mail,
-                      value: _value(fazenda.email),
-                    ),
-                    const SizedBox(height: 5),
-                    _CompactValue(
-                      icon: LucideIcons.phone,
-                      value: _value(fazenda.celular),
-                    ),
-                  ],
-                ),
-              ),
-              const SizedBox(width: 8),
-              const Icon(
-                LucideIcons.pencil,
-                size: 18,
-                color: MyColors.colorPrimary,
-              ),
+              Expanded(child: _FarmName(fazenda, selected: selected)),
             ],
+          ),
+          const SizedBox(height: 12),
+          _CompactValue(icon: LucideIcons.mail, value: _value(fazenda.email)),
+          const SizedBox(height: 5),
+          _CompactValue(
+            icon: LucideIcons.phone,
+            value: _value(fazenda.celular),
+          ),
+          const SizedBox(height: 14),
+          _FarmActions(
+            selected: selected,
+            switching: switching,
+            onAccess: onAccess,
+            onEdit: onEdit,
+            expanded: true,
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _FarmName extends StatelessWidget {
+  const _FarmName(this.fazenda, {required this.selected});
+
+  final FazendaEntity fazenda;
+  final bool selected;
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          _farmName(fazenda),
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
+          style: const TextStyle(
+            fontFamily: 'Montserrat',
+            fontSize: 13,
+            fontWeight: FontWeight.w700,
+            color: Color(0xFF313131),
+          ),
+        ),
+        if (selected) ...[
+          const SizedBox(height: 4),
+          const Text(
+            'Fazenda selecionada',
+            style: TextStyle(
+              fontFamily: 'Montserrat',
+              fontSize: 10.5,
+              fontWeight: FontWeight.w700,
+              color: MyColors.colorPrimary,
+            ),
+          ),
+        ],
+      ],
+    );
+  }
+}
+
+class _FarmActions extends StatelessWidget {
+  const _FarmActions({
+    required this.selected,
+    required this.switching,
+    required this.onAccess,
+    required this.onEdit,
+    this.expanded = false,
+  });
+
+  final bool selected;
+  final bool switching;
+  final VoidCallback onAccess;
+  final VoidCallback onEdit;
+  final bool expanded;
+
+  @override
+  Widget build(BuildContext context) {
+    final access = SizedBox(
+      height: 38,
+      width: expanded ? null : 112,
+      child: ElevatedButton(
+        onPressed: selected || switching ? null : onAccess,
+        style: ElevatedButton.styleFrom(
+          elevation: 0,
+          padding: const EdgeInsets.symmetric(horizontal: 14),
+          backgroundColor: MyColors.colorPrimary,
+          foregroundColor: Colors.white,
+          disabledBackgroundColor: const Color(0xFFE4ECE7),
+          disabledForegroundColor: MyColors.colorPrimary,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+          textStyle: const TextStyle(
+            fontFamily: 'Montserrat',
+            fontSize: 11,
+            fontWeight: FontWeight.w700,
+          ),
+        ),
+        child: switching
+            ? const SizedBox(
+                width: 16,
+                height: 16,
+                child: CircularProgressIndicator(strokeWidth: 2),
+              )
+            : Text(
+                selected ? 'Selecionada' : 'Acessar',
+                maxLines: 1,
+                softWrap: false,
+              ),
+      ),
+    );
+    final edit = SizedBox(
+      height: 38,
+      width: expanded ? null : 88,
+      child: OutlinedButton.icon(
+        onPressed: onEdit,
+        icon: const Icon(LucideIcons.pencil, size: 15),
+        label: const Text('Editar'),
+        style: OutlinedButton.styleFrom(
+          padding: const EdgeInsets.symmetric(horizontal: 12),
+          foregroundColor: MyColors.colorPrimary,
+          side: const BorderSide(color: Color(0xFFBFD4C7)),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+          textStyle: const TextStyle(
+            fontFamily: 'Montserrat',
+            fontSize: 11,
+            fontWeight: FontWeight.w700,
           ),
         ),
       ),
+    );
+
+    if (expanded) {
+      return Row(
+        children: [
+          Expanded(child: access),
+          const SizedBox(width: 8),
+          Expanded(child: edit),
+        ],
+      );
+    }
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [access, const SizedBox(width: 8), edit],
     );
   }
 }

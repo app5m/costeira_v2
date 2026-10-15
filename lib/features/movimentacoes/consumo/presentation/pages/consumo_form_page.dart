@@ -170,33 +170,34 @@ class _ConsumoFormPageState extends State<ConsumoFormPage> {
           ),
         ),
         const SizedBox(height: 8),
-        InkWell(
+        Material(
+          color: const Color(0xFFEBEBEB),
           borderRadius: BorderRadius.circular(8),
-          onTap: _openAnimalsPage,
-          child: Ink(
-            padding: const EdgeInsets.all(16),
-            decoration: BoxDecoration(
-              color: const Color(0xFFEBEBEB),
-              borderRadius: BorderRadius.circular(8),
-            ),
-            child: Row(
-              children: [
-                Expanded(
-                  child: Text(
-                    count == 0 ? 'Selecionar animais por brinco' : label,
-                    style: const TextStyle(
-                      color: Color(0xFF313131),
-                      fontSize: 14,
-                      fontFamily: 'Montserrat',
-                      fontWeight: FontWeight.w500,
+          clipBehavior: Clip.antiAlias,
+          child: InkWell(
+            borderRadius: BorderRadius.circular(8),
+            onTap: _openAnimalsPage,
+            child: Padding(
+              padding: const EdgeInsets.all(16),
+              child: Row(
+                children: [
+                  Expanded(
+                    child: Text(
+                      count == 0 ? 'Selecionar animais por brinco' : label,
+                      style: const TextStyle(
+                        color: Color(0xFF313131),
+                        fontSize: 14,
+                        fontFamily: 'Montserrat',
+                        fontWeight: FontWeight.w500,
+                      ),
                     ),
                   ),
-                ),
-                const Icon(
-                  Icons.keyboard_arrow_right,
-                  color: Color(0xFF8C8C8C),
-                ),
-              ],
+                  const Icon(
+                    Icons.keyboard_arrow_right,
+                    color: Color(0xFF8C8C8C),
+                  ),
+                ],
+              ),
             ),
           ),
         ),

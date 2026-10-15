@@ -1,14 +1,17 @@
 import 'package:costeira/core/common/get_list/domain/entities/app_menu_entity.dart';
 import 'package:costeira/core/common/get_list/domain/entities/get_list_params_entity.dart';
 import 'package:costeira/core/common/get_list/domain/usecases/get_list_usecase.dart';
+import 'package:costeira/core/components/app_select_overlay.dart';
 import 'package:costeira/core/menus/app_menus_controller.dart';
 import 'package:costeira/core/menus/menu_action_resolver.dart';
 import 'package:costeira/core/menus/menu_icon.dart';
+import 'package:costeira/core/menus/menu_slug.dart';
 import 'package:costeira/core/offline/cache/form_dependencies_cache_service.dart';
 import 'package:costeira/core/storage/session_storage.dart';
 import 'package:costeira/features/dashboard/domain/entities/dashboard_entity.dart';
 import 'package:costeira/features/dashboard/domain/entities/dashboard_filter_entity.dart';
 import 'package:costeira/features/dashboard/presentation/controllers/get_dashboard_controller.dart';
+import 'package:costeira/features/dashboard/presentation/web/dashboard_action_web_dialog.dart';
 import 'package:costeira/features/dashboard/presentation/widgets/dashboard_charts.dart';
 import 'package:costeira/features/fazendas/domain/entities/fazenda_entity.dart';
 import 'package:costeira/features/fazendas/domain/entities/fazenda_filter_entity.dart';
@@ -18,8 +21,147 @@ import 'package:flutter/material.dart';
 import 'package:flutter_modular/flutter_modular.dart';
 import 'package:lucide_icons/lucide_icons.dart';
 
+class DashboardWebToolbarData {
+  const DashboardWebToolbarData({
+    required this.farms,
+    required this.selectedFarmId,
+    required this.years,
+    required this.selectedPeriod,
+    required this.customPeriodLabel,
+    required this.loadingFarms,
+    required this.loadingDashboard,
+    required this.farmLabel,
+    required this.onFarmChanged,
+    required this.onPeriodChanged,
+    required this.onRefresh,
+  });
+
+  final List<FazendaEntity> farms;
+  final int? selectedFarmId;
+  final List<AgriculturalYearRange> years;
+  final String selectedPeriod;
+  final String customPeriodLabel;
+  final bool loadingFarms;
+  final bool loadingDashboard;
+  final String Function(FazendaEntity farm) farmLabel;
+  final Future<void> Function(int? farmId) onFarmChanged;
+  final Future<void> Function(String? period) onPeriodChanged;
+  final Future<void> Function() onRefresh;
+}
+
+class DashboardWebToolbar extends StatelessWidget {
+  const DashboardWebToolbar({super.key, required this.data});
+
+  static const _customPeriodValue = '__custom_period__';
+
+  final DashboardWebToolbarData data;
+
+  @override
+  Widget build(BuildContext context) {
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final farm = _SelectField<int>(
+          icon: LucideIcons.warehouse,
+          label: 'Fazenda',
+          value: data.selectedFarmId,
+          isLoading: data.loadingFarms,
+          emptyLabel: 'Nenhuma fazenda',
+          items: [
+            for (final item in data.farms)
+              AppSelectOption(value: item.id, label: data.farmLabel(item)),
+          ],
+          onChanged: data.onFarmChanged,
+        );
+        final period = _SelectField<String>(
+          icon: LucideIcons.calendar,
+          label: 'Ano agrícola',
+          value: data.selectedPeriod,
+          items: [
+            for (final item in data.years)
+              AppSelectOption(value: item.label, label: item.label),
+            AppSelectOption(
+              value: _customPeriodValue,
+              label: data.customPeriodLabel,
+            ),
+          ],
+          onChanged: data.onPeriodChanged,
+        );
+
+        return Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Expanded(flex: 5, child: farm),
+            const SizedBox(width: 8),
+            Expanded(flex: 4, child: period),
+            const SizedBox(width: 8),
+            _ToolbarIconButton(
+              tooltip: 'Atualizar dashboard',
+              icon: LucideIcons.refreshCw,
+              isLoading: data.loadingDashboard,
+              onPressed: data.loadingDashboard ? null : data.onRefresh,
+            ),
+          ],
+        );
+      },
+    );
+  }
+}
+
+class _ToolbarIconButton extends StatelessWidget {
+  const _ToolbarIconButton({
+    required this.tooltip,
+    required this.icon,
+    required this.onPressed,
+    this.isLoading = false,
+  });
+
+  final String tooltip;
+  final IconData icon;
+  final VoidCallback? onPressed;
+  final bool isLoading;
+
+  @override
+  Widget build(BuildContext context) {
+    return Tooltip(
+      message: tooltip,
+      child: SizedBox(
+        width: 46,
+        height: 46,
+        child: OutlinedButton(
+          onPressed: onPressed,
+          style: OutlinedButton.styleFrom(
+            foregroundColor: MyColors.colorPrimary,
+            backgroundColor: Colors.white,
+            padding: EdgeInsets.zero,
+            side: const BorderSide(color: Color(0xFFC9D4CB)),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(9),
+            ),
+          ),
+          child: isLoading
+              ? const SizedBox.square(
+                  dimension: 17,
+                  child: CircularProgressIndicator(
+                    strokeWidth: 2,
+                    color: MyColors.colorPrimary,
+                  ),
+                )
+              : Icon(icon, size: 17),
+        ),
+      ),
+    );
+  }
+}
+
 class DashboardWebPage extends StatefulWidget {
-  const DashboardWebPage({super.key});
+  const DashboardWebPage({
+    super.key,
+    this.onToolbarChanged,
+    this.onWebContextChanged,
+  });
+
+  final ValueChanged<DashboardWebToolbarData?>? onToolbarChanged;
+  final Future<void> Function()? onWebContextChanged;
 
   @override
   State<DashboardWebPage> createState() => _DashboardWebPageState();
@@ -40,6 +182,8 @@ class _DashboardWebPageState extends State<DashboardWebPage> {
   bool _wasLoading = false;
   int _chartPlay = 0;
 
+  bool get _isRefreshing => _loadingFarms || _dashboard.isLoading;
+
   @override
   void initState() {
     super.initState();
@@ -48,6 +192,7 @@ class _DashboardWebPageState extends State<DashboardWebPage> {
     _dashboard = Modular.get<GetDashboardController>();
     _dashboard.addListener(_onDashboardChanged);
     _loadFarms();
+    _publishToolbar();
   }
 
   @override
@@ -65,6 +210,32 @@ class _DashboardWebPageState extends State<DashboardWebPage> {
         _chartPlay++;
       }
       _wasLoading = loading;
+    });
+    _publishToolbar();
+  }
+
+  void _publishToolbar() {
+    final callback = widget.onToolbarChanged;
+    if (callback == null) return;
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      callback(
+        DashboardWebToolbarData(
+          farms: List.unmodifiable(_farms),
+          selectedFarmId: _farmId,
+          years: List.unmodifiable(_years),
+          selectedPeriod: _periodValue,
+          customPeriodLabel: _customStart == null
+              ? 'Selecionar datas'
+              : _customPeriodLabel,
+          loadingFarms: _loadingFarms,
+          loadingDashboard: _isRefreshing,
+          farmLabel: _farmLabel,
+          onFarmChanged: _selectFarm,
+          onPeriodChanged: _selectPeriod,
+          onRefresh: _onRefresh,
+        ),
+      );
     });
   }
 
@@ -94,9 +265,13 @@ class _DashboardWebPageState extends State<DashboardWebPage> {
         _farmId = selectedId;
         _loadingFarms = false;
       });
+      _publishToolbar();
       await _loadDashboard();
     } catch (_) {
-      if (mounted) setState(() => _loadingFarms = false);
+      if (mounted) {
+        setState(() => _loadingFarms = false);
+        _publishToolbar();
+      }
     }
   }
 
@@ -131,7 +306,17 @@ class _DashboardWebPageState extends State<DashboardWebPage> {
   }
 
   Future<void> _onRefresh() async {
+    final onWebContextChanged = widget.onWebContextChanged;
+    if (onWebContextChanged != null) {
+      if (!_loadingFarms && mounted) {
+        setState(() => _loadingFarms = true);
+        _publishToolbar();
+      }
+      await onWebContextChanged();
+      return;
+    }
     setState(() => _loadingFarms = true);
+    _publishToolbar();
     await Future.wait([
       Modular.get<AppMenusController>().refresh(),
       _loadFarms(),
@@ -145,7 +330,16 @@ class _DashboardWebPageState extends State<DashboardWebPage> {
     if (farmId == null || farmId == _farmId) return;
     await SessionStorage.saveSelectedFarmId(farmId);
     if (!mounted) return;
-    setState(() => _farmId = farmId);
+    setState(() {
+      _farmId = farmId;
+      _loadingFarms = true;
+    });
+    _publishToolbar();
+    final onWebContextChanged = widget.onWebContextChanged;
+    if (onWebContextChanged != null) {
+      await onWebContextChanged();
+      return;
+    }
     await _loadDashboard();
   }
 
@@ -162,6 +356,7 @@ class _DashboardWebPageState extends State<DashboardWebPage> {
       _customEnd = null;
       _year = selected.first;
     });
+    _publishToolbar();
     await _loadDashboard();
   }
 
@@ -178,25 +373,105 @@ class _DashboardWebPageState extends State<DashboardWebPage> {
       _customStart = range.start;
       _customEnd = range.end;
     });
+    _publishToolbar();
     await _loadDashboard();
   }
 
-  Future<void> _openDashboardActions() async {
-    final menus = Modular.get<AppMenusController>().dashboardMenu;
+  Future<void> _openQuickAction(AppMenuEntity item) async {
+    if (item.children.isEmpty) {
+      await _openDashboardItem(item);
+      return;
+    }
     await showDialog<void>(
       context: context,
       builder: (dialogContext) => _DashboardActionsDialog(
-        items: menus,
-        onOpen: (item) async {
+        title: item.name,
+        description: item.description,
+        items: item.children,
+        onOpen: (child) async {
           Navigator.pop(dialogContext);
-          await MenuActionResolver.open(
-            context,
-            item,
-            surface: MenuSurface.dashboard,
-          );
+          await _openDashboardItem(child);
         },
       ),
     );
+  }
+
+  Future<void> _openDashboardItem(AppMenuEntity item) async {
+    final slug = MenuActionResolver.slugOf(item);
+    final page = MenuActionResolver.dashboardPage(slug);
+    if (_usesWebDialog(slug) && page != null) {
+      final result = await showDialog<Object?>(
+        context: context,
+        barrierDismissible: false,
+        builder: (_) => DashboardActionWebDialog(
+          title: _webDialogTitle(slug, item.name),
+          child: page(),
+        ),
+      );
+      if (!mounted || !_isSuccessfulMutation(result)) return;
+      await _onRefresh();
+      return;
+    }
+    await MenuActionResolver.open(
+      context,
+      item,
+      surface: MenuSurface.dashboard,
+    );
+  }
+
+  bool _isSuccessfulMutation(Object? result) {
+    if (result == true) return true;
+    return result is Map && result['success'] == true;
+  }
+
+  bool _usesWebDialog(String slug) {
+    return switch (slug) {
+      MenuSlug.compra ||
+      MenuSlug.nascimento ||
+      'parto' ||
+      MenuSlug.transferenciaRecebida ||
+      'transferencia_enviada' ||
+      'movimentacao_de_piquete' ||
+      MenuSlug.estoque ||
+      'estoque_entrada' ||
+      'baixa_estoque' ||
+      MenuSlug.venda ||
+      MenuSlug.morte ||
+      'abigeato' ||
+      'consumo' ||
+      'consumo_carnear' ||
+      MenuSlug.manejoAnimal ||
+      'manejo_campo' ||
+      'manejo_reprodutivo' ||
+      'sanitario' ||
+      'suplementacao' ||
+      'troca_de_categoria' ||
+      'aborto' => true,
+      _ => false,
+    };
+  }
+
+  String _webDialogTitle(String slug, String fallback) {
+    return switch (slug) {
+      MenuSlug.compra => 'Adicionar compra',
+      MenuSlug.nascimento || 'parto' => 'Registrar nascimento',
+      'transferencia_enviada' ||
+      'movimentacao_de_piquete' => 'Adicionar transferência',
+      'estoque_entrada' || MenuSlug.estoque => 'Entrada de insumo',
+      'baixa_estoque' => 'Baixa de estoque',
+      MenuSlug.venda => 'Registrar venda',
+      MenuSlug.morte => 'Registrar morte',
+      'abigeato' => 'Registrar abigeato',
+      'consumo' || 'consumo_carnear' => 'Registrar consumo',
+      MenuSlug.manejoAnimal => 'Manejo animal',
+      'manejo_campo' => 'Manejo de campo',
+      'manejo_reprodutivo' => 'Manejo reprodutivo',
+      'sanitario' => 'Planejamento sanitário',
+      'suplementacao' => 'Adicionar suplementação',
+      'troca_de_categoria' => 'Troca de categoria',
+      'aborto' => 'Registrar aborto',
+      _ => fallback,
+    };
   }
 
   String _farmLabel(FazendaEntity farm) {
@@ -294,143 +569,72 @@ class _DashboardWebPageState extends State<DashboardWebPage> {
     final viewportWidth = MediaQuery.sizeOf(context).width;
     final indicators = _data.indicadores.tarefasMes;
     final charts = _data.graficos;
+    final quickActions = Modular.get<AppMenusController>().dashboardMenu;
 
     return ColoredBox(
-      color: const Color(0xFFF6F4EE),
-      child: Column(
+      color: const Color(0xFFF4F2EB),
+      child: Stack(
         children: [
-          if (_dashboard.isLoading) const LinearProgressIndicator(minHeight: 2),
-          Expanded(
-            child: RefreshIndicator(
-              color: MyColors.colorPrimary,
-              onRefresh: _onRefresh,
-              child: Scrollbar(
-                child: ListView(
-                  physics: const AlwaysScrollableScrollPhysics(),
-                  padding: EdgeInsets.fromLTRB(
-                    viewportWidth < 760 ? 16 : 28,
-                    20,
-                    viewportWidth < 760 ? 16 : 28,
-                    32,
-                  ),
-                  children: [
-                    Center(
-                      child: ConstrainedBox(
-                        constraints: const BoxConstraints(maxWidth: 1440),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.stretch,
-                          children: [
-                            _filters(viewportWidth),
-                            if (_dashboard.errorMessage != null) ...[
-                              const SizedBox(height: 16),
-                              _ErrorBanner(message: _dashboard.errorMessage!),
-                            ],
-                            const SizedBox(height: 20),
-                            _TasksSummary(
-                              pending: indicators.pendentes,
-                              overdue: indicators.emAtraso,
-                              urgent: indicators.urgentes,
-                            ),
-                            const SizedBox(height: 16),
-                            _metricGrid(viewportWidth),
-                            const SizedBox(height: 16),
-                            _chartGrid(viewportWidth, charts),
-                          ],
-                        ),
+          Column(
+            children: [
+              if (_isRefreshing) const LinearProgressIndicator(minHeight: 2),
+              Expanded(
+                child: RefreshIndicator(
+                  color: MyColors.colorPrimary,
+                  onRefresh: _onRefresh,
+                  child: Scrollbar(
+                    child: ListView(
+                      physics: const AlwaysScrollableScrollPhysics(),
+                      padding: EdgeInsets.fromLTRB(
+                        viewportWidth < 760 ? 16 : 28,
+                        viewportWidth < 760 ? 16 : 18,
+                        viewportWidth < 760 ? 16 : 28,
+                        quickActions.isEmpty ? 32 : 112,
                       ),
+                      children: [
+                        Center(
+                          child: ConstrainedBox(
+                            constraints: const BoxConstraints(maxWidth: 1600),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.stretch,
+                              children: [
+                                if (_dashboard.errorMessage != null) ...[
+                                  _ErrorBanner(
+                                    message: _dashboard.errorMessage!,
+                                  ),
+                                  const SizedBox(height: 14),
+                                ],
+                                _TasksSummary(
+                                  pending: indicators.pendentes,
+                                  overdue: indicators.emAtraso,
+                                  urgent: indicators.urgentes,
+                                ),
+                                const SizedBox(height: 12),
+                                _metricGrid(viewportWidth),
+                                const SizedBox(height: 12),
+                                _chartGrid(viewportWidth, charts),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ],
                     ),
-                  ],
+                  ),
                 ),
               ),
+            ],
+          ),
+          if (quickActions.isNotEmpty)
+            Positioned(
+              left: 0,
+              right: 0,
+              bottom: 0,
+              child: _QuickActionsStrip(
+                items: quickActions,
+                onTap: _openQuickAction,
+              ),
             ),
-          ),
         ],
-      ),
-    );
-  }
-
-  Widget _filters(double viewportWidth) {
-    final farm = _SelectField<int>(
-      icon: LucideIcons.warehouse,
-      label: 'Fazenda',
-      value: _farmId,
-      isLoading: _loadingFarms,
-      emptyLabel: 'Nenhuma fazenda',
-      items: [
-        for (final item in _farms)
-          DropdownMenuItem(value: item.id, child: Text(_farmLabel(item))),
-      ],
-      onChanged: _selectFarm,
-    );
-    final period = _SelectField<String>(
-      icon: LucideIcons.calendar,
-      label: 'Período',
-      value: _periodValue,
-      items: [
-        for (final item in _years)
-          DropdownMenuItem(value: item.label, child: Text(item.label)),
-        DropdownMenuItem(
-          value: _customPeriodValue,
-          child: Text(
-            _customStart == null ? 'Selecionar datas' : _customPeriodLabel,
-          ),
-        ),
-      ],
-      onChanged: _selectPeriod,
-    );
-    final actions = Wrap(
-      spacing: 10,
-      runSpacing: 10,
-      children: [
-        OutlinedButton.icon(
-          onPressed: _openDashboardActions,
-          icon: const Icon(LucideIcons.layoutGrid, size: 17),
-          label: const Text('Ações do dashboard'),
-          style: _toolbarButtonStyle(),
-        ),
-        OutlinedButton.icon(
-          onPressed: _dashboard.isLoading ? null : _onRefresh,
-          icon: const Icon(LucideIcons.refreshCw, size: 17),
-          label: const Text('Atualizar'),
-          style: _toolbarButtonStyle(),
-        ),
-      ],
-    );
-
-    if (viewportWidth < 760) {
-      return Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          farm,
-          const SizedBox(height: 10),
-          period,
-          const SizedBox(height: 12),
-          actions,
-        ],
-      );
-    }
-    return Row(
-      children: [
-        Expanded(child: farm),
-        const SizedBox(width: 12),
-        Expanded(child: period),
-        const SizedBox(width: 16),
-        actions,
-      ],
-    );
-  }
-
-  ButtonStyle _toolbarButtonStyle() {
-    return OutlinedButton.styleFrom(
-      foregroundColor: MyColors.colorPrimary,
-      backgroundColor: Colors.white,
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 17),
-      side: const BorderSide(color: Color(0xFFD8E2DC)),
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-      textStyle: const TextStyle(
-        fontFamily: 'Montserrat',
-        fontSize: 12,
-        fontWeight: FontWeight.w700,
       ),
     );
   }
@@ -439,7 +643,7 @@ class _DashboardWebPageState extends State<DashboardWebPage> {
     final columns = viewportWidth >= 1120 ? 6 : (viewportWidth >= 760 ? 3 : 2);
     return LayoutBuilder(
       builder: (context, constraints) {
-        const gap = 12.0;
+        const gap = 10.0;
         final width = (constraints.maxWidth - gap * (columns - 1)) / columns;
         return Wrap(
           spacing: gap,
@@ -479,7 +683,7 @@ class _DashboardWebPageState extends State<DashboardWebPage> {
         children: [
           for (var i = 0; i < widgets.length; i++) ...[
             widgets[i],
-            if (i < widgets.length - 1) const SizedBox(height: 16),
+            if (i < widgets.length - 1) const SizedBox(height: 12),
           ],
         ],
       );
@@ -487,10 +691,11 @@ class _DashboardWebPageState extends State<DashboardWebPage> {
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        for (var i = 0; i < widgets.length; i++) ...[
-          Expanded(child: widgets[i]),
-          if (i < widgets.length - 1) const SizedBox(width: 16),
-        ],
+        Expanded(flex: 10, child: widgets[0]),
+        const SizedBox(width: 12),
+        Expanded(flex: 16, child: widgets[1]),
+        const SizedBox(width: 12),
+        Expanded(flex: 10, child: widgets[2]),
       ],
     );
   }
@@ -510,7 +715,7 @@ class _SelectField<T> extends StatelessWidget {
   final IconData icon;
   final String label;
   final T? value;
-  final List<DropdownMenuItem<T>> items;
+  final List<AppSelectOption<T>> items;
   final ValueChanged<T?> onChanged;
   final bool isLoading;
   final String emptyLabel;
@@ -520,53 +725,21 @@ class _SelectField<T> extends StatelessWidget {
     final effectiveValue = items.any((item) => item.value == value)
         ? value
         : null;
-    return Container(
-      height: 54,
-      padding: const EdgeInsets.symmetric(horizontal: 14),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: const Color(0xFFE1DED5)),
-      ),
-      child: Row(
-        children: [
-          Icon(icon, size: 17, color: MyColors.colorPrimary),
-          const SizedBox(width: 10),
-          Expanded(
-            child: DropdownButtonHideUnderline(
-              child: DropdownButton<T>(
-                value: effectiveValue,
-                isExpanded: true,
-                hint: Text(isLoading ? 'Carregando...' : emptyLabel),
-                items: items,
-                onChanged: isLoading || items.isEmpty ? null : onChanged,
-                style: const TextStyle(
-                  fontFamily: 'Montserrat',
-                  fontSize: 13,
-                  fontWeight: FontWeight.w600,
-                  color: Color(0xFF313131),
-                ),
-                icon: const Icon(LucideIcons.chevronDown, size: 16),
-                selectedItemBuilder: (context) => [
-                  for (final item in items)
-                    Align(
-                      alignment: Alignment.centerLeft,
-                      child: Text(
-                        '$label: ${_itemLabel(item.child)}',
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                    ),
-                ],
-              ),
-            ),
-          ),
-        ],
-      ),
+    return AppSelectOverlay<T>(
+      value: effectiveValue,
+      options: items,
+      enabled: !isLoading && items.isNotEmpty,
+      placeholder: isLoading ? 'Carregando...' : emptyLabel,
+      selectedPrefix: '$label: ',
+      height: 46,
+      padding: const EdgeInsets.symmetric(horizontal: 12),
+      fieldColor: Colors.white,
+      menuColor: const Color(0xFFFFFEFB),
+      border: Border.all(color: const Color(0xFFD4D9D1)),
+      leading: Icon(icon, size: 17, color: MyColors.colorPrimary),
+      onChanged: onChanged,
     );
   }
-
-  String _itemLabel(Widget child) => child is Text ? child.data ?? '' : '';
 }
 
 class _ErrorBanner extends StatelessWidget {
@@ -603,6 +776,154 @@ class _ErrorBanner extends StatelessWidget {
             ),
           ),
         ],
+      ),
+    );
+  }
+}
+
+class _QuickActionsStrip extends StatelessWidget {
+  const _QuickActionsStrip({required this.items, required this.onTap});
+
+  final List<AppMenuEntity> items;
+  final ValueChanged<AppMenuEntity> onTap;
+
+  static const _colors = [
+    MyColors.colorPrimary,
+    Color(0xFFC45C4A),
+    Color(0xFF087F72),
+  ];
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.fromLTRB(12, 10, 12, 10),
+      decoration: const BoxDecoration(
+        color: Color(0xFFFAF9F5),
+        border: Border(top: BorderSide(color: Color(0xFFD9DDD3))),
+      ),
+      child: LayoutBuilder(
+        builder: (context, constraints) {
+          const gap = 10.0;
+          if (constraints.maxWidth >= 900 && items.length <= 3) {
+            return Row(
+              children: [
+                for (var index = 0; index < items.length; index++) ...[
+                  if (index > 0) const SizedBox(width: gap),
+                  Expanded(
+                    child: SizedBox(
+                      height: 64,
+                      child: _QuickActionCard(
+                        item: items[index],
+                        color: _colors[index % _colors.length],
+                        onTap: () => onTap(items[index]),
+                      ),
+                    ),
+                  ),
+                ],
+              ],
+            );
+          }
+          final cardWidth = constraints.maxWidth < 420
+              ? constraints.maxWidth * .78
+              : 280.0;
+          return SingleChildScrollView(
+            scrollDirection: Axis.horizontal,
+            child: Row(
+              children: [
+                for (var index = 0; index < items.length; index++) ...[
+                  if (index > 0) const SizedBox(width: gap),
+                  SizedBox(
+                    width: cardWidth,
+                    height: 64,
+                    child: _QuickActionCard(
+                      item: items[index],
+                      color: _colors[index % _colors.length],
+                      onTap: () => onTap(items[index]),
+                    ),
+                  ),
+                ],
+              ],
+            ),
+          );
+        },
+      ),
+    );
+  }
+}
+
+class _QuickActionCard extends StatelessWidget {
+  const _QuickActionCard({
+    required this.item,
+    required this.color,
+    required this.onTap,
+  });
+
+  final AppMenuEntity item;
+  final Color color;
+  final VoidCallback onTap;
+
+  String get _description {
+    final description = (item.description ?? '').trim();
+    if (description.isNotEmpty) return description;
+    return item.children.map((child) => child.name).take(3).join(' · ');
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Material(
+      color: color,
+      borderRadius: BorderRadius.circular(11),
+      clipBehavior: Clip.antiAlias,
+      child: InkWell(
+        onTap: onTap,
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+          child: Row(
+            children: [
+              MenuIcon.maybe(item: item, size: 21, color: Colors.white) ??
+                  const Icon(LucideIcons.plus, size: 21, color: Colors.white),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      item.name,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: const TextStyle(
+                        fontFamily: 'Montserrat',
+                        fontSize: 14,
+                        fontWeight: FontWeight.w800,
+                        color: Colors.white,
+                      ),
+                    ),
+                    if (_description.isNotEmpty) ...[
+                      const SizedBox(height: 2),
+                      Text(
+                        _description,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: TextStyle(
+                          fontFamily: 'Montserrat',
+                          fontSize: 10,
+                          fontWeight: FontWeight.w500,
+                          color: Colors.white.withValues(alpha: .82),
+                        ),
+                      ),
+                    ],
+                  ],
+                ),
+              ),
+              const SizedBox(width: 8),
+              const Icon(
+                LucideIcons.chevronRight,
+                size: 18,
+                color: Colors.white,
+              ),
+            ],
+          ),
+        ),
       ),
     );
   }
@@ -789,7 +1110,7 @@ class _MetricCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return _SurfaceCard(
-      minHeight: 128,
+      minHeight: 116,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -805,14 +1126,14 @@ class _MetricCard extends StatelessWidget {
               color: Color(0xFF6B6B6B),
             ),
           ),
-          const SizedBox(height: 9),
+          const SizedBox(height: 8),
           Text(
             metric.value,
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
             style: const TextStyle(
               fontFamily: 'Montserrat',
-              fontSize: 25,
+              fontSize: 23,
               fontWeight: FontWeight.w800,
               color: Color(0xFF1F3D2A),
               height: 1,
@@ -860,11 +1181,11 @@ class _SurfaceCard extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       constraints: BoxConstraints(minHeight: minHeight ?? 0),
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: const Color(0xFFE8E4D9)),
+        color: const Color(0xFFFAF9F5),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: const Color(0xFFD9DDD3)),
       ),
       child: child,
     );
@@ -891,8 +1212,15 @@ class _IconBox extends StatelessWidget {
 }
 
 class _DashboardActionsDialog extends StatelessWidget {
-  const _DashboardActionsDialog({required this.items, required this.onOpen});
+  const _DashboardActionsDialog({
+    required this.title,
+    required this.items,
+    required this.onOpen,
+    this.description,
+  });
 
+  final String title;
+  final String? description;
   final List<AppMenuEntity> items;
   final ValueChanged<AppMenuEntity> onOpen;
 
@@ -900,9 +1228,10 @@ class _DashboardActionsDialog extends StatelessWidget {
   Widget build(BuildContext context) {
     return Dialog(
       backgroundColor: Colors.white,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+      insetPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 28),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
       child: ConstrainedBox(
-        constraints: const BoxConstraints(maxWidth: 520, maxHeight: 620),
+        constraints: const BoxConstraints(maxWidth: 680, maxHeight: 680),
         child: Padding(
           padding: const EdgeInsets.fromLTRB(24, 22, 24, 18),
           child: Column(
@@ -911,15 +1240,35 @@ class _DashboardActionsDialog extends StatelessWidget {
             children: [
               Row(
                 children: [
-                  const Expanded(
-                    child: Text(
-                      'Ações do dashboard',
-                      style: TextStyle(
-                        fontFamily: 'Montserrat',
-                        fontSize: 18,
-                        fontWeight: FontWeight.w700,
-                        color: Color(0xFF1F3D2A),
-                      ),
+                  const _IconBox(icon: LucideIcons.layoutGrid),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          title,
+                          style: const TextStyle(
+                            fontFamily: 'Montserrat',
+                            fontSize: 18,
+                            fontWeight: FontWeight.w700,
+                            color: Color(0xFF1F3D2A),
+                          ),
+                        ),
+                        SizedBox(height: 3),
+                        if ((description ?? '').trim().isNotEmpty)
+                          Text(
+                            description!.trim(),
+                            maxLines: 2,
+                            overflow: TextOverflow.ellipsis,
+                            style: const TextStyle(
+                              fontFamily: 'Montserrat',
+                              fontSize: 12,
+                              fontWeight: FontWeight.w500,
+                              color: Color(0xFF7A7A7A),
+                            ),
+                          ),
+                      ],
                     ),
                   ),
                   IconButton(
@@ -928,7 +1277,7 @@ class _DashboardActionsDialog extends StatelessWidget {
                   ),
                 ],
               ),
-              const SizedBox(height: 12),
+              const SizedBox(height: 18),
               if (items.isEmpty)
                 const Padding(
                   padding: EdgeInsets.symmetric(vertical: 32),
@@ -947,8 +1296,13 @@ class _DashboardActionsDialog extends StatelessWidget {
                   child: ListView(
                     shrinkWrap: true,
                     children: [
-                      for (final item in items)
-                        _DashboardActionTile(item: item, onOpen: onOpen),
+                      for (var index = 0; index < items.length; index++) ...[
+                        if (index > 0) const SizedBox(height: 8),
+                        _DashboardActionTile(
+                          item: items[index],
+                          onOpen: onOpen,
+                        ),
+                      ],
                     ],
                   ),
                 ),
@@ -974,27 +1328,91 @@ class _DashboardActionTile extends StatelessWidget {
       color: MyColors.colorPrimary,
     );
     if (item.children.isNotEmpty) {
-      return ExpansionTile(
-        leading: icon,
-        title: Text(item.name),
-        children: [
-          for (final child in item.children)
-            _DashboardActionTile(item: child, onOpen: onOpen),
-        ],
+      return Container(
+        decoration: BoxDecoration(
+          color: const Color(0xFFFAF9F5),
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: const Color(0xFFE1E2DC)),
+        ),
+        child: ExpansionTile(
+          shape: const RoundedRectangleBorder(),
+          collapsedShape: const RoundedRectangleBorder(),
+          tilePadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+          childrenPadding: const EdgeInsets.fromLTRB(12, 0, 12, 12),
+          leading: icon,
+          title: Text(
+            item.name,
+            style: const TextStyle(
+              fontFamily: 'Montserrat',
+              fontSize: 14,
+              fontWeight: FontWeight.w700,
+              color: Color(0xFF313131),
+            ),
+          ),
+          subtitle: (item.description ?? '').trim().isEmpty
+              ? null
+              : Padding(
+                  padding: const EdgeInsets.only(top: 4),
+                  child: Text(
+                    item.description!.trim(),
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                    style: const TextStyle(
+                      fontFamily: 'Montserrat',
+                      fontSize: 11,
+                      height: 1.35,
+                      color: Color(0xFF858585),
+                    ),
+                  ),
+                ),
+          children: [
+            for (var index = 0; index < item.children.length; index++) ...[
+              if (index > 0) const SizedBox(height: 6),
+              _DashboardActionTile(item: item.children[index], onOpen: onOpen),
+            ],
+          ],
+        ),
       );
     }
-    return ListTile(
-      leading: icon,
-      title: Text(
-        item.name,
-        style: const TextStyle(
-          fontFamily: 'Montserrat',
-          fontSize: 14,
-          fontWeight: FontWeight.w600,
-        ),
+    return Material(
+      color: const Color(0xFFFAF9F5),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(12),
+        side: const BorderSide(color: Color(0xFFE1E2DC)),
       ),
-      trailing: const Icon(Icons.chevron_right_rounded, size: 20),
-      onTap: () => onOpen(item),
+      clipBehavior: Clip.antiAlias,
+      child: ListTile(
+        minVerticalPadding: 12,
+        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 3),
+        leading: icon,
+        title: Text(
+          item.name,
+          style: const TextStyle(
+            fontFamily: 'Montserrat',
+            fontSize: 14,
+            fontWeight: FontWeight.w700,
+            color: Color(0xFF313131),
+          ),
+        ),
+        subtitle: (item.description ?? '').trim().isEmpty
+            ? null
+            : Padding(
+                padding: const EdgeInsets.only(top: 4),
+                child: Text(
+                  item.description!.trim(),
+                  maxLines: 3,
+                  overflow: TextOverflow.ellipsis,
+                  style: const TextStyle(
+                    fontFamily: 'Montserrat',
+                    fontSize: 11,
+                    height: 1.35,
+                    color: Color(0xFF858585),
+                  ),
+                ),
+              ),
+        trailing: const Icon(Icons.chevron_right_rounded, size: 20),
+        onTap: () => onOpen(item),
+      ),
     );
   }
 }

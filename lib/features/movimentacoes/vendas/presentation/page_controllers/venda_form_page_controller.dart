@@ -383,7 +383,7 @@ class VendaFormPageController extends ChangeNotifier {
     toggleParcialAnimal(animal.id);
   }
 
-  Future<void> init({VendaEntity? venda}) async {
+  Future<void> init({VendaEntity? venda, int? preferredFarmId}) async {
     _resetFormState();
     _editingVenda = venda;
     if (venda != null) {
@@ -405,12 +405,13 @@ class VendaFormPageController extends ChangeNotifier {
           '${now.day.toString().padLeft(2, '0')}/${now.month.toString().padLeft(2, '0')}/${now.year}';
     }
 
+    final initialFarmId = venda?.appFazendasId ?? preferredFarmId;
     try {
       await Future.wait([
-        _loadFazendas(preferredFarmId: venda?.appFazendasId),
+        _loadFazendas(preferredFarmId: initialFarmId),
         if (!isEdit) ...[
-          _lotsController.load(),
-          _potreirosController.load(),
+          _lotsController.load(appFazendasId: initialFarmId),
+          _potreirosController.load(appFazendasId: initialFarmId),
           _loadCategories(),
         ],
       ]);

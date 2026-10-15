@@ -3,6 +3,7 @@ import 'package:costeira/core/components/app_snack.dart';
 import 'package:costeira/features/animals/presentation/page_controllers/animals_page_controller.dart';
 import 'package:costeira/features/animals/presentation/pages/animals/animal_list.dart';
 import 'package:costeira/features/animals/presentation/pages/dados.dart';
+import 'package:costeira/features/animals/presentation/web/animal_lot_add_web_dialog.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_modular/flutter_modular.dart';
 
@@ -51,9 +52,7 @@ class _AnimalsPageState extends State<AnimalsPage>
   }
 
   Future<void> _openAddLot() async {
-    final result = await Modular.to.pushNamed<Map<String, dynamic>?>(
-      AppRoutes.animalLotsAdd,
-    );
+    final result = await openAnimalLotAdd(context);
 
     if (!mounted || result?['success'] != true) {
       return;

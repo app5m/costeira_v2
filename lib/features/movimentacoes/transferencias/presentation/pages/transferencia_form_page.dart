@@ -1,13 +1,15 @@
-import 'package:costeira/app/app_routes.dart';
 import 'package:costeira/core/components/app_select_overlay.dart';
 import 'package:costeira/core/components/app_snack.dart';
+import 'package:costeira/core/components/adaptive_selection_modal.dart';
 import 'package:costeira/core/components/custom_button.dart';
 import 'package:costeira/features/animals/presentation/widgets/animal_lot_selector.dart';
+import 'package:costeira/features/animals/presentation/web/animal_lot_add_web_dialog.dart';
 import 'package:costeira/features/movimentacoes/transferencias/domain/entities/transferencia_upsert_entity.dart';
 import 'package:costeira/features/movimentacoes/transferencias/presentation/page_controllers/transferencia_form_page_controller.dart';
 import 'package:costeira/features/movimentacoes/transferencias/presentation/pages/transferencia_animais_page.dart';
 import 'package:costeira/features/movimentacoes/transferencias/presentation/pages/transferencia_lotes_page.dart';
 import 'package:costeira/features/potreiros/presentation/widgets/potreiro_selector.dart';
+import 'package:costeira/features/potreiros/presentation/web/potreiro_add_web_dialog.dart';
 import 'package:costeira/theme/colors.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -66,21 +68,15 @@ class _TransferenciaFormPageState extends State<TransferenciaFormPage> {
   }
 
   Future<void> _openPotreiroDestinoSelection() async {
-    final result = await showModalBottomSheet<PotreiroSelectionResult>(
+    final result = await showAdaptiveSelectionModal<PotreiroSelectionResult>(
       context: context,
-      isScrollControlled: true,
-      backgroundColor: Colors.white,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
-      ),
-      builder: (_) => SafeArea(
-        top: false,
-        child: PotreiroSelectionSheet(
-          potreiros: _pageController.potreiros,
-          initialSelectedPotreiroId: _pageController.selectedPotreiroDestinoId,
-          isLoading: _pageController.isLoading,
-          errorMessage: _pageController.errorMessage,
-        ),
+      title: 'Selecionar piquete',
+      builder: (embeddedInDialog) => PotreiroSelectionSheet(
+        potreiros: _pageController.potreiros,
+        initialSelectedPotreiroId: _pageController.selectedPotreiroDestinoId,
+        isLoading: _pageController.isLoading,
+        errorMessage: _pageController.errorMessage,
+        embeddedInDialog: embeddedInDialog,
       ),
     );
 
@@ -89,9 +85,7 @@ class _TransferenciaFormPageState extends State<TransferenciaFormPage> {
     }
 
     if (result.shouldAddPotreiro) {
-      final created = await Modular.to.pushNamed<Map<String, dynamic>?>(
-        AppRoutes.potreirosAdd,
-      );
+      final created = await openPotreiroAdd(context);
       if (created?['success'] == true) {
         await _pageController.reloadPotreiros();
         if (mounted) {
@@ -104,21 +98,15 @@ class _TransferenciaFormPageState extends State<TransferenciaFormPage> {
   }
 
   Future<void> _openLoteDestinoSelection() async {
-    final result = await showModalBottomSheet<AnimalLotSelectionResult>(
+    final result = await showAdaptiveSelectionModal<AnimalLotSelectionResult>(
       context: context,
-      isScrollControlled: true,
-      backgroundColor: Colors.white,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
-      ),
-      builder: (_) => SafeArea(
-        top: false,
-        child: AnimalLotSelectionSheet(
-          lots: _pageController.lots,
-          initialSelectedLotId: _pageController.selectedLoteDestinoId,
-          isLoading: _pageController.isLoading,
-          errorMessage: _pageController.errorMessage,
-        ),
+      title: 'Selecionar lote',
+      builder: (embeddedInDialog) => AnimalLotSelectionSheet(
+        lots: _pageController.lots,
+        initialSelectedLotId: _pageController.selectedLoteDestinoId,
+        isLoading: _pageController.isLoading,
+        errorMessage: _pageController.errorMessage,
+        embeddedInDialog: embeddedInDialog,
       ),
     );
 
@@ -127,9 +115,7 @@ class _TransferenciaFormPageState extends State<TransferenciaFormPage> {
     }
 
     if (result.shouldAddLot) {
-      final created = await Modular.to.pushNamed<Map<String, dynamic>?>(
-        AppRoutes.animalLotsAdd,
-      );
+      final created = await openAnimalLotAdd(context);
       if (created?['success'] == true) {
         await _pageController.reloadLotes();
         if (mounted) {

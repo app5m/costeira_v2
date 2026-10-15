@@ -4,6 +4,7 @@ import 'package:costeira/core/components/sub_user_flag.dart';
 import 'package:costeira/features/potreiros/domain/entities/potreiro_entity.dart';
 import 'package:costeira/features/potreiros/presentation/page_controllers/potreiros_page_controller.dart';
 import 'package:costeira/features/potreiros/presentation/pages/potreiros/dados_potreiros.dart';
+import 'package:costeira/features/potreiros/presentation/web/potreiro_add_web_dialog.dart';
 import 'package:costeira/features/potreiros/presentation/widgets/potreiro_filter_sheet.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_modular/flutter_modular.dart';
@@ -49,9 +50,7 @@ class _PotreirosState extends State<Potreiros>
   }
 
   Future<void> _openAdd() async {
-    final result = await Modular.to.pushNamed<Map<String, dynamic>?>(
-      AppRoutes.potreirosAdd,
-    );
+    final result = await openPotreiroAdd(context);
 
     if (!mounted || result?['success'] != true) {
       return;
@@ -485,7 +484,10 @@ class _PotreirosState extends State<Potreiros>
                                                           FontWeight.w600,
                                                     ),
                                                   ),
-                                                  SubUserFlag(nome: potreiro.subUsuarioNome),
+                                                  SubUserFlag(
+                                                    nome:
+                                                        potreiro.subUsuarioNome,
+                                                  ),
                                                   const SizedBox(height: 8),
                                                   _infoRow(
                                                     'Área útil',

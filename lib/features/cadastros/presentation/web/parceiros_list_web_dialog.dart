@@ -1,4 +1,5 @@
 import 'package:costeira/core/components/app_snack.dart';
+import 'package:costeira/core/components/app_select_overlay.dart';
 import 'package:costeira/core/components/sub_user_flag.dart';
 import 'package:costeira/features/cadastros/domain/entities/parceiro_entity.dart';
 import 'package:costeira/features/cadastros/domain/entities/parceiro_kind.dart';
@@ -233,38 +234,43 @@ class _ParceirosListWebDialogState extends State<ParceirosListWebDialog> {
   }
 
   Widget _farmSelector() {
-    return DropdownButtonFormField<int>(
+    return AppSelectOverlay<int>(
       value: _controller.selectedFarmId,
-      isExpanded: true,
-      items: [
+      placeholder: 'Selecionar fazenda',
+      height: 52,
+      padding: const EdgeInsets.symmetric(horizontal: 14),
+      options: [
         for (final farm in _controller.fazendas)
-          DropdownMenuItem(
+          AppSelectOption(
             value: farm.id,
-            child: Text(
-              farm.nome.isEmpty ? 'Fazenda ${farm.id}' : farm.nome,
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-            ),
+            label: farm.nome.isEmpty ? 'Fazenda ${farm.id}' : farm.nome,
           ),
       ],
-      onChanged: _controller.isLoading
-          ? null
-          : (value) {
-              if (value != null) _controller.selectFarm(value);
-            },
-      decoration: const InputDecoration(
-        labelText: 'Fazenda',
-        prefixIcon: Icon(LucideIcons.warehouse, size: 18),
+      enabled: !_controller.isLoading,
+      leading: const Icon(
+        LucideIcons.warehouse,
+        size: 18,
+        color: MyColors.colorPrimary,
       ),
+      onChanged: (value) {
+        if (value != null) _controller.selectFarm(value);
+      },
     );
   }
 
   Widget _nameFilter() {
-    return TextField(
-      controller: _controller.nomeController,
-      decoration: const InputDecoration(
-        labelText: 'Filtrar por nome',
-        prefixIcon: Icon(LucideIcons.search, size: 18),
+    return SizedBox(
+      height: 52,
+      child: TextField(
+        controller: _controller.nomeController,
+        textAlignVertical: TextAlignVertical.center,
+        decoration: const InputDecoration(
+          hintText: 'Filtrar por nome',
+          isDense: true,
+          contentPadding: EdgeInsets.symmetric(horizontal: 14, vertical: 14),
+          prefixIcon: Icon(LucideIcons.search, size: 18),
+          prefixIconConstraints: BoxConstraints(minWidth: 48, minHeight: 52),
+        ),
       ),
     );
   }

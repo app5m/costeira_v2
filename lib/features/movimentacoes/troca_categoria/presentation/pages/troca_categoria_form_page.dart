@@ -1,14 +1,18 @@
 import 'package:costeira/core/common/get_list/domain/entities/list_category_entity.dart';
 import 'package:costeira/core/components/app_select_overlay.dart';
 import 'package:costeira/core/components/app_snack.dart';
+import 'package:costeira/core/components/adaptive_selection_modal.dart';
 import 'package:costeira/core/components/custom_button.dart';
 import 'package:costeira/features/animals/presentation/widgets/animal_lot_selector.dart';
+import 'package:costeira/features/animals/presentation/web/animal_lot_add_web_dialog.dart';
 import 'package:costeira/features/movimentacoes/domain/entities/troca_categoria_entity.dart';
 import 'package:costeira/features/movimentacoes/troca_categoria/presentation/page_controllers/troca_categoria_form_page_controller.dart';
 import 'package:costeira/features/movimentacoes/troca_categoria/presentation/pages/troca_categoria_animais_page.dart';
 import 'package:costeira/features/movimentacoes/troca_categoria/presentation/pages/troca_categoria_animais_vinculados_page.dart';
 import 'package:costeira/features/potreiros/presentation/widgets/potreiro_selector.dart';
+import 'package:costeira/features/potreiros/presentation/web/potreiro_add_web_dialog.dart';
 import 'package:costeira/theme/colors.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_modular/flutter_modular.dart';
@@ -66,48 +70,52 @@ class _TrocaCategoriaFormPageState extends State<TrocaCategoriaFormPage> {
   }
 
   Future<void> _selectPotreiro() async {
-    final result = await showModalBottomSheet<PotreiroSelectionResult>(
+    final result = await showAdaptiveSelectionModal<PotreiroSelectionResult>(
       context: context,
-      isScrollControlled: true,
-      backgroundColor: Colors.white,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
-      ),
-      builder: (_) => SafeArea(
-        top: false,
-        child: PotreiroSelectionSheet(
-          potreiros: _pageController.potreiros,
-          initialSelectedPotreiroId: _pageController.selectedPotreiroId,
-          isLoading: _pageController.isLoading,
-          errorMessage: _pageController.errorMessage,
-        ),
+      title: 'Selecionar potreiro',
+      builder: (embeddedInDialog) => PotreiroSelectionSheet(
+        potreiros: _pageController.potreiros,
+        initialSelectedPotreiroId: _pageController.selectedPotreiroId,
+        isLoading: _pageController.isLoading,
+        errorMessage: _pageController.errorMessage,
+        embeddedInDialog: embeddedInDialog,
       ),
     );
-    if (result == null || result.shouldAddPotreiro) {
+    if (!mounted || result == null) {
+      return;
+    }
+    if (result.shouldAddPotreiro) {
+      if (!kIsWeb) return;
+      final created = await openPotreiroAdd(context);
+      if (!mounted || created?['success'] != true) return;
+      await _pageController.reloadPotreiros();
+      if (mounted) await _selectPotreiro();
       return;
     }
     _pageController.onPotreiroChanged(result.selectedPotreiroId);
   }
 
   Future<void> _selectLote() async {
-    final result = await showModalBottomSheet<AnimalLotSelectionResult>(
+    final result = await showAdaptiveSelectionModal<AnimalLotSelectionResult>(
       context: context,
-      isScrollControlled: true,
-      backgroundColor: Colors.white,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
-      ),
-      builder: (_) => SafeArea(
-        top: false,
-        child: AnimalLotSelectionSheet(
-          lots: _pageController.lotes,
-          initialSelectedLotId: _pageController.selectedLoteId,
-          isLoading: _pageController.isLoading,
-          errorMessage: _pageController.errorMessage,
-        ),
+      title: 'Selecionar lote',
+      builder: (embeddedInDialog) => AnimalLotSelectionSheet(
+        lots: _pageController.lotes,
+        initialSelectedLotId: _pageController.selectedLoteId,
+        isLoading: _pageController.isLoading,
+        errorMessage: _pageController.errorMessage,
+        embeddedInDialog: embeddedInDialog,
       ),
     );
-    if (result == null || result.shouldAddLot) {
+    if (!mounted || result == null) {
+      return;
+    }
+    if (result.shouldAddLot) {
+      if (!kIsWeb) return;
+      final created = await openAnimalLotAdd(context);
+      if (!mounted || created?['success'] != true) return;
+      await _pageController.reloadLotes();
+      if (mounted) await _selectLote();
       return;
     }
     _pageController.onLoteChanged(result.selectedLotId);
@@ -270,42 +278,42 @@ class _TrocaCategoriaFormPageState extends State<TrocaCategoriaFormPage> {
           ),
         ),
         const SizedBox(height: 8),
-        InkWell(
+        Material(
+          color: const Color(0xFFEBEBEB),
           borderRadius: BorderRadius.circular(8),
-          onTap: _pageController.isEdit
-              ? count == 0
-                    ? null
-                    : _openLinkedAnimals
-              : _openAnimalsSelection,
-          child: Ink(
-            padding: const EdgeInsets.all(16),
-            decoration: BoxDecoration(
-              color: const Color(0xFFEBEBEB),
-              borderRadius: BorderRadius.circular(8),
-            ),
-            child: Row(
-              children: [
-                Expanded(
-                  child: Text(
-                    _pageController.isEdit
-                        ? '$label vinculados'
-                        : count == 0
-                        ? 'Selecionar animais'
-                        : '$label selecionados',
-                    style: const TextStyle(
-                      color: Color(0xFF313131),
-                      fontSize: 14,
-                      fontFamily: 'Montserrat',
-                      fontWeight: FontWeight.w500,
+          clipBehavior: Clip.antiAlias,
+          child: InkWell(
+            onTap: _pageController.isEdit
+                ? count == 0
+                      ? null
+                      : _openLinkedAnimals
+                : _openAnimalsSelection,
+            child: Padding(
+              padding: const EdgeInsets.all(16),
+              child: Row(
+                children: [
+                  Expanded(
+                    child: Text(
+                      _pageController.isEdit
+                          ? '$label vinculados'
+                          : count == 0
+                          ? 'Selecionar animais'
+                          : '$label selecionados',
+                      style: const TextStyle(
+                        color: Color(0xFF313131),
+                        fontSize: 14,
+                        fontFamily: 'Montserrat',
+                        fontWeight: FontWeight.w500,
+                      ),
                     ),
                   ),
-                ),
-                if (!_pageController.isEdit || count > 0)
-                  const Icon(
-                    Icons.keyboard_arrow_right,
-                    color: Color(0xFF8C8C8C),
-                  ),
-              ],
+                  if (!_pageController.isEdit || count > 0)
+                    const Icon(
+                      Icons.keyboard_arrow_right,
+                      color: Color(0xFF8C8C8C),
+                    ),
+                ],
+              ),
             ),
           ),
         ),

@@ -392,7 +392,7 @@ class CompraFormPageController extends ChangeNotifier {
     return unitario;
   }
 
-  Future<void> init({CompraEntity? compra}) async {
+  Future<void> init({CompraEntity? compra, int? preferredFarmId}) async {
     _editingCompra = compra;
     if (compra != null) {
       selectedPotreiroId = compra.appPotreirosId ?? compra.potreiro?.id;
@@ -441,11 +441,12 @@ class CompraFormPageController extends ChangeNotifier {
           '${now.day.toString().padLeft(2, '0')}/${now.month.toString().padLeft(2, '0')}/${now.year}';
     }
 
+    final initialFarmId = compra?.appFazendasId ?? preferredFarmId;
     try {
       await Future.wait([
-        _loadFazendas(preferredFarmId: compra?.appFazendasId),
-        _lotsController.load(),
-        _potreirosController.load(),
+        _loadFazendas(preferredFarmId: initialFarmId),
+        _lotsController.load(appFazendasId: initialFarmId),
+        _potreirosController.load(appFazendasId: initialFarmId),
       ]);
       if (!isEdit && selectedSexo != null) {
         await _loadAnimalLists(selectedSexo!);

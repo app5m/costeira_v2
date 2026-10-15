@@ -1,14 +1,16 @@
-import 'package:costeira/app/app_routes.dart';
 import 'package:costeira/core/common/get_list/domain/entities/list_category_entity.dart';
 import 'package:costeira/core/common/get_list/domain/entities/list_item_entity.dart';
 import 'package:costeira/core/common/get_list/domain/entities/list_subcategory_entity.dart';
 import 'package:costeira/core/components/app_select_overlay.dart';
 import 'package:costeira/core/components/app_snack.dart';
+import 'package:costeira/core/components/adaptive_selection_modal.dart';
 import 'package:costeira/core/components/custom_button.dart';
 import 'package:costeira/core/input_formatters/fixed_two_decimal_input_formatter.dart';
 import 'package:costeira/features/animals/domain/entities/animal_entity.dart';
 import 'package:costeira/features/animals/presentation/page_controllers/animal_edit_page_controller.dart';
+import 'package:costeira/features/animals/presentation/web/animal_lot_add_web_dialog.dart';
 import 'package:costeira/features/animals/presentation/widgets/animal_lot_selector.dart';
+import 'package:costeira/features/potreiros/presentation/web/potreiro_add_web_dialog.dart';
 import 'package:costeira/features/potreiros/presentation/widgets/potreiro_selector.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -73,18 +75,15 @@ class _EditAnimalState extends State<EditAnimal> {
       return;
     }
 
-    final result = await showModalBottomSheet<AnimalLotSelectionResult>(
+    final result = await showAdaptiveSelectionModal<AnimalLotSelectionResult>(
       context: context,
-      isScrollControlled: true,
-      backgroundColor: Colors.white,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
-      ),
-      builder: (_) => AnimalLotSelectionSheet(
+      title: 'Selecionar lote',
+      builder: (embeddedInDialog) => AnimalLotSelectionSheet(
         lots: _pageController.lots,
         initialSelectedLotId: _pageController.selectedLotId,
         isLoading: _pageController.isLoading,
         errorMessage: _pageController.errorMessage,
+        embeddedInDialog: embeddedInDialog,
       ),
     );
 
@@ -93,9 +92,7 @@ class _EditAnimalState extends State<EditAnimal> {
     }
 
     if (result.shouldAddLot) {
-      final created = await Modular.to.pushNamed<Map<String, dynamic>?>(
-        AppRoutes.animalLotsAdd,
-      );
+      final created = await openAnimalLotAdd(context);
 
       if (!mounted) {
         return;
@@ -147,18 +144,15 @@ class _EditAnimalState extends State<EditAnimal> {
       return;
     }
 
-    final result = await showModalBottomSheet<PotreiroSelectionResult>(
+    final result = await showAdaptiveSelectionModal<PotreiroSelectionResult>(
       context: context,
-      isScrollControlled: true,
-      backgroundColor: Colors.white,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
-      ),
-      builder: (_) => PotreiroSelectionSheet(
+      title: 'Selecionar potreiro',
+      builder: (embeddedInDialog) => PotreiroSelectionSheet(
         potreiros: _pageController.potreiros,
         initialSelectedPotreiroId: _pageController.selectedPotreiroId,
         isLoading: _pageController.isLoading,
         errorMessage: _pageController.errorMessage,
+        embeddedInDialog: embeddedInDialog,
       ),
     );
 
@@ -167,9 +161,7 @@ class _EditAnimalState extends State<EditAnimal> {
     }
 
     if (result.shouldAddPotreiro) {
-      final created = await Modular.to.pushNamed<Map<String, dynamic>?>(
-        AppRoutes.potreirosAdd,
-      );
+      final created = await openPotreiroAdd(context);
 
       if (!mounted) {
         return;
