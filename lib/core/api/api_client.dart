@@ -1,6 +1,7 @@
 import 'package:costeira/core/api/api_exception.dart';
 import 'package:costeira/core/api/api_response_utils.dart';
 import 'package:costeira/core/config/ws_constantes.dart';
+import 'package:costeira/core/storage/session_storage.dart';
 import 'package:costeira/core/utils/app_logger.dart';
 import 'package:dio/dio.dart';
 
@@ -32,12 +33,13 @@ class ApiClient {
   }) async {
     try {
       final resolvedPath = _resolvePath(path, baseUrl);
+      final payload = _payloadDoCliente(path, data);
       AppLogger.info('API CLIENT: INICIANDO POST PATH=$resolvedPath');
-      AppLogger.debug('API CLIENT: PAYLOAD=$data');
+      AppLogger.debug('API CLIENT: PAYLOAD=$payload');
 
       final response = await _dio.post<dynamic>(
         resolvedPath,
-        data: formData ?? data,
+        data: formData ?? payload,
         options: Options(
           responseType: ResponseType.plain,
           sendTimeout: timeout,
@@ -66,6 +68,38 @@ class ApiClient {
       AppLogger.error('API CLIENT: ERRO INESPERADO PATH=$path ERROR=$error');
       throw ApiException('Ocorreu um erro inesperado.');
     }
+  }
+
+  Map<String, dynamic>? _payloadDoCliente(
+    String path,
+    Map<String, dynamic>? data,
+  ) {
+    final clientId = SessionStorage.cachedManagedClientId;
+    if (data == null || clientId == null || _mantemAdmin(path)) {
+      return data;
+    }
+    final payload = Map<String, dynamic>.from(data);
+    if (payload.containsKey('app_users_id')) {
+      payload['app_users_id'] = clientId;
+    }
+    if (payload.containsKey('id_user')) {
+      payload['id_user'] = clientId;
+    }
+    if (payload.containsKey('id_vinculo_usuario')) {
+      payload['id_vinculo_usuario'] = clientId;
+    }
+    return payload;
+  }
+
+  bool _mantemAdmin(String path) {
+    const livres = [
+      WSConstantes.login,
+      WSConstantes.doisFatores,
+      WSConstantes.perfil,
+      WSConstantes.utilLista,
+      WSConstantes.saveFcm,
+    ];
+    return livres.any(path.contains);
   }
 
   String _resolvePath(String path, String? baseUrl) {

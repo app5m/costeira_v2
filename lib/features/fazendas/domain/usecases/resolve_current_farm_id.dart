@@ -12,8 +12,9 @@ class ResolveCurrentFarmId {
       return preferred;
     }
 
+    final managedId = SessionStorage.cachedManagedClientId;
     final resolvedUserId =
-        userId ?? (await SessionStorage.getUserSession())?.id;
+        managedId ?? userId ?? (await SessionStorage.getUserSession())?.id;
     if (resolvedUserId == null || resolvedUserId <= 0) {
       return null;
     }

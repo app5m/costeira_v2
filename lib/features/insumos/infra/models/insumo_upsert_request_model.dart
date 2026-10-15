@@ -25,7 +25,11 @@ class InsumoUpsertRequestModel {
         'data_validade': insumo.dataValidade,
         'app_estoques_insumos_categorias_id':
             insumo.appEstoquesInsumosCategoriasId,
+        'app_estoque_insumos_categorias_id':
+            insumo.appEstoquesInsumosCategoriasId,
         'app_estoques_insumos_subcategorias_id':
+            insumo.appEstoquesInsumosSubcategoriasId,
+        'app_estoque_insumos_subcategorias_id':
             insumo.appEstoquesInsumosSubcategoriasId,
       }..removeWhere((key, value) => value == null)),
     );

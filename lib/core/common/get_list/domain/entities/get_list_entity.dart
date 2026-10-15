@@ -17,6 +17,7 @@ class GetListEntity {
     this.estoqueUnidadesMedidas = const [],
     this.anosAgricolas = const [],
     this.manejosCategorias = const [],
+    this.clientes = const [],
   });
 
   final List<ListCategoryEntity> animaisCategorias;
@@ -31,6 +32,38 @@ class GetListEntity {
   final List<ListItemEntity> estoqueUnidadesMedidas;
   final List<AgriculturalYearRange> anosAgricolas;
   final List<ManejoCategoriaLista> manejosCategorias;
+  final List<ClienteLista> clientes;
+}
+
+class ClienteLista {
+  const ClienteLista({
+    required this.id,
+    required this.nome,
+    required this.nomeFantasia,
+    required this.cnpj,
+  });
+
+  final int id;
+  final String nome;
+  final String nomeFantasia;
+  final String cnpj;
+
+  bool combina(String filtro) {
+    final consulta = filtro.trim().toLowerCase();
+    if (consulta.isEmpty) {
+      return true;
+    }
+    if (nome.toLowerCase().contains(consulta) ||
+        nomeFantasia.toLowerCase().contains(consulta) ||
+        cnpj.toLowerCase().contains(consulta)) {
+      return true;
+    }
+    final digitos = consulta.replaceAll(RegExp(r'\D'), '');
+    if (digitos.isEmpty) {
+      return false;
+    }
+    return cnpj.replaceAll(RegExp(r'\D'), '').contains(digitos);
+  }
 }
 
 class ManejoCategoriaLista {

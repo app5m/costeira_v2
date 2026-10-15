@@ -36,16 +36,18 @@ class AccountRepository {
       'tipo=${map['tipo']} tipo_pessoa=${map['tipo_pessoa']} '
       'mappedSub=${subUser.appSubUsersId} mappedOwner=${subUser.ownerUserId}',
     );
+    final profile = AccountProfile.fromJson(map);
     final session = await SessionStorage.getUserSession();
     if (session != null && session.id == userId) {
       await SessionStorage.saveUserSession(
         session.withSubUser(
           appSubUsersId: subUser.appSubUsersId,
           ownerUserId: subUser.ownerUserId,
+          idGrupo: profile.idGrupo ?? session.idGrupo,
         ),
       );
     }
-    return AccountProfile.fromJson(map);
+    return profile;
   }
 
   Future<ApiMessage> deactivateAccount(int id) async {

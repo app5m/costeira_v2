@@ -2,6 +2,7 @@ import 'package:costeira/core/common/get_list/domain/entities/get_list_params_en
 import 'package:costeira/core/common/get_list/domain/usecases/get_list_usecase.dart';
 import 'package:costeira/core/offline/network/network_status_service.dart';
 import 'package:costeira/core/storage/session_storage.dart';
+import 'package:costeira/core/storage/sub_user_payload.dart';
 import 'package:costeira/core/utils/app_logger.dart';
 import 'package:costeira/features/animals/domain/entities/animal_lots_filter_entity.dart';
 import 'package:costeira/features/animals/domain/entities/animals_filter_entity.dart';
@@ -72,8 +73,7 @@ class FormDependenciesCacheService {
       return;
     }
 
-    final session = await SessionStorage.getUserSession();
-    final userId = session?.id ?? 0;
+    final userId = await _currentUserId();
     if (userId <= 0) {
       AppLogger.info(
         'FORM DEPENDENCIES CACHE: usuario nao autenticado, preload ignorado',
@@ -363,7 +363,11 @@ class FormDependenciesCacheService {
 
   Future<int> _currentUserId() async {
     final session = await SessionStorage.getUserSession();
-    return session?.id ?? 0;
+    final id = session?.id ?? 0;
+    if (id <= 0) {
+      return 0;
+    }
+    return sessionAccountUserId(id);
   }
 
   Future<void> _safe(

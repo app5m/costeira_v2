@@ -4,6 +4,7 @@ import 'package:br_validators/validators/br_validators.dart';
 import 'package:costeira/core/api/api_exception.dart';
 import 'package:costeira/core/config/ws_constantes.dart';
 import 'package:costeira/core/storage/session_storage.dart';
+import 'package:costeira/core/storage/sub_user_payload.dart';
 import 'package:costeira/features/account/models/account_profile.dart';
 import 'package:costeira/features/account/repositories/account_repository.dart';
 import 'package:costeira/features/auth/repositories/auth_repository.dart';
@@ -104,7 +105,9 @@ class FazendaFormPageController extends ChangeNotifier {
     try {
       final user = await SessionStorage.getUserSession();
       if (user != null) {
-        _profile = await _accountRepository.fetchProfile(userId: user.id);
+        _profile = await _accountRepository.fetchProfile(
+          userId: sessionAccountUserId(user.id),
+        );
         _profileError = null;
       }
     } on ApiException catch (error) {

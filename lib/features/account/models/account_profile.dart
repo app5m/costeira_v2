@@ -13,10 +13,12 @@ class AccountProfile {
     required this.ie,
     required this.avatar,
     required this.farm,
+    this.idGrupo,
   });
 
   final int id;
   final int tipoPessoa;
+  final int? idGrupo;
   final String name;
   final String email;
   final String phone;
@@ -43,6 +45,7 @@ class AccountProfile {
       nomeFantasia: json['nome_fantasia']?.toString() ?? '',
       ie: json['ie']?.toString() ?? '',
       avatar: json['avatar']?.toString() ?? '',
+      idGrupo: int.tryParse(json['id_grupo']?.toString() ?? ''),
       farm: json['fazenda'] is Map<String, dynamic>
           ? ProfileFarm.fromJson(json['fazenda'] as Map<String, dynamic>)
           : null,

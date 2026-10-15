@@ -2,6 +2,7 @@ import 'package:costeira/core/api/api_client.dart';
 import 'package:costeira/core/config/ws_constantes.dart';
 import 'package:costeira/core/offline/offline_api_service.dart';
 import 'package:costeira/core/storage/session_storage.dart';
+import 'package:costeira/core/storage/sub_user_payload.dart';
 
 class UtilsRepository {
   UtilsRepository({ApiClient? client, OfflineApiService? offlineApiService})
@@ -16,7 +17,7 @@ class UtilsRepository {
     final payload = {
       'sexo': sexo,
       'token': WSConstantes.token,
-      if (user != null) 'id_user': user.id,
+      if (user != null) 'id_user': sessionAccountUserId(user.id),
     };
     final offlineApiService = _offlineApiService;
     if (offlineApiService != null) {

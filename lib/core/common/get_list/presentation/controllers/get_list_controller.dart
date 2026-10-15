@@ -3,6 +3,7 @@ import 'package:costeira/core/common/get_list/domain/entities/get_list_entity.da
 import 'package:costeira/core/common/get_list/domain/entities/get_list_params_entity.dart';
 import 'package:costeira/core/common/get_list/domain/usecases/get_list_usecase.dart';
 import 'package:costeira/core/storage/session_storage.dart';
+import 'package:costeira/core/storage/sub_user_payload.dart';
 import 'package:flutter/foundation.dart';
 
 class GetListController extends ChangeNotifier {
@@ -62,6 +63,10 @@ class GetListController extends ChangeNotifier {
 
   Future<int?> _sessionUserId() async {
     final user = await SessionStorage.getUserSession();
-    return user?.id;
+    final id = user?.id;
+    if (id == null) {
+      return null;
+    }
+    return sessionAccountUserId(id);
   }
 }

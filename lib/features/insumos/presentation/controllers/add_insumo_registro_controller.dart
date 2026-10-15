@@ -7,6 +7,7 @@ import 'package:costeira/core/common/get_list/domain/usecases/get_list_usecase.d
 import 'package:costeira/core/input_formatters/brazilian_currency_input_formatter.dart';
 import 'package:costeira/core/models/api_message.dart';
 import 'package:costeira/core/storage/session_storage.dart';
+import 'package:costeira/core/storage/sub_user_payload.dart';
 import 'package:costeira/core/utils/app_logger.dart';
 import 'package:costeira/features/cadastros/domain/entities/parceiro_entity.dart';
 import 'package:costeira/features/cadastros/domain/entities/parceiro_filter_entity.dart';
@@ -190,7 +191,7 @@ class AddInsumoRegistroController extends ChangeNotifier {
     _errorMessage = null;
     try {
       final user = await SessionStorage.getUserSession();
-      _currentUserId = user?.id;
+      _currentUserId = user == null ? null : sessionAccountUserId(user.id);
       if (_currentUserId == null) {
         throw ApiException('Usuario nao autenticado.');
       }

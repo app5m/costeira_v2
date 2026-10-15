@@ -1,6 +1,12 @@
 import 'package:costeira/core/storage/session_storage.dart';
 
 Map<String, dynamic> withSubUser(Map<String, dynamic> data) {
+  final managedId = SessionStorage.cachedManagedClientId;
+  if (managedId != null) {
+    data['app_users_id'] = managedId;
+    data.remove('app_sub_users_id');
+    return data;
+  }
   final subId = SessionStorage.cachedSubUserId;
   if (subId == null) {
     return data;
@@ -16,6 +22,12 @@ Map<String, dynamic> withSubUser(Map<String, dynamic> data) {
 
 /// Lista da fazenda do master, sem marcar o sub. Usado em potreiro, lote e dashboard.
 Map<String, dynamic> withOwnerUser(Map<String, dynamic> data) {
+  final managedId = SessionStorage.cachedManagedClientId;
+  if (managedId != null) {
+    data['app_users_id'] = managedId;
+    data.remove('app_sub_users_id');
+    return data;
+  }
   final subId = SessionStorage.cachedSubUserId;
   if (subId == null) {
     return data;
@@ -30,6 +42,10 @@ Map<String, dynamic> withOwnerUser(Map<String, dynamic> data) {
 }
 
 int sessionAccountUserId(int sessionUserId) {
+  final managedId = SessionStorage.cachedManagedClientId;
+  if (managedId != null) {
+    return managedId;
+  }
   if (SessionStorage.cachedSubUserId == null) {
     return sessionUserId;
   }

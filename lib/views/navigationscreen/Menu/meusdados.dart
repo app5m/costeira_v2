@@ -105,6 +105,10 @@ class _MeusDadosState extends State<MeusDados>
       document: profile.cpf.isNotEmpty ? profile.cpf : profile.cnpj,
       nickname: currentUser.nickname,
       tipo: profile.tipoPessoa.toString(),
+      appSubUsersId: currentUser.appSubUsersId,
+      ownerUserId: currentUser.ownerUserId,
+      idGrupo: profile.idGrupo ?? currentUser.idGrupo,
+      managedClientId: currentUser.managedClientId,
     );
   }
 

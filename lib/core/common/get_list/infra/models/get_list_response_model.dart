@@ -18,6 +18,7 @@ class GetListResponseModel extends GetListEntity {
     super.estoqueUnidadesMedidas,
     super.anosAgricolas,
     super.manejosCategorias,
+    super.clientes,
   });
 
   factory GetListResponseModel.fromJson(Map<String, dynamic> json) {
@@ -90,6 +91,7 @@ class GetListResponseModel extends GetListEntity {
       menuNavigation: AppMenuModel.parseTree(json['menu_navigation']),
       menuMovimentacoes: AppMenuModel.parseTree(json['menu_movimentacoes']),
       manejosCategorias: _manejosCategorias(json['manejos_categorias']),
+      clientes: _clientes(json['lista_clientes']),
     );
   }
 
@@ -110,6 +112,21 @@ class GetListResponseModel extends GetListEntity {
         id: int.tryParse(map['id']?.toString() ?? '') ?? 0,
         nome: map['nome']?.toString() ?? '',
         tipos: tipos,
+      );
+    }).where((item) => item.id > 0).toList(growable: false);
+  }
+
+  static List<ClienteLista> _clientes(dynamic raw) {
+    if (raw is! List) {
+      return const [];
+    }
+    return raw.whereType<Map>().map((item) {
+      final map = Map<String, dynamic>.from(item);
+      return ClienteLista(
+        id: int.tryParse(map['id']?.toString() ?? '') ?? 0,
+        nome: map['nome']?.toString().trim() ?? '',
+        nomeFantasia: map['nome_fantasia']?.toString().trim() ?? '',
+        cnpj: map['cnpj']?.toString().trim() ?? '',
       );
     }).where((item) => item.id > 0).toList(growable: false);
   }
