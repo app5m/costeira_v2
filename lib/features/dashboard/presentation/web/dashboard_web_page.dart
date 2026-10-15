@@ -1,0 +1,1167 @@
+import 'package:costeira/core/common/get_list/domain/entities/app_menu_entity.dart';
+import 'package:costeira/core/common/get_list/domain/entities/get_list_params_entity.dart';
+import 'package:costeira/core/common/get_list/domain/usecases/get_list_usecase.dart';
+import 'package:costeira/core/menus/app_menus_controller.dart';
+import 'package:costeira/core/menus/menu_action_resolver.dart';
+import 'package:costeira/core/menus/menu_icon.dart';
+import 'package:costeira/core/offline/cache/form_dependencies_cache_service.dart';
+import 'package:costeira/core/storage/session_storage.dart';
+import 'package:costeira/features/dashboard/domain/entities/dashboard_entity.dart';
+import 'package:costeira/features/dashboard/domain/entities/dashboard_filter_entity.dart';
+import 'package:costeira/features/dashboard/presentation/controllers/get_dashboard_controller.dart';
+import 'package:costeira/features/dashboard/presentation/widgets/dashboard_charts.dart';
+import 'package:costeira/features/fazendas/domain/entities/fazenda_entity.dart';
+import 'package:costeira/features/fazendas/domain/entities/fazenda_filter_entity.dart';
+import 'package:costeira/features/fazendas/domain/usecases/get_fazendas_usecase.dart';
+import 'package:costeira/theme/colors.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter_modular/flutter_modular.dart';
+import 'package:lucide_icons/lucide_icons.dart';
+
+class DashboardWebPage extends StatefulWidget {
+  const DashboardWebPage({super.key});
+
+  @override
+  State<DashboardWebPage> createState() => _DashboardWebPageState();
+}
+
+class _DashboardWebPageState extends State<DashboardWebPage> {
+  static const _customPeriodValue = '__custom_period__';
+
+  late final GetDashboardController _dashboard;
+  late List<AgriculturalYearRange> _years;
+  late AgriculturalYearRange _year;
+  DateTime? _customStart;
+  DateTime? _customEnd;
+
+  List<FazendaEntity> _farms = const [];
+  int? _farmId;
+  bool _loadingFarms = true;
+  bool _wasLoading = false;
+  int _chartPlay = 0;
+
+  @override
+  void initState() {
+    super.initState();
+    _year = AgriculturalYearRange.containing(DateTime.now());
+    _years = AgriculturalYearRange.options(DateTime.now());
+    _dashboard = Modular.get<GetDashboardController>();
+    _dashboard.addListener(_onDashboardChanged);
+    _loadFarms();
+  }
+
+  @override
+  void dispose() {
+    _dashboard.removeListener(_onDashboardChanged);
+    _dashboard.dispose();
+    super.dispose();
+  }
+
+  void _onDashboardChanged() {
+    if (!mounted) return;
+    final loading = _dashboard.isLoading;
+    setState(() {
+      if (_wasLoading && !loading) {
+        _chartPlay++;
+      }
+      _wasLoading = loading;
+    });
+  }
+
+  Future<void> _loadFarms() async {
+    try {
+      final user = await SessionStorage.getUserSession();
+      if (user == null) {
+        if (mounted) setState(() => _loadingFarms = false);
+        return;
+      }
+
+      final result = await Modular.get<GetFazendasUsecase>()(
+        FazendaFilterEntity(appUsersId: user.id),
+      );
+      final saved = await SessionStorage.getSelectedFarmId();
+      final match = result.data.where((farm) => farm.id == saved);
+      final selectedId = match.isNotEmpty
+          ? match.first.id
+          : (result.data.isEmpty ? null : result.data.first.id);
+      if (selectedId != null) {
+        await SessionStorage.saveSelectedFarmId(selectedId);
+      }
+      await _loadAgriculturalYears();
+      if (!mounted) return;
+      setState(() {
+        _farms = result.data;
+        _farmId = selectedId;
+        _loadingFarms = false;
+      });
+      await _loadDashboard();
+    } catch (_) {
+      if (mounted) setState(() => _loadingFarms = false);
+    }
+  }
+
+  Future<void> _loadAgriculturalYears() async {
+    try {
+      final user = await SessionStorage.getUserSession();
+      final result = await Modular.get<GetListUsecase>()(
+        GetListParamsEntity(sexo: 1, userId: user?.id),
+      );
+      if (result.anosAgricolas.isEmpty) return;
+      _years = result.anosAgricolas;
+      _year =
+          AgriculturalYearRange.containingIn(_years, DateTime.now()) ??
+          _years.first;
+    } catch (_) {}
+  }
+
+  Future<void> _loadDashboard() async {
+    final farmId = _farmId;
+    if (farmId == null || farmId <= 0) return;
+    try {
+      final custom = _customStart != null && _customEnd != null;
+      await _dashboard.load(
+        filter: DashboardFilterEntity(
+          appFazendasId: farmId,
+          idAnoAgricola: custom ? null : _year.id,
+          dataIn: custom ? _customStart! : _year.dataIn,
+          dataOut: custom ? _customEnd! : _year.dataOut,
+        ),
+      );
+    } catch (_) {}
+  }
+
+  Future<void> _onRefresh() async {
+    setState(() => _loadingFarms = true);
+    await Future.wait([
+      Modular.get<AppMenusController>().refresh(),
+      _loadFarms(),
+      Modular.get<FormDependenciesCacheService>().preloadEssentialLists(
+        force: true,
+      ),
+    ]);
+  }
+
+  Future<void> _selectFarm(int? farmId) async {
+    if (farmId == null || farmId == _farmId) return;
+    await SessionStorage.saveSelectedFarmId(farmId);
+    if (!mounted) return;
+    setState(() => _farmId = farmId);
+    await _loadDashboard();
+  }
+
+  Future<void> _selectPeriod(String? value) async {
+    if (value == null) return;
+    if (value == _customPeriodValue) {
+      await _pickCustomDates();
+      return;
+    }
+    final selected = _years.where((item) => item.label == value);
+    if (selected.isEmpty) return;
+    setState(() {
+      _customStart = null;
+      _customEnd = null;
+      _year = selected.first;
+    });
+    await _loadDashboard();
+  }
+
+  Future<void> _pickCustomDates() async {
+    final range = await showDialog<_PeriodRange>(
+      context: context,
+      builder: (_) => _PeriodDialog(
+        start: _customStart ?? _year.dataIn,
+        end: _customEnd ?? _year.dataOut,
+      ),
+    );
+    if (!mounted || range == null) return;
+    setState(() {
+      _customStart = range.start;
+      _customEnd = range.end;
+    });
+    await _loadDashboard();
+  }
+
+  Future<void> _openDashboardActions() async {
+    final menus = Modular.get<AppMenusController>().dashboardMenu;
+    await showDialog<void>(
+      context: context,
+      builder: (dialogContext) => _DashboardActionsDialog(
+        items: menus,
+        onOpen: (item) async {
+          Navigator.pop(dialogContext);
+          await MenuActionResolver.open(
+            context,
+            item,
+            surface: MenuSurface.dashboard,
+          );
+        },
+      ),
+    );
+  }
+
+  String _farmLabel(FazendaEntity farm) {
+    if (farm.nome.trim().isNotEmpty) return farm.nome.trim();
+    if (farm.nomeFantasia.trim().isNotEmpty) return farm.nomeFantasia.trim();
+    return 'Fazenda ${farm.id}';
+  }
+
+  String get _periodValue => _customStart != null && _customEnd != null
+      ? _customPeriodValue
+      : _year.label;
+
+  String get _customPeriodLabel =>
+      '${_shortDate(_customStart!)} – ${_shortDate(_customEnd!)}';
+
+  String _shortDate(DateTime date) {
+    final day = date.day.toString().padLeft(2, '0');
+    final month = date.month.toString().padLeft(2, '0');
+    final year = (date.year % 100).toString().padLeft(2, '0');
+    return '$day/$month/$year';
+  }
+
+  DashboardEntity get _data => _dashboard.dashboard ?? DashboardEntity.empty;
+
+  List<_DashboardMetric> get _metrics {
+    final indicators = _data.indicadores;
+    return [
+      _DashboardMetric(
+        title: 'Total de animais',
+        value: '${indicators.totalAnimais}',
+        subtitle: indicators.totalAnimaisUnidade,
+        hint: indicators.estoqueRebanhoReais.valor,
+      ),
+      _DashboardMetric(
+        title: 'Lotação',
+        value: indicators.mediaFazenda.valor ?? '0',
+        subtitle: indicators.mediaFazenda.descricao ?? 'UA/ha',
+        hint: indicators.mediaFazenda.observacao,
+      ),
+      _DashboardMetric(
+        title: 'Mortalidade',
+        value: indicators.mortalidadePercentual.valor ?? '0',
+        subtitle: indicators.mortalidadePercentual.descricao ?? '%',
+        hint: indicators.mortalidadePercentual.observacao,
+      ),
+      _DashboardMetric(
+        title: 'GMD global',
+        value: indicators.ganhoMedioDiario.valor ?? '0',
+        subtitle: indicators.ganhoMedioDiario.descricao ?? 'kg/dia',
+        hint: indicators.ganhoMedioDiario.observacao,
+      ),
+      _DashboardMetric(
+        title: 'Produtividade',
+        value: indicators.kilosPorHectare.valor ?? '0',
+        subtitle: indicators.kilosPorHectare.descricao ?? 'kg/ha',
+        hint: indicators.kilosPorHectare.hectares == null
+            ? indicators.kilosPorHectare.observacao
+            : '${indicators.kilosPorHectare.hectares} ha',
+      ),
+      _DashboardMetric(
+        title: 'Kg produzidos',
+        value: indicators.quantidadeKilosProduzidos.valor ?? '0',
+        subtitle:
+            indicators.quantidadeKilosProduzidos.descricao ?? 'no período',
+        hint: indicators.quantidadeKilosProduzidos.observacao,
+      ),
+    ];
+  }
+
+  List<DashboardTaskSlice> _taskSlices(DashboardTasksProgressEntity progress) {
+    return [
+      if (progress.pendentes > 0)
+        DashboardTaskSlice(
+          label: 'Pendentes',
+          value: progress.pendentes.toDouble(),
+          color: const Color(0xFF8B4A2B),
+        ),
+      if (progress.emAndamento > 0)
+        DashboardTaskSlice(
+          label: 'Em andamento',
+          value: progress.emAndamento.toDouble(),
+          color: const Color(0xFFD9762B),
+        ),
+      if (progress.concluidas > 0)
+        DashboardTaskSlice(
+          label: 'Concluídas',
+          value: progress.concluidas.toDouble(),
+          color: const Color(0xFF2F7A4A),
+        ),
+    ];
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final viewportWidth = MediaQuery.sizeOf(context).width;
+    final indicators = _data.indicadores.tarefasMes;
+    final charts = _data.graficos;
+
+    return ColoredBox(
+      color: const Color(0xFFF6F4EE),
+      child: Column(
+        children: [
+          if (_dashboard.isLoading) const LinearProgressIndicator(minHeight: 2),
+          Expanded(
+            child: RefreshIndicator(
+              color: MyColors.colorPrimary,
+              onRefresh: _onRefresh,
+              child: Scrollbar(
+                child: ListView(
+                  physics: const AlwaysScrollableScrollPhysics(),
+                  padding: EdgeInsets.fromLTRB(
+                    viewportWidth < 760 ? 16 : 28,
+                    20,
+                    viewportWidth < 760 ? 16 : 28,
+                    32,
+                  ),
+                  children: [
+                    Center(
+                      child: ConstrainedBox(
+                        constraints: const BoxConstraints(maxWidth: 1440),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.stretch,
+                          children: [
+                            _filters(viewportWidth),
+                            if (_dashboard.errorMessage != null) ...[
+                              const SizedBox(height: 16),
+                              _ErrorBanner(message: _dashboard.errorMessage!),
+                            ],
+                            const SizedBox(height: 20),
+                            _TasksSummary(
+                              pending: indicators.pendentes,
+                              overdue: indicators.emAtraso,
+                              urgent: indicators.urgentes,
+                            ),
+                            const SizedBox(height: 16),
+                            _metricGrid(viewportWidth),
+                            const SizedBox(height: 16),
+                            _chartGrid(viewportWidth, charts),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _filters(double viewportWidth) {
+    final farm = _SelectField<int>(
+      icon: LucideIcons.warehouse,
+      label: 'Fazenda',
+      value: _farmId,
+      isLoading: _loadingFarms,
+      emptyLabel: 'Nenhuma fazenda',
+      items: [
+        for (final item in _farms)
+          DropdownMenuItem(value: item.id, child: Text(_farmLabel(item))),
+      ],
+      onChanged: _selectFarm,
+    );
+    final period = _SelectField<String>(
+      icon: LucideIcons.calendar,
+      label: 'Período',
+      value: _periodValue,
+      items: [
+        for (final item in _years)
+          DropdownMenuItem(value: item.label, child: Text(item.label)),
+        DropdownMenuItem(
+          value: _customPeriodValue,
+          child: Text(
+            _customStart == null ? 'Selecionar datas' : _customPeriodLabel,
+          ),
+        ),
+      ],
+      onChanged: _selectPeriod,
+    );
+    final actions = Wrap(
+      spacing: 10,
+      runSpacing: 10,
+      children: [
+        OutlinedButton.icon(
+          onPressed: _openDashboardActions,
+          icon: const Icon(LucideIcons.layoutGrid, size: 17),
+          label: const Text('Ações do dashboard'),
+          style: _toolbarButtonStyle(),
+        ),
+        OutlinedButton.icon(
+          onPressed: _dashboard.isLoading ? null : _onRefresh,
+          icon: const Icon(LucideIcons.refreshCw, size: 17),
+          label: const Text('Atualizar'),
+          style: _toolbarButtonStyle(),
+        ),
+      ],
+    );
+
+    if (viewportWidth < 760) {
+      return Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          farm,
+          const SizedBox(height: 10),
+          period,
+          const SizedBox(height: 12),
+          actions,
+        ],
+      );
+    }
+    return Row(
+      children: [
+        Expanded(child: farm),
+        const SizedBox(width: 12),
+        Expanded(child: period),
+        const SizedBox(width: 16),
+        actions,
+      ],
+    );
+  }
+
+  ButtonStyle _toolbarButtonStyle() {
+    return OutlinedButton.styleFrom(
+      foregroundColor: MyColors.colorPrimary,
+      backgroundColor: Colors.white,
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 17),
+      side: const BorderSide(color: Color(0xFFD8E2DC)),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      textStyle: const TextStyle(
+        fontFamily: 'Montserrat',
+        fontSize: 12,
+        fontWeight: FontWeight.w700,
+      ),
+    );
+  }
+
+  Widget _metricGrid(double viewportWidth) {
+    final columns = viewportWidth >= 1120 ? 6 : (viewportWidth >= 760 ? 3 : 2);
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        const gap = 12.0;
+        final width = (constraints.maxWidth - gap * (columns - 1)) / columns;
+        return Wrap(
+          spacing: gap,
+          runSpacing: gap,
+          children: [
+            for (final metric in _metrics)
+              SizedBox(
+                width: width,
+                child: _MetricCard(metric: metric),
+              ),
+          ],
+        );
+      },
+    );
+  }
+
+  Widget _chartGrid(double viewportWidth, DashboardChartsEntity charts) {
+    final widgets = <Widget>[
+      DashboardCompositionChart(
+        playToken: _chartPlay,
+        slices: charts.animaisCategoria
+            .where((item) => item.quantidade > 0)
+            .toList(growable: false),
+      ),
+      DashboardEvolutionChart(
+        playToken: _chartPlay,
+        months: charts.producaoKgMes,
+      ),
+      DashboardTasksChart(
+        playToken: _chartPlay,
+        slices: _taskSlices(charts.progressoTarefas),
+        total: charts.progressoTarefas.total,
+      ),
+    ];
+    if (viewportWidth < 1120) {
+      return Column(
+        children: [
+          for (var i = 0; i < widgets.length; i++) ...[
+            widgets[i],
+            if (i < widgets.length - 1) const SizedBox(height: 16),
+          ],
+        ],
+      );
+    }
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        for (var i = 0; i < widgets.length; i++) ...[
+          Expanded(child: widgets[i]),
+          if (i < widgets.length - 1) const SizedBox(width: 16),
+        ],
+      ],
+    );
+  }
+}
+
+class _SelectField<T> extends StatelessWidget {
+  const _SelectField({
+    required this.icon,
+    required this.label,
+    required this.value,
+    required this.items,
+    required this.onChanged,
+    this.isLoading = false,
+    this.emptyLabel = 'Selecione',
+  });
+
+  final IconData icon;
+  final String label;
+  final T? value;
+  final List<DropdownMenuItem<T>> items;
+  final ValueChanged<T?> onChanged;
+  final bool isLoading;
+  final String emptyLabel;
+
+  @override
+  Widget build(BuildContext context) {
+    final effectiveValue = items.any((item) => item.value == value)
+        ? value
+        : null;
+    return Container(
+      height: 54,
+      padding: const EdgeInsets.symmetric(horizontal: 14),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: const Color(0xFFE1DED5)),
+      ),
+      child: Row(
+        children: [
+          Icon(icon, size: 17, color: MyColors.colorPrimary),
+          const SizedBox(width: 10),
+          Expanded(
+            child: DropdownButtonHideUnderline(
+              child: DropdownButton<T>(
+                value: effectiveValue,
+                isExpanded: true,
+                hint: Text(isLoading ? 'Carregando...' : emptyLabel),
+                items: items,
+                onChanged: isLoading || items.isEmpty ? null : onChanged,
+                style: const TextStyle(
+                  fontFamily: 'Montserrat',
+                  fontSize: 13,
+                  fontWeight: FontWeight.w600,
+                  color: Color(0xFF313131),
+                ),
+                icon: const Icon(LucideIcons.chevronDown, size: 16),
+                selectedItemBuilder: (context) => [
+                  for (final item in items)
+                    Align(
+                      alignment: Alignment.centerLeft,
+                      child: Text(
+                        '$label: ${_itemLabel(item.child)}',
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ),
+                ],
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  String _itemLabel(Widget child) => child is Text ? child.data ?? '' : '';
+}
+
+class _ErrorBanner extends StatelessWidget {
+  const _ErrorBanner({required this.message});
+
+  final String message;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        color: const Color(0x14C45C4A),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: const Color(0x33C45C4A)),
+      ),
+      child: Row(
+        children: [
+          const Icon(
+            LucideIcons.alertTriangle,
+            size: 18,
+            color: Color(0xFFC45C4A),
+          ),
+          const SizedBox(width: 10),
+          Expanded(
+            child: Text(
+              message,
+              style: const TextStyle(
+                fontFamily: 'Montserrat',
+                fontSize: 12,
+                fontWeight: FontWeight.w600,
+                color: Color(0xFFC45C4A),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _TasksSummary extends StatelessWidget {
+  const _TasksSummary({
+    required this.pending,
+    required this.overdue,
+    required this.urgent,
+  });
+
+  final int pending;
+  final int overdue;
+  final int urgent;
+
+  int get _total => pending + overdue + urgent;
+
+  @override
+  Widget build(BuildContext context) {
+    return _SurfaceCard(
+      child: Column(
+        children: [
+          Row(
+            children: [
+              _IconBox(icon: LucideIcons.clipboardList),
+              const SizedBox(width: 10),
+              const Expanded(
+                child: Text(
+                  'Tarefas',
+                  style: TextStyle(
+                    fontFamily: 'Montserrat',
+                    fontSize: 15,
+                    fontWeight: FontWeight.w700,
+                    color: Color(0xFF313131),
+                  ),
+                ),
+              ),
+              Text(
+                '$_total no total',
+                style: const TextStyle(
+                  fontFamily: 'Montserrat',
+                  fontSize: 12,
+                  fontWeight: FontWeight.w600,
+                  color: Color(0xFF8A8A8A),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 14),
+          ClipRRect(
+            borderRadius: BorderRadius.circular(99),
+            child: SizedBox(
+              height: 6,
+              child: Row(
+                children: [
+                  if (pending > 0)
+                    Expanded(
+                      flex: pending,
+                      child: const ColoredBox(color: MyColors.colorPrimary),
+                    ),
+                  if (overdue > 0)
+                    Expanded(
+                      flex: overdue,
+                      child: const ColoredBox(color: Color(0xFFC45C4A)),
+                    ),
+                  if (urgent > 0)
+                    Expanded(
+                      flex: urgent,
+                      child: const ColoredBox(color: Color(0xFFD9762B)),
+                    ),
+                  if (_total == 0)
+                    const Expanded(child: ColoredBox(color: Color(0xFFE8E4D9))),
+                ],
+              ),
+            ),
+          ),
+          const SizedBox(height: 14),
+          Row(
+            children: [
+              Expanded(
+                child: _TaskStat(
+                  value: pending,
+                  label: 'Pendentes',
+                  color: MyColors.colorPrimary,
+                  background: const Color(0x1400823A),
+                  icon: LucideIcons.clock,
+                ),
+              ),
+              const SizedBox(width: 10),
+              Expanded(
+                child: _TaskStat(
+                  value: overdue,
+                  label: 'Vencidas',
+                  color: const Color(0xFFC45C4A),
+                  background: const Color(0x14C45C4A),
+                  icon: LucideIcons.alertTriangle,
+                ),
+              ),
+              const SizedBox(width: 10),
+              Expanded(
+                child: _TaskStat(
+                  value: urgent,
+                  label: 'Urgentes',
+                  color: const Color(0xFFD9762B),
+                  background: const Color(0x14D9762B),
+                  icon: LucideIcons.flame,
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _TaskStat extends StatelessWidget {
+  const _TaskStat({
+    required this.value,
+    required this.label,
+    required this.color,
+    required this.background,
+    required this.icon,
+  });
+
+  final int value;
+  final String label;
+  final Color color;
+  final Color background;
+  final IconData icon;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 13),
+      decoration: BoxDecoration(
+        color: background,
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Icon(icon, size: 16, color: color),
+          const SizedBox(width: 8),
+          Flexible(
+            child: Text(
+              '$value $label',
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: TextStyle(
+                fontFamily: 'Montserrat',
+                fontSize: 13,
+                fontWeight: FontWeight.w700,
+                color: color,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _DashboardMetric {
+  const _DashboardMetric({
+    required this.title,
+    required this.value,
+    required this.subtitle,
+    this.hint,
+  });
+
+  final String title;
+  final String value;
+  final String subtitle;
+  final String? hint;
+}
+
+class _MetricCard extends StatelessWidget {
+  const _MetricCard({required this.metric});
+
+  final _DashboardMetric metric;
+
+  @override
+  Widget build(BuildContext context) {
+    return _SurfaceCard(
+      minHeight: 128,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            metric.title.toUpperCase(),
+            maxLines: 2,
+            overflow: TextOverflow.ellipsis,
+            style: const TextStyle(
+              fontFamily: 'Montserrat',
+              fontSize: 10,
+              fontWeight: FontWeight.w700,
+              letterSpacing: .3,
+              color: Color(0xFF6B6B6B),
+            ),
+          ),
+          const SizedBox(height: 9),
+          Text(
+            metric.value,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: const TextStyle(
+              fontFamily: 'Montserrat',
+              fontSize: 25,
+              fontWeight: FontWeight.w800,
+              color: Color(0xFF1F3D2A),
+              height: 1,
+            ),
+          ),
+          const SizedBox(height: 5),
+          Text(
+            metric.subtitle,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: const TextStyle(
+              fontFamily: 'Montserrat',
+              fontSize: 11,
+              fontWeight: FontWeight.w600,
+              color: MyColors.colorPrimary,
+            ),
+          ),
+          if ((metric.hint ?? '').isNotEmpty) ...[
+            const SizedBox(height: 5),
+            Text(
+              metric.hint!,
+              maxLines: 2,
+              overflow: TextOverflow.ellipsis,
+              style: const TextStyle(
+                fontFamily: 'Montserrat',
+                fontSize: 10,
+                fontWeight: FontWeight.w500,
+                color: Color(0xFF8A8A8A),
+              ),
+            ),
+          ],
+        ],
+      ),
+    );
+  }
+}
+
+class _SurfaceCard extends StatelessWidget {
+  const _SurfaceCard({required this.child, this.minHeight});
+
+  final Widget child;
+  final double? minHeight;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      constraints: BoxConstraints(minHeight: minHeight ?? 0),
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: const Color(0xFFE8E4D9)),
+      ),
+      child: child,
+    );
+  }
+}
+
+class _IconBox extends StatelessWidget {
+  const _IconBox({required this.icon});
+
+  final IconData icon;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: 34,
+      height: 34,
+      decoration: BoxDecoration(
+        color: const Color(0x1400823A),
+        borderRadius: BorderRadius.circular(10),
+      ),
+      child: Icon(icon, size: 17, color: MyColors.colorPrimary),
+    );
+  }
+}
+
+class _DashboardActionsDialog extends StatelessWidget {
+  const _DashboardActionsDialog({required this.items, required this.onOpen});
+
+  final List<AppMenuEntity> items;
+  final ValueChanged<AppMenuEntity> onOpen;
+
+  @override
+  Widget build(BuildContext context) {
+    return Dialog(
+      backgroundColor: Colors.white,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+      child: ConstrainedBox(
+        constraints: const BoxConstraints(maxWidth: 520, maxHeight: 620),
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(24, 22, 24, 18),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                children: [
+                  const Expanded(
+                    child: Text(
+                      'Ações do dashboard',
+                      style: TextStyle(
+                        fontFamily: 'Montserrat',
+                        fontSize: 18,
+                        fontWeight: FontWeight.w700,
+                        color: Color(0xFF1F3D2A),
+                      ),
+                    ),
+                  ),
+                  IconButton(
+                    onPressed: () => Navigator.pop(context),
+                    icon: const Icon(Icons.close_rounded),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 12),
+              if (items.isEmpty)
+                const Padding(
+                  padding: EdgeInsets.symmetric(vertical: 32),
+                  child: Center(
+                    child: Text(
+                      'Nenhuma ação disponível.',
+                      style: TextStyle(
+                        fontFamily: 'Montserrat',
+                        color: Color(0xFF8A8A8A),
+                      ),
+                    ),
+                  ),
+                )
+              else
+                Flexible(
+                  child: ListView(
+                    shrinkWrap: true,
+                    children: [
+                      for (final item in items)
+                        _DashboardActionTile(item: item, onOpen: onOpen),
+                    ],
+                  ),
+                ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _DashboardActionTile extends StatelessWidget {
+  const _DashboardActionTile({required this.item, required this.onOpen});
+
+  final AppMenuEntity item;
+  final ValueChanged<AppMenuEntity> onOpen;
+
+  @override
+  Widget build(BuildContext context) {
+    final icon = MenuIcon.maybe(
+      item: item,
+      size: 19,
+      color: MyColors.colorPrimary,
+    );
+    if (item.children.isNotEmpty) {
+      return ExpansionTile(
+        leading: icon,
+        title: Text(item.name),
+        children: [
+          for (final child in item.children)
+            _DashboardActionTile(item: child, onOpen: onOpen),
+        ],
+      );
+    }
+    return ListTile(
+      leading: icon,
+      title: Text(
+        item.name,
+        style: const TextStyle(
+          fontFamily: 'Montserrat',
+          fontSize: 14,
+          fontWeight: FontWeight.w600,
+        ),
+      ),
+      trailing: const Icon(Icons.chevron_right_rounded, size: 20),
+      onTap: () => onOpen(item),
+    );
+  }
+}
+
+class _PeriodRange {
+  const _PeriodRange({required this.start, required this.end});
+
+  final DateTime start;
+  final DateTime end;
+}
+
+class _PeriodDialog extends StatefulWidget {
+  const _PeriodDialog({required this.start, required this.end});
+
+  final DateTime start;
+  final DateTime end;
+
+  @override
+  State<_PeriodDialog> createState() => _PeriodDialogState();
+}
+
+class _PeriodDialogState extends State<_PeriodDialog> {
+  late DateTime _start;
+  late DateTime _end;
+
+  @override
+  void initState() {
+    super.initState();
+    _start = DateTime(widget.start.year, widget.start.month, widget.start.day);
+    _end = DateTime(widget.end.year, widget.end.month, widget.end.day);
+  }
+
+  Future<void> _pick(bool isStart) async {
+    final now = DateTime.now();
+    final current = isStart ? _start : _end;
+    final picked = await showDatePicker(
+      context: context,
+      initialDate: current,
+      firstDate: DateTime(now.year - 10),
+      lastDate: DateTime(now.year + 2, 12, 31),
+      helpText: isStart ? 'Data inicial' : 'Data final',
+      cancelText: 'Cancelar',
+      confirmText: 'Ok',
+    );
+    if (picked == null || !mounted) return;
+    setState(() {
+      final day = DateTime(picked.year, picked.month, picked.day);
+      if (isStart) {
+        _start = day;
+      } else {
+        _end = day;
+      }
+    });
+  }
+
+  String _label(DateTime date) {
+    final day = date.day.toString().padLeft(2, '0');
+    final month = date.month.toString().padLeft(2, '0');
+    return '$day/$month/${date.year}';
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AlertDialog(
+      backgroundColor: Colors.white,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+      title: const Text('Período'),
+      content: SizedBox(
+        width: 420,
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            _PeriodDateTile(
+              label: 'Data inicial',
+              value: _label(_start),
+              onTap: () => _pick(true),
+            ),
+            const SizedBox(height: 12),
+            _PeriodDateTile(
+              label: 'Data final',
+              value: _label(_end),
+              onTap: () => _pick(false),
+            ),
+          ],
+        ),
+      ),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.pop(context),
+          child: const Text('Cancelar'),
+        ),
+        FilledButton(
+          onPressed: () {
+            var start = _start;
+            var end = _end;
+            if (end.isBefore(start)) {
+              final swap = start;
+              start = end;
+              end = swap;
+            }
+            Navigator.pop(context, _PeriodRange(start: start, end: end));
+          },
+          style: FilledButton.styleFrom(backgroundColor: MyColors.colorPrimary),
+          child: const Text('Filtrar'),
+        ),
+      ],
+    );
+  }
+}
+
+class _PeriodDateTile extends StatelessWidget {
+  const _PeriodDateTile({
+    required this.label,
+    required this.value,
+    required this.onTap,
+  });
+
+  final String label;
+  final String value;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    return Material(
+      color: const Color(0xFFF4F4F4),
+      borderRadius: BorderRadius.circular(8),
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(8),
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+          child: Row(
+            children: [
+              const Icon(
+                LucideIcons.calendar,
+                size: 18,
+                color: MyColors.colorPrimary,
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      label,
+                      style: const TextStyle(
+                        fontFamily: 'Montserrat',
+                        fontSize: 11,
+                        color: Color(0xFF8A8A8A),
+                      ),
+                    ),
+                    const SizedBox(height: 2),
+                    Text(
+                      value,
+                      style: const TextStyle(
+                        fontFamily: 'Montserrat',
+                        fontSize: 14,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}

@@ -135,8 +135,27 @@ class _WelcomeContent extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
+        Center(
+          child: ClipRect(
+            child: SizedBox(
+              width: 240,
+              height: 76,
+              child: OverflowBox(
+                maxWidth: 240,
+                maxHeight: 170,
+                alignment: Alignment.center,
+                child: Image.asset(
+                  'images/logosplash.png',
+                  width: 240,
+                  fit: BoxFit.contain,
+                ),
+              ),
+            ),
+          ),
+        ),
+        const SizedBox(height: 18),
         Align(
-          alignment: Alignment.centerLeft,
+          alignment: Alignment.center,
           child: Container(
             padding: const EdgeInsets.symmetric(horizontal: 11, vertical: 6),
             decoration: BoxDecoration(
