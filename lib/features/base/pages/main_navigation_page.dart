@@ -10,8 +10,9 @@ import 'package:costeira/core/menus/menu_icon.dart';
 import 'package:costeira/core/menus/menu_slug.dart';
 import 'package:costeira/core/offline/cache/form_dependencies_cache_service.dart';
 import 'package:costeira/core/storage/session_storage.dart';
-import 'package:costeira/features/account/repositories/account_repository.dart';
 import 'package:costeira/features/account/presentation/web/profile_web_page.dart';
+import 'package:costeira/features/account/repositories/account_repository.dart';
+import 'package:costeira/features/admin_clientes/presentation/pages/selecionar_cliente_page.dart';
 import 'package:costeira/features/animals/presentation/pages/animals_page.dart';
 import 'package:costeira/features/base/pages/module_placeholder_page.dart';
 import 'package:costeira/features/dashboard/presentation/pages/dashboard.dart';
@@ -23,6 +24,7 @@ import 'package:costeira/features/manejos_animais/presentation/pages/manejos_ani
 import 'package:costeira/features/movimentacoes/movimentacoes.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:lucide_icons/lucide_icons.dart';
 import 'package:flutter_modular/flutter_modular.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import '../../../theme/colors.dart';
@@ -42,6 +44,9 @@ class _MainNavigationPageState extends State<MainNavigationPage>
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
 
   int _selectedIndex = 0;
+  int _shellGeracao = 0;
+  bool _aguardandoGrupo = true;
+  bool _escolherCliente = false;
   final PageController _pageController = PageController(initialPage: 0);
   late final AppMenusController _menusController;
   Timer? _pollTimer;
@@ -61,16 +66,57 @@ class _MainNavigationPageState extends State<MainNavigationPage>
   Future<void> _preload() async {
     final user = await SessionStorage.getUserSession();
     if (!mounted || user == null) {
+      if (mounted) {
+        setState(() => _aguardandoGrupo = false);
+      }
       return;
     }
     await _loadSubUser(user.id);
-    if (!mounted) {
+    final session = await SessionStorage.getUserSession();
+    if (!mounted || session == null) {
+      if (mounted) {
+        setState(() => _aguardandoGrupo = false);
+      }
       return;
     }
+    if (session.isAdmin &&
+        (session.managedClientId == null || session.managedClientId! <= 0)) {
+      setState(() {
+        _aguardandoGrupo = false;
+        _escolherCliente = true;
+      });
+      return;
+    }
+    setState(() => _aguardandoGrupo = false);
     unawaited(_menusController.load(force: true));
     unawaited(
       Modular.get<FormDependenciesCacheService>().preloadEssentialLists(),
     );
+  }
+
+  Future<void> _aplicarCliente() async {
+    setState(() {
+      _escolherCliente = false;
+      _aguardandoGrupo = false;
+      _shellGeracao++;
+      _selectedIndex = 0;
+    });
+    if (_pageController.hasClients) {
+      _pageController.jumpToPage(0);
+    }
+    await _menusController.load(force: true);
+    unawaited(
+      Modular.get<FormDependenciesCacheService>().preloadEssentialLists(),
+    );
+  }
+
+  Future<void> _trocarCliente() async {
+    final trocou = await Navigator.of(context).push<bool>(
+      MaterialPageRoute(builder: (_) => const SelecionarClientePage()),
+    );
+    if (trocou == true && mounted) {
+      await _aplicarCliente();
+    }
   }
 
   Future<void> _loadSubUser(int userId) async {
@@ -208,6 +254,18 @@ class _MainNavigationPageState extends State<MainNavigationPage>
 
   @override
   Widget build(BuildContext context) {
+    if (_aguardandoGrupo) {
+      return const Scaffold(
+        backgroundColor: Colors.white,
+        body: Center(child: CircularProgressIndicator()),
+      );
+    }
+    if (_escolherCliente) {
+      return SelecionarClientePage(
+        obrigatorio: true,
+        onEscolhido: () => unawaited(_aplicarCliente()),
+      );
+    }
     final tabs = _tabs;
     if (kIsWeb) {
       return _buildWebShell(tabs);
@@ -215,6 +273,7 @@ class _MainNavigationPageState extends State<MainNavigationPage>
     if (tabs.isEmpty) {
       return _emptyNavScaffold();
     }
+
     final current = tabs[_selectedIndex.clamp(0, tabs.length - 1)];
     _activeSlug ??= current.slug;
 
@@ -241,6 +300,12 @@ class _MainNavigationPageState extends State<MainNavigationPage>
           ),
         ),
         actions: [
+          if (SessionStorage.cachedIdGrupo == 1)
+            IconButton(
+              tooltip: 'Clientes',
+              onPressed: _trocarCliente,
+              icon: const Icon(LucideIcons.users, color: Colors.white),
+            ),
           IconButton(
             tooltip: 'Movimentações',
             icon: SvgPicture.asset(
@@ -464,15 +529,16 @@ class _MainNavigationPageState extends State<MainNavigationPage>
   }
 
   Widget _pageFor(_NavTab tab) {
+    final chave = ValueKey('$_shellGeracao-${tab.slug}');
     return switch (tab.slug) {
       MenuSlug.dashboard =>
-        kIsWeb ? const DashboardWebPage() : const Dashboard(),
+        kIsWeb ? DashboardWebPage(key: chave) : Dashboard(key: chave),
       MenuSlug.fazendas =>
-        kIsWeb ? const FazendasWebPage() : const FazendasPage(),
-      MenuSlug.animais => const AnimalsPage(),
-      MenuSlug.movimentacoes => const Movimentacoes(),
-      MenuSlug.manejos => const ManejosAnimaisPage(),
-      MenuSlug.perfil => kIsWeb ? const ProfileWebPage() : const Menu(),
+        kIsWeb ? FazendasWebPage(key: chave) : FazendasPage(key: chave),
+      MenuSlug.animais => AnimalsPage(key: chave),
+      MenuSlug.movimentacoes => Movimentacoes(key: chave),
+      MenuSlug.manejos => ManejosAnimaisPage(key: chave),
+      MenuSlug.perfil => kIsWeb ? ProfileWebPage(key: chave) : Menu(key: chave),
       _ => ModulePlaceholderPage(
         title: tab.label,
         item: tab.item,

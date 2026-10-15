@@ -1,13 +1,18 @@
 import 'package:costeira/core/api/api_exception.dart';
+import 'package:costeira/core/common/get_list/domain/entities/get_list_params_entity.dart';
+import 'package:costeira/core/common/get_list/domain/entities/list_category_entity.dart';
+import 'package:costeira/core/common/get_list/domain/entities/list_item_entity.dart';
+import 'package:costeira/core/common/get_list/domain/entities/list_subcategory_entity.dart';
+import 'package:costeira/core/common/get_list/domain/usecases/get_list_usecase.dart';
 import 'package:costeira/core/input_formatters/brazilian_currency_input_formatter.dart';
 import 'package:costeira/core/models/api_message.dart';
 import 'package:costeira/core/storage/session_storage.dart';
+import 'package:costeira/core/storage/sub_user_payload.dart';
 import 'package:costeira/core/utils/app_logger.dart';
 import 'package:costeira/features/fazendas/domain/usecases/resolve_current_farm_id.dart';
 import 'package:costeira/features/insumos/domain/entities/insumos.dart';
 import 'package:costeira/features/insumos/domain/usecases/create_insumo_registro_usecase.dart';
 import 'package:costeira/features/insumos/domain/usecases/create_insumo_usecase.dart';
-import 'package:costeira/features/insumos/domain/usecases/get_insumos_usecase.dart';
 import 'package:costeira/features/insumos/domain/usecases/update_insumo_usecase.dart';
 import 'package:flutter/material.dart';
 
@@ -15,7 +20,7 @@ class AddInsumoController extends ChangeNotifier {
   AddInsumoController(
     this._createInsumoUsecase,
     this._createRegistroUsecase,
-    this._getInsumosUsecase,
+    this._getListUsecase,
     this._updateInsumoUsecase,
     this._resolveCurrentFarmId,
   ) {
@@ -28,7 +33,7 @@ class AddInsumoController extends ChangeNotifier {
 
   final CreateInsumoUsecase _createInsumoUsecase;
   final CreateInsumoRegistroUsecase _createRegistroUsecase;
-  final GetInsumosUsecase _getInsumosUsecase;
+  final GetListUsecase _getListUsecase;
   final UpdateInsumoUsecase _updateInsumoUsecase;
   final ResolveCurrentFarmId _resolveCurrentFarmId;
 
@@ -43,28 +48,40 @@ class AddInsumoController extends ChangeNotifier {
   int? _currentUserId;
   int? _farmId;
   InsumoEntity? _editingInsumo;
-  String? _selectedTipoInsumo;
+  int? _categoriaId;
+  int? _subcategoriaId;
   int? _selectedUnidadeId;
-  int? _selectedSuplementoId;
-  List<InsumoReferenceEntity> _tipoInsumos = const [];
-  List<InsumoReferenceEntity> _unidades = const [];
-  List<InsumoReferenceEntity> _suplementos = const [];
+  List<ListCategoryEntity> _categorias = const [];
+  List<ListItemEntity> _unidades = const [];
 
   bool get isLoading => _isLoading;
   bool get isEditing => _editingInsumo != null;
   String? get errorMessage => _errorMessage;
-  String? get selectedTipoInsumo => _selectedTipoInsumo;
+  int? get categoriaId => _categoriaId;
+  int? get subcategoriaId => _subcategoriaId;
   int? get selectedUnidadeId => _selectedUnidadeId;
-  int? get selectedSuplementoId => _selectedSuplementoId;
-  List<InsumoReferenceEntity> get tipoInsumos => _tipoInsumos;
-  List<InsumoReferenceEntity> get unidades => _unidades;
-  List<InsumoReferenceEntity> get suplementos => _suplementos;
-  bool get shouldShowSuplemento => _selectedTipoInsumo == 'suplementos';
+  List<ListCategoryEntity> get categorias => _categorias;
+  List<ListItemEntity> get unidades => _unidades;
+  List<ListSubcategoryEntity> get subcategorias {
+    final id = _categoriaId;
+    if (id == null) {
+      return const [];
+    }
+    for (final categoria in _categorias) {
+      if (categoria.id == id) {
+        return categoria.subcategorias;
+      }
+    }
+    return const [];
+  }
 
   bool get isFormValid {
-    return (_selectedTipoInsumo?.trim().isNotEmpty ?? false) &&
+    final precisaSub = subcategorias.isNotEmpty;
+    return _categoriaId != null &&
+        (!precisaSub || _subcategoriaId != null) &&
         nomeController.text.trim().isNotEmpty &&
         _selectedUnidadeId != null &&
+        _selectedUnidadeId! > 0 &&
         (BrazilianCurrency.parse(valorUnidadeController.text) ?? 0) > 0 &&
         _parseDecimal(qtdTotalController.text) != null;
   }
@@ -81,7 +98,7 @@ class AddInsumoController extends ChangeNotifier {
 
     try {
       final user = await SessionStorage.getUserSession();
-      _currentUserId = user?.id;
+      _currentUserId = user == null ? null : sessionAccountUserId(user.id);
       if (_currentUserId == null) {
         throw ApiException('Usuario nao autenticado.');
       }
@@ -90,13 +107,14 @@ class AddInsumoController extends ChangeNotifier {
         throw ApiException('Selecione uma fazenda antes de registrar a entrada.');
       }
 
-      final result = await _getInsumosUsecase(
-        InsumosFilterEntity(appUsersId: _currentUserId!, appFazendasId: _farmId),
+      final lists = await _getListUsecase(
+        GetListParamsEntity(sexo: 1, userId: _currentUserId),
       );
-      _tipoInsumos = result.tipoInsumos;
-      _unidades = result.unidades;
-      _suplementos = result.suplementos;
-      AppLogger.success('INSUMOS ADD CONTROLLER: OPCOES CARREGADAS');
+      _categorias = lists.estoqueInsumosCategorias;
+      _unidades = lists.estoqueUnidadesMedidas;
+      AppLogger.success(
+        'INSUMOS ADD CONTROLLER: CAT=${_categorias.length} UN=${_unidades.length}',
+      );
     } on ApiException catch (error) {
       _errorMessage = error.message;
       AppLogger.error(
@@ -107,21 +125,19 @@ class AddInsumoController extends ChangeNotifier {
     }
   }
 
-  void onTipoChanged(String? value) {
-    _selectedTipoInsumo = value;
-    if (!shouldShowSuplemento) {
-      _selectedSuplementoId = null;
-    }
+  void onCategoriaChanged(int? value) {
+    _categoriaId = value;
+    _subcategoriaId = null;
+    notifyListeners();
+  }
+
+  void onSubcategoriaChanged(int? value) {
+    _subcategoriaId = value;
     notifyListeners();
   }
 
   void onUnidadeChanged(int? value) {
     _selectedUnidadeId = value;
-    notifyListeners();
-  }
-
-  void onSuplementoChanged(int? value) {
-    _selectedSuplementoId = value;
     notifyListeners();
   }
 
@@ -137,7 +153,10 @@ class AddInsumoController extends ChangeNotifier {
     _errorMessage = null;
 
     try {
-      _currentUserId ??= (await SessionStorage.getUserSession())?.id;
+      final session = await SessionStorage.getUserSession();
+      _currentUserId ??= session == null
+          ? null
+          : sessionAccountUserId(session.id);
       if (_currentUserId == null) {
         throw ApiException('Usuario nao autenticado.');
       }
@@ -151,10 +170,11 @@ class AddInsumoController extends ChangeNotifier {
         id: _editingInsumo?.id,
         appUsersId: _currentUserId,
         appFazendasId: _farmId,
-        tipoInsumo: _selectedTipoInsumo!,
-        appEstoquesInsumosSuplementosId: _selectedSuplementoId,
+        tipoInsumo: (_subcategoriaId ?? _categoriaId).toString(),
         nome: nomeController.text.trim(),
         appEstoquesInsumosUnidadesId: _selectedUnidadeId!,
+        appEstoquesInsumosCategoriasId: _categoriaId,
+        appEstoquesInsumosSubcategoriasId: _subcategoriaId,
         valorUnidade: BrazilianCurrency.toApi(valorUnidadeController.text),
         qtdTotal: quantidade,
         obs: _emptyToNull(obsController.text),
@@ -219,9 +239,9 @@ class AddInsumoController extends ChangeNotifier {
   }
 
   void _clearForm() {
-    _selectedTipoInsumo = null;
+    _categoriaId = null;
+    _subcategoriaId = null;
     _selectedUnidadeId = null;
-    _selectedSuplementoId = null;
     nomeController.clear();
     valorUnidadeController.clear();
     qtdTotalController.clear();
@@ -230,9 +250,12 @@ class AddInsumoController extends ChangeNotifier {
   }
 
   void _fillForm(InsumoEntity insumo) {
-    _selectedTipoInsumo = insumo.tipoInsumo;
-    _selectedUnidadeId = insumo.appEstoquesInsumosUnidadesId;
-    _selectedSuplementoId = insumo.appEstoquesInsumosSuplementosId;
+    _categoriaId = insumo.appEstoquesInsumosCategoriasId;
+    _subcategoriaId = insumo.appEstoquesInsumosSubcategoriasId;
+    final unidadeId = insumo.appEstoquesInsumosUnidadesId;
+    _selectedUnidadeId = unidadeId > 0
+        ? unidadeId
+        : int.tryParse(insumo.unidade?.id?.toString() ?? '');
     nomeController.text = insumo.nome;
     valorUnidadeController.text =
         BrazilianCurrency.formatFromRaw(insumo.valorUnidade) ??

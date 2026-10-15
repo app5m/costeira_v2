@@ -3,6 +3,7 @@ import 'package:costeira/core/common/get_list/domain/usecases/get_list_usecase.d
 import 'package:costeira/core/menus/app_menus_controller.dart';
 import 'package:costeira/core/offline/cache/form_dependencies_cache_service.dart';
 import 'package:costeira/core/storage/session_storage.dart';
+import 'package:costeira/core/storage/sub_user_payload.dart';
 import 'package:costeira/features/dashboard/domain/entities/dashboard_entity.dart';
 import 'package:costeira/features/dashboard/domain/entities/dashboard_filter_entity.dart';
 import 'package:costeira/features/dashboard/presentation/controllers/get_dashboard_controller.dart';
@@ -113,7 +114,7 @@ class _DashboardState extends State<Dashboard> {
       }
 
       final result = await Modular.get<GetFazendasUsecase>()(
-        FazendaFilterEntity(appUsersId: user.id),
+        FazendaFilterEntity(appUsersId: sessionAccountUserId(user.id)),
       );
       final saved = await SessionStorage.getSelectedFarmId();
       final match = result.data.where((farm) => farm.id == saved);
@@ -144,7 +145,10 @@ class _DashboardState extends State<Dashboard> {
     try {
       final user = await SessionStorage.getUserSession();
       final result = await Modular.get<GetListUsecase>()(
-        GetListParamsEntity(sexo: 1, userId: user?.id),
+        GetListParamsEntity(
+          sexo: 1,
+          userId: user == null ? null : sessionAccountUserId(user.id),
+        ),
       );
       final apiYears = result.anosAgricolas;
       if (apiYears.isEmpty) {

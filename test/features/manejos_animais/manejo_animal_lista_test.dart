@@ -1,5 +1,6 @@
 import 'package:costeira/core/api/api_exception.dart';
 import 'package:costeira/features/animals/infra/models/animal_lot_model.dart';
+import 'package:costeira/features/manejos_animais/domain/manejo_atualizacao.dart';
 import 'package:costeira/features/manejos_animais/infra/models/manejo_animal_lista_request_model.dart';
 import 'package:costeira/features/manejos_animais/infra/models/manejo_animal_lista_response_model.dart';
 import 'package:costeira/features/manejos_animais/presentation/page_controllers/manejo_reprodutivo_controller.dart';
@@ -83,6 +84,39 @@ void main() {
     expect(item.detalhe, contains('90 dias'));
   });
 
+  test('estação ativa lê o grupo entrada_touro', () {
+    final lista = ManejoAnimalListaResponseModel.fromResponse([
+      {
+        'rows': 1,
+        'data': {
+          'manejo_reprodutivo': {
+            'entrada_touro': [
+              {
+                'id': 22,
+                'app_manejos_categorias_id': 8,
+                'lote_destino': {'id': 24, 'nome': 'aaaa'},
+                'duracao_touro': 90,
+                'data': '13/10/2026',
+                'animais': [
+                  {'id': 228, 'brinco': '100', 'sexo': 2},
+                ],
+              },
+            ],
+            'retirada_touro': [],
+          },
+        },
+      },
+    ]);
+
+    final item = lista.itens.single;
+    expect(item.id, 22);
+    expect(item.idCategoria, 8);
+    expect(item.data, '13/10/2026');
+    expect(item.lote, 'aaaa');
+    expect(item.duracao, '90');
+    expect(item.brinco, '100');
+  });
+
   test('mês previsto desconta o tempo de prenhez', () {
     expect(mesPrevistoParto(DateTime(2026, 10, 13), tardia: false), 'Junho de 2027');
     expect(mesPrevistoParto(DateTime(2026, 10, 13), tardia: true), 'Maio de 2027');
@@ -100,6 +134,42 @@ void main() {
     expect(lote.sexo, 2);
     expect(lote.animalIds, [132]);
     expect(lote.temBrinco, isFalse);
+  });
+
+  test('atualização de pesagem manda id e não manda animais', () {
+    final corpo = montarAtualizacaoManejo(
+      const ManejoEdicaoCampos(
+        id: 4,
+        categoria: 1,
+        data: '12/10/2026',
+        score: '3',
+        obs: 'aaaaa',
+      ),
+    );
+
+    expect(corpo['id'], 4);
+    expect(corpo['data'], '12/10/2026');
+    expect(corpo['score'], 3);
+    expect(corpo['obs'], 'aaaaa');
+    expect(corpo.containsKey('animais'), isFalse);
+    expect(corpo.containsKey('id_categoria'), isFalse);
+  });
+
+  test('lista guarda o json do item', () {
+    final lista = ManejoAnimalListaResponseModel.fromResponse([
+      {
+        'data': {
+          'manejo_animal': {
+            'pesagem': [
+              {'id': 4, 'app_manejos_categorias_id': 1, 'data': '12/10/2026', 'score': 3, 'obs': 'aaaaa'},
+            ],
+          },
+        },
+      },
+    ]);
+
+    expect(lista.itens.single.id, 4);
+    expect(lista.itens.single.dados['score'], 3);
   });
 
   test('lista com status 02 vira erro', () {

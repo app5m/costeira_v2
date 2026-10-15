@@ -63,7 +63,7 @@ class AuthRepository {
       data: {
         'email': email,
         'password': password,
-        'codigo': code,
+        if (code.trim().isNotEmpty) 'codigo': code.trim(),
         'token': WSConstantes.token,
       },
     );

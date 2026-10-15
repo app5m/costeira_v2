@@ -9,6 +9,8 @@ class UserSession {
     this.tipo = '1',
     this.appSubUsersId,
     this.ownerUserId,
+    this.idGrupo,
+    this.managedClientId,
   });
 
   final int id;
@@ -20,6 +22,10 @@ class UserSession {
   final String tipo;
   final int? appSubUsersId;
   final int? ownerUserId;
+  final int? idGrupo;
+  final int? managedClientId;
+
+  bool get isAdmin => idGrupo == 1;
 
   Map<String, dynamic> toJson() {
     return {
@@ -32,10 +38,16 @@ class UserSession {
       'tipo': tipo,
       'app_sub_users_id': appSubUsersId,
       'owner_user_id': ownerUserId,
+      'id_grupo': idGrupo,
+      'managed_client_id': managedClientId,
     };
   }
 
-  UserSession withSubUser({int? appSubUsersId, int? ownerUserId}) {
+  UserSession withSubUser({
+    int? appSubUsersId,
+    int? ownerUserId,
+    int? idGrupo,
+  }) {
     return UserSession(
       id: id,
       name: name,
@@ -46,6 +58,24 @@ class UserSession {
       tipo: tipo,
       appSubUsersId: appSubUsersId,
       ownerUserId: ownerUserId,
+      idGrupo: idGrupo ?? this.idGrupo,
+      managedClientId: managedClientId,
+    );
+  }
+
+  UserSession withManagedClient(int? clientId) {
+    return UserSession(
+      id: id,
+      name: name,
+      email: email,
+      phone: phone,
+      document: document,
+      nickname: nickname,
+      tipo: tipo,
+      appSubUsersId: appSubUsersId,
+      ownerUserId: ownerUserId,
+      idGrupo: idGrupo,
+      managedClientId: clientId,
     );
   }
 
@@ -60,6 +90,8 @@ class UserSession {
       tipo: json['tipo']?.toString() ?? '1',
       appSubUsersId: _positiveId(json['app_sub_users_id']),
       ownerUserId: _positiveId(json['owner_user_id']),
+      idGrupo: _positiveId(json['id_grupo']),
+      managedClientId: _positiveId(json['managed_client_id']),
     );
   }
 
@@ -80,7 +112,23 @@ class UserSession {
       document: json['documento']?.toString() ?? json['document']?.toString(),
       nickname: json['apelido']?.toString() ?? json['nickname']?.toString(),
       tipo: tipo.toString(),
+      idGrupo: grupoDe(json),
     );
+  }
+
+  static int? grupoDe(Map<String, dynamic> json) {
+    final direto = _positiveId(json['id_grupo']);
+    if (direto != null) {
+      return direto;
+    }
+    final data = json['data'] ?? json['msg2'] ?? json['user'];
+    if (data is Map) {
+      return grupoDe(Map<String, dynamic>.from(data));
+    }
+    if (data is List && data.isNotEmpty && data.first is Map) {
+      return grupoDe(Map<String, dynamic>.from(data.first as Map));
+    }
+    return null;
   }
 
   static int parseId(Map<String, dynamic> json) {

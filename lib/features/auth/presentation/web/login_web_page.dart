@@ -169,17 +169,28 @@ class _LoginWebPageState extends State<LoginWebPage> {
         return;
       }
 
-      _showMessage(
-        response.message,
-        isError:
-            !response.isSuccess &&
-            !AuthBypass.shouldBypass(response.status, response.message),
-      );
-
       if (!response.isSuccess &&
           !AuthBypass.shouldBypass(response.status, response.message)) {
+        final direct = await _authRepository.login(
+          email: email,
+          password: _passwordController.text,
+          code: '',
+          tipo: 1,
+        );
+        final user = direct.user;
+        if (direct.message.isSuccess && user != null && user.id > 0) {
+          await SessionStorage.saveUserSession(user);
+          if (!mounted) {
+            return;
+          }
+          Modular.to.navigate(AppRoutes.appShell);
+          return;
+        }
+        _showMessage(response.message);
         return;
       }
+
+      _showMessage(response.message, isError: false);
 
       await Modular.to.pushReplacementNamed(
         AppRoutes.validationCode,

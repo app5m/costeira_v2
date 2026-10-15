@@ -6,6 +6,8 @@ import 'package:costeira/core/common/get_list/domain/entities/list_subcategory_e
 import 'package:costeira/core/common/get_list/domain/usecases/get_list_usecase.dart';
 import 'package:costeira/core/components/app_select_overlay.dart';
 import 'package:costeira/core/components/custom_button.dart';
+import 'package:costeira/core/storage/session_storage.dart';
+import 'package:costeira/core/storage/sub_user_payload.dart';
 import 'package:costeira/core/utils/app_logger.dart';
 import 'package:costeira/theme/colors.dart';
 import 'package:flutter/material.dart';
@@ -112,9 +114,13 @@ class _AnimalFilterSheetState extends State<AnimalFilterSheet> {
     });
 
     try {
+      final session = await SessionStorage.getUserSession();
+      final userId = session == null
+          ? null
+          : sessionAccountUserId(session.id);
       final results = await Future.wait<GetListEntity>([
-        _getListUsecase(const GetListParamsEntity(sexo: 1)),
-        _getListUsecase(const GetListParamsEntity(sexo: 2)),
+        _getListUsecase(GetListParamsEntity(sexo: 1, userId: userId)),
+        _getListUsecase(GetListParamsEntity(sexo: 2, userId: userId)),
       ]);
 
       final categoriesById = <int, ListCategoryEntity>{};

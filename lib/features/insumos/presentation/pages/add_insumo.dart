@@ -92,31 +92,56 @@ class _AddInsumoState extends State<AddInsumo> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   if (_controller.isLoading &&
-                      _controller.tipoInsumos.isEmpty &&
+                      _controller.categorias.isEmpty &&
                       _controller.unidades.isEmpty)
                     const Padding(
                       padding: EdgeInsets.only(top: 80),
                       child: Center(child: CircularProgressIndicator()),
                     )
                   else ...[
-                    _buildTipoDropdown(),
-                    if (_controller.shouldShowSuplemento)
-                      _buildIntReferenceDropdown(
-                        label: 'Tipo de suplemento',
-                        value: _controller.selectedSuplementoId,
-                        items: _controller.suplementos,
-                        onChanged: _controller.onSuplementoChanged,
-                        isRequired: false,
+                    _buildIntDropdown(
+                      label: 'Tipo de insumo',
+                      value: _controller.categoriaId,
+                      options: _controller.categorias
+                          .map(
+                            (item) => AppSelectOption<int>(
+                              value: item.id,
+                              label: item.nome,
+                            ),
+                          )
+                          .toList(growable: false),
+                      onChanged: _controller.onCategoriaChanged,
+                    ),
+                    if (_controller.categoriaId != null)
+                      _buildIntDropdown(
+                        label: 'Subcategoria',
+                        value: _controller.subcategoriaId,
+                        options: _controller.subcategorias
+                            .map(
+                              (item) => AppSelectOption<int>(
+                                value: item.id,
+                                label: item.nome,
+                              ),
+                            )
+                            .toList(growable: false),
+                        onChanged: _controller.onSubcategoriaChanged,
                       ),
                     _buildTextField(
                       controller: _controller.nomeController,
                       label: 'Nome',
                       hint: 'Ex: Medicamento 1',
                     ),
-                    _buildIntReferenceDropdown(
+                    _buildIntDropdown(
                       label: 'Unidade de medida',
                       value: _controller.selectedUnidadeId,
-                      items: _controller.unidades,
+                      options: _controller.unidades
+                          .map(
+                            (item) => AppSelectOption<int>(
+                              value: item.id,
+                              label: item.nome,
+                            ),
+                          )
+                          .toList(growable: false),
                       onChanged: _controller.onUnidadeChanged,
                     ),
                     _buildTextField(
@@ -201,63 +226,23 @@ class _AddInsumoState extends State<AddInsumo> {
     );
   }
 
-  Widget _buildTipoDropdown() {
-    final value =
-        _controller.tipoInsumos.any(
-          (item) => item.id?.toString() == _controller.selectedTipoInsumo,
-        )
-        ? _controller.selectedTipoInsumo
-        : null;
-
-    return _buildFieldShell(
-      label: 'Tipo de insumo',
-      child: AppSelectOverlay<String>(
-        value: value,
-        placeholder: 'Selecione',
-        options: _controller.tipoInsumos
-            .where((item) => item.id?.toString().isNotEmpty ?? false)
-            .map(
-              (item) => AppSelectOption<String>(
-                value: item.id.toString(),
-                label: item.nome,
-              ),
-            )
-            .toList(growable: false),
-        enabled: _controller.tipoInsumos.isNotEmpty,
-        onChanged: _controller.onTipoChanged,
-      ),
-    );
-  }
-
-  Widget _buildIntReferenceDropdown({
+  Widget _buildIntDropdown({
     required String label,
     required int? value,
-    required List<InsumoReferenceEntity> items,
+    required List<AppSelectOption<int>> options,
     required void Function(int? value) onChanged,
-    bool isRequired = true,
   }) {
-    final typedItems = items
-        .where((item) => int.tryParse(item.id?.toString() ?? '') != null)
-        .toList(growable: false);
-    final effectiveValue =
-        typedItems.any((item) => int.tryParse(item.id.toString()) == value)
+    final effectiveValue = options.any((item) => item.value == value)
         ? value
         : null;
 
     return _buildFieldShell(
-      label: isRequired ? label : '$label (opcional)',
+      label: label,
       child: AppSelectOverlay<int>(
         value: effectiveValue,
         placeholder: 'Selecione',
-        options: typedItems
-            .map(
-              (item) => AppSelectOption<int>(
-                value: int.parse(item.id.toString()),
-                label: item.nome,
-              ),
-            )
-            .toList(growable: false),
-        enabled: typedItems.isNotEmpty,
+        options: options,
+        enabled: options.isNotEmpty,
         onChanged: onChanged,
       ),
     );

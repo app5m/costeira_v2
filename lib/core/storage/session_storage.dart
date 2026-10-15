@@ -25,6 +25,16 @@ class SessionStorage {
     return id;
   }
 
+  static int? get cachedManagedClientId {
+    final id = _cached?.managedClientId;
+    if (id == null || id <= 0) {
+      return null;
+    }
+    return id;
+  }
+
+  static int? get cachedIdGrupo => _cached?.idGrupo;
+
   static const _userSessionKey = 'user_session';
   static const _pendingUserKey = 'pending_user_session';
   static const _webPendingApprovalKey = 'web_pending_approval_session';
@@ -205,5 +215,10 @@ class SessionStorage {
       return null;
     }
     return id;
+  }
+
+  static Future<void> clearSelectedFarmId() async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.remove(_selectedFarmIdKey);
   }
 }

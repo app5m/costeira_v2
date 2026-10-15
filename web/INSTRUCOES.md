@@ -2,7 +2,7 @@
 
 Flutter web deste repositório. Sem projeto novo e sem controller novo.
 
-A pasta `web/` na raiz do projeto é o bootstrap do Flutter (`index.html`). Não colocar tela ali.
+Este arquivo fica em `web/` na raiz. Tela Dart não entra aqui. Se o Flutter gerar `index.html` nesta pasta, deixa ele.
 
 ## Onde escrever
 

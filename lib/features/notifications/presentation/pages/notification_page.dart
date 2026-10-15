@@ -1,5 +1,6 @@
 import 'package:costeira/core/api/api_exception.dart';
 import 'package:costeira/core/storage/session_storage.dart';
+import 'package:costeira/core/storage/sub_user_payload.dart';
 import 'package:costeira/features/auth/models/user_session.dart';
 import 'package:costeira/features/notifications/models/app_notification.dart';
 import 'package:costeira/features/notifications/repositories/notifications_repository.dart';
@@ -46,7 +47,9 @@ class _NotificationsPageState extends State<NotificationsPage> {
         return;
       }
 
-      final notifications = await _notificationsRepository.fetchNotifications(_user!.id);
+      final notifications = await _notificationsRepository.fetchNotifications(
+        sessionAccountUserId(_user!.id),
+      );
 
       if (!mounted) {
         return;
