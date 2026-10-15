@@ -280,7 +280,7 @@ class _TableHeader extends StatelessWidget {
           Expanded(flex: 4, child: _HeaderText('E-mail')),
           SizedBox(width: 16),
           Expanded(flex: 3, child: _HeaderText('Celular')),
-          SizedBox(width: 224),
+          SizedBox(width: 236),
         ],
       ),
     );
@@ -424,7 +424,7 @@ class _FarmName extends StatelessWidget {
         if (selected) ...[
           const SizedBox(height: 4),
           const Text(
-            'Fazenda selecionada',
+            'Fazenda atual',
             style: TextStyle(
               fontFamily: 'Montserrat',
               fontSize: 10.5,
@@ -457,7 +457,7 @@ class _FarmActions extends StatelessWidget {
   Widget build(BuildContext context) {
     final access = SizedBox(
       height: 38,
-      width: expanded ? null : 112,
+      width: expanded ? null : 124,
       child: ElevatedButton(
         onPressed: selected || switching ? null : onAccess,
         style: ElevatedButton.styleFrom(
@@ -481,7 +481,7 @@ class _FarmActions extends StatelessWidget {
                 child: CircularProgressIndicator(strokeWidth: 2),
               )
             : Text(
-                selected ? 'Selecionada' : 'Acessar',
+                selected ? 'Fazenda atual' : 'Acessar',
                 maxLines: 1,
                 softWrap: false,
               ),

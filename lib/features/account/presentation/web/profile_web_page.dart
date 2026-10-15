@@ -2,9 +2,9 @@ import 'package:costeira/app/app_routes.dart';
 import 'package:costeira/core/api/api_exception.dart';
 import 'package:costeira/core/common/get_list/domain/entities/app_menu_entity.dart';
 import 'package:costeira/core/components/app_snack.dart';
+import 'package:costeira/core/components/web_module_development_dialog.dart';
 import 'package:costeira/core/config/ws_constantes.dart';
 import 'package:costeira/core/menus/app_menus_controller.dart';
-import 'package:costeira/core/menus/menu_action_resolver.dart';
 import 'package:costeira/core/menus/menu_icon.dart';
 import 'package:costeira/core/menus/menu_slug.dart';
 import 'package:costeira/core/storage/session_storage.dart';
@@ -406,7 +406,7 @@ class _ProfileWebPageState extends State<ProfileWebPage> {
 
   Future<void> _openModule(AppMenuEntity item) async {
     final slug = MenuSlug.resolve(action: item.action, name: item.name);
-    final Widget? dialog = switch (slug) {
+    final Widget? availableDialog = switch (slug) {
       MenuSlug.fornecedores => const ParceirosListWebDialog(
         kind: ParceiroKind.fornecedor,
       ),
@@ -416,16 +416,12 @@ class _ProfileWebPageState extends State<ProfileWebPage> {
       MenuSlug.usuarios => const SubUsuariosListWebDialog(),
       _ => null,
     };
-    if (dialog != null) {
-      await showDialog<void>(
-        context: context,
-        barrierDismissible: false,
-        builder: (_) => dialog,
-      );
-      return;
-    }
-    if (!mounted) return;
-    await MenuActionResolver.open(context, item, surface: MenuSurface.profile);
+    await showDialog<void>(
+      context: context,
+      barrierDismissible: availableDialog == null,
+      builder: (_) =>
+          availableDialog ?? WebModuleDevelopmentDialog(moduleName: item.name),
+    );
   }
 
   Future<void> _confirmDeactivate() async {

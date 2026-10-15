@@ -4,6 +4,7 @@ import 'package:costeira/app/app_routes.dart';
 import 'package:costeira/core/common/get_list/domain/entities/app_menu_entity.dart';
 import 'package:costeira/core/components/app_snack.dart';
 import 'package:costeira/core/components/web_dialog_frame.dart';
+import 'package:costeira/core/components/web_module_development_dialog.dart';
 import 'package:costeira/core/menus/app_menus_controller.dart';
 import 'package:costeira/core/menus/menu_access.dart';
 import 'package:costeira/core/menus/menu_action_resolver.dart';
@@ -491,18 +492,26 @@ class _MainNavigationPageState extends State<MainNavigationPage>
         if (closeDrawer) {
           Navigator.of(context).pop();
         }
+        final tab = tabs[index];
+        if (tab.slug == MenuSlug.animais || tab.slug == MenuSlug.manejos) {
+          unawaited(_showModuleInDevelopment(tab.label));
+          return;
+        }
         _onNavItemTapped(index);
       },
       onMovement: (item) {
         if (closeDrawer) {
           Navigator.of(context).pop();
         }
-        MenuActionResolver.open(
-          context,
-          item,
-          surface: MenuSurface.movimentacoes,
-        );
+        unawaited(_showModuleInDevelopment(item.name));
       },
+    );
+  }
+
+  Future<void> _showModuleInDevelopment(String moduleName) {
+    return showDialog<void>(
+      context: context,
+      builder: (_) => WebModuleDevelopmentDialog(moduleName: moduleName),
     );
   }
 
