@@ -14,23 +14,36 @@ class WebModuleDevelopmentDialog extends StatelessWidget {
       title: 'Em desenvolvimento',
       width: 460,
       maxHeight: 320,
+      footer: Padding(
+        padding: const EdgeInsets.fromLTRB(28, 16, 28, 22),
+        child: SizedBox(
+          width: double.infinity,
+          height: 44,
+          child: ElevatedButton(
+            onPressed: () => Navigator.of(context).pop(),
+            style: ElevatedButton.styleFrom(
+              elevation: 0,
+              backgroundColor: MyColors.colorPrimary,
+              foregroundColor: Colors.white,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(8),
+              ),
+              textStyle: const TextStyle(
+                fontFamily: 'Montserrat',
+                fontSize: 12,
+                fontWeight: FontWeight.w700,
+              ),
+            ),
+            child: const Text('Entendi'),
+          ),
+        ),
+      ),
       child: Padding(
         padding: const EdgeInsets.fromLTRB(28, 24, 28, 22),
         child: Column(
+          mainAxisSize: MainAxisSize.min,
           children: [
-            Container(
-              width: 54,
-              height: 54,
-              decoration: BoxDecoration(
-                color: const Color(0xFFE7F2EB),
-                borderRadius: BorderRadius.circular(14),
-              ),
-              child: const Icon(
-                LucideIcons.hardHat,
-                size: 27,
-                color: MyColors.colorPrimary,
-              ),
-            ),
+            const _DevelopmentIcon(),
             const SizedBox(height: 18),
             Text(
               'O módulo $moduleName ainda está em desenvolvimento.',
@@ -43,30 +56,29 @@ class WebModuleDevelopmentDialog extends StatelessWidget {
                 color: Color(0xFF4F4F4F),
               ),
             ),
-            const Spacer(),
-            SizedBox(
-              width: double.infinity,
-              height: 44,
-              child: ElevatedButton(
-                onPressed: () => Navigator.of(context).pop(),
-                style: ElevatedButton.styleFrom(
-                  elevation: 0,
-                  backgroundColor: MyColors.colorPrimary,
-                  foregroundColor: Colors.white,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                  textStyle: const TextStyle(
-                    fontFamily: 'Montserrat',
-                    fontSize: 12,
-                    fontWeight: FontWeight.w700,
-                  ),
-                ),
-                child: const Text('Entendi'),
-              ),
-            ),
           ],
         ),
+      ),
+    );
+  }
+}
+
+class _DevelopmentIcon extends StatelessWidget {
+  const _DevelopmentIcon();
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: 54,
+      height: 54,
+      decoration: BoxDecoration(
+        color: const Color(0xFFE7F2EB),
+        borderRadius: BorderRadius.circular(14),
+      ),
+      child: const Icon(
+        LucideIcons.hardHat,
+        size: 27,
+        color: MyColors.colorPrimary,
       ),
     );
   }

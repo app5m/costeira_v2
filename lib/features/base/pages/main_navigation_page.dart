@@ -89,11 +89,12 @@ class _MainNavigationPageState extends State<MainNavigationPage>
         ? user.name.trim()
         : (user.nickname ?? '').trim();
     if (kIsWeb) {
-      _activeSlug = await SessionStorage.getWebActiveMenuSlug();
-      final section = await SessionStorage.getWebSidebarSection();
-      _webSidebarSection = section == _WebSidebarSection.movements.name
-          ? _WebSidebarSection.movements
-          : _WebSidebarSection.navigation;
+      _activeSlug = MenuSlug.dashboard;
+      _webSidebarSection = _WebSidebarSection.navigation;
+      await SessionStorage.saveWebActiveMenuSlug(MenuSlug.dashboard);
+      await SessionStorage.saveWebSidebarSection(
+        _WebSidebarSection.navigation.name,
+      );
     }
     await _loadSubUser(user.id);
     final session = await SessionStorage.getUserSession();
