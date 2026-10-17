@@ -25,7 +25,6 @@ import 'package:costeira/features/movimentacoes/vendas/presentation/controllers/
 import 'package:costeira/features/movimentacoes/vendas/presentation/controllers/edit_venda_controller.dart';
 import 'package:costeira/features/potreiros/domain/entities/potreiro_entity.dart';
 import 'package:costeira/features/potreiros/presentation/controllers/list_potreiros_controller.dart';
-import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 
 enum VendaCompradorMode { existente, novo }
@@ -160,11 +159,6 @@ class VendaFormPageController extends ChangeNotifier {
         .toList(growable: false);
   }
 
-  /// Na web, o lote e o piquete são seleções independentes dentro da fazenda.
-  /// O mobile preserva o filtro atual por piquete.
-  List<AnimalLotEntity> get selectableLots =>
-      kIsWeb ? _lotsController.lots : lots;
-
   List<ListCategoryEntity> get animalCategories => _allCategories;
 
   List<ListSubcategoryEntity> get animalSubcategories {
@@ -238,7 +232,7 @@ class VendaFormPageController extends ChangeNotifier {
 
   AnimalLotEntity? get selectedLot {
     try {
-      return selectableLots.firstWhere((item) => item.id == selectedLotId);
+      return lots.firstWhere((item) => item.id == selectedLotId);
     } catch (_) {
       return null;
     }
@@ -479,8 +473,7 @@ class VendaFormPageController extends ChangeNotifier {
 
   void onPotreiroChanged(int? value) {
     selectedPotreiroId = value;
-    if (selectedLotId != null &&
-        !selectableLots.any((lot) => lot.id == selectedLotId)) {
+    if (selectedLotId != null && !lots.any((lot) => lot.id == selectedLotId)) {
       selectedLotId = null;
     }
     notifyListeners();

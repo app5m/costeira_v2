@@ -24,7 +24,6 @@ import 'package:costeira/features/movimentacoes/compras/presentation/controllers
 import 'package:costeira/features/movimentacoes/domain/entities/compra_entity.dart';
 import 'package:costeira/features/potreiros/domain/entities/potreiro_entity.dart';
 import 'package:costeira/features/potreiros/presentation/controllers/list_potreiros_controller.dart';
-import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 
 enum CompraFornecedorMode { existente, novo }
@@ -158,11 +157,6 @@ class CompraFormPageController extends ChangeNotifier {
         .toList(growable: false);
   }
 
-  /// Na web, o lote e o piquete são seleções independentes dentro da fazenda.
-  /// O mobile preserva o filtro atual por piquete.
-  List<AnimalLotEntity> get selectableLots =>
-      kIsWeb ? _lotsController.lots : lots;
-
   List<CompraUpsertAnimalEntity> get animais {
     return animalRows
         .map(
@@ -231,7 +225,7 @@ class CompraFormPageController extends ChangeNotifier {
 
   AnimalLotEntity? get selectedLot {
     try {
-      return selectableLots.firstWhere((item) => item.id == selectedLotId);
+      return lots.firstWhere((item) => item.id == selectedLotId);
     } catch (_) {
       return null;
     }
@@ -481,19 +475,18 @@ class CompraFormPageController extends ChangeNotifier {
       }
     }
     selectedPotreiroId = newest.id;
-    if (selectedLotId != null &&
-        !selectableLots.any((lot) => lot.id == selectedLotId)) {
+    if (selectedLotId != null && !lots.any((lot) => lot.id == selectedLotId)) {
       selectedLotId = null;
     }
     notifyListeners();
   }
 
   void selectNewestLot() {
-    if (selectableLots.isEmpty) {
+    if (lots.isEmpty) {
       return;
     }
-    var newest = selectableLots.first;
-    for (final item in selectableLots) {
+    var newest = lots.first;
+    for (final item in lots) {
       if (item.id > newest.id) {
         newest = item;
       }
@@ -515,8 +508,7 @@ class CompraFormPageController extends ChangeNotifier {
 
   void onPotreiroChanged(int? value) {
     selectedPotreiroId = value;
-    if (selectedLotId != null &&
-        !selectableLots.any((lot) => lot.id == selectedLotId)) {
+    if (selectedLotId != null && !lots.any((lot) => lot.id == selectedLotId)) {
       selectedLotId = null;
     }
     notifyListeners();

@@ -138,7 +138,7 @@ class _CompraFormPageState extends State<CompraFormPage> {
       context: context,
       title: 'Selecionar lote',
       builder: (embeddedInDialog) => AnimalLotSelectionSheet(
-        lots: _pageController.selectableLots,
+        lots: _pageController.lots,
         initialSelectedLotId: _pageController.selectedLotId,
         isLoading: _pageController.isLoading,
         errorMessage: _pageController.errorMessage,
