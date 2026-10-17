@@ -188,9 +188,9 @@ class VendaFormPageController extends ChangeNotifier {
   bool get hasStatusOptions => availableStatuses.isNotEmpty;
 
   List<AnimalEntity> get groupedAnimals {
-    return _animalsController.animals.where(_matchesGroup).toList(
-      growable: false,
-    );
+    return _animalsController.animals
+        .where(_matchesGroup)
+        .toList(growable: false);
   }
 
   List<AnimalEntity> get scopedAnimals {
@@ -372,7 +372,8 @@ class VendaFormPageController extends ChangeNotifier {
       (BrazilianCurrency.parse(valorUnitarioController.text) ?? 0) > 0 &&
       (isEdit || selectedTipoValor != null);
 
-  bool isParcialSelected(int animalId) => _parcialSelectedIds.contains(animalId);
+  bool isParcialSelected(int animalId) =>
+      _parcialSelectedIds.contains(animalId);
 
   List<AnimalEntity> get filteredAnimais => groupedAnimals;
   List<AnimalEntity> get selectedAnimais => scopedAnimals;
@@ -564,9 +565,7 @@ class VendaFormPageController extends ChangeNotifier {
     final saida = _parsePeso(row.pesoSaidaController.text);
     final ultimo = row.animal.peso;
     final lastDate = _parseDate(
-      row.animal.ultimaPesagem ??
-          row.animal.updateAt ??
-          row.animal.createAt,
+      row.animal.ultimaPesagem ?? row.animal.updateAt ?? row.animal.createAt,
     );
     if (saida == null || ultimo == null || lastDate == null) {
       return null;
