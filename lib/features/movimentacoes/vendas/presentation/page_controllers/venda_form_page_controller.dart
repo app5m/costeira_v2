@@ -117,6 +117,7 @@ class VendaFormPageController extends ChangeNotifier {
   final Set<int> _parcialSelectedIds = {};
   final Map<int, VendaPesagemRow> _pesagemRows = {};
   int _listRequest = 0;
+  bool _isUsingFarmFallback = false;
   _VendaFormSnapshot? _initialSnapshot;
 
   bool get isEdit => _editingVenda != null;
@@ -442,6 +443,7 @@ class VendaFormPageController extends ChangeNotifier {
     compradores = const [];
     _parcialSelectedIds.clear();
     _clearPesagemRows();
+    _isUsingFarmFallback = false;
     valorUnitarioController.clear();
     valorFreteController.clear();
     valorComissaoController.clear();
@@ -721,6 +723,20 @@ class VendaFormPageController extends ChangeNotifier {
   }
 
   bool _matchesGroup(AnimalEntity animal) {
+    final animalPotreiroId = animal.appPotreirosId ?? animal.potreiro?.id;
+    if (selectedPotreiroId != null && animalPotreiroId != selectedPotreiroId) {
+      if (!_isUsingFarmFallback ||
+          !_sameScopeName(selectedPotreiro?.nome, animal.potreiro?.nome)) {
+        return false;
+      }
+    }
+    final animalLotId = animal.appAnimaisLotesId ?? animal.lote?.id;
+    if (selectedLotId != null && animalLotId != selectedLotId) {
+      if (!_isUsingFarmFallback ||
+          !_sameScopeName(selectedLot?.nome, animal.lote?.nome)) {
+        return false;
+      }
+    }
     if ((animal.brinco ?? '').trim().isEmpty) {
       return false;
     }
@@ -747,6 +763,7 @@ class VendaFormPageController extends ChangeNotifier {
 
   Future<void> _reloadGroupAnimals() async {
     if (isEdit || !canListAnimals) {
+      _isUsingFarmFallback = false;
       _parcialSelectedIds.clear();
       _clearPesagemRows();
       notifyListeners();
@@ -754,6 +771,7 @@ class VendaFormPageController extends ChangeNotifier {
     }
 
     final request = ++_listRequest;
+    _isUsingFarmFallback = false;
     try {
       // Lista por fazenda/piquete/lote. Categoria/fase/status/brinco
       // filtram só no client (_matchesGroup) pra não zerar a API.
@@ -765,10 +783,29 @@ class VendaFormPageController extends ChangeNotifier {
       if (request != _listRequest) {
         return;
       }
+      // Algumas respostas em cache podem vir vazias para a combinação
+      // piquete/lote mesmo com animais na fazenda. Nesse caso, recarrega a
+      // fazenda e preserva o escopo em _matchesGroup. IDs continuam sendo a
+      // regra; nomes só conciliam vínculos legados quando ambos coincidem.
+      if (_animalsController.animals.isEmpty) {
+        _isUsingFarmFallback = true;
+        await _animalsController.load(appFazendasId: selectedFarmId);
+        if (request != _listRequest) {
+          return;
+        }
+      }
       _applyGroupFiltersLocally();
     } catch (_) {
       notifyListeners();
     }
+  }
+
+  bool _sameScopeName(String? selected, String? fromAnimal) {
+    final selectedName = selected?.trim().toLowerCase();
+    final animalName = fromAnimal?.trim().toLowerCase();
+    return selectedName != null &&
+        selectedName.isNotEmpty &&
+        selectedName == animalName;
   }
 
   void _applyGroupFiltersLocally() {

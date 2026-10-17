@@ -1,4 +1,5 @@
 import 'package:costeira/core/components/app_snack.dart';
+import 'package:costeira/core/components/web_dialog_frame.dart';
 import 'package:costeira/features/usuarios/domain/entities/sub_usuario_entity.dart';
 import 'package:costeira/features/usuarios/presentation/page_controllers/sub_usuarios_list_page_controller.dart';
 import 'package:costeira/features/usuarios/presentation/web/sub_usuario_form_web_dialog.dart';
@@ -53,70 +54,30 @@ class _SubUsuariosListWebDialogState extends State<SubUsuariosListWebDialog> {
 
   @override
   Widget build(BuildContext context) {
-    final viewport = MediaQuery.sizeOf(context);
-    final narrow = viewport.width < 620;
-    final height = (viewport.height - 48).clamp(320.0, 760.0);
+    final narrow = MediaQuery.sizeOf(context).width < 620;
     return AnimatedBuilder(
       animation: _controller,
-      builder: (context, _) => Dialog(
-        backgroundColor: Colors.white,
-        insetPadding: EdgeInsets.all(narrow ? 8 : 24),
-        clipBehavior: Clip.antiAlias,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
-        child: SizedBox(
-          width: 720,
-          height: height,
-          child: Column(
-            children: [
-              _header(narrow),
-              const Divider(height: 1, color: Color(0xFFE7E4DD)),
-              Expanded(child: _body()),
-            ],
+      builder: (context, _) => WebDialogFrame(
+        title: 'Usuários e acessos',
+        width: 720,
+        maxHeight: 760,
+        sizeMode: WebDialogSizeMode.constrained,
+        scrollableBody: false,
+        headerActions: ElevatedButton.icon(
+          onPressed: _controller.isLoading ? null : () => _openForm(),
+          icon: const Icon(Icons.add_rounded, size: 18),
+          label: const Text('Adicionar'),
+          style: ElevatedButton.styleFrom(
+            elevation: 0,
+            minimumSize: Size(narrow ? 108 : 124, 42),
+            backgroundColor: MyColors.colorPrimary,
+            foregroundColor: Colors.white,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(8),
+            ),
           ),
         ),
-      ),
-    );
-  }
-
-  Widget _header(bool narrow) {
-    return Padding(
-      padding: EdgeInsets.fromLTRB(narrow ? 16 : 22, 10, 12, 10),
-      child: Row(
-        children: [
-          const Expanded(
-            child: Text(
-              'Usuários e acessos',
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-              style: TextStyle(
-                fontFamily: 'Montserrat',
-                fontSize: 19,
-                fontWeight: FontWeight.w700,
-                color: Color(0xFF252525),
-              ),
-            ),
-          ),
-          ElevatedButton.icon(
-            onPressed: _controller.isLoading ? null : () => _openForm(),
-            icon: const Icon(Icons.add_rounded, size: 18),
-            label: const Text('Adicionar'),
-            style: ElevatedButton.styleFrom(
-              elevation: 0,
-              minimumSize: Size(narrow ? 108 : 124, 42),
-              backgroundColor: MyColors.colorPrimary,
-              foregroundColor: Colors.white,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(8),
-              ),
-            ),
-          ),
-          const SizedBox(width: 4),
-          IconButton(
-            tooltip: 'Fechar',
-            onPressed: () => Navigator.of(context).pop(),
-            icon: const Icon(Icons.close_rounded),
-          ),
-        ],
+        child: _body(),
       ),
     );
   }

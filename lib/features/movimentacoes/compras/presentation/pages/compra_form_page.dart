@@ -219,6 +219,9 @@ class _CompraFormPageState extends State<CompraFormPage> {
                           title: 'Identificação',
                           complete: _pageController.isIdentificacaoComplete,
                           child: Column(
+                            crossAxisAlignment: kIsWeb
+                                ? CrossAxisAlignment.start
+                                : CrossAxisAlignment.center,
                             children: [
                               _buildTextField(
                                 controller: _pageController.dataController,
@@ -241,6 +244,9 @@ class _CompraFormPageState extends State<CompraFormPage> {
                           initiallyExpanded: false,
                           complete: _pageController.isDestinoComplete,
                           child: Column(
+                            crossAxisAlignment: kIsWeb
+                                ? CrossAxisAlignment.start
+                                : CrossAxisAlignment.center,
                             children: [
                               PotreiroSelectorField(
                                 label: 'Piquete de destino',
@@ -270,6 +276,9 @@ class _CompraFormPageState extends State<CompraFormPage> {
                           initiallyExpanded: false,
                           complete: _pageController.isFornecedorComplete,
                           child: Column(
+                            crossAxisAlignment: kIsWeb
+                                ? CrossAxisAlignment.start
+                                : CrossAxisAlignment.center,
                             children: [
                               _ChoiceRow(
                                 leftLabel: 'Selecionar existente',
@@ -300,6 +309,9 @@ class _CompraFormPageState extends State<CompraFormPage> {
                           initiallyExpanded: false,
                           complete: _pageController.isValoresComplete,
                           child: Column(
+                            crossAxisAlignment: kIsWeb
+                                ? CrossAxisAlignment.start
+                                : CrossAxisAlignment.center,
                             children: [
                               if (!_pageController.isEdit) _buildTipoValor(),
                               _buildTextField(
@@ -353,6 +365,9 @@ class _CompraFormPageState extends State<CompraFormPage> {
                             initiallyExpanded: false,
                             complete: _pageController.isCadastroComplete,
                             child: Column(
+                              crossAxisAlignment: kIsWeb
+                                  ? CrossAxisAlignment.start
+                                  : CrossAxisAlignment.center,
                               children: [
                                 const _ChoiceRow(
                                   leftLabel: 'Fazenda própria',

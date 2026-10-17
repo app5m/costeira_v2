@@ -1,3 +1,5 @@
+import 'dart:math' as math;
+
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
 
@@ -22,6 +24,8 @@ class AppSelectOverlay<T> extends StatefulWidget {
     this.padding = const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
     this.fieldColor = const Color(0xFFEBEBEB),
     this.menuColor = const Color(0xFFEBEBEB),
+    this.menuMaxHeight = 260,
+    this.adaptiveMenuPlacement = false,
     this.border,
     this.borderRadius = 8,
   });
@@ -37,6 +41,8 @@ class AppSelectOverlay<T> extends StatefulWidget {
   final EdgeInsetsGeometry padding;
   final Color fieldColor;
   final Color menuColor;
+  final double menuMaxHeight;
+  final bool adaptiveMenuPlacement;
   final BoxBorder? border;
   final double borderRadius;
 
@@ -108,6 +114,32 @@ class _AppSelectOverlayState<T> extends State<AppSelectOverlay<T>> {
   OverlayEntry _createOverlay() {
     final renderBox = context.findRenderObject() as RenderBox;
     final size = renderBox.size;
+    final mediaQuery = MediaQuery.of(context);
+    final fieldTop = renderBox.localToGlobal(Offset.zero).dy;
+    final availableBelow = math.max(
+      0.0,
+      mediaQuery.size.height -
+          mediaQuery.padding.bottom -
+          fieldTop -
+          size.height -
+          12,
+    );
+    final availableAbove = math.max(
+      0.0,
+      fieldTop - mediaQuery.padding.top - 12,
+    );
+    final estimatedContentHeight =
+        widget.options.length * 54.0 +
+        math.max(0, widget.options.length - 1) +
+        12;
+    final opensUpward =
+        widget.adaptiveMenuPlacement &&
+        estimatedContentHeight > availableBelow &&
+        availableAbove > availableBelow;
+    final availableHeight = opensUpward ? availableAbove : availableBelow;
+    final menuHeight = widget.adaptiveMenuPlacement
+        ? math.min(widget.menuMaxHeight, availableHeight)
+        : widget.menuMaxHeight;
 
     return OverlayEntry(
       builder: (context) => Stack(
@@ -122,13 +154,19 @@ class _AppSelectOverlayState<T> extends State<AppSelectOverlay<T>> {
           CompositedTransformFollower(
             link: _layerLink,
             showWhenUnlinked: false,
-            offset: Offset(0, size.height + 6),
+            targetAnchor: opensUpward
+                ? Alignment.topLeft
+                : Alignment.bottomLeft,
+            followerAnchor: opensUpward
+                ? Alignment.bottomLeft
+                : Alignment.topLeft,
+            offset: Offset(0, opensUpward ? -6 : 6),
             child: Material(
               color: Colors.transparent,
               child: SizedBox(
                 width: size.width,
                 child: Container(
-                  constraints: const BoxConstraints(maxHeight: 260),
+                  constraints: BoxConstraints(maxHeight: menuHeight),
                   decoration: BoxDecoration(
                     color: widget.menuColor,
                     borderRadius: BorderRadius.circular(widget.borderRadius),
