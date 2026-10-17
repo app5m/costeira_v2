@@ -738,11 +738,7 @@ class _MainNavigationPageState extends State<MainNavigationPage>
       _selectedIndex = index;
       _rememberActiveSlug(tabs[index].slug);
     });
-    _pageController.animateToPage(
-      index,
-      duration: const Duration(milliseconds: 280),
-      curve: Curves.easeOut,
-    );
+    _syncPageController(index);
   }
 
   Future<void> _onFarmChanged() async {
