@@ -11,18 +11,24 @@ import 'package:costeira/core/menus/menu_action_resolver.dart';
 import 'package:costeira/core/menus/menu_icon.dart';
 import 'package:costeira/core/menus/menu_slug.dart';
 import 'package:costeira/core/offline/cache/form_dependencies_cache_service.dart';
+import 'package:costeira/core/storage/sub_user_payload.dart';
 import 'package:costeira/core/storage/session_storage.dart';
 import 'package:costeira/features/account/presentation/web/profile_web_page.dart';
 import 'package:costeira/features/account/repositories/account_repository.dart';
 import 'package:costeira/features/admin_clientes/presentation/pages/selecionar_cliente_page.dart';
 import 'package:costeira/features/animals/presentation/pages/animals_page.dart';
+import 'package:costeira/features/animals/presentation/web/animals_web_page.dart';
 import 'package:costeira/features/base/pages/module_placeholder_page.dart';
 import 'package:costeira/features/dashboard/presentation/pages/dashboard.dart';
 import 'package:costeira/features/dashboard/presentation/web/dashboard_web_page.dart';
 import 'package:costeira/features/dashboard/presentation/widgets/dashboard_quick_actions.dart';
 import 'package:costeira/features/fazendas/presentation/pages/fazendas_page.dart';
 import 'package:costeira/features/fazendas/presentation/web/fazendas_web_page.dart';
+import 'package:costeira/features/fazendas/domain/usecases/resolve_current_farm_id.dart';
 import 'package:costeira/features/manejos_animais/presentation/pages/manejos_animais_page.dart';
+import 'package:costeira/features/manejos_animais/presentation/web/manejos_web_page.dart';
+import 'package:costeira/features/movimentacoes/compras/presentation/web/compras_web_page.dart';
+import 'package:costeira/features/movimentacoes/vendas/presentation/web/vendas_web_page.dart';
 import 'package:costeira/features/movimentacoes/movimentacoes.dart';
 import 'package:costeira/features/notifications/presentation/pages/notification_page.dart';
 import 'package:flutter/foundation.dart';
@@ -55,6 +61,8 @@ class _MainNavigationPageState extends State<MainNavigationPage>
   Timer? _pollTimer;
   String _lastHandledSignature = '';
   String? _activeSlug;
+  String? _activeWebMovementSlug;
+  String? _activeWebMovementTitle;
   _WebSidebarSection _webSidebarSection = _WebSidebarSection.navigation;
   String _userDisplayName = '';
   DashboardWebToolbarData? _dashboardToolbarData;
@@ -106,6 +114,10 @@ class _MainNavigationPageState extends State<MainNavigationPage>
       });
       return;
     }
+    if (kIsWeb) {
+      await _prepareWebFarmContext(session.id);
+    }
+    if (!mounted) return;
     setState(() => _aguardandoGrupo = false);
     unawaited(_menusController.load(force: true));
     unawaited(
@@ -114,12 +126,21 @@ class _MainNavigationPageState extends State<MainNavigationPage>
   }
 
   Future<void> _aplicarCliente() async {
+    if (kIsWeb) {
+      final session = await SessionStorage.getUserSession();
+      if (session != null) {
+        await _prepareWebFarmContext(session.id);
+      }
+    }
+    if (!mounted) return;
     setState(() {
       _escolherCliente = false;
       _aguardandoGrupo = false;
       _shellGeracao++;
       _selectedIndex = 0;
       _activeSlug = null;
+      _activeWebMovementSlug = null;
+      _activeWebMovementTitle = null;
       _webSidebarSection = _WebSidebarSection.navigation;
     });
     if (kIsWeb) {
@@ -150,6 +171,17 @@ class _MainNavigationPageState extends State<MainNavigationPage>
     try {
       await Modular.get<AccountRepository>().fetchProfile(userId: userId);
     } catch (_) {}
+  }
+
+  Future<void> _prepareWebFarmContext(int sessionUserId) async {
+    if (!kIsWeb) return;
+    try {
+      await Modular.get<ResolveCurrentFarmId>()(
+        userId: sessionAccountUserId(sessionUserId),
+      );
+    } catch (_) {
+      // A tela continua disponível e poderá tentar novamente pelo dashboard.
+    }
   }
 
   void _startPollTimer() {
@@ -404,6 +436,7 @@ class _MainNavigationPageState extends State<MainNavigationPage>
     return LayoutBuilder(
       builder: (context, constraints) {
         final useSidebar = constraints.maxWidth >= 760;
+        final showingWebMovement = _activeWebMovementSlug != null;
         return Scaffold(
           key: _scaffoldKey,
           backgroundColor: current?.slug == MenuSlug.dashboard
@@ -433,15 +466,20 @@ class _MainNavigationPageState extends State<MainNavigationPage>
                 child: Column(
                   children: [
                     _WebTopBar(
-                      title: current?.slug == MenuSlug.dashboard
+                      title: showingWebMovement
+                          ? _activeWebMovementTitle ?? 'Movimentações'
+                          : current?.slug == MenuSlug.dashboard
                           ? _dashboardGreeting
                           : current?.label ?? 'Costeira',
-                      subtitle: current?.slug == MenuSlug.dashboard
+                      subtitle:
+                          !showingWebMovement &&
+                              current?.slug == MenuSlug.dashboard
                           ? 'Bem-vindo ao Costeira'
                           : null,
                       showMenuButton: !useSidebar,
                       controls:
-                          current?.slug == MenuSlug.dashboard &&
+                          !showingWebMovement &&
+                              current?.slug == MenuSlug.dashboard &&
                               _dashboardToolbarData != null
                           ? DashboardWebToolbar(data: _dashboardToolbarData!)
                           : null,
@@ -449,7 +487,19 @@ class _MainNavigationPageState extends State<MainNavigationPage>
                       onNotifications: () => unawaited(_openNotifications()),
                     ),
                     Expanded(
-                      child: hasTabs
+                      child: _activeWebMovementSlug == MenuSlug.compras
+                          ? ComprasWebPage(
+                              key: ValueKey(
+                                '$_shellGeracao-${MenuSlug.compras}',
+                              ),
+                            )
+                          : _activeWebMovementSlug == MenuSlug.vendas
+                          ? VendasWebPage(
+                              key: ValueKey(
+                                '$_shellGeracao-${MenuSlug.vendas}',
+                              ),
+                            )
+                          : hasTabs
                           ? PageView(
                               controller: _pageController,
                               physics: const NeverScrollableScrollPhysics(),
@@ -486,6 +536,7 @@ class _MainNavigationPageState extends State<MainNavigationPage>
       menus: _menusController,
       tabs: tabs,
       currentIndex: tabs.isEmpty ? 0 : _selectedIndex.clamp(0, tabs.length - 1),
+      activeMovementSlug: _activeWebMovementSlug,
       section: _webSidebarSection,
       onSectionChanged: _setWebSidebarSection,
       onSelect: (index) {
@@ -493,7 +544,7 @@ class _MainNavigationPageState extends State<MainNavigationPage>
           Navigator.of(context).pop();
         }
         final tab = tabs[index];
-        if (tab.slug == MenuSlug.animais || tab.slug == MenuSlug.manejos) {
+        if (tab.slug == MenuSlug.manejos) {
           unawaited(_showModuleInDevelopment(tab.label));
           return;
         }
@@ -502,6 +553,9 @@ class _MainNavigationPageState extends State<MainNavigationPage>
       onMovement: (item) {
         if (closeDrawer) {
           Navigator.of(context).pop();
+        }
+        if (_openWebMovement(item)) {
+          return;
         }
         unawaited(_showModuleInDevelopment(item.name));
       },
@@ -513,6 +567,21 @@ class _MainNavigationPageState extends State<MainNavigationPage>
       context: context,
       builder: (_) => WebModuleDevelopmentDialog(moduleName: moduleName),
     );
+  }
+
+  bool _openWebMovement(AppMenuEntity item) {
+    if (!kIsWeb) return false;
+    final slug = MenuActionResolver.slugOf(item);
+    if (slug != MenuSlug.compras && slug != MenuSlug.vendas) return false;
+    setState(() {
+      _activeWebMovementSlug = slug;
+      _activeWebMovementTitle = item.name;
+      _webSidebarSection = _WebSidebarSection.movements;
+    });
+    unawaited(
+      SessionStorage.saveWebSidebarSection(_WebSidebarSection.movements.name),
+    );
+    return true;
   }
 
   Widget _emptyNavigationContent() {
@@ -543,6 +612,8 @@ class _MainNavigationPageState extends State<MainNavigationPage>
         title: 'Notificações',
         width: 720,
         maxHeight: 720,
+        sizeMode: WebDialogSizeMode.constrained,
+        scrollableBody: false,
         child: NotificationsPage(embedded: true),
       ),
     );
@@ -641,9 +712,11 @@ class _MainNavigationPageState extends State<MainNavigationPage>
         kIsWeb
             ? FazendasWebPage(key: chave, onFarmChanged: _onFarmChanged)
             : FazendasPage(key: chave),
-      MenuSlug.animais => AnimalsPage(key: chave),
+      MenuSlug.animais =>
+        kIsWeb ? AnimalsWebPage(key: chave) : AnimalsPage(key: chave),
       MenuSlug.movimentacoes => Movimentacoes(key: chave),
-      MenuSlug.manejos => ManejosAnimaisPage(key: chave),
+      MenuSlug.manejos =>
+        kIsWeb ? ManejosWebPage(key: chave) : ManejosAnimaisPage(key: chave),
       MenuSlug.perfil => kIsWeb ? ProfileWebPage(key: chave) : Menu(key: chave),
       _ => ModulePlaceholderPage(
         title: tab.label,
@@ -659,6 +732,8 @@ class _MainNavigationPageState extends State<MainNavigationPage>
       return;
     }
     setState(() {
+      _activeWebMovementSlug = null;
+      _activeWebMovementTitle = null;
       _selectedIndex = index;
       _rememberActiveSlug(tabs[index].slug);
     });
@@ -852,6 +927,7 @@ class _WebSidebar extends StatelessWidget {
     required this.menus,
     required this.tabs,
     required this.currentIndex,
+    required this.activeMovementSlug,
     required this.section,
     required this.onSectionChanged,
     required this.onSelect,
@@ -861,6 +937,7 @@ class _WebSidebar extends StatelessWidget {
   final AppMenusController menus;
   final List<_NavTab> tabs;
   final int currentIndex;
+  final String? activeMovementSlug;
   final _WebSidebarSection section;
   final ValueChanged<_WebSidebarSection> onSectionChanged;
   final ValueChanged<int> onSelect;
@@ -888,7 +965,7 @@ class _WebSidebar extends StatelessWidget {
         _WebNavigationTile(
           item: item,
           label: item.name,
-          selected: index == currentIndex,
+          selected: activeMovementSlug == null && index == currentIndex,
           onTap: () => onSelect(index),
         ),
       );
@@ -904,7 +981,11 @@ class _WebSidebar extends StatelessWidget {
         ? navigation
         : [
             for (final item in movements)
-              _WebMovementGroup(item: item, onOpen: onMovement),
+              _WebMovementGroup(
+                item: item,
+                activeSlug: activeMovementSlug,
+                onOpen: onMovement,
+              ),
           ];
 
     return ColoredBox(
@@ -968,7 +1049,9 @@ class _WebSidebar extends StatelessWidget {
                   child: _WebNavigationTile(
                     item: profile,
                     label: profile.name,
-                    selected: profileIndex == currentIndex,
+                    selected:
+                        activeMovementSlug == null &&
+                        profileIndex == currentIndex,
                     onTap: () {
                       if (section != _WebSidebarSection.navigation) {
                         onSectionChanged(_WebSidebarSection.navigation);
@@ -1152,11 +1235,13 @@ class _WebNavigationTile extends StatelessWidget {
 class _WebMovementGroup extends StatelessWidget {
   const _WebMovementGroup({
     required this.item,
+    required this.activeSlug,
     required this.onOpen,
     this.depth = 0,
   });
 
   final AppMenuEntity item;
+  final String? activeSlug;
   final ValueChanged<AppMenuEntity> onOpen;
   final int depth;
 
@@ -1165,6 +1250,7 @@ class _WebMovementGroup extends StatelessWidget {
     if (item.children.isEmpty) {
       return _WebMovementTile(
         item: item,
+        selected: MenuActionResolver.slugOf(item) == activeSlug,
         depth: depth,
         onTap: () => onOpen(item),
       );
@@ -1215,7 +1301,12 @@ class _WebMovementGroup extends StatelessWidget {
         ),
         children: [
           for (final child in item.children)
-            _WebMovementGroup(item: child, depth: depth + 1, onOpen: onOpen),
+            _WebMovementGroup(
+              item: child,
+              activeSlug: activeSlug,
+              depth: depth + 1,
+              onOpen: onOpen,
+            ),
         ],
       ),
     );
@@ -1225,11 +1316,13 @@ class _WebMovementGroup extends StatelessWidget {
 class _WebMovementTile extends StatelessWidget {
   const _WebMovementTile({
     required this.item,
+    required this.selected,
     required this.onTap,
     this.depth = 0,
   });
 
   final AppMenuEntity item;
+  final bool selected;
   final VoidCallback onTap;
   final int depth;
 
@@ -1238,7 +1331,7 @@ class _WebMovementTile extends StatelessWidget {
     final tile = _WebNavigationTile(
       item: item,
       label: item.name,
-      selected: false,
+      selected: selected,
       onTap: onTap,
     );
     if (depth == 0) {

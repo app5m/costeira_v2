@@ -32,7 +32,17 @@ class ManejoEditarController extends ChangeNotifier {
        _potreiros = potreiros,
        _getInsumos = getInsumos,
        _resolveFarm = resolveFarm {
-    for (final campo in [obs, score, dosagem, responsavel, novoBrinco, motivo, duracao, semen, quantidade]) {
+    for (final campo in [
+      obs,
+      score,
+      dosagem,
+      responsavel,
+      novoBrinco,
+      motivo,
+      duracao,
+      semen,
+      quantidade,
+    ]) {
       campo.addListener(notifyListeners);
     }
   }
@@ -94,20 +104,23 @@ class ManejoEditarController extends ChangeNotifier {
       return false;
     }
     return switch (categoria) {
-      2 || 3 => dosagem.text.trim().isNotEmpty,
-      4 || 5 || 10 || 11 || 14 => tipoId != null,
-      6 => categoriaAnimalId != null && faseId != null && loteId != null,
-      7 => destinoPiquete ? piqueteId != null : loteId != null,
-      8 => loteId != null && (int.tryParse(duracao.text.trim()) ?? 0) > 0,
-      13 => motivo.text.trim().isNotEmpty && loteId != null,
-      _ => true,
-    } &&
+          2 || 3 => dosagem.text.trim().isNotEmpty,
+          4 || 5 || 10 || 11 || 14 => tipoId != null,
+          6 => categoriaAnimalId != null && faseId != null && loteId != null,
+          7 => destinoPiquete ? piqueteId != null : loteId != null,
+          8 => loteId != null && (int.tryParse(duracao.text.trim()) ?? 0) > 0,
+          13 => motivo.text.trim().isNotEmpty && loteId != null,
+          _ => true,
+        } &&
         (categoria != 5 || !trocaBrinco || novoBrinco.text.trim().isNotEmpty) &&
         (categoria != 11 || classificacao != null) &&
         (categoria != 14 || piqueteId != null) &&
         (categoria != 14 ||
             !usarProduto ||
-            (estoqueId != null && (num.tryParse(quantidade.text.trim().replaceAll(',', '.')) ?? 0) >= 1));
+            (estoqueId != null &&
+                (num.tryParse(quantidade.text.trim().replaceAll(',', '.')) ??
+                        0) >=
+                    1));
   }
 
   Future<void> init() async {
@@ -143,7 +156,9 @@ class ManejoEditarController extends ChangeNotifier {
       }
       if (categoria == 14) {
         final user = await SessionStorage.getUserSession();
-        final farmId = user == null ? null : await _resolveFarm(userId: user.id);
+        final farmId = user == null
+            ? null
+            : await _resolveFarm(userId: user.id);
         if (user != null && farmId != null) {
           final lista = await _getInsumos(
             InsumosFilterEntity(appUsersId: user.id, appFazendasId: farmId),
@@ -177,7 +192,11 @@ class ManejoEditarController extends ChangeNotifier {
     if (id == null) {
       return const [];
     }
-    return manejos.where((item) => item.id == id).map((item) => item.tipos).firstOrNull ?? const [];
+    return manejos
+            .where((item) => item.id == id)
+            .map((item) => item.tipos)
+            .firstOrNull ??
+        const [];
   }
 
   void _preencher() {
@@ -195,20 +214,29 @@ class ManejoEditarController extends ChangeNotifier {
         ? _texto(json['duracao_estacao'])
         : _texto(json['duracao_touro']);
     semen.text = _texto(json['semen_utilizado']);
-    quantidade.text = _texto(json['quantidade']);
+    quantidade.text = quantidadeManejoApi(json);
     tipoId = _inteiro(json['app_manejos_tipos_id']) ?? _idMapa(json['tipo']);
-    tipoDosagem = _inteiro(json['tipo_dosagem']);
-    loteId = _inteiro(json['app_animais_lotes_id']) ?? _idMapa(json['lote_destino']) ?? _idMapa(json['lote']);
-    piqueteId = _inteiro(json['app_potreiros_id']) ?? _idMapa(json['potreiro_destino']);
+    tipoDosagem = tipoDosagemApi(json['tipo_dosagem']);
+    loteId =
+        _inteiro(json['app_animais_lotes_id']) ??
+        _idMapa(json['lote_destino']) ??
+        _idMapa(json['lote']);
+    piqueteId =
+        _inteiro(json['app_potreiros_id']) ?? _idMapa(json['potreiro_destino']);
     categoriaAnimalId =
-        _inteiro(json['app_animais_categorias_id']) ?? _idMapa(json['categoria_destino']);
-    faseId = _inteiro(json['app_animais_subcategorias_id']) ??
+        _inteiro(json['app_animais_categorias_id']) ??
+        _idMapa(json['categoria_destino']);
+    faseId =
+        _inteiro(json['app_animais_subcategorias_id']) ??
         _idMapa(json['subcategoria_destino']) ??
         _idMapa(json['fase_destino']);
     racaId = _inteiro(json['ut_bases_raciais_id']);
     classificacao = _inteiro(json['classificacao']);
-    estoqueId = _inteiro(json['app_estoques_insumos_id']) ?? _idMapa(json['estoque']);
-    trocaBrinco = novoBrinco.text.isNotEmpty || _texto(json['motivo_troca_brinco']).isNotEmpty;
+    estoqueId =
+        _inteiro(json['app_estoques_insumos_id']) ?? _idMapa(json['estoque']);
+    trocaBrinco =
+        novoBrinco.text.isNotEmpty ||
+        _texto(json['motivo_troca_brinco']).isNotEmpty;
     usarProduto = estoqueId != null;
     destinoPiquete = piqueteId != null;
   }
@@ -371,7 +399,18 @@ class ManejoEditarController extends ChangeNotifier {
 
   @override
   void dispose() {
-    for (final campo in [data, obs, score, dosagem, responsavel, novoBrinco, motivo, duracao, semen, quantidade]) {
+    for (final campo in [
+      data,
+      obs,
+      score,
+      dosagem,
+      responsavel,
+      novoBrinco,
+      motivo,
+      duracao,
+      semen,
+      quantidade,
+    ]) {
       campo.removeListener(notifyListeners);
       campo.dispose();
     }
@@ -392,7 +431,8 @@ int? _inteiro(dynamic valor) {
   if (texto.isEmpty) {
     return null;
   }
-  return int.tryParse(texto) ?? num.tryParse(texto.replaceAll(',', '.'))?.toInt();
+  return int.tryParse(texto) ??
+      num.tryParse(texto.replaceAll(',', '.'))?.toInt();
 }
 
 int? _idMapa(dynamic valor) {

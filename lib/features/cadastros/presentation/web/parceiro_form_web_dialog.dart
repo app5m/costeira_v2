@@ -1,4 +1,5 @@
 import 'package:costeira/core/components/app_form_field.dart';
+import 'package:costeira/core/components/web_dialog_frame.dart';
 import 'package:costeira/core/config/ws_constantes.dart';
 import 'package:costeira/core/services/places_service.dart';
 import 'package:costeira/features/cadastros/domain/entities/parceiro_entity.dart';
@@ -28,7 +29,6 @@ class ParceiroFormWebDialog extends StatefulWidget {
 class _ParceiroFormWebDialogState extends State<ParceiroFormWebDialog> {
   late final ParceiroFormPageController _controller;
   late final PlacesService _placesService;
-  final ScrollController _scrollController = ScrollController();
   String? _submitError;
 
   @override
@@ -52,7 +52,6 @@ class _ParceiroFormWebDialogState extends State<ParceiroFormWebDialog> {
   void dispose() {
     _controller.removeListener(_refresh);
     _controller.dispose();
-    _scrollController.dispose();
     super.dispose();
   }
 
@@ -70,69 +69,48 @@ class _ParceiroFormWebDialogState extends State<ParceiroFormWebDialog> {
 
   @override
   Widget build(BuildContext context) {
-    final viewport = MediaQuery.sizeOf(context);
-    final narrow = viewport.width < 620;
-    final height = (viewport.height - 48).clamp(320.0, 760.0);
+    final narrow = MediaQuery.sizeOf(context).width < 620;
     final action = _controller.isEditing ? 'Editar' : 'Adicionar';
     final subject = _controller.kind.singular.toLowerCase();
 
-    return Dialog(
-      backgroundColor: Colors.white,
-      insetPadding: EdgeInsets.all(narrow ? 8 : 24),
-      clipBehavior: Clip.antiAlias,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
-      child: SizedBox(
-        width: 700,
-        height: height,
-        child: Column(
-          children: [
-            _DialogHeader(
-              title: '$action $subject',
-              canClose: !_controller.isLoading,
-            ),
-            const Divider(height: 1, color: Color(0xFFE7E4DD)),
-            Expanded(
-              child: Scrollbar(
-                controller: _scrollController,
-                thumbVisibility: true,
-                child: SingleChildScrollView(
-                  controller: _scrollController,
-                  padding: EdgeInsets.fromLTRB(
-                    narrow ? 16 : 28,
-                    22,
-                    narrow ? 24 : 40,
-                    28,
-                  ),
-                  child: _form(),
-                ),
-              ),
-            ),
-            const Divider(height: 1, color: Color(0xFFE7E4DD)),
-            if (_submitError != null)
-              Padding(
-                padding: EdgeInsets.fromLTRB(
-                  narrow ? 16 : 28,
-                  12,
-                  narrow ? 16 : 28,
-                  0,
-                ),
-                child: Align(
-                  alignment: Alignment.centerLeft,
-                  child: Text(
-                    _submitError!,
-                    style: const TextStyle(
-                      fontFamily: 'Montserrat',
-                      fontSize: 12,
-                      fontWeight: FontWeight.w600,
-                      color: Color(0xFFC4473A),
-                    ),
-                  ),
-                ),
-              ),
-            _footer(narrow),
-          ],
-        ),
+    return WebDialogFrame(
+      title: '$action $subject',
+      width: 700,
+      maxHeight: 760,
+      bodyPadding: EdgeInsets.fromLTRB(
+        narrow ? 16 : 28,
+        22,
+        narrow ? 24 : 40,
+        8,
       ),
+      footer: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          if (_submitError != null)
+            Padding(
+              padding: EdgeInsets.fromLTRB(
+                narrow ? 16 : 28,
+                12,
+                narrow ? 16 : 28,
+                0,
+              ),
+              child: Align(
+                alignment: Alignment.centerLeft,
+                child: Text(
+                  _submitError!,
+                  style: const TextStyle(
+                    fontFamily: 'Montserrat',
+                    fontSize: 12,
+                    fontWeight: FontWeight.w600,
+                    color: Color(0xFFC4473A),
+                  ),
+                ),
+              ),
+            ),
+          _footer(narrow),
+        ],
+      ),
+      child: _form(),
     );
   }
 
@@ -268,7 +246,12 @@ class _ParceiroFormWebDialogState extends State<ParceiroFormWebDialog> {
 
   Widget _footer(bool narrow) {
     return Padding(
-      padding: EdgeInsets.all(narrow ? 16 : 20),
+      padding: EdgeInsets.fromLTRB(
+        narrow ? 16 : 20,
+        narrow ? 16 : 16,
+        narrow ? 16 : 20,
+        24,
+      ),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.end,
         children: [
@@ -295,45 +278,6 @@ class _ParceiroFormWebDialogState extends State<ParceiroFormWebDialog> {
             child: Text(_controller.isLoading ? 'Salvando...' : 'Salvar'),
           ),
         ],
-      ),
-    );
-  }
-}
-
-class _DialogHeader extends StatelessWidget {
-  const _DialogHeader({required this.title, required this.canClose});
-
-  final String title;
-  final bool canClose;
-
-  @override
-  Widget build(BuildContext context) {
-    return SizedBox(
-      height: 66,
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 22),
-        child: Row(
-          children: [
-            Expanded(
-              child: Text(
-                title,
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-                style: const TextStyle(
-                  fontFamily: 'Montserrat',
-                  fontSize: 19,
-                  fontWeight: FontWeight.w700,
-                  color: Color(0xFF252525),
-                ),
-              ),
-            ),
-            IconButton(
-              tooltip: 'Fechar',
-              onPressed: canClose ? () => Navigator.of(context).pop() : null,
-              icon: const Icon(Icons.close_rounded),
-            ),
-          ],
-        ),
       ),
     );
   }

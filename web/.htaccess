@@ -1,0 +1,11 @@
+DirectoryIndex index.html
+
+<IfModule mod_rewrite.c>
+  RewriteEngine On
+  RewriteBase /v2/site/
+
+  RewriteCond %{REQUEST_FILENAME} !-f
+  RewriteCond %{REQUEST_FILENAME} !-d
+  RewriteCond %{REQUEST_URI} !\.(js|mjs|css|json|map|png|jpg|jpeg|gif|svg|ico|webp|wasm|bin|ttf|otf|woff|woff2)$ [NC]
+  RewriteRule . /v2/site/index.html [L]
+</IfModule>

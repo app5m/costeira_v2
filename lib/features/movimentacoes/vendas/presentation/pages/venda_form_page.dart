@@ -195,6 +195,9 @@ class _VendaFormPageState extends State<VendaFormPage> {
                           title: 'Comprador',
                           complete: _pageController.isCompradorComplete,
                           child: Column(
+                            crossAxisAlignment: kIsWeb
+                                ? CrossAxisAlignment.start
+                                : CrossAxisAlignment.center,
                             children: [
                               _buildTextField(
                                 controller: _pageController.dataController,
@@ -233,6 +236,9 @@ class _VendaFormPageState extends State<VendaFormPage> {
                             initiallyExpanded: false,
                             complete: _pageController.isGrupoComplete,
                             child: Column(
+                              crossAxisAlignment: kIsWeb
+                                  ? CrossAxisAlignment.start
+                                  : CrossAxisAlignment.center,
                               children: [
                                 _buildCategory(),
                                 _buildFase(),
@@ -248,6 +254,9 @@ class _VendaFormPageState extends State<VendaFormPage> {
                             initiallyExpanded: true,
                             complete: _pageController.isEscopoComplete,
                             child: Column(
+                              crossAxisAlignment: kIsWeb
+                                  ? CrossAxisAlignment.start
+                                  : CrossAxisAlignment.center,
                               children: [
                                 PotreiroSelectorField(
                                   label: 'Piquete',
@@ -287,6 +296,9 @@ class _VendaFormPageState extends State<VendaFormPage> {
                           initiallyExpanded: false,
                           complete: _pageController.isValoresComplete,
                           child: Column(
+                            crossAxisAlignment: kIsWeb
+                                ? CrossAxisAlignment.start
+                                : CrossAxisAlignment.center,
                             children: [
                               if (!_pageController.isEdit) _buildTipoValor(),
                               _buildTextField(

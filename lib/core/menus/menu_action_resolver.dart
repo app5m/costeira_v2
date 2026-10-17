@@ -13,6 +13,7 @@ import 'package:costeira/features/movimentacoes/abortos/abortos.dart';
 import 'package:costeira/features/movimentacoes/abortos/presentation/pages/add_aborto.dart';
 import 'package:costeira/features/movimentacoes/compras/presentation/pages/add_compra.dart';
 import 'package:costeira/features/movimentacoes/compras/presentation/pages/compras.dart';
+import 'package:costeira/features/movimentacoes/compras/presentation/web/compras_web_page.dart';
 import 'package:costeira/features/movimentacoes/consumo/consumo.dart';
 import 'package:costeira/features/movimentacoes/consumo/presentation/pages/add_consumo.dart';
 import 'package:costeira/features/movimentacoes/mortes/presentation/pages/add_morte.dart';
@@ -28,8 +29,10 @@ import 'package:costeira/features/movimentacoes/troca_categoria/presentation/pag
 import 'package:costeira/features/movimentacoes/troca_categoria/presentation/pages/trocas.dart';
 import 'package:costeira/features/movimentacoes/vendas/presentation/pages/add_venda.dart';
 import 'package:costeira/features/movimentacoes/vendas/presentation/pages/vendas.dart';
+import 'package:costeira/features/movimentacoes/vendas/presentation/web/vendas_web_page.dart';
 import 'package:costeira/features/pastagem_nutricao_suplemento/presentation/pages/suplementacao/add_suplemento.dart';
 import 'package:costeira/features/sanitarios/presentation/pages/add_planejamento.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_modular/flutter_modular.dart';
 
@@ -124,8 +127,9 @@ class MenuActionResolver {
 
   static Widget Function()? movimentacoesPage(String slug) {
     return switch (slug) {
-      MenuSlug.compras => () => const Compras(),
-      MenuSlug.vendas => () => const Vendas(),
+      MenuSlug.compras =>
+        () => kIsWeb ? const ComprasWebPage() : const Compras(),
+      MenuSlug.vendas => () => kIsWeb ? const VendasWebPage() : const Vendas(),
       MenuSlug.mortes => () => const Mortes(),
       MenuSlug.nascimentos => () => const Nascimentos(),
       MenuSlug.trocasCategoria => () => const TrocaCategoria(),
@@ -143,8 +147,9 @@ class MenuActionResolver {
       MenuSlug.movimentacoes => () => const Movimentacoes(),
       MenuSlug.compra => () => const AddCompra(),
       MenuSlug.nascimento || 'parto' => () => const AddNascimento(),
-      MenuSlug.transferenciaRecebida => () =>
-          const TransferenciasFazendaPage(initialTab: 0),
+      MenuSlug.transferenciaRecebida => () => const TransferenciasFazendaPage(
+        initialTab: 0,
+      ),
       'transferencia_enviada' => () => const AddTransferenciaFazenda(),
       'movimentacao_de_piquete' => () => const AddTransferencia(),
       MenuSlug.venda => () => const AddVenda(),

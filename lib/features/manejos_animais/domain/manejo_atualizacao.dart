@@ -55,6 +55,7 @@ class ManejoEdicaoCampos {
 Map<String, dynamic> montarAtualizacaoManejo(ManejoEdicaoCampos campos) {
   final base = <String, dynamic>{
     'id': campos.id,
+    'id_categoria': campos.categoria,
     'data': campos.data,
   };
   final obs = campos.obs.trim();
@@ -153,6 +154,50 @@ Map<String, dynamic> montarAtualizacaoManejo(ManejoEdicaoCampos campos) {
     },
     _ => base,
   };
+}
+
+String quantidadeManejoApi(Map<String, dynamic> json) {
+  final quantidade = _limpo(json['quantidade']);
+  if (quantidade.isNotEmpty) {
+    return quantidade;
+  }
+  return _limpo(json['dosagem']);
+}
+
+int? tipoDosagemApi(dynamic valor) {
+  final direto = int.tryParse(_limpo(valor));
+  if (direto != null) {
+    return direto;
+  }
+  if (valor is! Map) {
+    return null;
+  }
+  final id = int.tryParse(_limpo(valor['id']));
+  if (id != null) {
+    return id;
+  }
+  final nome = _limpo(valor['nome']).toLowerCase();
+  if (nome.contains('hectare')) {
+    return 3;
+  }
+  if (nome.contains('rea')) {
+    return 4;
+  }
+  if (nome.contains('lote')) {
+    return 2;
+  }
+  if (nome.contains('animal')) {
+    return 1;
+  }
+  return null;
+}
+
+String _limpo(dynamic valor) {
+  final texto = valor?.toString().trim() ?? '';
+  if (texto.isEmpty || texto == 'null') {
+    return '';
+  }
+  return texto;
 }
 
 num _numero(String raw) {
