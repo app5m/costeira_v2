@@ -50,46 +50,47 @@ class PotreiroSelectorField extends StatelessWidget {
           ),
         ),
         const SizedBox(height: 6),
-        InkWell(
+        Material(
+          color: const Color(0xFFEBEBEB),
           borderRadius: BorderRadius.circular(8),
-          onTap: onTap,
-          child: Ink(
-            padding: const EdgeInsets.symmetric(horizontal: 15, vertical: 16),
-            decoration: BoxDecoration(
-              color: const Color(0xFFEBEBEB),
-              borderRadius: BorderRadius.circular(8),
-            ),
-            child: Row(
-              children: [
-                Expanded(
-                  child: Text(
-                    value,
-                    maxLines: 2,
-                    overflow: TextOverflow.ellipsis,
-                    style: TextStyle(
-                      color: value == 'Selecionar potreiro'
-                          ? const Color(0xFF8C8C8C)
-                          : const Color(0xFF313131),
-                      fontSize: 14,
-                      fontFamily: 'Montserrat',
-                      fontWeight: FontWeight.w400,
-                      height: 1.50,
-                      letterSpacing: 0.10,
+          clipBehavior: Clip.antiAlias,
+          child: InkWell(
+            borderRadius: BorderRadius.circular(8),
+            onTap: onTap,
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 15, vertical: 16),
+              child: Row(
+                children: [
+                  Expanded(
+                    child: Text(
+                      value,
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                      style: TextStyle(
+                        color: value == 'Selecionar potreiro'
+                            ? const Color(0xFF8C8C8C)
+                            : const Color(0xFF313131),
+                        fontSize: 14,
+                        fontFamily: 'Montserrat',
+                        fontWeight: FontWeight.w400,
+                        height: 1.50,
+                        letterSpacing: 0.10,
+                      ),
                     ),
                   ),
-                ),
-                const SizedBox(width: 12),
-                isLoading
-                    ? const SizedBox(
-                        width: 18,
-                        height: 18,
-                        child: CircularProgressIndicator(strokeWidth: 2),
-                      )
-                    : const Icon(
-                        Icons.keyboard_arrow_right,
-                        color: Color(0xFF8C8C8C),
-                      ),
-              ],
+                  const SizedBox(width: 12),
+                  isLoading
+                      ? const SizedBox(
+                          width: 18,
+                          height: 18,
+                          child: CircularProgressIndicator(strokeWidth: 2),
+                        )
+                      : const Icon(
+                          Icons.keyboard_arrow_right,
+                          color: Color(0xFF8C8C8C),
+                        ),
+                ],
+              ),
             ),
           ),
         ),
@@ -113,12 +114,14 @@ class PotreiroSelectionSheet extends StatefulWidget {
     required this.initialSelectedPotreiroId,
     this.isLoading = false,
     this.errorMessage,
+    this.embeddedInDialog = false,
   });
 
   final List<PotreiroEntity> potreiros;
   final int? initialSelectedPotreiroId;
   final bool isLoading;
   final String? errorMessage;
+  final bool embeddedInDialog;
 
   @override
   State<PotreiroSelectionSheet> createState() => _PotreiroSelectionSheetState();
@@ -177,27 +180,29 @@ class _PotreiroSelectionSheetState extends State<PotreiroSelectionSheet> {
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Center(
-              child: Container(
-                width: 72,
-                height: 4,
-                decoration: BoxDecoration(
-                  color: const Color(0xFFE2E2E2),
-                  borderRadius: BorderRadius.circular(999),
+            if (!widget.embeddedInDialog) ...[
+              Center(
+                child: Container(
+                  width: 72,
+                  height: 4,
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFE2E2E2),
+                    borderRadius: BorderRadius.circular(999),
+                  ),
                 ),
               ),
-            ),
-            const SizedBox(height: 24),
-            const Text(
-              'Selecionar potreiro',
-              style: TextStyle(
-                color: Color(0xFF313131),
-                fontSize: 20,
-                fontFamily: 'Montserrat',
-                fontWeight: FontWeight.w600,
+              const SizedBox(height: 24),
+              const Text(
+                'Selecionar potreiro',
+                style: TextStyle(
+                  color: Color(0xFF313131),
+                  fontSize: 20,
+                  fontFamily: 'Montserrat',
+                  fontWeight: FontWeight.w600,
+                ),
               ),
-            ),
-            const SizedBox(height: 6),
+              const SizedBox(height: 6),
+            ],
             const Text(
               'Escolha um potreiro já cadastrado ou adicione um novo.',
               style: TextStyle(

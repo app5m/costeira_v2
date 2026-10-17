@@ -16,6 +16,14 @@ class AppSelectOverlay<T> extends StatefulWidget {
     this.value,
     this.placeholder = 'Selecionar',
     this.enabled = true,
+    this.leading,
+    this.selectedPrefix,
+    this.height,
+    this.padding = const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+    this.fieldColor = const Color(0xFFEBEBEB),
+    this.menuColor = const Color(0xFFEBEBEB),
+    this.border,
+    this.borderRadius = 8,
   });
 
   final List<AppSelectOption<T>> options;
@@ -23,6 +31,14 @@ class AppSelectOverlay<T> extends StatefulWidget {
   final ValueChanged<T?> onChanged;
   final String placeholder;
   final bool enabled;
+  final Widget? leading;
+  final String? selectedPrefix;
+  final double? height;
+  final EdgeInsetsGeometry padding;
+  final Color fieldColor;
+  final Color menuColor;
+  final BoxBorder? border;
+  final double borderRadius;
 
   @override
   State<AppSelectOverlay<T>> createState() => _AppSelectOverlayState<T>();
@@ -114,8 +130,8 @@ class _AppSelectOverlayState<T> extends State<AppSelectOverlay<T>> {
                 child: Container(
                   constraints: const BoxConstraints(maxHeight: 260),
                   decoration: BoxDecoration(
-                    color: const Color(0xFFEBEBEB),
-                    borderRadius: BorderRadius.circular(8),
+                    color: widget.menuColor,
+                    borderRadius: BorderRadius.circular(widget.borderRadius),
                     boxShadow: const [
                       BoxShadow(
                         color: Colors.black26,
@@ -139,7 +155,9 @@ class _AppSelectOverlayState<T> extends State<AppSelectOverlay<T>> {
                           widget.onChanged(option.value);
                           _removeOverlay();
                         },
-                        borderRadius: BorderRadius.circular(8),
+                        borderRadius: BorderRadius.circular(
+                          widget.borderRadius,
+                        ),
                         child: Padding(
                           padding: const EdgeInsets.symmetric(
                             horizontal: 16,
@@ -177,7 +195,9 @@ class _AppSelectOverlayState<T> extends State<AppSelectOverlay<T>> {
           (option) => option?.value == widget.value,
           orElse: () => null,
         );
-    final displayText = selectedOption?.label ?? widget.placeholder;
+    final displayText = selectedOption == null
+        ? widget.placeholder
+        : '${widget.selectedPrefix ?? ''}${selectedOption.label}';
     final isPlaceholder = selectedOption == null;
     final isEnabled = widget.enabled && widget.options.isNotEmpty;
 
@@ -189,13 +209,19 @@ class _AppSelectOverlayState<T> extends State<AppSelectOverlay<T>> {
           duration: const Duration(milliseconds: 150),
           opacity: isEnabled ? 1 : 0.65,
           child: Container(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+            height: widget.height,
+            padding: widget.padding,
             decoration: BoxDecoration(
-              color: const Color(0xFFEBEBEB),
-              borderRadius: BorderRadius.circular(8),
+              color: widget.fieldColor,
+              borderRadius: BorderRadius.circular(widget.borderRadius),
+              border: widget.border,
             ),
             child: Row(
               children: [
+                if (widget.leading != null) ...[
+                  widget.leading!,
+                  const SizedBox(width: 8),
+                ],
                 Expanded(
                   child: Text(
                     displayText,

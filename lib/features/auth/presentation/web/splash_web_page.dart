@@ -52,8 +52,11 @@ class _SplashWebPageState extends State<SplashWebPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.white,
-      body: Center(
-        child: Image.asset('images/logosplash.png', width: 312, height: 220),
+      body: const Center(
+        child: SizedBox.square(
+          dimension: 28,
+          child: CircularProgressIndicator(strokeWidth: 2.5),
+        ),
       ),
     );
   }

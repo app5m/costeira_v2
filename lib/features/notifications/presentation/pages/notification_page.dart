@@ -9,7 +9,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_modular/flutter_modular.dart';
 
 class NotificationsPage extends StatefulWidget {
-  const NotificationsPage({super.key});
+  const NotificationsPage({super.key, this.embedded = false});
+
+  final bool embedded;
 
   @override
   State<NotificationsPage> createState() => _NotificationsPageState();
@@ -78,7 +80,9 @@ class _NotificationsPageState extends State<NotificationsPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.white,
-      appBar: PrimarySectionAppBar(context: context, title: 'Notificações'),
+      appBar: widget.embedded
+          ? null
+          : PrimarySectionAppBar(context: context, title: 'Notificações'),
       body: _buildBody(),
     );
   }
@@ -95,9 +99,16 @@ class _NotificationsPageState extends State<NotificationsPage> {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Text(_errorMessage!, textAlign: TextAlign.center),
+              Text(
+                _errorMessage!,
+                textAlign: TextAlign.center,
+                style: const TextStyle(fontFamily: 'Montserrat'),
+              ),
               const SizedBox(height: 16),
-              ElevatedButton(onPressed: _loadNotifications, child: const Text('Tentar novamente')),
+              ElevatedButton(
+                onPressed: _loadNotifications,
+                child: const Text('Tentar novamente'),
+              ),
             ],
           ),
         ),
@@ -105,7 +116,16 @@ class _NotificationsPageState extends State<NotificationsPage> {
     }
 
     if (_notifications.isEmpty) {
-      return const Center(child: Text('Nenhuma notificação encontrada.'));
+      return const Center(
+        child: Text(
+          'Nenhuma notificação encontrada.',
+          style: TextStyle(
+            fontFamily: 'Montserrat',
+            fontWeight: FontWeight.w500,
+            color: Color(0xFF777777),
+          ),
+        ),
+      );
     }
 
     return RefreshIndicator(
@@ -123,7 +143,11 @@ class _NotificationsPageState extends State<NotificationsPage> {
               border: Border.all(color: const Color(0xFFEBEBEB)),
               borderRadius: BorderRadius.circular(12),
               boxShadow: const [
-                BoxShadow(color: Color(0x0A000000), blurRadius: 24, offset: Offset(0, 0)),
+                BoxShadow(
+                  color: Color(0x0A000000),
+                  blurRadius: 24,
+                  offset: Offset(0, 0),
+                ),
               ],
             ),
             child: Column(
@@ -139,6 +163,7 @@ class _NotificationsPageState extends State<NotificationsPage> {
                           color: Color(0xFF22222C),
                           fontSize: 12,
                           fontWeight: FontWeight.w600,
+                          fontFamily: 'Montserrat',
                           height: 1.5,
                         ),
                       ),
@@ -150,6 +175,7 @@ class _NotificationsPageState extends State<NotificationsPage> {
                         color: Color(0xFF525252),
                         fontSize: 12,
                         fontWeight: FontWeight.w400,
+                        fontFamily: 'Montserrat',
                         height: 1.5,
                       ),
                     ),
@@ -162,6 +188,7 @@ class _NotificationsPageState extends State<NotificationsPage> {
                     color: Color(0xFF525252),
                     fontSize: 12,
                     fontWeight: FontWeight.w400,
+                    fontFamily: 'Montserrat',
                     height: 1.5,
                   ),
                 ),

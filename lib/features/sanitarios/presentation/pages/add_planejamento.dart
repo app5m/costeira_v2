@@ -1,6 +1,7 @@
 import 'package:costeira/core/api/api_exception.dart';
 import 'package:costeira/core/components/app_select_overlay.dart';
 import 'package:costeira/core/components/app_snack.dart';
+import 'package:costeira/core/components/adaptive_selection_modal.dart';
 import 'package:costeira/features/sanitarios/domain/entities/sanitario.dart';
 import 'package:costeira/features/sanitarios/presentation/controllers/list_sanitarios_controller.dart';
 import 'package:costeira/features/sanitarios/presentation/controllers/sanitario_form_controller.dart';
@@ -321,20 +322,19 @@ class _AddPlanejamentoState extends State<AddPlanejamento> {
   }
 
   Future<void> _selectCategorias(BuildContext context) async {
-    final selected = await showModalBottomSheet<Set<int>>(
+    final selected = await showAdaptiveSelectionModal<Set<int>>(
       context: context,
-      isScrollControlled: true,
-      backgroundColor: Colors.white,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
-      ),
-      builder: (_) => _MultiSelectSheet<SanitarioCategoriaEntity>(
-        title: 'Selecionar categorias',
-        items: _listController.result.categorias,
-        selectedIds: _categoriaIds,
-        idOf: (item) => item.id,
-        labelOf: (item) => item.nome.trim(),
-      ),
+      title: 'Selecionar categorias',
+      mobileBorderRadius: 16,
+      builder: (embeddedInDialog) =>
+          _MultiSelectSheet<SanitarioCategoriaEntity>(
+            title: 'Selecionar categorias',
+            items: _listController.result.categorias,
+            selectedIds: _categoriaIds,
+            idOf: (item) => item.id,
+            labelOf: (item) => item.nome.trim(),
+            embeddedInDialog: embeddedInDialog,
+          ),
     );
 
     if (selected != null) {
@@ -343,19 +343,17 @@ class _AddPlanejamentoState extends State<AddPlanejamento> {
   }
 
   Future<void> _selectLotes(BuildContext context) async {
-    final selected = await showModalBottomSheet<Set<int>>(
+    final selected = await showAdaptiveSelectionModal<Set<int>>(
       context: context,
-      isScrollControlled: true,
-      backgroundColor: Colors.white,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
-      ),
-      builder: (_) => _MultiSelectSheet<SanitarioLoteEntity>(
+      title: 'Selecionar lotes',
+      mobileBorderRadius: 16,
+      builder: (embeddedInDialog) => _MultiSelectSheet<SanitarioLoteEntity>(
         title: 'Selecionar lotes',
         items: _listController.result.lotes,
         selectedIds: _loteIds,
         idOf: (item) => item.id,
         labelOf: (item) => item.nome.trim(),
+        embeddedInDialog: embeddedInDialog,
       ),
     );
 
@@ -566,40 +564,41 @@ class _TappableFormField extends StatelessWidget {
           children: [
             _Label(label),
             const SizedBox(height: 6),
-            InkWell(
+            Material(
+              color: const Color(0xFFEBEBEB),
               borderRadius: BorderRadius.circular(8),
-              onTap: () {
-                onTap();
-                field.didChange(value);
-              },
-              child: Ink(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 15,
-                  vertical: 16,
-                ),
-                decoration: BoxDecoration(
-                  color: const Color(0xFFEBEBEB),
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                child: Row(
-                  children: [
-                    Expanded(
-                      child: Text(
-                        value,
-                        maxLines: 2,
-                        overflow: TextOverflow.ellipsis,
-                        style: TextStyle(
-                          color: value == placeholder
-                              ? const Color(0xFF8C8C8C)
-                              : const Color(0xFF313131),
-                          fontSize: 14,
-                          fontFamily: 'Montserrat',
-                          fontWeight: FontWeight.w400,
+              clipBehavior: Clip.antiAlias,
+              child: InkWell(
+                borderRadius: BorderRadius.circular(8),
+                onTap: () {
+                  onTap();
+                  field.didChange(value);
+                },
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 15,
+                    vertical: 16,
+                  ),
+                  child: Row(
+                    children: [
+                      Expanded(
+                        child: Text(
+                          value,
+                          maxLines: 2,
+                          overflow: TextOverflow.ellipsis,
+                          style: TextStyle(
+                            color: value == placeholder
+                                ? const Color(0xFF8C8C8C)
+                                : const Color(0xFF313131),
+                            fontSize: 14,
+                            fontFamily: 'Montserrat',
+                            fontWeight: FontWeight.w400,
+                          ),
                         ),
                       ),
-                    ),
-                    Icon(icon, color: const Color(0xFF8C8C8C), size: 20),
-                  ],
+                      Icon(icon, color: const Color(0xFF8C8C8C), size: 20),
+                    ],
+                  ),
                 ),
               ),
             ),
@@ -656,6 +655,7 @@ class _MultiSelectSheet<T> extends StatefulWidget {
     required this.selectedIds,
     required this.idOf,
     required this.labelOf,
+    required this.embeddedInDialog,
   });
 
   final String title;
@@ -663,6 +663,7 @@ class _MultiSelectSheet<T> extends StatefulWidget {
   final Set<int> selectedIds;
   final int Function(T item) idOf;
   final String Function(T item) labelOf;
+  final bool embeddedInDialog;
 
   @override
   State<_MultiSelectSheet<T>> createState() => _MultiSelectSheetState<T>();
@@ -691,27 +692,29 @@ class _MultiSelectSheetState<T> extends State<_MultiSelectSheet<T>> {
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Center(
-              child: Container(
-                width: 72,
-                height: 4,
-                decoration: BoxDecoration(
-                  color: const Color(0xFFE2E2E2),
-                  borderRadius: BorderRadius.circular(999),
+            if (!widget.embeddedInDialog) ...[
+              Center(
+                child: Container(
+                  width: 72,
+                  height: 4,
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFE2E2E2),
+                    borderRadius: BorderRadius.circular(999),
+                  ),
                 ),
               ),
-            ),
-            const SizedBox(height: 24),
-            Text(
-              widget.title,
-              style: const TextStyle(
-                color: Color(0xFF313131),
-                fontSize: 20,
-                fontFamily: 'Montserrat',
-                fontWeight: FontWeight.w600,
+              const SizedBox(height: 24),
+              Text(
+                widget.title,
+                style: const TextStyle(
+                  color: Color(0xFF313131),
+                  fontSize: 20,
+                  fontFamily: 'Montserrat',
+                  fontWeight: FontWeight.w600,
+                ),
               ),
-            ),
-            const SizedBox(height: 20),
+              const SizedBox(height: 20),
+            ],
             Flexible(
               child: widget.items.isEmpty
                   ? const Center(child: Text('Nenhum item encontrado.'))

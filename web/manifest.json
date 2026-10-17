@@ -1,11 +1,11 @@
 {
-    "name": "costeira",
-    "short_name": "costeira",
+    "name": "Costeira",
+    "short_name": "Costeira",
     "start_url": ".",
     "display": "standalone",
-    "background_color": "#0175C2",
-    "theme_color": "#0175C2",
-    "description": "A new Flutter project.",
+    "background_color": "#FFFFFF",
+    "theme_color": "#00823A",
+    "description": "Costeira — desenvolvimento pecuário.",
     "orientation": "portrait-primary",
     "prefer_related_applications": false,
     "icons": [
