@@ -1,4 +1,5 @@
 import 'package:costeira/core/components/app_snack.dart';
+import 'package:costeira/core/components/web_empty_state.dart';
 import 'package:costeira/core/storage/session_storage.dart';
 import 'package:costeira/features/fazendas/domain/entities/fazenda_entity.dart';
 import 'package:costeira/features/fazendas/presentation/page_controllers/fazendas_list_page_controller.dart';
@@ -167,7 +168,14 @@ class _FazendasWebPageState extends State<FazendasWebPage> {
       );
     }
     if (_controller.fazendas.isEmpty) {
-      return _EmptyState(onAdd: () => _openForm());
+      return WebEmptyState(
+        icon: LucideIcons.warehouse,
+        title: 'Nenhuma fazenda cadastrada',
+        description:
+            'Use o botão Adicionar para cadastrar a primeira propriedade.',
+        actionLabel: 'Adicionar',
+        onAction: () => _openForm(),
+      );
     }
     return LayoutBuilder(
       builder: (context, constraints) {
@@ -183,20 +191,7 @@ class _FazendasWebPageState extends State<FazendasWebPage> {
             children: [
               Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const Text(
-                    'Fazendas cadastradas',
-                    style: TextStyle(
-                      fontFamily: 'Montserrat',
-                      fontSize: 12,
-                      fontWeight: FontWeight.w700,
-                      letterSpacing: .25,
-                      color: MyColors.colorPrimary,
-                    ),
-                  ),
-                  const SizedBox(height: 10),
-                  wide ? _table() : _stackedRows(),
-                ],
+                children: [wide ? _table() : _stackedRows()],
               ),
             ],
           ),
@@ -591,63 +586,6 @@ class _CompactValue extends StatelessWidget {
           ),
         ),
       ],
-    );
-  }
-}
-
-class _EmptyState extends StatelessWidget {
-  const _EmptyState({required this.onAdd});
-
-  final VoidCallback onAdd;
-
-  @override
-  Widget build(BuildContext context) {
-    return Center(
-      child: Padding(
-        padding: const EdgeInsets.all(28),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            const Icon(
-              LucideIcons.warehouse,
-              size: 48,
-              color: MyColors.colorPrimary,
-            ),
-            const SizedBox(height: 16),
-            const Text(
-              'Nenhuma fazenda cadastrada',
-              textAlign: TextAlign.center,
-              style: TextStyle(
-                fontFamily: 'Montserrat',
-                fontSize: 16,
-                fontWeight: FontWeight.w700,
-                color: Color(0xFF313131),
-              ),
-            ),
-            const SizedBox(height: 8),
-            const Text(
-              'Use o botão Adicionar para cadastrar a primeira propriedade.',
-              textAlign: TextAlign.center,
-              style: TextStyle(
-                fontFamily: 'Montserrat',
-                fontSize: 13,
-                color: Color(0xFF6B6B6B),
-              ),
-            ),
-            const SizedBox(height: 20),
-            ElevatedButton.icon(
-              onPressed: onAdd,
-              icon: const Icon(Icons.add_rounded, size: 18),
-              label: const Text('Adicionar'),
-              style: ElevatedButton.styleFrom(
-                elevation: 0,
-                backgroundColor: MyColors.colorPrimary,
-                foregroundColor: Colors.white,
-              ),
-            ),
-          ],
-        ),
-      ),
     );
   }
 }

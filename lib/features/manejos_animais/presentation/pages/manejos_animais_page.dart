@@ -393,6 +393,7 @@ class _ManejosAnimaisPageState extends State<ManejosAnimaisPage> {
           title: 'Excluir manejo',
           width: 480,
           maxHeight: 340,
+          bodyPadding: const EdgeInsets.fromLTRB(24, 8, 24, 24),
           child: _deleteConfirmationContent(showTitle: false),
         ),
       );

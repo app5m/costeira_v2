@@ -7,10 +7,12 @@ import 'package:costeira/core/menus/menu_action_resolver.dart';
 import 'package:costeira/core/menus/menu_icon.dart';
 import 'package:costeira/core/menus/menu_slug.dart';
 import 'package:costeira/core/offline/cache/form_dependencies_cache_service.dart';
+import 'package:costeira/core/storage/sub_user_payload.dart';
 import 'package:costeira/core/storage/session_storage.dart';
 import 'package:costeira/features/dashboard/domain/entities/dashboard_entity.dart';
 import 'package:costeira/features/dashboard/domain/entities/dashboard_filter_entity.dart';
 import 'package:costeira/features/dashboard/presentation/controllers/get_dashboard_controller.dart';
+import 'package:costeira/core/components/web_dialog_frame.dart';
 import 'package:costeira/features/dashboard/presentation/web/dashboard_action_web_dialog.dart';
 import 'package:costeira/features/dashboard/presentation/widgets/dashboard_charts.dart';
 import 'package:costeira/features/fazendas/domain/entities/fazenda_entity.dart';
@@ -248,15 +250,17 @@ class _DashboardWebPageState extends State<DashboardWebPage> {
       }
 
       final result = await Modular.get<GetFazendasUsecase>()(
-        FazendaFilterEntity(appUsersId: user.id),
+        FazendaFilterEntity(appUsersId: sessionAccountUserId(user.id)),
       );
       final saved = await SessionStorage.getSelectedFarmId();
       final match = result.data.where((farm) => farm.id == saved);
-      final selectedId = match.isNotEmpty
-          ? match.first.id
-          : (result.data.isEmpty ? null : result.data.first.id);
+      // A API devolve a fazenda principal da conta na primeira posição.
+      final fallbackId = result.data.isEmpty ? null : result.data.first.id;
+      final selectedId = match.isNotEmpty ? match.first.id : fallbackId;
       if (selectedId != null) {
         await SessionStorage.saveSelectedFarmId(selectedId);
+      } else {
+        await SessionStorage.clearSelectedFarmId();
       }
       await _loadAgriculturalYears();
       if (!mounted) return;
@@ -279,13 +283,20 @@ class _DashboardWebPageState extends State<DashboardWebPage> {
     try {
       final user = await SessionStorage.getUserSession();
       final result = await Modular.get<GetListUsecase>()(
-        GetListParamsEntity(sexo: 1, userId: user?.id),
+        GetListParamsEntity(
+          sexo: 1,
+          userId: user == null ? null : sessionAccountUserId(user.id),
+        ),
       );
       if (result.anosAgricolas.isEmpty) return;
       _years = result.anosAgricolas;
-      _year =
-          AgriculturalYearRange.containingIn(_years, DateTime.now()) ??
-          _years.first;
+      final savedLabel = await SessionStorage.getWebAgriculturalYearLabel();
+      final saved = _years.where((item) => item.label == savedLabel);
+      _year = saved.isNotEmpty
+          ? saved.first
+          : AgriculturalYearRange.containingIn(_years, DateTime.now()) ??
+                _years.first;
+      await SessionStorage.saveWebAgriculturalYearLabel(_year.label);
     } catch (_) {}
   }
 
@@ -356,7 +367,13 @@ class _DashboardWebPageState extends State<DashboardWebPage> {
       _customEnd = null;
       _year = selected.first;
     });
+    await SessionStorage.saveWebAgriculturalYearLabel(_year.label);
     _publishToolbar();
+    final onWebContextChanged = widget.onWebContextChanged;
+    if (onWebContextChanged != null) {
+      await onWebContextChanged();
+      return;
+    }
     await _loadDashboard();
   }
 
@@ -405,6 +422,9 @@ class _DashboardWebPageState extends State<DashboardWebPage> {
         barrierDismissible: false,
         builder: (_) => DashboardActionWebDialog(
           title: _webDialogTitle(slug, item.name),
+          bodyPadding: slug == MenuSlug.manejoAnimal
+              ? const EdgeInsets.only(bottom: 20)
+              : EdgeInsets.zero,
           child: page(),
         ),
       );
@@ -1226,89 +1246,57 @@ class _DashboardActionsDialog extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Dialog(
-      backgroundColor: Colors.white,
-      insetPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 28),
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-      child: ConstrainedBox(
-        constraints: const BoxConstraints(maxWidth: 680, maxHeight: 680),
-        child: Padding(
-          padding: const EdgeInsets.fromLTRB(24, 22, 24, 18),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Row(
-                children: [
-                  const _IconBox(icon: LucideIcons.layoutGrid),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          title,
-                          style: const TextStyle(
-                            fontFamily: 'Montserrat',
-                            fontSize: 18,
-                            fontWeight: FontWeight.w700,
-                            color: Color(0xFF1F3D2A),
-                          ),
-                        ),
-                        SizedBox(height: 3),
-                        if ((description ?? '').trim().isNotEmpty)
-                          Text(
-                            description!.trim(),
-                            maxLines: 2,
-                            overflow: TextOverflow.ellipsis,
-                            style: const TextStyle(
-                              fontFamily: 'Montserrat',
-                              fontSize: 12,
-                              fontWeight: FontWeight.w500,
-                              color: Color(0xFF7A7A7A),
-                            ),
-                          ),
-                      ],
-                    ),
-                  ),
-                  IconButton(
-                    onPressed: () => Navigator.pop(context),
-                    icon: const Icon(Icons.close_rounded),
-                  ),
-                ],
+    return WebDialogFrame(
+      title: title,
+      width: 680,
+      maxHeight: 680,
+      scrollableBody: false,
+      bodyPadding: const EdgeInsets.fromLTRB(24, 8, 24, 24),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          if ((description ?? '').trim().isNotEmpty) ...[
+            Text(
+              description!.trim(),
+              style: const TextStyle(
+                fontFamily: 'Montserrat',
+                fontSize: 12,
+                fontWeight: FontWeight.w500,
+                color: Color(0xFF7A7A7A),
               ),
-              const SizedBox(height: 18),
-              if (items.isEmpty)
-                const Padding(
-                  padding: EdgeInsets.symmetric(vertical: 32),
-                  child: Center(
-                    child: Text(
-                      'Nenhuma ação disponível.',
-                      style: TextStyle(
-                        fontFamily: 'Montserrat',
-                        color: Color(0xFF8A8A8A),
-                      ),
-                    ),
-                  ),
-                )
-              else
-                Flexible(
-                  child: ListView(
-                    shrinkWrap: true,
-                    children: [
-                      for (var index = 0; index < items.length; index++) ...[
-                        if (index > 0) const SizedBox(height: 8),
-                        _DashboardActionTile(
-                          item: items[index],
-                          onOpen: onOpen,
-                        ),
-                      ],
-                    ],
+            ),
+            const SizedBox(height: 14),
+          ],
+          if (items.isEmpty)
+            const Padding(
+              padding: EdgeInsets.symmetric(vertical: 32),
+              child: Center(
+                child: Text(
+                  'Nenhuma ação disponível.',
+                  style: TextStyle(
+                    fontFamily: 'Montserrat',
+                    color: Color(0xFF8A8A8A),
                   ),
                 ),
-            ],
-          ),
-        ),
+              ),
+            )
+          else
+            Flexible(
+              child: ListView(
+                shrinkWrap: true,
+                children: [
+                  for (var index = 0; index < items.length; index++) ...[
+                    if (index > 0) const SizedBox(height: 8),
+                    _DashboardActionTile(
+                      item: items[index],
+                      onOpen: onOpen,
+                    ),
+                  ],
+                ],
+              ),
+            ),
+        ],
       ),
     );
   }

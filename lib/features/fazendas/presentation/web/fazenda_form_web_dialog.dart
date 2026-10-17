@@ -1,4 +1,5 @@
 import 'package:costeira/core/components/app_form_field.dart';
+import 'package:costeira/core/components/web_dialog_frame.dart';
 import 'package:costeira/features/fazendas/domain/entities/fazenda_entity.dart';
 import 'package:costeira/features/fazendas/presentation/page_controllers/fazenda_form_page_controller.dart';
 import 'package:costeira/theme/colors.dart';
@@ -16,7 +17,6 @@ class FazendaFormWebDialog extends StatefulWidget {
 
 class _FazendaFormWebDialogState extends State<FazendaFormWebDialog> {
   late final FazendaFormPageController _controller;
-  final ScrollController _scrollController = ScrollController();
   String? _submitError;
 
   @override
@@ -35,7 +35,6 @@ class _FazendaFormWebDialogState extends State<FazendaFormWebDialog> {
   void dispose() {
     _controller.removeListener(_refresh);
     _controller.dispose();
-    _scrollController.dispose();
     super.dispose();
   }
 
@@ -53,99 +52,51 @@ class _FazendaFormWebDialogState extends State<FazendaFormWebDialog> {
 
   @override
   Widget build(BuildContext context) {
-    final viewport = MediaQuery.sizeOf(context);
-    final availableHeight = (viewport.height - 48).clamp(320.0, 760.0);
-    final narrow = viewport.width < 620;
+    final narrow = MediaQuery.sizeOf(context).width < 620;
 
-    return Dialog(
-      backgroundColor: Colors.white,
-      insetPadding: EdgeInsets.all(narrow ? 12 : 24),
-      clipBehavior: Clip.antiAlias,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
-      child: SizedBox(
-        width: 700,
-        height: availableHeight,
-        child: Column(
-          children: [
-            _header(),
-            const Divider(height: 1, color: Color(0xFFE7E4DD)),
-            Expanded(
-              child: _controller.isLoadingProfile
-                  ? const Center(child: CircularProgressIndicator())
-                  : Scrollbar(
-                      controller: _scrollController,
-                      thumbVisibility: true,
-                      child: SingleChildScrollView(
-                        controller: _scrollController,
-                        padding: EdgeInsets.fromLTRB(
-                          narrow ? 18 : 28,
-                          24,
-                          narrow ? 26 : 44,
-                          28,
-                        ),
-                        child: _form(),
-                      ),
-                    ),
-            ),
-            const Divider(height: 1, color: Color(0xFFE7E4DD)),
-            if (_submitError != null)
-              Padding(
-                padding: EdgeInsets.fromLTRB(
-                  narrow ? 18 : 28,
-                  12,
-                  narrow ? 18 : 28,
-                  0,
-                ),
-                child: Align(
-                  alignment: Alignment.centerLeft,
-                  child: Text(
-                    _submitError!,
-                    style: const TextStyle(
-                      fontFamily: 'Montserrat',
-                      fontSize: 12,
-                      fontWeight: FontWeight.w600,
-                      color: Color(0xFFC4473A),
-                    ),
+    return WebDialogFrame(
+      title: _controller.isEditing ? 'Editar fazenda' : 'Adicionar fazenda',
+      width: 700,
+      maxHeight: 760,
+      bodyPadding: EdgeInsets.fromLTRB(
+        narrow ? 18 : 28,
+        24,
+        narrow ? 26 : 44,
+        8,
+      ),
+      footer: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          if (_submitError != null)
+            Padding(
+              padding: EdgeInsets.fromLTRB(
+                narrow ? 18 : 28,
+                12,
+                narrow ? 18 : 28,
+                0,
+              ),
+              child: Align(
+                alignment: Alignment.centerLeft,
+                child: Text(
+                  _submitError!,
+                  style: const TextStyle(
+                    fontFamily: 'Montserrat',
+                    fontSize: 12,
+                    fontWeight: FontWeight.w600,
+                    color: Color(0xFFC4473A),
                   ),
                 ),
               ),
-            _footer(narrow),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _header() {
-    return SizedBox(
-      height: 66,
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 22),
-        child: Row(
-          children: [
-            Expanded(
-              child: Text(
-                _controller.isEditing ? 'Editar fazenda' : 'Adicionar fazenda',
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-                style: const TextStyle(
-                  fontFamily: 'Montserrat',
-                  fontSize: 19,
-                  fontWeight: FontWeight.w700,
-                  color: Color(0xFF252525),
-                ),
-              ),
             ),
-            IconButton(
-              tooltip: 'Fechar',
-              onPressed: _controller.isLoading || _controller.isLoadingProfile
-                  ? null
-                  : () => Navigator.of(context).pop(),
-              icon: const Icon(Icons.close_rounded),
-            ),
-          ],
-        ),
+          _footer(narrow),
+        ],
       ),
+      child: _controller.isLoadingProfile
+          ? const Padding(
+              padding: EdgeInsets.symmetric(vertical: 48),
+              child: Center(child: CircularProgressIndicator()),
+            )
+          : _form(),
     );
   }
 
@@ -293,7 +244,7 @@ class _FazendaFormWebDialogState extends State<FazendaFormWebDialog> {
 
   Widget _footer(bool narrow) {
     return Padding(
-      padding: EdgeInsets.fromLTRB(narrow ? 18 : 28, 14, narrow ? 18 : 28, 18),
+      padding: EdgeInsets.fromLTRB(narrow ? 18 : 28, 14, narrow ? 18 : 28, 24),
       child: Row(
         children: [
           Expanded(

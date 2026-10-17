@@ -1,5 +1,6 @@
 import 'package:costeira/core/api/api_exception.dart';
 import 'package:costeira/core/storage/session_storage.dart';
+import 'package:costeira/core/storage/sub_user_payload.dart';
 import 'package:costeira/core/utils/app_logger.dart';
 import 'package:costeira/features/fazendas/domain/entities/fazenda_entity.dart';
 import 'package:costeira/features/fazendas/domain/entities/fazenda_filter_entity.dart';
@@ -31,7 +32,9 @@ class ListFazendasController extends ChangeNotifier {
         throw ApiException('Usuario nao autenticado.');
       }
 
-      _currentFilter = FazendaFilterEntity(appUsersId: user.id);
+      _currentFilter = FazendaFilterEntity(
+        appUsersId: kIsWeb ? sessionAccountUserId(user.id) : user.id,
+      );
       final result = await _getFazendasUsecase(_currentFilter!);
       _fazendas = result.data;
     } on ApiException catch (error) {

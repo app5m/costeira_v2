@@ -12,7 +12,14 @@ Future<T?> showAdaptiveSelectionModal<T>({
     return showDialog<T>(
       context: context,
       barrierDismissible: false,
-      builder: (_) => WebDialogFrame(title: title, child: builder(true)),
+      builder: (_) => WebDialogFrame(
+        title: title,
+        width: 560,
+        maxHeight: 760,
+        sizeMode: WebDialogSizeMode.fitContent,
+        scrollableBody: false,
+        child: builder(true),
+      ),
     );
   }
   return showModalBottomSheet<T>(
