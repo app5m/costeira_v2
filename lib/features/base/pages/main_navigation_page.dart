@@ -30,6 +30,9 @@ import 'package:costeira/features/movimentacoes/compras/presentation/web/compras
 import 'package:costeira/features/movimentacoes/vendas/presentation/web/vendas_web_page.dart';
 import 'package:costeira/features/movimentacoes/movimentacoes.dart';
 import 'package:costeira/features/notifications/presentation/pages/notification_page.dart';
+import 'package:costeira/features/insumos/presentation/web/estoque_insumos_web_page.dart';
+import 'package:costeira/features/potreiros/presentation/web/potreiros_web_page.dart';
+import 'package:costeira/features/tasks/presentation/web/tasks_web_page.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:lucide_icons/lucide_icons.dart';
@@ -62,6 +65,8 @@ class _MainNavigationPageState extends State<MainNavigationPage>
   String? _activeSlug;
   String? _activeWebMovementSlug;
   String? _activeWebMovementTitle;
+  String? _activeWebProfileSlug;
+  String? _activeWebProfileTitle;
   _WebSidebarSection _webSidebarSection = _WebSidebarSection.navigation;
   String _userDisplayName = '';
   DashboardWebToolbarData? _dashboardToolbarData;
@@ -140,6 +145,8 @@ class _MainNavigationPageState extends State<MainNavigationPage>
       _activeSlug = null;
       _activeWebMovementSlug = null;
       _activeWebMovementTitle = null;
+      _activeWebProfileSlug = null;
+      _activeWebProfileTitle = null;
       _webSidebarSection = _WebSidebarSection.navigation;
     });
     if (kIsWeb) {
@@ -436,6 +443,8 @@ class _MainNavigationPageState extends State<MainNavigationPage>
       builder: (context, constraints) {
         final useSidebar = constraints.maxWidth >= 760;
         final showingWebMovement = _activeWebMovementSlug != null;
+        final showingWebProfile = _activeWebProfileSlug != null;
+        final overlayActive = showingWebMovement || showingWebProfile;
         return Scaffold(
           key: _scaffoldKey,
           backgroundColor: current?.slug == MenuSlug.dashboard
@@ -465,19 +474,22 @@ class _MainNavigationPageState extends State<MainNavigationPage>
                 child: Column(
                   children: [
                     _WebTopBar(
-                      title: showingWebMovement
+                      title: showingWebProfile
+                          ? _activeWebProfileTitle ?? 'Tarefas'
+                          : showingWebMovement
                           ? _activeWebMovementTitle ?? 'Movimentações'
                           : current?.slug == MenuSlug.dashboard
                           ? _dashboardGreeting
                           : current?.label ?? 'Costeira',
                       subtitle:
-                          !showingWebMovement &&
+                          !overlayActive &&
                               current?.slug == MenuSlug.dashboard
                           ? 'Bem-vindo ao Costeira'
                           : null,
                       showMenuButton: !useSidebar,
+                      onBack: showingWebProfile ? _closeWebProfileOverlay : null,
                       controls:
-                          !showingWebMovement &&
+                          !overlayActive &&
                               current?.slug == MenuSlug.dashboard &&
                               _dashboardToolbarData != null
                           ? DashboardWebToolbar(data: _dashboardToolbarData!)
@@ -485,33 +497,7 @@ class _MainNavigationPageState extends State<MainNavigationPage>
                       onMenu: () => _scaffoldKey.currentState?.openDrawer(),
                       onNotifications: () => unawaited(_openNotifications()),
                     ),
-                    Expanded(
-                      child: _activeWebMovementSlug == MenuSlug.compras
-                          ? ComprasWebPage(
-                              key: ValueKey(
-                                '$_shellGeracao-${MenuSlug.compras}',
-                              ),
-                            )
-                          : _activeWebMovementSlug == MenuSlug.vendas
-                          ? VendasWebPage(
-                              key: ValueKey(
-                                '$_shellGeracao-${MenuSlug.vendas}',
-                              ),
-                            )
-                          : hasTabs
-                          ? PageView(
-                              controller: _pageController,
-                              physics: const NeverScrollableScrollPhysics(),
-                              onPageChanged: (page) {
-                                setState(() {
-                                  _selectedIndex = page;
-                                  _rememberActiveSlug(tabs[page].slug);
-                                });
-                              },
-                              children: [for (final tab in tabs) _pageFor(tab)],
-                            )
-                          : _emptyNavigationContent(),
-                    ),
+                    Expanded(child: _webContent(tabs, hasTabs: hasTabs)),
                   ],
                 ),
               ),
@@ -565,6 +551,8 @@ class _MainNavigationPageState extends State<MainNavigationPage>
     final slug = MenuActionResolver.slugOf(item);
     if (slug != MenuSlug.compras && slug != MenuSlug.vendas) return false;
     setState(() {
+      _activeWebProfileSlug = null;
+      _activeWebProfileTitle = null;
       _activeWebMovementSlug = slug;
       _activeWebMovementTitle = item.name;
       _webSidebarSection = _WebSidebarSection.movements;
@@ -573,6 +561,116 @@ class _MainNavigationPageState extends State<MainNavigationPage>
       SessionStorage.saveWebSidebarSection(_WebSidebarSection.movements.name),
     );
     return true;
+  }
+
+  void _openWebTasks() {
+    _openWebProfileModule(
+      slug: MenuSlug.tarefas,
+      title: 'Tarefas',
+    );
+  }
+
+  void _openWebPotreiros() {
+    _openWebProfileModule(
+      slug: MenuSlug.potreiros,
+      title: 'Potreiros',
+    );
+  }
+
+  void _openWebEstoque() {
+    _openWebProfileModule(
+      slug: MenuSlug.estoque,
+      title: 'Estoque de Insumos',
+    );
+  }
+
+  void _openWebProfileModule({
+    required String slug,
+    required String title,
+  }) {
+    if (!kIsWeb) return;
+    final tabs = _tabs;
+    final perfilIndex = tabs.indexWhere((tab) => tab.slug == MenuSlug.perfil);
+    setState(() {
+      _activeWebMovementSlug = null;
+      _activeWebMovementTitle = null;
+      _activeWebProfileSlug = slug;
+      _activeWebProfileTitle = title;
+      if (perfilIndex >= 0) {
+        _selectedIndex = perfilIndex;
+        _rememberActiveSlug(MenuSlug.perfil);
+      }
+      _webSidebarSection = _WebSidebarSection.navigation;
+    });
+    if (perfilIndex >= 0) {
+      _syncPageController(perfilIndex);
+    }
+    unawaited(
+      SessionStorage.saveWebSidebarSection(
+        _WebSidebarSection.navigation.name,
+      ),
+    );
+  }
+
+  void _closeWebProfileOverlay() {
+    final perfilIndex = _tabs.indexWhere((tab) => tab.slug == MenuSlug.perfil);
+    final targetIndex = perfilIndex >= 0 ? perfilIndex : _selectedIndex;
+    setState(() {
+      _activeWebProfileSlug = null;
+      _activeWebProfileTitle = null;
+      _selectedIndex = targetIndex;
+      _rememberActiveSlug(
+        perfilIndex >= 0 ? MenuSlug.perfil : (_tabs[targetIndex].slug),
+      );
+    });
+    // PageView fica fora da árvore enquanto o overlay está ativo; ao voltar
+    // remonta na página 0 do controller — sincroniza após o frame.
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      _syncPageController(targetIndex);
+    });
+  }
+
+  Widget _webContent(List<_NavTab> tabs, {required bool hasTabs}) {
+    if (_activeWebProfileSlug == MenuSlug.tarefas) {
+      return TasksWebPage(
+        key: ValueKey('$_shellGeracao-${MenuSlug.tarefas}'),
+      );
+    }
+    if (_activeWebProfileSlug == MenuSlug.potreiros) {
+      return PotreirosWebPage(
+        key: ValueKey('$_shellGeracao-${MenuSlug.potreiros}'),
+      );
+    }
+    if (_activeWebProfileSlug == MenuSlug.estoque) {
+      return EstoqueInsumosWebPage(
+        key: ValueKey('$_shellGeracao-${MenuSlug.estoque}'),
+      );
+    }
+    if (_activeWebMovementSlug == MenuSlug.compras) {
+      return ComprasWebPage(
+        key: ValueKey('$_shellGeracao-${MenuSlug.compras}'),
+      );
+    }
+    if (_activeWebMovementSlug == MenuSlug.vendas) {
+      return VendasWebPage(
+        key: ValueKey('$_shellGeracao-${MenuSlug.vendas}'),
+      );
+    }
+    if (!hasTabs) {
+      return _emptyNavigationContent();
+    }
+    return PageView(
+      controller: _pageController,
+      physics: const NeverScrollableScrollPhysics(),
+      onPageChanged: (page) {
+        setState(() {
+          _selectedIndex = page;
+          _rememberActiveSlug(tabs[page].slug);
+        });
+      },
+      children: [for (final tab in tabs) _pageFor(tab)],
+    );
   }
 
   Widget _emptyNavigationContent() {
@@ -708,7 +806,15 @@ class _MainNavigationPageState extends State<MainNavigationPage>
       MenuSlug.movimentacoes => Movimentacoes(key: chave),
       MenuSlug.manejos =>
         kIsWeb ? ManejosWebPage(key: chave) : ManejosAnimaisPage(key: chave),
-      MenuSlug.perfil => kIsWeb ? ProfileWebPage(key: chave) : Menu(key: chave),
+      MenuSlug.perfil =>
+        kIsWeb
+            ? ProfileWebPage(
+                key: chave,
+                onOpenTasks: _openWebTasks,
+                onOpenPotreiros: _openWebPotreiros,
+                onOpenEstoque: _openWebEstoque,
+              )
+            : Menu(key: chave),
       _ => ModulePlaceholderPage(
         title: tab.label,
         item: tab.item,
@@ -725,6 +831,8 @@ class _MainNavigationPageState extends State<MainNavigationPage>
     setState(() {
       _activeWebMovementSlug = null;
       _activeWebMovementTitle = null;
+      _activeWebProfileSlug = null;
+      _activeWebProfileTitle = null;
       _selectedIndex = index;
       _rememberActiveSlug(tabs[index].slug);
     });
@@ -762,6 +870,7 @@ class _WebTopBar extends StatelessWidget {
     required this.onNotifications,
     this.controls,
     this.subtitle,
+    this.onBack,
   });
 
   final String title;
@@ -770,6 +879,7 @@ class _WebTopBar extends StatelessWidget {
   final VoidCallback onNotifications;
   final Widget? controls;
   final String? subtitle;
+  final VoidCallback? onBack;
 
   @override
   Widget build(BuildContext context) {
@@ -785,6 +895,14 @@ class _WebTopBar extends StatelessWidget {
                 tooltip: 'Abrir menu',
                 onPressed: onMenu,
                 icon: const Icon(Icons.menu_rounded),
+              ),
+              const SizedBox(width: 4),
+            ],
+            if (onBack != null) ...[
+              IconButton(
+                tooltip: 'Voltar',
+                onPressed: onBack,
+                icon: const Icon(Icons.arrow_back_ios_new_rounded, size: 18),
               ),
               const SizedBox(width: 4),
             ],
