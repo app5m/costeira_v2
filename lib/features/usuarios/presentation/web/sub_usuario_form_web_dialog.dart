@@ -1,4 +1,5 @@
 import 'package:costeira/core/components/app_form_field.dart';
+import 'package:costeira/core/components/web_dialog_frame.dart';
 import 'package:costeira/core/menus/menu_icon.dart';
 import 'package:costeira/features/usuarios/domain/entities/sub_usuario_entity.dart';
 import 'package:costeira/features/usuarios/domain/entities/usuario_permissao_entity.dart';
@@ -19,7 +20,6 @@ class SubUsuarioFormWebDialog extends StatefulWidget {
 
 class _SubUsuarioFormWebDialogState extends State<SubUsuarioFormWebDialog> {
   late final SubUsuarioFormPageController _controller;
-  final ScrollController _scrollController = ScrollController();
   String? _submitError;
 
   @override
@@ -38,7 +38,6 @@ class _SubUsuarioFormWebDialogState extends State<SubUsuarioFormWebDialog> {
   void dispose() {
     _controller.removeListener(_refresh);
     _controller.dispose();
-    _scrollController.dispose();
     super.dispose();
   }
 
@@ -56,127 +55,80 @@ class _SubUsuarioFormWebDialogState extends State<SubUsuarioFormWebDialog> {
 
   @override
   Widget build(BuildContext context) {
-    final viewport = MediaQuery.sizeOf(context);
-    final narrow = viewport.width < 620;
-    final height = (viewport.height - 48).clamp(320.0, 760.0);
-    return Dialog(
-      backgroundColor: Colors.white,
-      insetPadding: EdgeInsets.all(narrow ? 8 : 24),
-      clipBehavior: Clip.antiAlias,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
-      child: SizedBox(
-        width: 700,
-        height: height,
-        child: Column(
-          children: [
-            _header(),
-            const Divider(height: 1, color: Color(0xFFE7E4DD)),
-            Expanded(child: _body(narrow)),
-            const Divider(height: 1, color: Color(0xFFE7E4DD)),
-            if (_submitError != null || _controller.errorMessage != null)
-              Padding(
-                padding: EdgeInsets.fromLTRB(
-                  narrow ? 16 : 28,
-                  12,
-                  narrow ? 16 : 28,
-                  0,
-                ),
-                child: Align(
-                  alignment: Alignment.centerLeft,
-                  child: Text(
-                    _submitError ?? _controller.errorMessage!,
-                    style: const TextStyle(
-                      fontFamily: 'Montserrat',
-                      fontSize: 12,
-                      fontWeight: FontWeight.w600,
-                      color: Color(0xFFC4473A),
-                    ),
+    final narrow = MediaQuery.sizeOf(context).width < 620;
+    return WebDialogFrame(
+      title: _controller.isEditing ? 'Editar usuário' : 'Novo usuário',
+      width: 700,
+      maxHeight: 760,
+      bodyPadding: EdgeInsets.fromLTRB(
+        narrow ? 16 : 28,
+        22,
+        narrow ? 24 : 40,
+        8,
+      ),
+      footer: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          if (_submitError != null || _controller.errorMessage != null)
+            Padding(
+              padding: EdgeInsets.fromLTRB(
+                narrow ? 16 : 28,
+                12,
+                narrow ? 16 : 28,
+                0,
+              ),
+              child: Align(
+                alignment: Alignment.centerLeft,
+                child: Text(
+                  _submitError ?? _controller.errorMessage!,
+                  style: const TextStyle(
+                    fontFamily: 'Montserrat',
+                    fontSize: 12,
+                    fontWeight: FontWeight.w600,
+                    color: Color(0xFFC4473A),
                   ),
                 ),
               ),
-            _footer(narrow),
-          ],
-        ),
+            ),
+          _footer(narrow),
+        ],
       ),
+      child: _body(),
     );
   }
 
-  Widget _header() {
-    return SizedBox(
-      height: 66,
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 22),
-        child: Row(
-          children: [
-            Expanded(
-              child: Text(
-                _controller.isEditing ? 'Editar usuário' : 'Novo usuário',
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-                style: const TextStyle(
-                  fontFamily: 'Montserrat',
-                  fontSize: 19,
-                  fontWeight: FontWeight.w700,
-                  color: Color(0xFF252525),
-                ),
-              ),
-            ),
-            IconButton(
-              tooltip: 'Fechar',
-              onPressed: _controller.isLoading
-                  ? null
-                  : () => Navigator.of(context).pop(),
-              icon: const Icon(Icons.close_rounded),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _body(bool narrow) {
+  Widget _body() {
     if (_controller.isLoadingLookups) {
-      return const Center(child: CircularProgressIndicator());
+      return const Padding(
+        padding: EdgeInsets.symmetric(vertical: 48),
+        child: Center(child: CircularProgressIndicator()),
+      );
     }
     if (_controller.lookupError != null) {
-      return const Center(
-        child: Padding(
-          padding: EdgeInsets.all(28),
-          child: Text(
-            'Nao foi possivel carregar fazendas e permissoes.',
-            textAlign: TextAlign.center,
-            style: TextStyle(
-              fontFamily: 'Montserrat',
-              fontSize: 13,
-              fontWeight: FontWeight.w600,
-              color: Color(0xFFC4473A),
-            ),
+      return const Padding(
+        padding: EdgeInsets.all(28),
+        child: Text(
+          'Nao foi possivel carregar fazendas e permissoes.',
+          textAlign: TextAlign.center,
+          style: TextStyle(
+            fontFamily: 'Montserrat',
+            fontSize: 13,
+            fontWeight: FontWeight.w600,
+            color: Color(0xFFC4473A),
           ),
         ),
       );
     }
-    return Scrollbar(
-      controller: _scrollController,
-      thumbVisibility: true,
-      child: SingleChildScrollView(
-        controller: _scrollController,
-        padding: EdgeInsets.fromLTRB(
-          narrow ? 16 : 28,
-          22,
-          narrow ? 24 : 40,
-          28,
-        ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            _Section(title: 'Dados', child: _dados()),
-            const SizedBox(height: 18),
-            _Section(title: 'Fazendas', child: _farms()),
-            const SizedBox(height: 18),
-            _Section(title: 'Permissões', child: _permissions()),
-          ],
-        ),
-      ),
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        _Section(title: 'Dados', child: _dados()),
+        const SizedBox(height: 18),
+        _Section(title: 'Fazendas', child: _farms()),
+        const SizedBox(height: 18),
+        _Section(title: 'Permissões', child: _permissions()),
+      ],
     );
   }
 
@@ -282,7 +234,12 @@ class _SubUsuarioFormWebDialogState extends State<SubUsuarioFormWebDialog> {
 
   Widget _footer(bool narrow) {
     return Padding(
-      padding: EdgeInsets.all(narrow ? 16 : 20),
+      padding: EdgeInsets.fromLTRB(
+        narrow ? 16 : 20,
+        narrow ? 16 : 16,
+        narrow ? 16 : 20,
+        24,
+      ),
       child: Row(
         children: [
           Expanded(

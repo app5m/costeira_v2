@@ -1,15 +1,20 @@
 import 'package:costeira/core/components/app_select_overlay.dart';
 import 'package:costeira/core/components/app_snack.dart';
+import 'package:costeira/core/components/adaptive_selection_modal.dart';
 import 'package:costeira/core/components/form_accordion.dart';
 import 'package:costeira/core/input_formatters/brazilian_currency_input_formatter.dart';
 import 'package:costeira/core/input_formatters/cpf_cnpj_input_formatter.dart';
 import 'package:costeira/core/input_formatters/fixed_two_decimal_input_formatter.dart';
+import 'package:costeira/core/storage/session_storage.dart';
 import 'package:costeira/features/animals/presentation/widgets/animal_lot_selector.dart';
+import 'package:costeira/features/animals/presentation/web/animal_lot_add_web_dialog.dart';
 import 'package:costeira/features/fazendas/domain/entities/fazenda_entity.dart';
 import 'package:costeira/features/movimentacoes/vendas/domain/entities/venda_entity.dart';
 import 'package:costeira/features/movimentacoes/vendas/presentation/page_controllers/venda_form_page_controller.dart';
 import 'package:costeira/features/potreiros/presentation/widgets/potreiro_selector.dart';
+import 'package:costeira/features/potreiros/presentation/web/potreiro_add_web_dialog.dart';
 import 'package:costeira/theme/colors.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_modular/flutter_modular.dart';
@@ -34,7 +39,18 @@ class _VendaFormPageState extends State<VendaFormPage> {
   @override
   void initState() {
     super.initState();
-    _pageController.init(venda: widget.venda);
+    _initialize();
+  }
+
+  Future<void> _initialize() async {
+    final preferredFarmId = kIsWeb && widget.venda == null
+        ? await SessionStorage.getSelectedFarmId()
+        : null;
+    if (!mounted) return;
+    await _pageController.init(
+      venda: widget.venda,
+      preferredFarmId: preferredFarmId,
+    );
   }
 
   @override
@@ -71,24 +87,26 @@ class _VendaFormPageState extends State<VendaFormPage> {
   }
 
   Future<void> _openPotreiroSelection() async {
-    final result = await showModalBottomSheet<PotreiroSelectionResult>(
+    final result = await showAdaptiveSelectionModal<PotreiroSelectionResult>(
       context: context,
-      isScrollControlled: true,
-      backgroundColor: Colors.white,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
-      ),
-      builder: (_) => SafeArea(
-        top: false,
-        child: PotreiroSelectionSheet(
-          potreiros: _pageController.potreiros,
-          initialSelectedPotreiroId: _pageController.selectedPotreiroId,
-          isLoading: _pageController.isLoading,
-          errorMessage: _pageController.errorMessage,
-        ),
+      title: 'Selecionar potreiro',
+      builder: (embeddedInDialog) => PotreiroSelectionSheet(
+        potreiros: _pageController.potreiros,
+        initialSelectedPotreiroId: _pageController.selectedPotreiroId,
+        isLoading: _pageController.isLoading,
+        errorMessage: _pageController.errorMessage,
+        embeddedInDialog: embeddedInDialog,
       ),
     );
-    if (!mounted || result == null || result.shouldAddPotreiro) {
+    if (!mounted || result == null) {
+      return;
+    }
+    if (result.shouldAddPotreiro) {
+      if (!kIsWeb) return;
+      final created = await openPotreiroAdd(context);
+      if (!mounted || created?['success'] != true) return;
+      await _pageController.reloadPotreiros();
+      if (mounted) await _openPotreiroSelection();
       return;
     }
     _pageController.onPotreiroChanged(result.selectedPotreiroId);
@@ -104,24 +122,26 @@ class _VendaFormPageState extends State<VendaFormPage> {
       return;
     }
 
-    final result = await showModalBottomSheet<AnimalLotSelectionResult>(
+    final result = await showAdaptiveSelectionModal<AnimalLotSelectionResult>(
       context: context,
-      isScrollControlled: true,
-      backgroundColor: Colors.white,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
-      ),
-      builder: (_) => SafeArea(
-        top: false,
-        child: AnimalLotSelectionSheet(
-          lots: _pageController.lots,
-          initialSelectedLotId: _pageController.selectedLotId,
-          isLoading: _pageController.isLoading,
-          errorMessage: _pageController.errorMessage,
-        ),
+      title: 'Selecionar lote',
+      builder: (embeddedInDialog) => AnimalLotSelectionSheet(
+        lots: _pageController.lots,
+        initialSelectedLotId: _pageController.selectedLotId,
+        isLoading: _pageController.isLoading,
+        errorMessage: _pageController.errorMessage,
+        embeddedInDialog: embeddedInDialog,
       ),
     );
-    if (!mounted || result == null || result.shouldAddLot) {
+    if (!mounted || result == null) {
+      return;
+    }
+    if (result.shouldAddLot) {
+      if (!kIsWeb) return;
+      final created = await openAnimalLotAdd(context);
+      if (!mounted || created?['success'] != true) return;
+      await _pageController.reloadLots();
+      if (mounted) await _openLotSelection();
       return;
     }
     _pageController.onLotChanged(result.selectedLotId);
@@ -175,6 +195,9 @@ class _VendaFormPageState extends State<VendaFormPage> {
                           title: 'Comprador',
                           complete: _pageController.isCompradorComplete,
                           child: Column(
+                            crossAxisAlignment: kIsWeb
+                                ? CrossAxisAlignment.start
+                                : CrossAxisAlignment.center,
                             children: [
                               _buildTextField(
                                 controller: _pageController.dataController,
@@ -213,6 +236,9 @@ class _VendaFormPageState extends State<VendaFormPage> {
                             initiallyExpanded: false,
                             complete: _pageController.isGrupoComplete,
                             child: Column(
+                              crossAxisAlignment: kIsWeb
+                                  ? CrossAxisAlignment.start
+                                  : CrossAxisAlignment.center,
                               children: [
                                 _buildCategory(),
                                 _buildFase(),
@@ -228,6 +254,9 @@ class _VendaFormPageState extends State<VendaFormPage> {
                             initiallyExpanded: true,
                             complete: _pageController.isEscopoComplete,
                             child: Column(
+                              crossAxisAlignment: kIsWeb
+                                  ? CrossAxisAlignment.start
+                                  : CrossAxisAlignment.center,
                               children: [
                                 PotreiroSelectorField(
                                   label: 'Piquete',
@@ -267,6 +296,9 @@ class _VendaFormPageState extends State<VendaFormPage> {
                           initiallyExpanded: false,
                           complete: _pageController.isValoresComplete,
                           child: Column(
+                            crossAxisAlignment: kIsWeb
+                                ? CrossAxisAlignment.start
+                                : CrossAxisAlignment.center,
                             children: [
                               if (!_pageController.isEdit) _buildTipoValor(),
                               _buildTextField(

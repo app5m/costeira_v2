@@ -1,3 +1,4 @@
+import 'package:costeira/core/components/adaptive_selection_modal.dart';
 import 'package:costeira/features/animals/domain/entities/animal_entity.dart';
 import 'package:costeira/features/movimentacoes/abortos/presentation/page_controllers/aborto_form_page_controller.dart';
 import 'package:costeira/theme/colors.dart';
@@ -137,14 +138,14 @@ class AbortoAnimaisPage extends StatelessWidget {
       return;
     }
     final previousCausa = pageController.animalCausa(animal.id);
-    final causa = await showModalBottomSheet<String?>(
+    final causa = await showAdaptiveSelectionModal<String?>(
       context: context,
-      isScrollControlled: true,
-      backgroundColor: Colors.white,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+      title: 'Causa do aborto',
+      mobileBorderRadius: 16,
+      builder: (embeddedInDialog) => _CausaSheet(
+        initialValue: previousCausa,
+        embeddedInDialog: embeddedInDialog,
       ),
-      builder: (_) => _CausaSheet(initialValue: previousCausa),
     );
     if (causa != null) {
       pageController.setAnimalCausa(animal.id, causa);
@@ -153,9 +154,10 @@ class AbortoAnimaisPage extends StatelessWidget {
 }
 
 class _CausaSheet extends StatefulWidget {
-  const _CausaSheet({this.initialValue});
+  const _CausaSheet({required this.embeddedInDialog, this.initialValue});
 
   final String? initialValue;
+  final bool embeddedInDialog;
 
   @override
   State<_CausaSheet> createState() => _CausaSheetState();
@@ -190,26 +192,28 @@ class _CausaSheetState extends State<_CausaSheet> {
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Center(
-              child: Container(
-                width: 72,
-                height: 4,
-                decoration: BoxDecoration(
-                  color: const Color(0xFFE2E2E2),
-                  borderRadius: BorderRadius.circular(999),
+            if (!widget.embeddedInDialog) ...[
+              Center(
+                child: Container(
+                  width: 72,
+                  height: 4,
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFE2E2E2),
+                    borderRadius: BorderRadius.circular(999),
+                  ),
                 ),
               ),
-            ),
-            const SizedBox(height: 20),
-            const Text(
-              'Causa do aborto',
-              style: TextStyle(
-                fontSize: 18,
-                fontFamily: 'Montserrat',
-                fontWeight: FontWeight.w600,
+              const SizedBox(height: 20),
+              const Text(
+                'Causa do aborto',
+                style: TextStyle(
+                  fontSize: 18,
+                  fontFamily: 'Montserrat',
+                  fontWeight: FontWeight.w600,
+                ),
               ),
-            ),
-            const SizedBox(height: 12),
+              const SizedBox(height: 12),
+            ],
             TextField(
               controller: _controller,
               decoration: InputDecoration(

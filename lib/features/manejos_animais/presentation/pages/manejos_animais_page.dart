@@ -1,9 +1,11 @@
 import 'package:costeira/core/components/app_snack.dart';
 import 'package:costeira/core/components/form_accordion.dart';
+import 'package:costeira/core/components/web_dialog_frame.dart';
 import 'package:costeira/features/manejos_animais/domain/entities/manejo_animal_lista.dart';
 import 'package:costeira/features/manejos_animais/presentation/controllers/listar_manejos_animais_controller.dart';
 import 'package:costeira/features/manejos_animais/presentation/pages/manejo_editar_page.dart';
 import 'package:costeira/theme/colors.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_modular/flutter_modular.dart';
 import 'package:flutter_svg/flutter_svg.dart';
@@ -80,19 +82,19 @@ class _ManejosAnimaisPageState extends State<ManejosAnimaisPage> {
                     : ManejoAnimalCategoria.nomeDe(escolhida),
                 expanded: _opcoesAbertas,
                 complete: escolhida == null ? null : true,
-                onToggle: () => setState(() => _opcoesAbertas = !_opcoesAbertas),
+                onToggle: () =>
+                    setState(() => _opcoesAbertas = !_opcoesAbertas),
                 child: Column(
                   children: [
                     for (final categoria in categorias)
-                      _opcao(
-                        categoria,
-                        selecionada: escolhida == categoria.id,
-                      ),
+                      _opcao(categoria, selecionada: escolhida == categoria.id),
                   ],
                 ),
               ),
             ),
-            Expanded(child: escolhida == null ? const SizedBox.shrink() : _lista()),
+            Expanded(
+              child: escolhida == null ? const SizedBox.shrink() : _lista(),
+            ),
           ],
         );
       },
@@ -195,7 +197,11 @@ class _ManejosAnimaisPageState extends State<ManejosAnimaisPage> {
       padding: const EdgeInsets.fromLTRB(8, 8, 16, 4),
       child: TextButton.icon(
         onPressed: () => setState(() => _grupo = null),
-        icon: const Icon(Icons.arrow_back_ios, size: 14, color: Color(0xFF313131)),
+        icon: const Icon(
+          Icons.arrow_back_ios,
+          size: 14,
+          color: Color(0xFF313131),
+        ),
         label: Text(
           _titulo(grupo),
           style: const TextStyle(
@@ -229,7 +235,9 @@ class _ManejosAnimaisPageState extends State<ManejosAnimaisPage> {
                       fontFamily: 'Montserrat',
                       fontSize: 14,
                       fontWeight: FontWeight.w600,
-                      color: selecionada ? MyColors.colorPrimary : const Color(0xFF313131),
+                      color: selecionada
+                          ? MyColors.colorPrimary
+                          : const Color(0xFF313131),
                     ),
                   ),
                 ),
@@ -286,7 +294,9 @@ class _ManejosAnimaisPageState extends State<ManejosAnimaisPage> {
   }
 
   Widget _card(ManejoAnimalListaItem item) {
-    final titulo = item.data.isEmpty ? ManejoAnimalCategoria.nomeDe(item.idCategoria) : item.data;
+    final titulo = item.data.isEmpty
+        ? ManejoAnimalCategoria.nomeDe(item.idCategoria)
+        : item.data;
     return Container(
       width: double.infinity,
       margin: const EdgeInsets.only(bottom: 10),
@@ -329,7 +339,11 @@ class _ManejosAnimaisPageState extends State<ManejosAnimaisPage> {
           IconButton(
             tooltip: 'Editar',
             onPressed: item.id == null ? null : () => _editar(item),
-            icon: SvgPicture.asset('icon/square-pen.svg', width: 18, height: 18),
+            icon: SvgPicture.asset(
+              'icon/square-pen.svg',
+              width: 18,
+              height: 18,
+            ),
           ),
           IconButton(
             tooltip: 'Excluir',
@@ -355,73 +369,7 @@ class _ManejosAnimaisPageState extends State<ManejosAnimaisPage> {
     if (id == null) {
       return;
     }
-    final confirmar = await showModalBottomSheet<bool>(
-      backgroundColor: Colors.white,
-      context: context,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
-      ),
-      builder: (context) {
-        return SafeArea(
-          top: false,
-          child: Padding(
-            padding: const EdgeInsets.fromLTRB(20, 16, 20, 16),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                const Text(
-                  'Excluir manejo',
-                  style: TextStyle(
-                    fontFamily: 'Montserrat',
-                    fontWeight: FontWeight.w600,
-                    fontSize: 16,
-                  ),
-                ),
-                const SizedBox(height: 8),
-                const Text(
-                  'Tem certeza que deseja excluir esse manejo permanentemente?',
-                  textAlign: TextAlign.center,
-                  style: TextStyle(
-                    fontFamily: 'Montserrat',
-                    fontSize: 14,
-                    color: Color(0xFF8692A8),
-                  ),
-                ),
-                const SizedBox(height: 16),
-                SizedBox(
-                  width: double.infinity,
-                  height: 50,
-                  child: OutlinedButton(
-                    onPressed: () => Navigator.of(context).pop(true),
-                    style: OutlinedButton.styleFrom(
-                      foregroundColor: Colors.red,
-                      side: const BorderSide(color: Colors.red),
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-                    ),
-                    child: const Text(
-                      'Excluir',
-                      style: TextStyle(fontFamily: 'Montserrat', color: Colors.red),
-                    ),
-                  ),
-                ),
-                TextButton(
-                  onPressed: () => Navigator.of(context).pop(false),
-                  child: const Text(
-                    'Cancelar',
-                    style: TextStyle(
-                      fontFamily: 'Montserrat',
-                      fontSize: 16,
-                      color: Color(0xFF313131),
-                      decoration: TextDecoration.underline,
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          ),
-        );
-      },
-    );
+    final confirmar = await _showDeleteConfirmation();
     if (confirmar != true || !mounted) {
       return;
     }
@@ -433,6 +381,97 @@ class _ManejosAnimaisPageState extends State<ManejosAnimaisPage> {
       context: context,
       message: erro ?? 'Manejo excluído.',
       isError: erro != null,
+    );
+  }
+
+  Future<bool?> _showDeleteConfirmation() {
+    if (kIsWeb) {
+      return showDialog<bool>(
+        context: context,
+        barrierDismissible: false,
+        builder: (_) => WebDialogFrame(
+          title: 'Excluir manejo',
+          width: 480,
+          maxHeight: 340,
+          bodyPadding: const EdgeInsets.fromLTRB(24, 8, 24, 24),
+          child: _deleteConfirmationContent(showTitle: false),
+        ),
+      );
+    }
+
+    return showModalBottomSheet<bool>(
+      backgroundColor: Colors.white,
+      context: context,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+      ),
+      builder: (_) => SafeArea(
+        top: false,
+        child: _deleteConfirmationContent(showTitle: true),
+      ),
+    );
+  }
+
+  Widget _deleteConfirmationContent({required bool showTitle}) {
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(20, 16, 20, 16),
+      child: Column(
+        mainAxisSize: showTitle ? MainAxisSize.min : MainAxisSize.max,
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          if (showTitle) ...[
+            const Text(
+              'Excluir manejo',
+              style: TextStyle(
+                fontFamily: 'Montserrat',
+                fontWeight: FontWeight.w600,
+                fontSize: 16,
+              ),
+            ),
+            const SizedBox(height: 8),
+          ],
+          const Text(
+            'Tem certeza que deseja excluir esse manejo permanentemente?',
+            textAlign: TextAlign.center,
+            style: TextStyle(
+              fontFamily: 'Montserrat',
+              fontSize: 14,
+              color: Color(0xFF8692A8),
+            ),
+          ),
+          const SizedBox(height: 20),
+          SizedBox(
+            width: double.infinity,
+            height: 50,
+            child: OutlinedButton(
+              onPressed: () => Navigator.of(context).pop(true),
+              style: OutlinedButton.styleFrom(
+                foregroundColor: Colors.red,
+                side: const BorderSide(color: Colors.red),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(8),
+                ),
+              ),
+              child: const Text(
+                'Excluir',
+                style: TextStyle(fontFamily: 'Montserrat', color: Colors.red),
+              ),
+            ),
+          ),
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(false),
+            child: const Text(
+              'Cancelar',
+              style: TextStyle(
+                fontFamily: 'Montserrat',
+                fontSize: 16,
+                color: Color(0xFF313131),
+                decoration: TextDecoration.underline,
+              ),
+            ),
+          ),
+        ],
+      ),
     );
   }
 }

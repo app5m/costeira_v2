@@ -18,7 +18,8 @@ class AbigeatoFormPage extends StatefulWidget {
 }
 
 class _AbigeatoFormPageState extends State<AbigeatoFormPage> {
-  final AbigeatoFormPageController _pageController = Modular.get<AbigeatoFormPageController>();
+  final AbigeatoFormPageController _pageController =
+      Modular.get<AbigeatoFormPageController>();
 
   @override
   void initState() {
@@ -62,7 +63,9 @@ class _AbigeatoFormPageState extends State<AbigeatoFormPage> {
   Future<void> _openAnimalsPage() async {
     await Navigator.push(
       context,
-      MaterialPageRoute(builder: (_) => AbigeatoAnimaisPage(pageController: _pageController)),
+      MaterialPageRoute(
+        builder: (_) => AbigeatoAnimaisPage(pageController: _pageController),
+      ),
     );
   }
 
@@ -75,7 +78,9 @@ class _AbigeatoFormPageState extends State<AbigeatoFormPage> {
           backgroundColor: Colors.white,
           floatingActionButton: !_pageController.isEdit
               ? FloatingActionButton(
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(64)),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(64),
+                  ),
                   onPressed: _openAnimalsPage,
                   child: const Icon(Icons.pets, color: Colors.white),
                 )
@@ -141,7 +146,9 @@ class _AbigeatoFormPageState extends State<AbigeatoFormPage> {
 
   Widget _buildAnimalsSummary() {
     final count = _pageController.selectedAnimais.length;
-    final label = count == 1 ? '1 animal selecionado' : '$count animais selecionados';
+    final label = count == 1
+        ? '1 animal selecionado'
+        : '$count animais selecionados';
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -156,30 +163,34 @@ class _AbigeatoFormPageState extends State<AbigeatoFormPage> {
           ),
         ),
         const SizedBox(height: 8),
-        InkWell(
+        Material(
+          color: const Color(0xFFEBEBEB),
           borderRadius: BorderRadius.circular(8),
-          onTap: _openAnimalsPage,
-          child: Ink(
-            padding: const EdgeInsets.all(16),
-            decoration: BoxDecoration(
-              color: const Color(0xFFEBEBEB),
-              borderRadius: BorderRadius.circular(8),
-            ),
-            child: Row(
-              children: [
-                Expanded(
-                  child: Text(
-                    count == 0 ? 'Selecionar animais por brinco' : label,
-                    style: const TextStyle(
-                      color: Color(0xFF313131),
-                      fontSize: 14,
-                      fontFamily: 'Montserrat',
-                      fontWeight: FontWeight.w500,
+          clipBehavior: Clip.antiAlias,
+          child: InkWell(
+            borderRadius: BorderRadius.circular(8),
+            onTap: _openAnimalsPage,
+            child: Padding(
+              padding: const EdgeInsets.all(16),
+              child: Row(
+                children: [
+                  Expanded(
+                    child: Text(
+                      count == 0 ? 'Selecionar animais por brinco' : label,
+                      style: const TextStyle(
+                        color: Color(0xFF313131),
+                        fontSize: 14,
+                        fontFamily: 'Montserrat',
+                        fontWeight: FontWeight.w500,
+                      ),
                     ),
                   ),
-                ),
-                const Icon(Icons.keyboard_arrow_right, color: Color(0xFF8C8C8C)),
-              ],
+                  const Icon(
+                    Icons.keyboard_arrow_right,
+                    color: Color(0xFF8C8C8C),
+                  ),
+                ],
+              ),
             ),
           ),
         ),
@@ -237,7 +248,10 @@ class _AbigeatoFormPageState extends State<AbigeatoFormPage> {
             ),
             filled: true,
             fillColor: const Color(0xFFEBEBEB),
-            contentPadding: const EdgeInsets.symmetric(horizontal: 15, vertical: 16),
+            contentPadding: const EdgeInsets.symmetric(
+              horizontal: 15,
+              vertical: 16,
+            ),
             border: OutlineInputBorder(
               borderRadius: BorderRadius.circular(8),
               borderSide: BorderSide.none,

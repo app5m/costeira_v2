@@ -130,6 +130,10 @@ class TrocaCategoriaFormPageController extends ChangeNotifier {
 
   Future<void> reloadAnimais() => _animalsController.reload();
 
+  Future<void> reloadLotes() => _lotsController.load();
+
+  Future<void> reloadPotreiros() => _potreirosController.load();
+
   Future<void> _loadCategorias() async {
     final categories = <int, ListCategoryEntity>{};
     for (final sexo in const [1, 2]) {

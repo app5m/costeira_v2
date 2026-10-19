@@ -42,6 +42,10 @@ class SessionStorage {
   static const _lastCoordinatesKey = 'last_coordinates';
   static const _pendingPushTokenKey = 'pending_push_token';
   static const _selectedFarmIdKey = 'selected_farm_id';
+  static const _webAgriculturalYearLabelKey =
+      'web_selected_agricultural_year_label';
+  static const _webActiveMenuSlugKey = 'web_active_menu_slug';
+  static const _webSidebarSectionKey = 'web_sidebar_section';
 
   static Future<void> saveUserSession(UserSession session) async {
     _cached = session;
@@ -148,7 +152,10 @@ class SessionStorage {
       prefs.remove(_lastCoordinatesKey),
       prefs.remove(_pendingPushTokenKey),
       prefs.remove(_selectedFarmIdKey),
+      prefs.remove(_webAgriculturalYearLabelKey),
       prefs.remove(_webPendingApprovalKey),
+      prefs.remove(_webActiveMenuSlugKey),
+      prefs.remove(_webSidebarSectionKey),
     ]);
   }
 
@@ -220,5 +227,55 @@ class SessionStorage {
   static Future<void> clearSelectedFarmId() async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.remove(_selectedFarmIdKey);
+  }
+
+  static Future<void> saveWebAgriculturalYearLabel(String label) async {
+    final value = label.trim();
+    if (value.isEmpty) {
+      return;
+    }
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString(_webAgriculturalYearLabelKey, value);
+  }
+
+  static Future<String?> getWebAgriculturalYearLabel() async {
+    final prefs = await SharedPreferences.getInstance();
+    final label = prefs.getString(_webAgriculturalYearLabelKey)?.trim();
+    return label == null || label.isEmpty ? null : label;
+  }
+
+  static Future<void> saveWebActiveMenuSlug(String slug) async {
+    final value = slug.trim();
+    if (value.isEmpty) {
+      return;
+    }
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString(_webActiveMenuSlugKey, value);
+  }
+
+  static Future<String?> getWebActiveMenuSlug() async {
+    final prefs = await SharedPreferences.getInstance();
+    final slug = prefs.getString(_webActiveMenuSlugKey)?.trim();
+    return slug == null || slug.isEmpty ? null : slug;
+  }
+
+  static Future<void> clearWebActiveMenuSlug() async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.remove(_webActiveMenuSlugKey);
+  }
+
+  static Future<void> saveWebSidebarSection(String section) async {
+    final value = section.trim();
+    if (value.isEmpty) {
+      return;
+    }
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString(_webSidebarSectionKey, value);
+  }
+
+  static Future<String?> getWebSidebarSection() async {
+    final prefs = await SharedPreferences.getInstance();
+    final section = prefs.getString(_webSidebarSectionKey)?.trim();
+    return section == null || section.isEmpty ? null : section;
   }
 }

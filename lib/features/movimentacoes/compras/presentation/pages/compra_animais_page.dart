@@ -1,6 +1,7 @@
 import 'package:costeira/core/common/get_list/domain/entities/list_item_entity.dart';
 import 'package:costeira/core/components/app_select_overlay.dart';
 import 'package:costeira/core/components/app_snack.dart';
+import 'package:costeira/core/components/adaptive_selection_modal.dart';
 import 'package:costeira/core/components/custom_button.dart';
 import 'package:costeira/core/input_formatters/fixed_two_decimal_input_formatter.dart';
 import 'package:costeira/features/movimentacoes/compras/domain/entities/compra_upsert_animal_entity.dart';
@@ -21,19 +22,13 @@ class CompraAnimaisPage extends StatefulWidget {
 class _CompraAnimaisPageState extends State<CompraAnimaisPage> {
   Future<void> _openAnimalForm({int? index}) async {
     final editing = index == null ? null : widget.pageController.animais[index];
-    final result = await showModalBottomSheet<CompraUpsertAnimalEntity>(
+    final result = await showAdaptiveSelectionModal<CompraUpsertAnimalEntity>(
       context: context,
-      isScrollControlled: true,
-      backgroundColor: Colors.white,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
-      ),
-      builder: (_) => SafeArea(
-        top: false,
-        child: _CompraAnimalSheet(
-          pageController: widget.pageController,
-          initialAnimal: editing,
-        ),
+      title: editing == null ? 'Adicionar animal' : 'Editar animal',
+      builder: (embeddedInDialog) => _CompraAnimalSheet(
+        pageController: widget.pageController,
+        initialAnimal: editing,
+        embeddedInDialog: embeddedInDialog,
       ),
     );
 
@@ -112,10 +107,15 @@ class _CompraAnimaisPageState extends State<CompraAnimaisPage> {
 }
 
 class _CompraAnimalSheet extends StatefulWidget {
-  const _CompraAnimalSheet({required this.pageController, this.initialAnimal});
+  const _CompraAnimalSheet({
+    required this.pageController,
+    required this.embeddedInDialog,
+    this.initialAnimal,
+  });
 
   final CompraFormPageController pageController;
   final CompraUpsertAnimalEntity? initialAnimal;
+  final bool embeddedInDialog;
 
   @override
   State<_CompraAnimalSheet> createState() => _CompraAnimalSheetState();
@@ -206,17 +206,19 @@ class _CompraAnimalSheetState extends State<_CompraAnimalSheet> {
               mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(
-                  widget.initialAnimal == null
-                      ? 'Adicionar animal'
-                      : 'Editar animal',
-                  style: const TextStyle(
-                    fontSize: 16,
-                    fontFamily: 'Montserrat',
-                    fontWeight: FontWeight.w600,
+                if (!widget.embeddedInDialog) ...[
+                  Text(
+                    widget.initialAnimal == null
+                        ? 'Adicionar animal'
+                        : 'Editar animal',
+                    style: const TextStyle(
+                      fontSize: 16,
+                      fontFamily: 'Montserrat',
+                      fontWeight: FontWeight.w600,
+                    ),
                   ),
-                ),
-                const SizedBox(height: 16),
+                  const SizedBox(height: 16),
+                ],
                 Row(
                   children: [
                     Expanded(

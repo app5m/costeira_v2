@@ -1,5 +1,7 @@
 import 'package:costeira/core/components/app_snack.dart';
+import 'package:costeira/core/components/app_select_overlay.dart';
 import 'package:costeira/core/components/sub_user_flag.dart';
+import 'package:costeira/core/components/web_dialog_frame.dart';
 import 'package:costeira/features/cadastros/domain/entities/parceiro_entity.dart';
 import 'package:costeira/features/cadastros/domain/entities/parceiro_kind.dart';
 import 'package:costeira/features/cadastros/presentation/page_controllers/parceiros_list_page_controller.dart';
@@ -123,75 +125,36 @@ class _ParceirosListWebDialogState extends State<ParceirosListWebDialog> {
 
   @override
   Widget build(BuildContext context) {
-    final viewport = MediaQuery.sizeOf(context);
-    final narrow = viewport.width < 620;
-    final height = (viewport.height - 48).clamp(320.0, 760.0);
+    final narrow = MediaQuery.sizeOf(context).width < 620;
     return AnimatedBuilder(
       animation: _controller,
-      builder: (context, _) => Dialog(
-        backgroundColor: Colors.white,
-        insetPadding: EdgeInsets.all(narrow ? 8 : 24),
-        clipBehavior: Clip.antiAlias,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
-        child: SizedBox(
+      builder: (context, _) {
+        final canAdd = _controller.selectedFarmId != null;
+        return WebDialogFrame(
+          title: widget.kind.title,
           width: 720,
-          height: height,
-          child: Column(
-            children: [
-              _header(narrow),
-              const Divider(height: 1, color: Color(0xFFE7E4DD)),
-              Expanded(child: _body(narrow)),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget _header(bool narrow) {
-    final canAdd = _controller.selectedFarmId != null;
-    return Padding(
-      padding: EdgeInsets.fromLTRB(narrow ? 16 : 22, 10, 12, 10),
-      child: Row(
-        children: [
-          Expanded(
-            child: Text(
-              widget.kind.title,
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-              style: const TextStyle(
-                fontFamily: 'Montserrat',
-                fontSize: 19,
-                fontWeight: FontWeight.w700,
-                color: Color(0xFF252525),
-              ),
-            ),
-          ),
-          if (canAdd)
-            ElevatedButton.icon(
-              onPressed: _controller.isLoading ? null : () => _openForm(),
-              icon: const Icon(Icons.add_rounded, size: 18),
-              label: Text(narrow ? 'Adicionar' : 'Adicionar'),
-              style: ElevatedButton.styleFrom(
-                elevation: 0,
-                minimumSize: Size(narrow ? 108 : 124, 42),
-                backgroundColor: MyColors.colorPrimary,
-                foregroundColor: Colors.white,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(8),
-                ),
-              ),
-            ),
-          const SizedBox(width: 4),
-          IconButton(
-            tooltip: 'Fechar',
-            onPressed: _controller.isDeleting
-                ? null
-                : () => Navigator.of(context).pop(),
-            icon: const Icon(Icons.close_rounded),
-          ),
-        ],
-      ),
+          maxHeight: 760,
+          sizeMode: WebDialogSizeMode.constrained,
+          scrollableBody: false,
+          headerActions: canAdd
+              ? ElevatedButton.icon(
+                  onPressed: _controller.isLoading ? null : () => _openForm(),
+                  icon: const Icon(Icons.add_rounded, size: 18),
+                  label: const Text('Adicionar'),
+                  style: ElevatedButton.styleFrom(
+                    elevation: 0,
+                    minimumSize: Size(narrow ? 108 : 124, 42),
+                    backgroundColor: MyColors.colorPrimary,
+                    foregroundColor: Colors.white,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                  ),
+                )
+              : null,
+          child: _body(narrow),
+        );
+      },
     );
   }
 
@@ -233,38 +196,43 @@ class _ParceirosListWebDialogState extends State<ParceirosListWebDialog> {
   }
 
   Widget _farmSelector() {
-    return DropdownButtonFormField<int>(
+    return AppSelectOverlay<int>(
       value: _controller.selectedFarmId,
-      isExpanded: true,
-      items: [
+      placeholder: 'Selecionar fazenda',
+      height: 52,
+      padding: const EdgeInsets.symmetric(horizontal: 14),
+      options: [
         for (final farm in _controller.fazendas)
-          DropdownMenuItem(
+          AppSelectOption(
             value: farm.id,
-            child: Text(
-              farm.nome.isEmpty ? 'Fazenda ${farm.id}' : farm.nome,
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-            ),
+            label: farm.nome.isEmpty ? 'Fazenda ${farm.id}' : farm.nome,
           ),
       ],
-      onChanged: _controller.isLoading
-          ? null
-          : (value) {
-              if (value != null) _controller.selectFarm(value);
-            },
-      decoration: const InputDecoration(
-        labelText: 'Fazenda',
-        prefixIcon: Icon(LucideIcons.warehouse, size: 18),
+      enabled: !_controller.isLoading,
+      leading: const Icon(
+        LucideIcons.warehouse,
+        size: 18,
+        color: MyColors.colorPrimary,
       ),
+      onChanged: (value) {
+        if (value != null) _controller.selectFarm(value);
+      },
     );
   }
 
   Widget _nameFilter() {
-    return TextField(
-      controller: _controller.nomeController,
-      decoration: const InputDecoration(
-        labelText: 'Filtrar por nome',
-        prefixIcon: Icon(LucideIcons.search, size: 18),
+    return SizedBox(
+      height: 52,
+      child: TextField(
+        controller: _controller.nomeController,
+        textAlignVertical: TextAlignVertical.center,
+        decoration: const InputDecoration(
+          hintText: 'Filtrar por nome',
+          isDense: true,
+          contentPadding: EdgeInsets.symmetric(horizontal: 14, vertical: 14),
+          prefixIcon: Icon(LucideIcons.search, size: 18),
+          prefixIconConstraints: BoxConstraints(minWidth: 48, minHeight: 52),
+        ),
       ),
     );
   }
