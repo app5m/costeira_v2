@@ -114,6 +114,7 @@ class MenuActionResolver {
       MenuSlug.estoque => AppRoutes.estoque,
       MenuSlug.tarefas => AppRoutes.tasks,
       MenuSlug.pluviosidade => AppRoutes.climateRain,
+      MenuSlug.indicadores => AppRoutes.indicadores,
       MenuSlug.fornecedores => AppRoutes.fornecedores,
       MenuSlug.compradores => AppRoutes.compradores,
       MenuSlug.usuarios => AppRoutes.usuarios,

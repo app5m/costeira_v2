@@ -22,6 +22,7 @@ class WSConstantes {
   static const String manejosListar = '/manejos/listar';
   static const String manejosExcluir = '/manejos/excluir';
   static const String dashboardListar = '/dashboard/listar';
+  static const String indicadoresLista = '/indicadores/lista';
   static const String movimentacoesListar = '/movimentacoes/listar';
   static const String movimentacoesGraficos = '/movimentacoes/graficos';
   static const String movimentacoesAdicionarEstoque =
