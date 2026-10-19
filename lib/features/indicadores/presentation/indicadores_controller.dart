@@ -54,6 +54,12 @@ class IndicadoresController extends ChangeNotifier {
   List<ListCategoryEntity> categorias = const [];
   List<PotreiroEntity> piquetes = const [];
 
+  bool get filtrosAtivos =>
+      loteId != null ||
+      categoriaId != null ||
+      piqueteId != null ||
+      periodo != TipoPeriodoIndicador.anoAgricola;
+
   String get rotuloPeriodo {
     switch (periodo) {
       case TipoPeriodoIndicador.todo:
@@ -162,6 +168,17 @@ class IndicadoresController extends ChangeNotifier {
     dataDe = de;
     dataAte = ate;
     notifyListeners();
+  }
+
+  void limparFiltros() {
+    periodo = TipoPeriodoIndicador.anoAgricola;
+    loteId = null;
+    categoriaId = null;
+    piqueteId = null;
+    ultimosDias = 30;
+    dataDe = null;
+    dataAte = null;
+    carregar();
   }
 
   void setLote(int? id) {

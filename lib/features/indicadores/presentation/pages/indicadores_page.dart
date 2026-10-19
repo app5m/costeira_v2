@@ -71,7 +71,10 @@ class _IndicadoresPageState extends State<IndicadoresPage> {
         backgroundColor: IndicadorCores.fundo,
         foregroundColor: IndicadorCores.texto,
         elevation: 0,
-        title: Text(titulo),
+        title: Text(titulo, style: tituloPagina),
+        actions: [
+          if (indicador != null) FiltrosIndicador(controller: controller),
+        ],
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
           onPressed: () {
@@ -165,8 +168,8 @@ class _ListaModulos extends StatelessWidget {
           color: Colors.white,
           borderRadius: BorderRadius.circular(12),
           child: ListTile(
-            title: Text(modulo.titulo, style: const TextStyle(fontWeight: FontWeight.w700)),
-            subtitle: Text(modulo.subtitulo),
+            title: Text(modulo.titulo, style: tituloLista),
+            subtitle: Text(modulo.subtitulo, style: subtituloLista),
             trailing: Icon(
               modulo.aberto ? Icons.chevron_right : Icons.lock_outline,
               color: IndicadorCores.verde,
@@ -203,7 +206,7 @@ class _ListaModulo extends StatelessWidget {
           color: Colors.white,
           borderRadius: BorderRadius.circular(12),
           child: ListTile(
-            title: Text(item.$2),
+            title: Text(item.$2, style: tituloLista),
             trailing: const Icon(Icons.chevron_right, color: IndicadorCores.verde),
             onTap: () => aoAbrir(item.$1),
           ),
@@ -244,8 +247,6 @@ class _Detalhe extends StatelessWidget {
     return ListView(
       padding: paddingIndicadores(context),
       children: [
-        FiltrosIndicador(controller: controller),
-        const SizedBox(height: 12),
         if (controller.carregando)
           const Padding(
             padding: EdgeInsets.all(24),
@@ -292,18 +293,20 @@ List<Widget> _gmdGlobal(IndicadoresLista lista) {
     GradeCartoes(
       cartoes: [
         CartaoIndicador(
-          valor: bloco.valor('gmd_global').exibir(unidadePadrao: 'kg/dia'),
+          medicao: bloco.valor('gmd_global'),
+          unidadePadrao: 'kg/dia',
           titulo: 'GMD global',
           legenda: 'Kg produzidos ÷ rebanho médio ÷ dias',
-          corValor: IndicadorCores.marrom,
         ),
         CartaoIndicador(
-          valor: bloco.valor('gmd_pesagens').exibir(unidadePadrao: 'kg/dia'),
+          medicao: bloco.valor('gmd_pesagens'),
+          unidadePadrao: 'kg/dia',
           titulo: 'GMD das pesagens',
           legenda: 'Apoio — média do ganho só dos lotes pesados',
         ),
         CartaoIndicador(
-          valor: bloco.valor('qtd_pesagens').exibir(inteiro: true),
+          medicao: bloco.valor('qtd_pesagens'),
+          inteiro: true,
           titulo: 'Pesagens no período',
         ),
       ],
@@ -337,17 +340,20 @@ List<Widget> _gmdLote(IndicadoresLista lista) {
     GradeCartoes(
       cartoes: [
         CartaoIndicador(
-          valor: bloco.valor('gmd_medio').exibir(unidadePadrao: 'kg/d'),
+          medicao: bloco.valor('gmd_medio'),
+          unidadePadrao: 'kg/d',
           titulo: 'GMD médio (kg/d)',
           legenda: 'Fazenda no período',
         ),
         CartaoIndicador(
-          valor: bloco.valor('lotes_com_gmd').exibir(inteiro: true),
+          medicao: bloco.valor('lotes_com_gmd'),
+          inteiro: true,
           titulo: 'Lotes com GMD',
           legenda: 'Calculados no período',
         ),
         CartaoIndicador(
-          valor: bloco.valor('pesagens').exibir(inteiro: true),
+          medicao: bloco.valor('pesagens'),
+          inteiro: true,
           titulo: 'Pesagens',
           legenda: 'Registros utilizados',
         ),
@@ -391,19 +397,23 @@ List<Widget> _kg(IndicadoresLista lista) {
     GradeCartoes(
       cartoes: [
         CartaoIndicador(
-          valor: bloco.valor('kg_produzido').exibir(unidadePadrao: 'kg'),
+          medicao: bloco.valor('kg_produzido'),
+          unidadePadrao: 'kg',
           titulo: 'Kg produzido',
         ),
         CartaoIndicador(
-          valor: bloco.valor('kg_hectare').exibir(unidadePadrao: 'kg/ha'),
+          medicao: bloco.valor('kg_hectare'),
+          unidadePadrao: 'kg/ha',
           titulo: 'Kg por hectare',
         ),
         CartaoIndicador(
-          valor: bloco.valor('lotes_vencidos').exibir(inteiro: true),
+          medicao: bloco.valor('lotes_vencidos'),
+          inteiro: true,
           titulo: 'Lotes vendidos',
         ),
         CartaoIndicador(
-          valor: bloco.valor('area_ativa').exibir(unidadePadrao: 'ha'),
+          medicao: bloco.valor('area_ativa'),
+          unidadePadrao: 'ha',
           titulo: 'Área ativa',
         ),
       ],
@@ -445,20 +455,25 @@ List<Widget> _ua(IndicadoresLista lista) {
     GradeCartoes(
       cartoes: [
         CartaoIndicador(
-          valor: bloco.valor('ua_ha_total').exibir(unidadePadrao: 'UA/ha'),
+          medicao: bloco.valor('ua_ha_total'),
+          unidadePadrao: 'UA/ha',
           titulo: 'UA/ha total',
           legenda: 'Só piquetes ativos',
         ),
         CartaoIndicador(
-          valor: bloco.valor('cabecas').exibir(inteiro: true, unidadePadrao: 'cab'),
+          medicao: bloco.valor('cabecas'),
+          unidadePadrao: 'cab',
+          inteiro: true,
           titulo: 'Cabeças',
         ),
         CartaoIndicador(
-          valor: bloco.valor('ua_total').exibir(unidadePadrao: 'UA'),
+          medicao: bloco.valor('ua_total'),
+          unidadePadrao: 'UA',
           titulo: 'UA total',
         ),
         CartaoIndicador(
-          valor: bloco.valor('area_total').exibir(unidadePadrao: 'ha'),
+          medicao: bloco.valor('area_total'),
+          unidadePadrao: 'ha',
           titulo: 'Área total',
         ),
       ],
@@ -508,22 +523,19 @@ List<Widget> _cab(IndicadoresLista lista) {
     GradeCartoes(
       cartoes: [
         CartaoIndicador(
-          valor: resultado == null
-              ? '—'
-              : '${formatarNumero(resultado)} cab/ha',
+          valor: resultado == null ? '—' : formatarNumero(resultado),
+          unidade: resultado == null ? null : 'cab/ha',
           titulo: 'Lotação',
           legenda: 'Rebanho médio ÷ área média utilizada',
         ),
         CartaoIndicador(
-          valor: lista.rebanhoMedio.valor('estoque_medio').exibir(
-            unidadePadrao: 'cab',
-          ),
+          medicao: lista.rebanhoMedio.valor('estoque_medio'),
+          unidadePadrao: 'cab',
           titulo: 'Rebanho médio',
         ),
         CartaoIndicador(
-          valor: lista.areaMedia.valor('area_media').exibir(
-            unidadePadrao: 'ha',
-          ),
+          medicao: lista.areaMedia.valor('area_media'),
+          unidadePadrao: 'ha',
           titulo: 'Área média utilizada',
         ),
       ],
@@ -542,20 +554,24 @@ List<Widget> _rebanho(IndicadoresLista lista) {
     GradeCartoes(
       cartoes: [
         CartaoIndicador(
-          valor: bloco.valor('estoque_medio').exibir(unidadePadrao: 'cab'),
+          medicao: bloco.valor('estoque_medio'),
+          unidadePadrao: 'cab',
           titulo: 'Estoque médio',
           legenda: 'Média no fim de cada mês',
         ),
         CartaoIndicador(
-          valor: bloco.valor('total_entradas').exibir(inteiro: true),
+          medicao: bloco.valor('total_entradas'),
+          inteiro: true,
           titulo: 'Entradas',
         ),
         CartaoIndicador(
-          valor: bloco.valor('total_saidas').exibir(inteiro: true),
+          medicao: bloco.valor('total_saidas'),
+          inteiro: true,
           titulo: 'Saídas',
         ),
         CartaoIndicador(
-          valor: bloco.valor('saldo').exibir(inteiro: true),
+          medicao: bloco.valor('saldo'),
+          inteiro: true,
           titulo: 'Saldo',
         ),
       ],
@@ -598,29 +614,32 @@ List<Widget> _area(IndicadoresLista lista) {
     GradeCartoes(
       cartoes: [
         CartaoIndicador(
-          valor: bloco.valor('area_media').exibir(unidadePadrao: 'ha'),
+          medicao: bloco.valor('area_media'),
+          unidadePadrao: 'ha',
           titulo: 'Área média utilizada${safra.isEmpty ? '' : ' (ano agrícola)'}',
           legenda: safra.isEmpty
               ? 'Ponderada pelos dias ativo/inativo de cada piquete'
               : 'Ponderada pelos dias ativo/inativo de cada piquete no ano $safra',
         ),
         CartaoIndicador(
-          valor: bloco.valor('area_ativa').exibir(unidadePadrao: 'ha'),
+          medicao: bloco.valor('area_ativa'),
+          unidadePadrao: 'ha',
           titulo: 'Área ativa agora',
           legenda: 'Soma dos piquetes marcados como ativo neste momento',
         ),
         CartaoIndicador(
-          valor: bloco.valor('area_ocupada').exibir(unidadePadrao: 'ha'),
+          medicao: bloco.valor('area_ocupada'),
+          unidadePadrao: 'ha',
           titulo: 'Área ocupada atual',
         ),
         CartaoIndicador(
-          valor: bloco.valor('area_total_cadastrada').exibir(
-            unidadePadrao: 'ha',
-          ),
+          medicao: bloco.valor('area_total_cadastrada'),
+          unidadePadrao: 'ha',
           titulo: 'Área total cadastrada',
         ),
         CartaoIndicador(
-          valor: bloco.valor('porcentagem_ocupacao').exibir(unidadePadrao: '%'),
+          medicao: bloco.valor('porcentagem_ocupacao'),
+          unidadePadrao: '%',
           titulo: '% de ocupação',
         ),
       ],

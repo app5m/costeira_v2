@@ -25,6 +25,13 @@ String formatarNumero(num valor, {int casas = 3, bool fixo = false}) {
       .replaceFirst(RegExp(r'\.$'), '');
 }
 
+class PartesIndicador {
+  const PartesIndicador(this.numero, this.unidade);
+
+  final String numero;
+  final String? unidade;
+}
+
 class IndicadorValor {
   const IndicadorValor({this.qtd, this.texto, this.unidade});
 
@@ -43,6 +50,38 @@ class IndicadorValor {
       texto: _limpo(raw['texto']),
       unidade: _limpo(raw['string']),
     );
+  }
+
+  PartesIndicador partes({
+    String? unidadePadrao,
+    int casas = 3,
+    bool inteiro = false,
+  }) {
+    final unidadeFinal = (unidade != null && unidade!.isNotEmpty)
+        ? unidade
+        : unidadePadrao;
+    final pronto = texto?.trim();
+    if (pronto != null && pronto.isNotEmpty) {
+      if (unidadeFinal != null && unidadeFinal.isNotEmpty) {
+        final semUnidade = pronto
+            .replaceAll(
+              RegExp(RegExp.escape(unidadeFinal), caseSensitive: false),
+              '',
+            )
+            .trim();
+        if (semUnidade.isNotEmpty && semUnidade != pronto) {
+          return PartesIndicador(semUnidade, unidadeFinal);
+        }
+      }
+      return PartesIndicador(pronto, unidadeFinal);
+    }
+    if (qtd == null) {
+      return const PartesIndicador('—', null);
+    }
+    final numero = inteiro
+        ? qtd!.round().toString()
+        : formatarNumero(qtd!, casas: casas);
+    return PartesIndicador(numero, unidadeFinal);
   }
 
   String exibir({String? unidadePadrao, int casas = 3, bool inteiro = false}) {

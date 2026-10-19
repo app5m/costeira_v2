@@ -12,6 +12,26 @@ void main() {
     expect(IndicadorValor.de({'qtd': null}).exibir(), '—');
     expect(IndicadorValor.de({'qtd': 0, 'string': 'kg'}).exibir(), '0 kg');
     expect(IndicadorValor.de({'qtd': 0.005, 'string': 'UA/ha'}).exibir(), '0.005 UA/ha');
+    final comTexto = IndicadorValor.de({
+      'qtd': 555.55,
+      'string': 'ha',
+      'texto': '555.550 ha',
+    }).partes(unidadePadrao: 'ha');
+    expect(comTexto.numero, '555.550');
+    expect(comTexto.unidade, 'ha');
+    final gmd = IndicadorValor.de({
+      'qtd': 17.333,
+      'string': 'kg/dia',
+      'texto': '17.333 kg/dia',
+    }).partes();
+    expect(gmd.numero, '17.333');
+    expect(gmd.unidade, 'kg/dia');
+    final semTexto = IndicadorValor.de({'qtd': 22}).partes(
+      unidadePadrao: 'cab',
+      inteiro: true,
+    );
+    expect(semTexto.numero, '22');
+    expect(semTexto.unidade, 'cab');
     expect(formatarNumero(2.889), '2.889');
   });
 
