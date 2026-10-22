@@ -11,6 +11,9 @@ class IndicadoresResponseModel {
     final producao = data['producao_rebanho'] is Map
         ? Map<String, dynamic>.from(data['producao_rebanho'] as Map)
         : <String, dynamic>{};
+    final desfrute = data['desfrute_saidas'] is Map
+        ? Map<String, dynamic>.from(data['desfrute_saidas'] as Map)
+        : <String, dynamic>{};
     final periodo = data['periodo'] is Map
         ? Map<String, dynamic>.from(data['periodo'] as Map)
         : <String, dynamic>{};
@@ -28,6 +31,10 @@ class IndicadoresResponseModel {
       lotacao: _bloco(producao['lotacao']),
       rebanhoMedio: _bloco(producao['rebanho_medio']),
       areaMedia: _bloco(producao['area_medida_utilizada']),
+      taxaDesfrute: _bloco(desfrute['taxa_desfrute']),
+      taxaAbate: _bloco(desfrute['taxa_abate']),
+      taxaGiro: _bloco(desfrute['taxa_giro']),
+      mortalidade: _bloco(desfrute['mortalidade']),
     );
   }
 

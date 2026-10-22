@@ -83,13 +83,14 @@ class CartaoIndicador extends StatelessWidget {
         children: [
           Text(
             titulo.toUpperCase(),
-            maxLines: 2,
+            maxLines: 1,
+            softWrap: false,
             overflow: TextOverflow.ellipsis,
             style: const TextStyle(
               fontFamily: 'Montserrat',
-              fontSize: 10,
+              fontSize: 9,
               fontWeight: FontWeight.w700,
-              letterSpacing: 0.3,
+              letterSpacing: 0.2,
               color: Color(0xFF6B6B6B),
             ),
           ),
@@ -141,16 +142,20 @@ class CartaoIndicador extends StatelessWidget {
 }
 
 class GradeCartoes extends StatelessWidget {
-  const GradeCartoes({super.key, required this.cartoes});
+  const GradeCartoes({super.key, required this.cartoes, this.colunas});
 
   final List<Widget> cartoes;
+  /// Se null: 3 cartões → 1 linha; senão 2 por linha.
+  final int? colunas;
 
   @override
   Widget build(BuildContext context) {
     return LayoutBuilder(
       builder: (context, constraints) {
-        const gap = 12.0;
-        final largura = (constraints.maxWidth - gap) / 2;
+        const gap = 8.0;
+        final porLinha = colunas ?? (cartoes.length == 3 ? 3 : 2);
+        final largura =
+            (constraints.maxWidth - gap * (porLinha - 1)) / porLinha;
         return Wrap(
           spacing: gap,
           runSpacing: gap,
@@ -411,87 +416,300 @@ class _BarrasHorizontais extends StatelessWidget {
   }
 }
 
-class TabelaIndicador extends StatelessWidget {
-  const TabelaIndicador({
-    super.key,
-    required this.colunas,
-    required this.linhas,
-    this.esmaecer,
+class CampoCardIndicador {
+  const CampoCardIndicador(this.rotulo, this.valor, {this.cor});
+
+  final String rotulo;
+  final String valor;
+  final Color? cor;
+}
+
+class ItemCardIndicador {
+  const ItemCardIndicador({
+    required this.titulo,
+    this.subtitulo,
+    this.selo,
+    this.campos = const [],
+    this.esmaecido = false,
   });
 
-  final List<String> colunas;
-  final List<List<Widget>> linhas;
-  final bool Function(int indice)? esmaecer;
+  final String titulo;
+  final String? subtitulo;
+  final String? selo;
+  final List<CampoCardIndicador> campos;
+  final bool esmaecido;
+}
+
+class ListaCardsIndicador extends StatefulWidget {
+  const ListaCardsIndicador({
+    super.key,
+    required this.itens,
+    this.titulo,
+    this.vazio,
+    this.limite = 3,
+  });
+
+  final List<ItemCardIndicador> itens;
+  final String? titulo;
+  final String? vazio;
+  final int limite;
+
+  @override
+  State<ListaCardsIndicador> createState() => _ListaCardsIndicadorState();
+}
+
+class _ListaCardsIndicadorState extends State<ListaCardsIndicador> {
+  bool _expandido = false;
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      width: double.infinity,
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: IndicadorCores.linha),
-      ),
-      child: Column(
-        children: [
+    final total = widget.itens.length;
+    final cortar = !_expandido && total > widget.limite;
+    final visiveis = cortar
+        ? widget.itens.take(widget.limite).toList()
+        : widget.itens;
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        if (widget.titulo != null) ...[
+          Text(widget.titulo!, style: tituloSecao),
+          const SizedBox(height: 8),
+        ],
+        if (total == 0)
           Container(
-            color: const Color(0xFFF7F5F0),
-            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
-            child: Row(
-              children: [
-                for (var i = 0; i < colunas.length; i++)
-                  Expanded(
-                    flex: i == 0 ? 3 : 2,
-                    child: Text(
-                      colunas[i],
-                      maxLines: 2,
-                      overflow: TextOverflow.ellipsis,
-                      style: const TextStyle(
-                        fontFamily: 'Montserrat',
-                        color: IndicadorCores.verde,
-                        fontSize: 11,
-                        height: 1.15,
-                        fontWeight: FontWeight.w700,
-                      ),
-                    ),
-                  ),
-              ],
+            width: double.infinity,
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(color: IndicadorCores.linha),
             ),
-          ),
-          for (var i = 0; i < linhas.length; i++)
-            Opacity(
-              opacity: esmaecer?.call(i) == true ? 0.4 : 1,
-              child: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
-                decoration: const BoxDecoration(
-                  border: Border(top: BorderSide(color: IndicadorCores.linha)),
+            child: Text(
+              widget.vazio ?? 'Sem registros',
+              style: const TextStyle(
+                fontFamily: 'Montserrat',
+                fontSize: 13,
+                color: Color(0xFF8A8A8A),
+              ),
+            ),
+          )
+        else ...[
+          for (var i = 0; i < visiveis.length; i++) ...[
+            if (i > 0) const SizedBox(height: 8),
+            _CardListaIndicador(item: visiveis[i]),
+          ],
+          if (total > widget.limite) ...[
+            const SizedBox(height: 10),
+            SizedBox(
+              width: double.infinity,
+              child: OutlinedButton(
+                onPressed: () => setState(() => _expandido = !_expandido),
+                style: OutlinedButton.styleFrom(
+                  foregroundColor: MyColors.colorPrimary,
+                  backgroundColor: Colors.white,
+                  side: const BorderSide(color: Color(0xFFE6E6E6)),
+                  padding: const EdgeInsets.symmetric(vertical: 12),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
                 ),
-                child: Row(
-                  children: [
-                    for (var c = 0; c < linhas[i].length; c++)
-                      Expanded(flex: c == 0 ? 3 : 2, child: linhas[i][c]),
-                  ],
+                child: Text(
+                  _expandido ? 'Ver menos' : 'Ver mais ($total)',
+                  style: const TextStyle(
+                    fontFamily: 'Montserrat',
+                    fontSize: 13,
+                    fontWeight: FontWeight.w600,
+                  ),
                 ),
               ),
             ),
+          ],
         ],
-      ),
+      ],
     );
   }
 }
 
-Widget celula(String texto, {Color? cor}) {
-  return Text(
-    texto,
-    maxLines: 2,
-    overflow: TextOverflow.ellipsis,
-    style: TextStyle(
-      fontFamily: 'Montserrat',
-      color: cor ?? IndicadorCores.texto,
-      fontSize: 11,
-      height: 1.15,
-    ),
-  );
+class _CardListaIndicador extends StatelessWidget {
+  const _CardListaIndicador({required this.item});
+
+  final ItemCardIndicador item;
+
+  ({Color bg, Color fg}) _coresSelo(String selo) {
+    final s = selo.toLowerCase();
+    if (s.contains('morte') || s.contains('abigeato') || s == 'inativo') {
+      return (bg: const Color(0xFFFDECEC), fg: const Color(0xFFC62828));
+    }
+    if (s.contains('venda') || s == 'ativo') {
+      return (bg: const Color(0xFFE7F6EC), fg: MyColors.colorPrimary);
+    }
+    return (bg: const Color(0xFFF3F6F4), fg: const Color(0xFF3D5346));
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final selo = item.selo?.trim();
+    final sub = item.subtitulo?.trim();
+    final cores = selo == null || selo.isEmpty ? null : _coresSelo(selo);
+    final temSub = sub != null && sub.isNotEmpty;
+
+    return Opacity(
+      opacity: item.esmaecido ? 0.45 : 1,
+      child: Container(
+        width: double.infinity,
+        padding: const EdgeInsets.fromLTRB(14, 12, 14, 12),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(14),
+          border: Border.all(color: const Color(0xFFE6E6E6)),
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // Cabeçalho: título (+ lote) | selo — uma linha só
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                Expanded(
+                  child: temSub
+                      ? Text.rich(
+                          TextSpan(
+                            children: [
+                              TextSpan(
+                                text: item.titulo,
+                                style: const TextStyle(
+                                  fontFamily: 'Montserrat',
+                                  fontSize: 14,
+                                  fontWeight: FontWeight.w700,
+                                  color: Color(0xFF1C1C1C),
+                                ),
+                              ),
+                              const TextSpan(
+                                text: '  ·  ',
+                                style: TextStyle(
+                                  fontFamily: 'Montserrat',
+                                  fontSize: 13,
+                                  fontWeight: FontWeight.w500,
+                                  color: Color(0xFFB0B0B0),
+                                ),
+                              ),
+                              TextSpan(
+                                text: sub,
+                                style: const TextStyle(
+                                  fontFamily: 'Montserrat',
+                                  fontSize: 13,
+                                  fontWeight: FontWeight.w500,
+                                  color: Color(0xFF8C8C8C),
+                                ),
+                              ),
+                            ],
+                          ),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        )
+                      : Text(
+                          item.titulo,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: const TextStyle(
+                            fontFamily: 'Montserrat',
+                            fontSize: 14,
+                            fontWeight: FontWeight.w700,
+                            color: Color(0xFF1C1C1C),
+                          ),
+                        ),
+                ),
+                if (selo != null && selo.isNotEmpty && cores != null) ...[
+                  const SizedBox(width: 10),
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 10,
+                      vertical: 4,
+                    ),
+                    decoration: BoxDecoration(
+                      color: cores.bg,
+                      borderRadius: BorderRadius.circular(20),
+                    ),
+                    child: Text(
+                      selo,
+                      style: TextStyle(
+                        fontFamily: 'Montserrat',
+                        fontSize: 11,
+                        fontWeight: FontWeight.w600,
+                        color: cores.fg,
+                      ),
+                    ),
+                  ),
+                ],
+              ],
+            ),
+            if (item.campos.isNotEmpty) ...[
+              const SizedBox(height: 10),
+              // Faixa de métricas: rótulo acima do valor (como antes), só mais baixa
+              Container(
+                width: double.infinity,
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 12,
+                  vertical: 8,
+                ),
+                decoration: BoxDecoration(
+                  color: const Color(0xFFF7F5F0),
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                child: Row(
+                  children: [
+                    for (var i = 0; i < item.campos.length; i++) ...[
+                      if (i > 0)
+                        Container(
+                          width: 1,
+                          height: 24,
+                          margin: const EdgeInsets.symmetric(horizontal: 6),
+                          color: const Color(0xFFE2DDD2),
+                        ),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              item.campos[i].rotulo.toUpperCase(),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: const TextStyle(
+                                fontFamily: 'Montserrat',
+                                fontSize: 9,
+                                fontWeight: FontWeight.w700,
+                                letterSpacing: 0.35,
+                                color: Color(0xFF8A8A8A),
+                              ),
+                            ),
+                            const SizedBox(height: 2),
+                            Text(
+                              item.campos[i].valor,
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: TextStyle(
+                                fontFamily: 'Montserrat',
+                                fontSize: 13,
+                                fontWeight: FontWeight.w700,
+                                height: 1.15,
+                                color: item.campos[i].cor ??
+                                    const Color(0xFF313131),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ],
+                ),
+              ),
+            ],
+          ],
+        ),
+      ),
+    );
+  }
 }
 
 class FiltrosIndicador extends StatelessWidget {

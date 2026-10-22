@@ -8,6 +8,7 @@ import 'package:costeira/features/dashboard/domain/entities/dashboard_entity.dar
 import 'package:costeira/features/dashboard/domain/entities/dashboard_filter_entity.dart';
 import 'package:costeira/features/dashboard/presentation/controllers/get_dashboard_controller.dart';
 import 'package:costeira/features/dashboard/presentation/widgets/dashboard_charts.dart';
+import 'package:costeira/features/financeiro/presentation/widgets/cartao_financeiro_dashboard.dart';
 import 'package:costeira/features/fazendas/domain/entities/fazenda_entity.dart';
 import 'package:costeira/features/fazendas/domain/entities/fazenda_filter_entity.dart';
 import 'package:costeira/features/fazendas/domain/usecases/get_fazendas_usecase.dart';
@@ -620,6 +621,8 @@ class _DashboardState extends State<Dashboard> {
               overdue: _indicators.emAtraso,
               urgent: _indicators.urgentes,
             ),
+            const SizedBox(height: 16),
+            const CartaoFinanceiroDashboard(),
             const SizedBox(height: 16),
             LayoutBuilder(
               builder: (context, constraints) {

@@ -58,6 +58,9 @@ class IndicadorBloco {
   Map<String, dynamic> get calculo => _mapa(indicadores['calculo']);
 
   List<Map<String, dynamic>> serie(String chave) => _lista(graficos[chave]);
+
+  int? get mesesEstoqueMedio =>
+      numeroIndicador(raw['meses_estoque_medio'])?.round();
 }
 
 class IndicadoresLista {
@@ -69,6 +72,10 @@ class IndicadoresLista {
     required this.lotacao,
     required this.rebanhoMedio,
     required this.areaMedia,
+    required this.taxaDesfrute,
+    required this.taxaAbate,
+    required this.taxaGiro,
+    required this.mortalidade,
   });
 
   final PeriodoIndicadores periodo;
@@ -78,6 +85,10 @@ class IndicadoresLista {
   final IndicadorBloco lotacao;
   final IndicadorBloco rebanhoMedio;
   final IndicadorBloco areaMedia;
+  final IndicadorBloco taxaDesfrute;
+  final IndicadorBloco taxaAbate;
+  final IndicadorBloco taxaGiro;
+  final IndicadorBloco mortalidade;
 
   static const vazia = IndicadoresLista(
     periodo: PeriodoIndicadores(),
@@ -87,6 +98,10 @@ class IndicadoresLista {
     lotacao: IndicadorBloco.vazio,
     rebanhoMedio: IndicadorBloco.vazio,
     areaMedia: IndicadorBloco.vazio,
+    taxaDesfrute: IndicadorBloco.vazio,
+    taxaAbate: IndicadorBloco.vazio,
+    taxaGiro: IndicadorBloco.vazio,
+    mortalidade: IndicadorBloco.vazio,
   );
 }
 

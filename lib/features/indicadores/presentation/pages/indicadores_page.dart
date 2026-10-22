@@ -19,6 +19,10 @@ enum IndicadorId {
   lotacaoCab,
   rebanhoMedio,
   areaMedia,
+  taxaDesfrute,
+  taxaAbate,
+  taxaGiro,
+  mortalidade,
 }
 
 class IndicadoresPage extends StatefulWidget {
@@ -139,9 +143,14 @@ const _modulos = [
   ),
   _Modulo(
     titulo: 'Desfrute e saídas',
-    subtitulo: 'Em desenvolvimento',
-    aberto: false,
-    itens: [],
+    subtitulo: 'Desfrute, abate, giro e mortalidade',
+    aberto: true,
+    itens: [
+      (IndicadorId.taxaDesfrute, 'Taxa de desfrute'),
+      (IndicadorId.taxaAbate, 'Taxa de abate'),
+      (IndicadorId.taxaGiro, 'Taxa de giro'),
+      (IndicadorId.mortalidade, 'Mortalidade'),
+    ],
   ),
   _Modulo(
     titulo: 'Financeiro',
@@ -232,6 +241,14 @@ String _titulo(IndicadorId id) {
       return 'Rebanho médio';
     case IndicadorId.areaMedia:
       return 'Área média utilizada';
+    case IndicadorId.taxaDesfrute:
+      return 'Taxa de desfrute';
+    case IndicadorId.taxaAbate:
+      return 'Taxa de abate';
+    case IndicadorId.taxaGiro:
+      return 'Taxa de giro';
+    case IndicadorId.mortalidade:
+      return 'Mortalidade';
   }
 }
 
@@ -276,6 +293,14 @@ class _Detalhe extends StatelessWidget {
         return _rebanho(lista);
       case IndicadorId.areaMedia:
         return _area(lista);
+      case IndicadorId.taxaDesfrute:
+        return _desfrute(lista);
+      case IndicadorId.taxaAbate:
+        return _abate(lista);
+      case IndicadorId.taxaGiro:
+        return _giro(lista);
+      case IndicadorId.mortalidade:
+        return _mortalidade(lista);
     }
   }
 }
@@ -369,17 +394,45 @@ List<Widget> _gmdLote(IndicadoresLista lista) {
       ],
     ),
     const SizedBox(height: 12),
-    TabelaIndicador(
-      colunas: const ['Lote', 'Peso início', 'Peso fim', 'Dias', 'GMD'],
-      linhas: [
+    ListaCardsIndicador(
+      titulo: 'Lotes',
+      itens: [
         for (final item in linhas)
-          [
-            celula('${item['nome'] ?? '—'}'),
-            celula(textoOuTraco(numeroIndicador(item['peso_inicio']), unidade: 'kg', casas: 1, fixo: true)),
-            celula(textoOuTraco(numeroIndicador(item['peso_fim']), unidade: 'kg', casas: 1, fixo: true)),
-            celula(textoOuTraco(numeroIndicador(item['dias']), casas: 0)),
-            celula(textoOuTraco(numeroIndicador(item['gmd']), casas: 3, fixo: true)),
-          ],
+          ItemCardIndicador(
+            titulo: '${item['nome'] ?? '—'}',
+            campos: [
+              CampoCardIndicador(
+                'Peso início',
+                textoOuTraco(
+                  numeroIndicador(item['peso_inicio']),
+                  unidade: 'kg',
+                  casas: 1,
+                  fixo: true,
+                ),
+              ),
+              CampoCardIndicador(
+                'Peso fim',
+                textoOuTraco(
+                  numeroIndicador(item['peso_fim']),
+                  unidade: 'kg',
+                  casas: 1,
+                  fixo: true,
+                ),
+              ),
+              CampoCardIndicador(
+                'Dias',
+                textoOuTraco(numeroIndicador(item['dias']), casas: 0),
+              ),
+              CampoCardIndicador(
+                'GMD',
+                textoOuTraco(
+                  numeroIndicador(item['gmd']),
+                  casas: 3,
+                  fixo: true,
+                ),
+              ),
+            ],
+          ),
       ],
     ),
   ];
@@ -492,19 +545,33 @@ List<Widget> _ua(IndicadoresLista lista) {
       texto: 'Piquetes inativos ficam esmaecidos e não entram nos totais.',
     ),
     const SizedBox(height: 12),
-    TabelaIndicador(
-      colunas: const ['Piquete', 'Área', 'Cabeças', 'UA', 'UA/ha', 'Status'],
-      esmaecer: (i) => !_ativo(linhas[i]['status']),
-      linhas: [
+    ListaCardsIndicador(
+      titulo: 'Piquetes',
+      itens: [
         for (final item in linhas)
-          [
-            celula('${item['nome'] ?? '—'}'),
-            celula(textoOuTraco(numeroIndicador(item['area']), unidade: 'ha')),
-            celula(textoOuTraco(numeroIndicador(item['cabecas']), casas: 0)),
-            celula(textoOuTraco(numeroIndicador(item['ua']))),
-            celula(textoOuTraco(numeroIndicador(item['ua_ha']))),
-            celula('${item['status'] ?? '—'}'),
-          ],
+          ItemCardIndicador(
+            titulo: '${item['nome'] ?? '—'}',
+            selo: '${item['status'] ?? ''}',
+            esmaecido: !_ativo(item['status']),
+            campos: [
+              CampoCardIndicador(
+                'Área',
+                textoOuTraco(numeroIndicador(item['area']), unidade: 'ha'),
+              ),
+              CampoCardIndicador(
+                'Cabeças',
+                textoOuTraco(numeroIndicador(item['cabecas']), casas: 0),
+              ),
+              CampoCardIndicador(
+                'UA',
+                textoOuTraco(numeroIndicador(item['ua'])),
+              ),
+              CampoCardIndicador(
+                'UA/ha',
+                textoOuTraco(numeroIndicador(item['ua_ha'])),
+              ),
+            ],
+          ),
       ],
     ),
   ];
@@ -585,22 +652,29 @@ List<Widget> _rebanho(IndicadoresLista lista) {
       ],
     ),
     const SizedBox(height: 12),
-    TabelaIndicador(
-      colunas: const ['Mês', 'Entradas', 'Saídas', 'Estoque'],
-      linhas: [
+    ListaCardsIndicador(
+      titulo: 'Movimento mensal',
+      itens: [
         for (final item in linhas)
-          [
-            celula('${item['nome_mes'] ?? '—'}'),
-            celula(
-              _comSinal(numeroIndicador(item['entradas']), positivo: true),
-              cor: const Color(0xFF1E7A42),
-            ),
-            celula(
-              _comSinal(numeroIndicador(item['saidas']), positivo: false),
-              cor: const Color(0xFFB42318),
-            ),
-            celula(textoOuTraco(numeroIndicador(item['estoque']), casas: 0)),
-          ],
+          ItemCardIndicador(
+            titulo: '${item['nome_mes'] ?? '—'}',
+            campos: [
+              CampoCardIndicador(
+                'Entradas',
+                _comSinal(numeroIndicador(item['entradas']), positivo: true),
+                cor: const Color(0xFF1E7A42),
+              ),
+              CampoCardIndicador(
+                'Saídas',
+                _comSinal(numeroIndicador(item['saidas']), positivo: false),
+                cor: const Color(0xFFB42318),
+              ),
+              CampoCardIndicador(
+                'Estoque',
+                textoOuTraco(numeroIndicador(item['estoque']), casas: 0),
+              ),
+            ],
+          ),
       ],
     ),
   ];
@@ -650,18 +724,247 @@ List<Widget> _area(IndicadoresLista lista) {
           'Em fazendas com integração lavoura-pecuária, marque um piquete como inativo quando ele sai de uso da pecuária. A área ativa agora passa a considerar só os piquetes ativos. A área média do ano agrícola pondera do dia 1º de julho até hoje, ou até o fim do ano, se ele já tiver terminado.',
     ),
     const SizedBox(height: 12),
-    TabelaIndicador(
-      colunas: const ['Piquete', 'Área', 'Lotes', 'Ocupação', 'Status'],
-      esmaecer: (i) => !_ativo(linhas[i]['status']),
-      linhas: [
+    ListaCardsIndicador(
+      titulo: 'Piquetes',
+      itens: [
         for (final item in linhas)
-          [
-            celula('${item['nome'] ?? '—'}'),
-            celula(textoOuTraco(numeroIndicador(item['area']), unidade: 'ha')),
-            celula(textoOuTraco(numeroIndicador(item['lotes']), casas: 0)),
-            celula('${item['ocupacao'] ?? '—'}'),
-            celula('${item['status'] ?? '—'}'),
-          ],
+          ItemCardIndicador(
+            titulo: '${item['nome'] ?? '—'}',
+            selo: '${item['status'] ?? ''}',
+            esmaecido: !_ativo(item['status']),
+            campos: [
+              CampoCardIndicador(
+                'Área',
+                textoOuTraco(numeroIndicador(item['area']), unidade: 'ha'),
+              ),
+              CampoCardIndicador(
+                'Lotes',
+                textoOuTraco(numeroIndicador(item['lotes']), casas: 0),
+              ),
+              CampoCardIndicador(
+                'Ocupação',
+                '${item['ocupacao'] ?? '—'}',
+              ),
+            ],
+          ),
+      ],
+    ),
+  ];
+}
+
+List<Widget> _desfrute(IndicadoresLista lista) {
+  final bloco = lista.taxaDesfrute;
+  final linhas = bloco.detalhamento;
+  return [
+    GradeCartoes(
+      cartoes: [
+        CartaoIndicador(
+          medicao: bloco.valor('taxa_desfrute'),
+          unidadePadrao: '%',
+          titulo: 'Desfrute',
+          legenda: 'Kg produzido ÷ Kg inventário inicial',
+        ),
+        CartaoIndicador(
+          medicao: bloco.valor('kg_produzido'),
+          unidadePadrao: 'kg',
+          titulo: 'Kg produzido',
+        ),
+        CartaoIndicador(
+          medicao: bloco.valor('kg_inventario_inicial'),
+          unidadePadrao: 'kg',
+          titulo: 'Kg inventário',
+        ),
+      ],
+    ),
+    const SizedBox(height: 12),
+    const CaixaNota(
+      texto:
+          'Taxa de Desfrute = quanto, em peso, a fazenda produziu (nasceu/engordou/saiu) em relação ao peso do rebanho com que o ano agrícola começou. Mesmo cálculo do "Kg Produzido": estoque atual + saídas − inventário inicial − compras.',
+    ),
+    const SizedBox(height: 12),
+    ListaCardsIndicador(
+      titulo: 'Saídas (venda/morte) no período',
+      vazio: 'Sem saídas no período',
+      itens: [
+        for (final item in linhas)
+          ItemCardIndicador(
+            titulo: _campo(item, const ['categoria', 'nome_categoria']),
+            subtitulo: _campo(item, const ['lote', 'nome_lote']),
+            selo: _campo(item, const ['tipo']),
+            campos: [
+              CampoCardIndicador(
+                'Data',
+                _campo(item, const ['data', 'data_vinculo']),
+              ),
+              CampoCardIndicador(
+                'Qtd',
+                textoOuTraco(
+                  numeroIndicador(item['qtd'] ?? item['quantidade']),
+                  casas: 0,
+                ),
+              ),
+              CampoCardIndicador(
+                'Peso',
+                textoOuTraco(
+                  numeroIndicador(item['peso'] ?? item['peso_total']),
+                  unidade: 'kg',
+                ),
+              ),
+            ],
+          ),
+      ],
+    ),
+  ];
+}
+
+List<Widget> _abate(IndicadoresLista lista) {
+  final bloco = lista.taxaAbate;
+  final vendidos = bloco.valor('kg_vendidos');
+  final estoque = bloco.valor('kg_estoque_inicial');
+  final equacao = _equacao(
+    esquerda: vendidos,
+    esquerdaUnidade: 'kg',
+    esquerdaRotulo: 'vendidos',
+    direita: estoque,
+    direitaUnidade: 'kg',
+    direitaRotulo: 'do estoque inicial',
+  );
+  return [
+    GradeCartoes(
+      cartoes: [
+        CartaoIndicador(
+          medicao: bloco.valor('taxa_abate'),
+          unidadePadrao: '%',
+          titulo: 'Abate',
+          legenda: 'Kg vendidos ÷ kg estoque inicial',
+        ),
+        CartaoIndicador(
+          medicao: vendidos,
+          unidadePadrao: 'kg',
+          titulo: 'Kg vendidos',
+        ),
+        CartaoIndicador(
+          medicao: estoque,
+          unidadePadrao: 'kg',
+          titulo: 'Kg estoque',
+        ),
+      ],
+    ),
+    if (equacao != null) ...[
+      const SizedBox(height: 12),
+      CaixaNota(titulo: 'Como foi calculado', texto: equacao),
+    ],
+  ];
+}
+
+List<Widget> _giro(IndicadoresLista lista) {
+  final bloco = lista.taxaGiro;
+  final vendidas = bloco.valor('cabecas_vendidas');
+  final estoque = bloco.valor('estoque_inicial');
+  final equacao = _equacao(
+    esquerda: vendidas,
+    esquerdaUnidade: 'cab',
+    esquerdaRotulo: 'vendidas',
+    direita: estoque,
+    direitaUnidade: 'cab',
+    direitaRotulo: 'do estoque inicial',
+  );
+  return [
+    GradeCartoes(
+      cartoes: [
+        CartaoIndicador(
+          medicao: bloco.valor('taxa_giro'),
+          unidadePadrao: '%',
+          titulo: 'Giro',
+          legenda: 'Cabeças vendidas ÷ estoque inicial',
+        ),
+        CartaoIndicador(
+          medicao: vendidas,
+          unidadePadrao: 'cab',
+          titulo: 'Vendidas',
+        ),
+        CartaoIndicador(
+          medicao: estoque,
+          unidadePadrao: 'cab',
+          titulo: 'Estoque inicial',
+        ),
+      ],
+    ),
+    if (equacao != null) ...[
+      const SizedBox(height: 12),
+      CaixaNota(titulo: 'Como foi calculado', texto: equacao),
+    ],
+  ];
+}
+
+List<Widget> _mortalidade(IndicadoresLista lista) {
+  final bloco = lista.mortalidade;
+  final meses = bloco.mesesEstoqueMedio;
+  final linhas = bloco.detalhamento;
+  final serie = bloco.serie('mortalidade_categoria');
+  return [
+    GradeCartoes(
+      cartoes: [
+        CartaoIndicador(
+          medicao: bloco.valor('taxa_mortalidade'),
+          unidadePadrao: '%',
+          titulo: 'Mortalidade',
+          legenda: 'Mortes + Abigeato ÷ Estoque Médio',
+        ),
+        CartaoIndicador(
+          medicao: bloco.valor('animais_perdidos'),
+          inteiro: true,
+          titulo: 'Perdidos',
+          legenda: 'Mortes + Abigeato',
+        ),
+        CartaoIndicador(
+          medicao: bloco.valor('estoque_medio'),
+          inteiro: true,
+          titulo: 'Estoque médio',
+          legenda: meses == null
+              ? 'Média mensal'
+              : 'Média mensal — $meses mês(es)',
+        ),
+      ],
+    ),
+    const SizedBox(height: 12),
+    GraficoIndicador(
+      titulo: 'Mortalidade por categoria',
+      barras: true,
+      pontos: [
+        for (final item in serie)
+          PontoSerie(
+            _campo(item, const ['nome', 'categoria', 'nome_categoria']),
+            numeroIndicador(
+              item['qtd'] ?? item['mortes'] ?? item['valor'] ?? item['quantidade'],
+            ),
+          ),
+      ],
+    ),
+    const SizedBox(height: 12),
+    ListaCardsIndicador(
+      titulo: 'Registros',
+      vazio: 'Nenhuma morte registrada no período',
+      itens: [
+        for (final item in linhas)
+          ItemCardIndicador(
+            titulo: _campo(item, const ['categoria', 'nome_categoria']),
+            subtitulo: _campo(item, const ['lote', 'nome_lote']),
+            selo: _campo(item, const ['tipo']),
+            campos: [
+              CampoCardIndicador(
+                'Data',
+                _campo(item, const ['data', 'data_vinculo']),
+              ),
+              CampoCardIndicador(
+                'Qtd',
+                textoOuTraco(
+                  numeroIndicador(item['quantidade'] ?? item['qtd']),
+                  casas: 0,
+                ),
+              ),
+            ],
+          ),
       ],
     ),
   ];
@@ -680,4 +983,40 @@ String _comSinal(num? valor, {required bool positivo}) {
     return '0';
   }
   return positivo ? '+$numero' : '−$numero';
+}
+
+String _campo(Map<String, dynamic> item, List<String> chaves) {
+  for (final chave in chaves) {
+    final valor = item[chave];
+    if (valor == null) {
+      continue;
+    }
+    if (valor is Map) {
+      final nome = valor['nome']?.toString().trim();
+      if (nome != null && nome.isNotEmpty) {
+        return nome;
+      }
+    }
+    final texto = valor.toString().trim();
+    if (texto.isNotEmpty && texto != 'null') {
+      return texto;
+    }
+  }
+  return '—';
+}
+
+String? _equacao({
+  required IndicadorValor esquerda,
+  required String esquerdaUnidade,
+  required String esquerdaRotulo,
+  required IndicadorValor direita,
+  required String direitaUnidade,
+  required String direitaRotulo,
+}) {
+  if (esquerda.qtd == null || direita.qtd == null) {
+    return null;
+  }
+  final esq = esquerda.partes(unidadePadrao: esquerdaUnidade);
+  final dir = direita.partes(unidadePadrao: direitaUnidade);
+  return '${esq.numero} ${esq.unidade ?? esquerdaUnidade} $esquerdaRotulo ÷ ${dir.numero} ${dir.unidade ?? direitaUnidade} $direitaRotulo.';
 }
