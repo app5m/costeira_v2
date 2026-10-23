@@ -708,15 +708,17 @@ class _DashboardWebPageState extends State<DashboardWebPage> {
         ],
       );
     }
-    return Row(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Expanded(flex: 10, child: widgets[0]),
-        const SizedBox(width: 12),
-        Expanded(flex: 16, child: widgets[1]),
-        const SizedBox(width: 12),
-        Expanded(flex: 10, child: widgets[2]),
-      ],
+    return IntrinsicHeight(
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Expanded(flex: 10, child: widgets[0]),
+          const SizedBox(width: 12),
+          Expanded(flex: 16, child: widgets[1]),
+          const SizedBox(width: 12),
+          Expanded(flex: 10, child: widgets[2]),
+        ],
+      ),
     );
   }
 }

@@ -20,7 +20,7 @@ class TaskUpsertRequestDto {
       'obs': task.obs,
       'urgencia': task.urgencia,
       'datas': task.datas,
-      if (task.dataPrazo != null) 'data_prazo': task.dataPrazo,
+      'data_prazo': task.dataPrazo ?? '',
     }));
   }
 }

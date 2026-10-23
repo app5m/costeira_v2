@@ -27,11 +27,13 @@ class ProfileWebPage extends StatefulWidget {
     this.onOpenTasks,
     this.onOpenPotreiros,
     this.onOpenEstoque,
+    this.onOpenPluviosidade,
   });
 
   final VoidCallback? onOpenTasks;
   final VoidCallback? onOpenPotreiros;
   final VoidCallback? onOpenEstoque;
+  final VoidCallback? onOpenPluviosidade;
 
   @override
   State<ProfileWebPage> createState() => _ProfileWebPageState();
@@ -433,6 +435,13 @@ class _ProfileWebPageState extends State<ProfileWebPage> {
       final openEstoque = widget.onOpenEstoque;
       if (openEstoque != null) {
         openEstoque();
+        return;
+      }
+    }
+    if (slug == MenuSlug.pluviosidade) {
+      final openPluviosidade = widget.onOpenPluviosidade;
+      if (openPluviosidade != null) {
+        openPluviosidade();
         return;
       }
     }

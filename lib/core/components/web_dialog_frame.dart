@@ -168,6 +168,9 @@ class _FitContentShell extends StatelessWidget {
   final EdgeInsetsGeometry bodyPadding;
   final bool scrollableBody;
 
+  static const double _headerBlock = 67; // 66 header + 1 divider
+  static const double _footerReserve = 96; // divider + padded footer actions
+
   @override
   Widget build(BuildContext context) {
     final body = scrollableBody
@@ -182,26 +185,30 @@ class _FitContentShell extends StatelessWidget {
             child: child,
           );
 
-    final content = Column(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        _DialogHeader(title: title, headerActions: headerActions),
-        const Divider(height: 1, color: Color(0xFFE7E4DD)),
-        Flexible(child: body),
-        if (footer != null) ...[
-          const Divider(height: 1, color: Color(0xFFE7E4DD)),
-          footer!,
-        ],
-      ],
-    );
-
+    // Tight height: Flexible is safe and fills the remaining slot.
     if (preferredHeight != null) {
       return SizedBox(
         width: width,
         height: preferredHeight,
-        child: content,
+        child: Column(
+          children: [
+            _DialogHeader(title: title, headerActions: headerActions),
+            const Divider(height: 1, color: Color(0xFFE7E4DD)),
+            Flexible(child: body),
+            if (footer != null) ...[
+              const Divider(height: 1, color: Color(0xFFE7E4DD)),
+              footer!,
+            ],
+          ],
+        ),
       );
     }
+
+    // Fit-to-content: never use Flexible inside MainAxisSize.min — it causes
+    // layout thrash / flicker on web when the dialog remeasures.
+    final footerBlock = footer == null ? 0.0 : _footerReserve;
+    final bodyMaxHeight =
+        (maxHeight - _headerBlock - footerBlock).clamp(0.0, double.infinity);
 
     return ConstrainedBox(
       constraints: BoxConstraints(
@@ -210,7 +217,21 @@ class _FitContentShell extends StatelessWidget {
         minHeight: minHeight,
         maxHeight: maxHeight,
       ),
-      child: content,
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          _DialogHeader(title: title, headerActions: headerActions),
+          const Divider(height: 1, color: Color(0xFFE7E4DD)),
+          ConstrainedBox(
+            constraints: BoxConstraints(maxHeight: bodyMaxHeight),
+            child: body,
+          ),
+          if (footer != null) ...[
+            const Divider(height: 1, color: Color(0xFFE7E4DD)),
+            footer!,
+          ],
+        ],
+      ),
     );
   }
 }

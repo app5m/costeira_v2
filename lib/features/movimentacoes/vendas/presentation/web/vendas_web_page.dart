@@ -315,12 +315,15 @@ class _VendasWebPageState extends State<VendasWebPage>
               if (isList) ...[
                 const SizedBox(width: 8),
                 SizedBox(
-                  width: compact ? 126 : 170,
                   height: 46,
                   child: ElevatedButton.icon(
                     onPressed: loading ? null : () => _openForm(),
                     icon: const Icon(Icons.add_rounded, size: 19),
-                    label: Text(compact ? 'Adicionar' : 'Adicionar venda'),
+                    label: Text(
+                      compact ? 'Adicionar' : 'Adicionar venda',
+                      softWrap: false,
+                      maxLines: 1,
+                    ),
                     style: ElevatedButton.styleFrom(
                       elevation: 0,
                       padding: const EdgeInsets.symmetric(horizontal: 14),

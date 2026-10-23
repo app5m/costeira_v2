@@ -248,9 +248,9 @@ class _ParceiroFormWebDialogState extends State<ParceiroFormWebDialog> {
     return Padding(
       padding: EdgeInsets.fromLTRB(
         narrow ? 16 : 20,
-        narrow ? 16 : 16,
+        12,
         narrow ? 16 : 20,
-        24,
+        16,
       ),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.end,

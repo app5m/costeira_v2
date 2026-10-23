@@ -26,7 +26,15 @@ import 'package:costeira/features/fazendas/presentation/web/fazendas_web_page.da
 import 'package:costeira/features/fazendas/domain/usecases/resolve_current_farm_id.dart';
 import 'package:costeira/features/manejos_animais/presentation/pages/manejos_animais_page.dart';
 import 'package:costeira/features/manejos_animais/presentation/web/manejos_web_page.dart';
+import 'package:costeira/features/climate_and_rain/presentation/web/climate_web_page.dart';
+import 'package:costeira/features/movimentacoes/abigeatos/presentation/web/abigeatos_web_page.dart';
+import 'package:costeira/features/movimentacoes/abortos/presentation/web/abortos_web_page.dart';
 import 'package:costeira/features/movimentacoes/compras/presentation/web/compras_web_page.dart';
+import 'package:costeira/features/movimentacoes/consumo/presentation/web/consumo_web_page.dart';
+import 'package:costeira/features/movimentacoes/mortes/presentation/web/mortes_web_page.dart';
+import 'package:costeira/features/movimentacoes/nascimento/presentation/web/nascimentos_web_page.dart';
+import 'package:costeira/features/movimentacoes/troca_categoria/presentation/web/troca_categoria_web_page.dart';
+import 'package:costeira/features/movimentacoes/transferencias/presentation/web/transferencias_web_page.dart';
 import 'package:costeira/features/movimentacoes/vendas/presentation/web/vendas_web_page.dart';
 import 'package:costeira/features/movimentacoes/movimentacoes.dart';
 import 'package:costeira/features/notifications/presentation/pages/notification_page.dart';
@@ -222,6 +230,8 @@ class _MainNavigationPageState extends State<MainNavigationPage>
       return;
     }
 
+    final previousIndex = _selectedIndex;
+    final previousSignature = _lastHandledSignature;
     final tabs = _tabs;
     var kicked = false;
 
@@ -257,7 +267,7 @@ class _MainNavigationPageState extends State<MainNavigationPage>
     }
 
     final signature = _menusController.signature;
-    if (kicked && signature.isNotEmpty && signature != _lastHandledSignature) {
+    if (kicked && signature.isNotEmpty && signature != previousSignature) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
         if (!mounted) {
           return;
@@ -270,6 +280,14 @@ class _MainNavigationPageState extends State<MainNavigationPage>
       });
     }
     _lastHandledSignature = signature;
+
+    // Evita rebuild do shell (e o "piscar" na web) quando só o loading
+    // dos menus mudou e a árvore permanece igual.
+    final indexChanged = _selectedIndex != previousIndex;
+    final signatureChanged = signature != previousSignature;
+    if (!kicked && !indexChanged && !signatureChanged) {
+      return;
+    }
 
     setState(() {});
   }
@@ -549,7 +567,17 @@ class _MainNavigationPageState extends State<MainNavigationPage>
   bool _openWebMovement(AppMenuEntity item) {
     if (!kIsWeb) return false;
     final slug = MenuActionResolver.slugOf(item);
-    if (slug != MenuSlug.compras && slug != MenuSlug.vendas) return false;
+    if (slug != MenuSlug.compras &&
+        slug != MenuSlug.vendas &&
+        slug != MenuSlug.transferencias &&
+        slug != MenuSlug.mortes &&
+        slug != MenuSlug.nascimentos &&
+        slug != MenuSlug.trocasCategoria &&
+        slug != MenuSlug.abortos &&
+        slug != MenuSlug.consumo &&
+        slug != MenuSlug.abigeato) {
+      return false;
+    }
     setState(() {
       _activeWebProfileSlug = null;
       _activeWebProfileTitle = null;
@@ -581,6 +609,13 @@ class _MainNavigationPageState extends State<MainNavigationPage>
     _openWebProfileModule(
       slug: MenuSlug.estoque,
       title: 'Estoque de Insumos',
+    );
+  }
+
+  void _openWebPluviosidade() {
+    _openWebProfileModule(
+      slug: MenuSlug.pluviosidade,
+      title: 'Clima e Chuvas',
     );
   }
 
@@ -647,6 +682,11 @@ class _MainNavigationPageState extends State<MainNavigationPage>
         key: ValueKey('$_shellGeracao-${MenuSlug.estoque}'),
       );
     }
+    if (_activeWebProfileSlug == MenuSlug.pluviosidade) {
+      return ClimateWebPage(
+        key: ValueKey('$_shellGeracao-${MenuSlug.pluviosidade}'),
+      );
+    }
     if (_activeWebMovementSlug == MenuSlug.compras) {
       return ComprasWebPage(
         key: ValueKey('$_shellGeracao-${MenuSlug.compras}'),
@@ -655,6 +695,41 @@ class _MainNavigationPageState extends State<MainNavigationPage>
     if (_activeWebMovementSlug == MenuSlug.vendas) {
       return VendasWebPage(
         key: ValueKey('$_shellGeracao-${MenuSlug.vendas}'),
+      );
+    }
+    if (_activeWebMovementSlug == MenuSlug.transferencias) {
+      return TransferenciasWebPage(
+        key: ValueKey('$_shellGeracao-${MenuSlug.transferencias}'),
+      );
+    }
+    if (_activeWebMovementSlug == MenuSlug.mortes) {
+      return MortesWebPage(
+        key: ValueKey('$_shellGeracao-${MenuSlug.mortes}'),
+      );
+    }
+    if (_activeWebMovementSlug == MenuSlug.nascimentos) {
+      return NascimentosWebPage(
+        key: ValueKey('$_shellGeracao-${MenuSlug.nascimentos}'),
+      );
+    }
+    if (_activeWebMovementSlug == MenuSlug.trocasCategoria) {
+      return TrocaCategoriaWebPage(
+        key: ValueKey('$_shellGeracao-${MenuSlug.trocasCategoria}'),
+      );
+    }
+    if (_activeWebMovementSlug == MenuSlug.abortos) {
+      return AbortosWebPage(
+        key: ValueKey('$_shellGeracao-${MenuSlug.abortos}'),
+      );
+    }
+    if (_activeWebMovementSlug == MenuSlug.consumo) {
+      return ConsumoWebPage(
+        key: ValueKey('$_shellGeracao-${MenuSlug.consumo}'),
+      );
+    }
+    if (_activeWebMovementSlug == MenuSlug.abigeato) {
+      return AbigeatosWebPage(
+        key: ValueKey('$_shellGeracao-${MenuSlug.abigeato}'),
       );
     }
     if (!hasTabs) {
@@ -793,6 +868,17 @@ class _MainNavigationPageState extends State<MainNavigationPage>
                 onWebContextChanged: _onFarmChanged,
                 onToolbarChanged: (data) {
                   if (!mounted || data == null) return;
+                  final prev = _dashboardToolbarData;
+                  if (prev != null &&
+                      prev.selectedFarmId == data.selectedFarmId &&
+                      prev.selectedPeriod == data.selectedPeriod &&
+                      prev.customPeriodLabel == data.customPeriodLabel &&
+                      prev.loadingFarms == data.loadingFarms &&
+                      prev.loadingDashboard == data.loadingDashboard &&
+                      prev.farms.length == data.farms.length &&
+                      prev.years.length == data.years.length) {
+                    return;
+                  }
                   setState(() => _dashboardToolbarData = data);
                 },
               )
@@ -813,6 +899,7 @@ class _MainNavigationPageState extends State<MainNavigationPage>
                 onOpenTasks: _openWebTasks,
                 onOpenPotreiros: _openWebPotreiros,
                 onOpenEstoque: _openWebEstoque,
+                onOpenPluviosidade: _openWebPluviosidade,
               )
             : Menu(key: chave),
       _ => ModulePlaceholderPage(

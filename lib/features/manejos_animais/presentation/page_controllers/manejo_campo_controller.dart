@@ -182,6 +182,9 @@ class ManejoCampoController extends ChangeNotifier {
       if (farmId == null) {
         throw ApiException('Cadastre uma fazenda antes de registrar o manejo.');
       }
+      // API exige tipo_dosagem (3|4) e dosagem > 0 mesmo sem produto.
+      final tipoDosagem = dosagem == ManejoCampoDosagem.hectare ? 3 : 4;
+      final dosagemValor = quantidadeInteira > 0 ? quantidadeInteira : 1;
       final result = await _adicionar.campo(
         appUsersId: user.id,
         appFazendasId: farmId,
@@ -190,10 +193,11 @@ class ManejoCampoController extends ChangeNotifier {
           'id_tipo': tipoId,
           'app_potreiros_id': piqueteId,
           'data': data.text,
+          'tipo_dosagem': tipoDosagem,
+          'dosagem': dosagemValor,
           if (obs.text.trim().isNotEmpty) 'obs': obs.text.trim(),
           if (usarProduto) ...{
             'id_estoque': insumoId,
-            'tipo_dosagem': dosagem == ManejoCampoDosagem.hectare ? 3 : 4,
             'quantidade': quantidadeInteira,
           },
         },

@@ -7,7 +7,6 @@ import 'package:costeira/core/components/custom_button.dart';
 import 'package:costeira/core/components/sub_user_flag.dart';
 import 'package:costeira/core/components/web_dialog_frame.dart';
 import 'package:costeira/core/components/web_empty_state.dart';
-import 'package:costeira/core/components/web_page_dialog.dart';
 import 'package:costeira/features/tasks/domain/entities/task_charts_entity.dart';
 import 'package:costeira/features/tasks/domain/entities/task_entity.dart';
 import 'package:costeira/features/tasks/domain/entities/task_filter_entity.dart';
@@ -89,6 +88,8 @@ class _TasksWebPageState extends State<TasksWebPage>
   }
 
   Future<void> _loadTasks({TaskFilterEntity? filter}) async {
+    final wasInit = _listInitialized;
+    final before = _tasksFingerprint();
     try {
       await _tasksController.load(filter: filter);
     } catch (error) {
@@ -102,12 +103,16 @@ class _TasksWebPageState extends State<TasksWebPage>
     } finally {
       if (mounted) {
         _listInitialized = true;
-        _listRevision.value++;
+        if (!wasInit || before != _tasksFingerprint()) {
+          _listRevision.value++;
+        }
       }
     }
   }
 
   Future<void> _loadResponsaveis() async {
+    final wasInit = _responsaveisInitialized;
+    final before = _responsaveisFingerprint();
     try {
       await _responsaveisController.load();
     } catch (error) {
@@ -121,21 +126,51 @@ class _TasksWebPageState extends State<TasksWebPage>
     } finally {
       if (mounted) {
         _responsaveisInitialized = true;
-        _responsaveisRevision.value++;
+        if (!wasInit || before != _responsaveisFingerprint()) {
+          _responsaveisRevision.value++;
+        }
       }
     }
   }
 
   Future<void> _loadCharts() async {
+    final wasInit = _chartsInitialized;
+    final before = _chartsFingerprint();
     try {
       await _chartsController.load();
     } catch (_) {
     } finally {
       if (mounted) {
         _chartsInitialized = true;
-        _chartsRevision.value++;
+        if (!wasInit || before != _chartsFingerprint()) {
+          _chartsRevision.value++;
+        }
       }
     }
+  }
+
+  String _tasksFingerprint() {
+    return _tasksController.tasks
+        .map(
+          (task) =>
+              '${task.id}:${task.statusId}:${task.descricao}:${task.dataPrazo}',
+        )
+        .join('|');
+  }
+
+  String _responsaveisFingerprint() {
+    return _responsaveisController.responsaveis
+        .map((item) => '${item.id}:${item.nome}:${item.email}:${item.celular}')
+        .join('|');
+  }
+
+  String _chartsFingerprint() {
+    final data = _chartsController.charts;
+    if (data == null) return '';
+    final month = _chartsController.month;
+    return '${month.year}-${month.month}:'
+        '${data.programadas.quantidade}:${data.atrasadas.quantidade}:'
+        '${data.realizadas.quantidade}:${data.rankingFuncionarios.length}';
   }
 
   Future<void> _previousListMonth() async {
@@ -198,11 +233,15 @@ class _TasksWebPageState extends State<TasksWebPage>
     await showDialog<void>(
       context: context,
       barrierDismissible: false,
-      builder: (_) => WebPageDialog(
+      builder: (_) => WebDialogFrame(
         title: task == null ? 'Adicionar tarefa' : 'Editar tarefa',
-        width: 720,
+        width: 640,
         maxHeight: 840,
-        child: task == null ? const AddTask() : EditTask(task: task),
+        sizeMode: WebDialogSizeMode.fitContent,
+        bodyPadding: const EdgeInsets.fromLTRB(28, 12, 28, 24),
+        child: task == null
+            ? const AddTask(embeddedInWebDialog: true)
+            : EditTask(task: task, embeddedInWebDialog: true),
       ),
     );
     if (!mounted) return;
@@ -221,13 +260,18 @@ class _TasksWebPageState extends State<TasksWebPage>
     await showDialog<void>(
       context: context,
       barrierDismissible: false,
-      builder: (_) => WebPageDialog(
+      builder: (_) => WebDialogFrame(
         title: responsavel == null
             ? 'Adicionar responsável'
             : 'Editar responsável',
-        width: 640,
+        width: 560,
         maxHeight: 720,
-        child: AddTaskResponsavel(responsavel: responsavel),
+        sizeMode: WebDialogSizeMode.fitContent,
+        bodyPadding: const EdgeInsets.fromLTRB(28, 12, 28, 24),
+        child: AddTaskResponsavel(
+          responsavel: responsavel,
+          embeddedInWebDialog: true,
+        ),
       ),
     );
     if (!mounted) return;
@@ -325,7 +369,7 @@ class _TasksWebPageState extends State<TasksWebPage>
         context: context,
         message: error is ApiException
             ? error.message
-            : 'Nao foi possivel concluir a tarefa.',
+            : 'Nao foi possivel atualizar o status da tarefa.',
         isError: true,
       );
     } finally {
@@ -530,11 +574,6 @@ class _TasksWebPageState extends State<TasksWebPage>
               if (isList || isResponsaveis) ...[
                 const SizedBox(width: 8),
                 SizedBox(
-                  width: compact
-                      ? 126
-                      : isResponsaveis
-                      ? 210
-                      : 170,
                   height: 46,
                   child: ElevatedButton.icon(
                     onPressed: isLoading
@@ -551,11 +590,18 @@ class _TasksWebPageState extends State<TasksWebPage>
                           : 'Adicionar responsável',
                       maxLines: 1,
                       softWrap: false,
-                      overflow: TextOverflow.visible,
                     ),
                     style: ElevatedButton.styleFrom(
                       elevation: 0,
-                      padding: const EdgeInsets.symmetric(horizontal: 14),
+                      minimumSize: Size(
+                        compact
+                            ? 120
+                            : isList
+                            ? 178
+                            : 210,
+                        46,
+                      ),
+                      padding: const EdgeInsets.symmetric(horizontal: 16),
                       backgroundColor: MyColors.colorPrimary,
                       foregroundColor: Colors.white,
                       disabledBackgroundColor: const Color(0xFFBFC9C5),
@@ -954,13 +1000,17 @@ class _FilterButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return SizedBox(
-      width: 128,
       height: 46,
       child: OutlinedButton.icon(
         onPressed: onPressed,
         icon: const Icon(Icons.tune_rounded, size: 17),
-        label: Text(active ? 'Filtros ativos' : 'Filtrar'),
+        label: Text(
+          active ? 'Filtros ativos' : 'Filtrar',
+          maxLines: 1,
+          softWrap: false,
+        ),
         style: OutlinedButton.styleFrom(
+          minimumSize: Size(active ? 148 : 110, 46),
           padding: const EdgeInsets.symmetric(horizontal: 12),
           foregroundColor: MyColors.colorPrimary,
           backgroundColor: active ? const Color(0x14128977) : Colors.white,
@@ -1788,6 +1838,7 @@ class _TaskFilterWebDialogState extends State<_TaskFilterWebDialog> {
       title: 'Filtros',
       width: 520,
       maxHeight: 640,
+      sizeMode: WebDialogSizeMode.fitContent,
       footer: Padding(
         padding: const EdgeInsets.fromLTRB(24, 12, 24, 20),
         child: Column(
@@ -1852,6 +1903,7 @@ class _TaskFilterWebDialogState extends State<_TaskFilterWebDialog> {
               placeholder: 'Status',
               options: const [
                 AppSelectOption(value: 1, label: 'Pendente'),
+                AppSelectOption(value: 2, label: 'Em atraso'),
                 AppSelectOption(value: 3, label: 'Concluído'),
               ],
               onChanged: (value) => setState(() => _status = value),
@@ -1935,8 +1987,11 @@ class _TaskDetailsWebDialog extends StatelessWidget {
       title: 'Detalhes da tarefa',
       width: 640,
       maxHeight: 720,
-      child: ListView(
-        padding: const EdgeInsets.fromLTRB(24, 8, 24, 24),
+      sizeMode: WebDialogSizeMode.fitContent,
+      bodyPadding: const EdgeInsets.fromLTRB(28, 12, 28, 24),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           _DetailField(label: 'O que fazer', value: task.descricao),
           _DetailField(
@@ -1946,6 +2001,12 @@ class _TaskDetailsWebDialog extends StatelessWidget {
           _DetailField(label: 'Tipo', value: task.tipo == 2 ? 'Mensal' : 'Datas'),
           _DetailField(label: 'Urgência', value: task.urgenciaNome),
           _DetailField(label: 'Status', value: task.statusNome),
+          _DetailField(
+            label: 'Prazo',
+            value: (task.dataPrazo?.trim().isNotEmpty ?? false)
+                ? task.dataPrazo!.trim()
+                : '-',
+          ),
           _DetailField(label: 'Datas', value: _detailDatesLabel(task)),
           _DetailField(
             label: 'Observações',
@@ -1972,8 +2033,11 @@ class _ResponsavelDetailsWebDialog extends StatelessWidget {
       title: 'Detalhes do responsável',
       width: 560,
       maxHeight: 520,
-      child: ListView(
-        padding: const EdgeInsets.fromLTRB(24, 8, 24, 24),
+      sizeMode: WebDialogSizeMode.fitContent,
+      bodyPadding: const EdgeInsets.fromLTRB(28, 12, 28, 24),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           _DetailField(label: 'Nome', value: responsavel.nome),
           _DetailField(label: 'Email', value: email),
@@ -2269,23 +2333,27 @@ class _RankingCard extends StatelessWidget {
           const SizedBox(height: 12),
           if (items.isEmpty)
             const Padding(
-              padding: EdgeInsets.symmetric(vertical: 20),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Icon(LucideIcons.users, size: 28, color: Color(0xFFB7C4BA)),
-                  SizedBox(height: 12),
-                  Text(
-                    'Nenhum funcionario com tarefas realizadas no periodo.',
-                    textAlign: TextAlign.center,
-                    style: TextStyle(
-                      color: Color(0xFF8C8C8C),
-                      fontSize: 12,
-                      fontFamily: 'Montserrat',
-                      fontWeight: FontWeight.w500,
+              padding: EdgeInsets.symmetric(vertical: 28),
+              child: SizedBox(
+                width: double.infinity,
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: [
+                    Icon(LucideIcons.users, size: 28, color: Color(0xFFB7C4BA)),
+                    SizedBox(height: 12),
+                    Text(
+                      'Nenhum funcionario com tarefas realizadas no periodo.',
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                        color: Color(0xFF8C8C8C),
+                        fontSize: 12,
+                        fontFamily: 'Montserrat',
+                        fontWeight: FontWeight.w500,
+                      ),
                     ),
-                  ),
-                ],
+                  ],
+                ),
               ),
             )
           else

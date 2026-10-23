@@ -17,12 +17,25 @@ class InsumosListResponseModel extends InsumosListEntity {
     final data = json['data'] is Map
         ? Map<String, dynamic>.from(json['data'] as Map)
         : <String, dynamic>{};
-    final lista = _mapList(data['lista'], InsumoModel.fromJson);
+    final listaRaw = (data['lista'] as List<dynamic>? ?? const [])
+        .whereType<Map>()
+        .map((item) => Map<String, dynamic>.from(item))
+        .toList(growable: false);
+    final lista = listaRaw
+        .map(InsumoModel.fromJson)
+        .toList(growable: false);
+
+    // Nova API: registros vêm aninhados em cada item de lista.
+    // Mantém fallback para data.registros (estrutura antiga).
+    final registros = _collectRegistros(
+      nestedFromLista: listaRaw,
+      topLevel: data['registros'],
+    );
 
     return InsumosListResponseModel(
       rows: int.tryParse(json['rows']?.toString() ?? '') ?? lista.length,
       lista: lista,
-      registros: _mapList(data['registros'], InsumoRegistroModel.fromJson),
+      registros: registros,
       suplementos: _mapList(data['suplementos'], InsumoReferenceModel.fromJson),
       unidades: _mapList(data['unidades'], InsumoReferenceModel.fromJson),
       tipoInsumos: _mapList(
@@ -30,6 +43,37 @@ class InsumosListResponseModel extends InsumosListEntity {
         InsumoReferenceModel.fromJson,
       ),
     );
+  }
+
+  static List<InsumoRegistroEntity> _collectRegistros({
+    required List<Map<String, dynamic>> nestedFromLista,
+    required dynamic topLevel,
+  }) {
+    final fromLista = <InsumoRegistroEntity>[];
+    for (final item in nestedFromLista) {
+      final nested = item['registros'];
+      if (nested is! List) continue;
+      for (final raw in nested.whereType<Map>()) {
+        final map = Map<String, dynamic>.from(raw);
+        map.putIfAbsent(
+          'app_estoques_insumos_id',
+          () => item['id'],
+        );
+        map.putIfAbsent(
+          'estoque_nome',
+          () => item['nome']?.toString() ?? '',
+        );
+        map.putIfAbsent(
+          'tipo_insumo',
+          () => item['tipo_insumo']?.toString() ?? '',
+        );
+        fromLista.add(InsumoRegistroModel.fromJson(map));
+      }
+    }
+    if (fromLista.isNotEmpty) {
+      return List<InsumoRegistroEntity>.unmodifiable(fromLista);
+    }
+    return _mapList(topLevel, InsumoRegistroModel.fromJson);
   }
 
   static List<T> _mapList<T>(

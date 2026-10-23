@@ -23,6 +23,14 @@ class InsumoRegistroModel extends InsumoRegistroEntity {
   });
 
   factory InsumoRegistroModel.fromJson(Map<String, dynamic> json) {
+    final unidade = _referenceFromJson(json['unidade']);
+    final unidadeId =
+        int.tryParse(
+          json['app_estoques_insumos_unidades_id']?.toString() ?? '',
+        ) ??
+        int.tryParse(unidade?.id?.toString() ?? '') ??
+        0;
+
     return InsumoRegistroModel(
       id: int.tryParse(json['id']?.toString() ?? '') ?? 0,
       appEstoquesInsumosId:
@@ -32,12 +40,8 @@ class InsumoRegistroModel extends InsumoRegistroEntity {
       tipo:
           _referenceFromJson(json['tipo']) ??
           const InsumoReferenceEntity(id: 0, nome: 'Registro'),
-      appEstoquesInsumosUnidadesId:
-          int.tryParse(
-            json['app_estoques_insumos_unidades_id']?.toString() ?? '',
-          ) ??
-          0,
-      unidade: _referenceFromJson(json['unidade']),
+      appEstoquesInsumosUnidadesId: unidadeId,
+      unidade: unidade,
       qtd: double.tryParse(json['qtd']?.toString() ?? ''),
       obs: json['obs']?.toString(),
       dataCadastro: json['data_cadastro']?.toString(),

@@ -9,9 +9,16 @@ import 'package:flutter/material.dart';
 import 'package:flutter_modular/flutter_modular.dart';
 
 class MorteFormPage extends StatefulWidget {
-  const MorteFormPage({super.key, this.morte});
+  const MorteFormPage({
+    super.key,
+    this.morte,
+    this.embeddedInWebDialog = false,
+  });
 
   final MorteEntity? morte;
+
+  /// When true, renders only the form body (no Scaffold/AppBar) for web dialogs.
+  final bool embeddedInWebDialog;
 
   @override
   State<MorteFormPage> createState() => _MorteFormPageState();
@@ -77,6 +84,77 @@ class _MorteFormPageState extends State<MorteFormPage> {
     return AnimatedBuilder(
       animation: _pageController,
       builder: (context, _) {
+        final form = Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            _buildDateField(),
+            _buildTipo(),
+            if (!_pageController.isEdit) ...[
+              _buildCategory(),
+              _buildFase(),
+              _buildStatus(),
+              _buildPotreiro(),
+              _buildLote(),
+              if (_pageController.selectedCategoryId != null)
+                _buildGroupBadge(),
+              if (_pageController.canShowEscopo) ...[
+                const Text(
+                  'Escopo da ação',
+                  style: TextStyle(
+                    color: Color(0xFF313131),
+                    fontSize: 14,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+                const SizedBox(height: 8),
+                _ChoiceRow(
+                  leftLabel: 'Lote inteiro',
+                  rightLabel: 'Parcial',
+                  leftSelected: _pageController.isLoteInteiro,
+                  onLeft: () => _pageController.onEscopoChanged(
+                    MorteEscopo.loteInteiro,
+                  ),
+                  onRight: () =>
+                      _pageController.onEscopoChanged(MorteEscopo.parcial),
+                ),
+                const SizedBox(height: 12),
+                if (_pageController.isLoteInteiro)
+                  _buildLoteInteiro()
+                else
+                  _buildParcial(),
+              ],
+            ],
+            _buildTextField(
+              controller: _pageController.obsController,
+              label: 'Causa / observações',
+              hint: 'Ex: Tristeza parasitária, causa desconhecida...',
+              maxLines: 3,
+            ),
+            if (_pageController.isEdit) _buildLinkedAnimals(),
+            if (_pageController.errorMessage != null) ...[
+              const SizedBox(height: 8),
+              Text(
+                _pageController.errorMessage!,
+                style: const TextStyle(color: Colors.red, fontSize: 12),
+              ),
+            ],
+            const SizedBox(height: 20),
+            CustomButton(
+              onPressed: _submit,
+              text: _pageController.isEdit ? 'Salvar' : 'Confirmar baixa',
+              enabled:
+                  !_pageController.isLoading && _pageController.isFormValid,
+              isLoading: _pageController.isLoading,
+            ),
+            if (!widget.embeddedInWebDialog) const SizedBox(height: 80),
+          ],
+        );
+
+        if (widget.embeddedInWebDialog) {
+          return form;
+        }
+
         return Scaffold(
           backgroundColor: Colors.white,
           appBar: AppBar(
@@ -99,73 +177,7 @@ class _MorteFormPageState extends State<MorteFormPage> {
             top: false,
             child: SingleChildScrollView(
               padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  _buildDateField(),
-                  _buildTipo(),
-                  if (!_pageController.isEdit) ...[
-                    _buildCategory(),
-                    _buildFase(),
-                    _buildStatus(),
-                    _buildPotreiro(),
-                    _buildLote(),
-                    if (_pageController.selectedCategoryId != null)
-                      _buildGroupBadge(),
-                    if (_pageController.canShowEscopo) ...[
-                      const Text(
-                        'Escopo da ação',
-                        style: TextStyle(
-                          color: Color(0xFF313131),
-                          fontSize: 14,
-                          fontWeight: FontWeight.w600,
-                        ),
-                      ),
-                      const SizedBox(height: 8),
-                      _ChoiceRow(
-                        leftLabel: 'Lote inteiro',
-                        rightLabel: 'Parcial',
-                        leftSelected: _pageController.isLoteInteiro,
-                        onLeft: () => _pageController.onEscopoChanged(
-                          MorteEscopo.loteInteiro,
-                        ),
-                        onRight: () => _pageController.onEscopoChanged(
-                          MorteEscopo.parcial,
-                        ),
-                      ),
-                      const SizedBox(height: 12),
-                      if (_pageController.isLoteInteiro)
-                        _buildLoteInteiro()
-                      else
-                        _buildParcial(),
-                    ],
-                  ],
-                  _buildTextField(
-                    controller: _pageController.obsController,
-                    label: 'Causa / observações',
-                    hint: 'Ex: Tristeza parasitária, causa desconhecida...',
-                    maxLines: 3,
-                  ),
-                  if (_pageController.isEdit) _buildLinkedAnimals(),
-                  if (_pageController.errorMessage != null) ...[
-                    const SizedBox(height: 8),
-                    Text(
-                      _pageController.errorMessage!,
-                      style: const TextStyle(color: Colors.red, fontSize: 12),
-                    ),
-                  ],
-                  const SizedBox(height: 20),
-                  CustomButton(
-                    onPressed: _submit,
-                    text: _pageController.isEdit ? 'Salvar' : 'Confirmar baixa',
-                    enabled:
-                        !_pageController.isLoading &&
-                        _pageController.isFormValid,
-                    isLoading: _pageController.isLoading,
-                  ),
-                  const SizedBox(height: 80),
-                ],
-              ),
+              child: form,
             ),
           ),
         );

@@ -1,4 +1,5 @@
 import 'package:costeira/core/config/ws_constantes.dart';
+import 'package:costeira/core/storage/sub_user_payload.dart';
 import 'package:costeira/features/movimentacoes/consumo/domain/entities/consumo_upsert_animal_entity.dart';
 import 'package:costeira/features/movimentacoes/consumo/domain/entities/consumo_upsert_entity.dart';
 
@@ -9,15 +10,17 @@ class ConsumoUpsertRequestModel {
 
   factory ConsumoUpsertRequestModel.create(ConsumoUpsertEntity consumo) {
     return ConsumoUpsertRequestModel._(
-      _baseData(consumo)..addAll({
-        'animais': consumo.animais.map(_animalToJson).toList(growable: false),
-      }),
+      withSubUser(
+        _baseData(consumo)..addAll({
+          'animais': consumo.animais.map(_animalToJson).toList(growable: false),
+        }),
+      ),
     );
   }
 
   factory ConsumoUpsertRequestModel.update(ConsumoUpsertEntity consumo) {
     return ConsumoUpsertRequestModel._(
-      _baseData(consumo)..addAll({'id': consumo.id}),
+      withSubUser(_baseData(consumo)..addAll({'id': consumo.id})),
     );
   }
 

@@ -97,8 +97,9 @@ class ManejoReprodutivoController extends ChangeNotifier {
   int _estacaoToken = 0;
   bool _silencio = false;
 
+  /// Entrada de touro: apenas lotes exclusivos de fêmeas (sexo = 2).
   List<AnimalLotEntity> get lotesFemea =>
-      _lots.lots.where((lote) => lote.sexo == 2).toList(growable: false);
+      _lots.lots.where((lote) => lote.isFemea).toList(growable: false);
 
   AnimalLotEntity? get loteSelecionado =>
       lotesFemea.where((lote) => lote.id == loteId).firstOrNull;
@@ -547,6 +548,7 @@ class ManejoReprodutivoController extends ChangeNotifier {
         return;
       }
       touros = result.data;
+      _autoSelecionarTouroSeUnico(texto);
     } on ApiException catch (e) {
       if (token != _buscaToken) {
         return;
@@ -563,6 +565,26 @@ class ManejoReprodutivoController extends ChangeNotifier {
         buscando = false;
         notifyListeners();
       }
+    }
+  }
+
+  void _autoSelecionarTouroSeUnico(String texto) {
+    if (touros.isEmpty) {
+      return;
+    }
+    final exato = touros.where((animal) {
+      return (animal.brinco?.trim() ?? '').toLowerCase() == texto.toLowerCase();
+    });
+    final escolhido = exato.length == 1
+        ? exato.first
+        : (touros.length == 1 ? touros.first : null);
+    if (escolhido == null) {
+      return;
+    }
+    if (painel == ManejoReprodutivoPainel.aborto) {
+      selecionarAnimal(escolhido);
+    } else {
+      selecionarTouro(escolhido);
     }
   }
 

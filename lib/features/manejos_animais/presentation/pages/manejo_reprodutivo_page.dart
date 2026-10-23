@@ -133,6 +133,36 @@ class _ManejoReprodutivoPageState extends State<ManejoReprodutivoPage> {
           child: LinearProgressIndicator(minHeight: 2),
         ),
       if (_controller.touros.isNotEmpty) _touros(),
+      if (!_controller.buscando &&
+          _controller.brinco.text.trim().isNotEmpty &&
+          _controller.touroId == null &&
+          _controller.touros.isEmpty)
+        const Padding(
+          padding: EdgeInsets.only(bottom: 18),
+          child: Text(
+            'Nenhum animal encontrado com este brinco.',
+            style: TextStyle(
+              color: Color(0xFFC4473A),
+              fontSize: 13,
+              fontFamily: 'Montserrat',
+            ),
+          ),
+        )
+      else if (!_controller.buscando &&
+          _controller.brinco.text.trim().isNotEmpty &&
+          _controller.touroId == null &&
+          _controller.touros.length > 1)
+        const Padding(
+          padding: EdgeInsets.only(bottom: 12),
+          child: Text(
+            'Selecione o touro na lista acima.',
+            style: TextStyle(
+              color: Color(0xFF8C8C8C),
+              fontSize: 13,
+              fontFamily: 'Montserrat',
+            ),
+          ),
+        ),
       _select(
         'Raça',
         _controller.racaId,
