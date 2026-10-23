@@ -142,7 +142,7 @@ class _TaskPageState extends State<TaskPage>
         context: context,
         message: error is ApiException
             ? error.message
-            : 'Nao foi possivel concluir a tarefa.',
+            : 'Nao foi possivel atualizar o status da tarefa.',
         isError: true,
       );
     }
@@ -807,6 +807,7 @@ class _TaskFilterSheetState extends State<_TaskFilterSheet> {
               placeholder: 'Status',
               options: const [
                 AppSelectOption(value: 1, label: 'Pendente'),
+                AppSelectOption(value: 2, label: 'Em atraso'),
                 AppSelectOption(value: 3, label: 'Concluído'),
               ],
               onChanged: (value) => setState(() => _status = value),

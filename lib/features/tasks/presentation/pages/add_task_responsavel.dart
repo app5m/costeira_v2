@@ -1,6 +1,7 @@
 import 'package:costeira/core/api/api_exception.dart';
 import 'package:costeira/core/components/app_snack.dart';
 import 'package:costeira/core/components/custom_button.dart';
+import 'package:costeira/core/models/api_message.dart';
 import 'package:costeira/features/tasks/domain/entities/task_responsavel_entity.dart';
 import 'package:costeira/features/tasks/presentation/controllers/save_task_responsavel_controller.dart';
 import 'package:costeira/features/tasks/presentation/helpers/task_formatters.dart';
@@ -10,9 +11,16 @@ import 'package:flutter_modular/flutter_modular.dart';
 import 'package:flutter/services.dart';
 
 class AddTaskResponsavel extends StatefulWidget {
-  const AddTaskResponsavel({super.key, this.responsavel});
+  const AddTaskResponsavel({
+    super.key,
+    this.responsavel,
+    this.embeddedInWebDialog = false,
+  });
 
   final TaskResponsavelEntity? responsavel;
+
+  /// When true, renders only the form body (no Scaffold/AppBar) for web dialogs.
+  final bool embeddedInWebDialog;
 
   @override
   State<AddTaskResponsavel> createState() => _AddTaskResponsavelState();
@@ -84,22 +92,16 @@ class _AddTaskResponsavelState extends State<AddTaskResponsavel> {
         return;
       }
 
+      final saved = _resolveSavedResponsavel(responsavel, message);
+
       AppSnackBar.show(
         context: context,
         message: message.message,
         isError: false,
       );
-      Navigator.pop(
-        context,
+      Navigator.of(context).pop(
         TaskResponsavelSaveResult(
-          responsavel: responsavel.id == null && _isPendingSync(message.extra)
-              ? TaskResponsavelEntity(
-                  id: _localIdFromMessage(message.extra),
-                  nome: responsavel.nome,
-                  email: responsavel.email,
-                  celular: responsavel.celular,
-                )
-              : responsavel,
+          responsavel: saved,
           isPendingSync: _isPendingSync(message.extra),
         ),
       );
@@ -133,8 +135,68 @@ class _AddTaskResponsavelState extends State<AddTaskResponsavel> {
     return -(idLocal ?? DateTime.now().millisecondsSinceEpoch);
   }
 
+  TaskResponsavelEntity _resolveSavedResponsavel(
+    TaskResponsavelEntity submitted,
+    ApiMessage message,
+  ) {
+    final resourceId = message.resourceId;
+    if (resourceId != null && resourceId > 0) {
+      return TaskResponsavelEntity(
+        id: resourceId,
+        nome: submitted.nome,
+        email: submitted.email,
+        celular: submitted.celular,
+      );
+    }
+    if (submitted.id == null && _isPendingSync(message.extra)) {
+      return TaskResponsavelEntity(
+        id: _localIdFromMessage(message.extra),
+        nome: submitted.nome,
+        email: submitted.email,
+        celular: submitted.celular,
+      );
+    }
+    return submitted;
+  }
+
   @override
   Widget build(BuildContext context) {
+    final form = Column(
+      mainAxisSize: MainAxisSize.min,
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        _buildTextField(
+          controller: _nomeController,
+          label: 'Nome',
+          hint: 'Nome do responsavel',
+        ),
+        _buildTextField(
+          controller: _emailController,
+          label: 'E-mail',
+          hint: 'email@dominio.com',
+          keyboardType: TextInputType.emailAddress,
+        ),
+        _buildTextField(
+          controller: _celularController,
+          label: 'Celular',
+          hint: '(99) 99999-9999',
+          keyboardType: TextInputType.phone,
+          inputFormatters: const [_CellPhoneInputFormatter()],
+        ),
+        const SizedBox(height: 2),
+        CustomButton(
+          onPressed: _submit,
+          text: _isEditing ? 'Salvar' : 'Adicionar',
+          enabled: _canSubmit,
+          isLoading: _isLoading,
+        ),
+      ],
+    );
+
+    if (widget.embeddedInWebDialog) {
+      return form;
+    }
+
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: AppBar(
@@ -157,36 +219,7 @@ class _AddTaskResponsavelState extends State<AddTaskResponsavel> {
         top: false,
         child: SingleChildScrollView(
           padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              _buildTextField(
-                controller: _nomeController,
-                label: 'Nome',
-                hint: 'Nome do responsavel',
-              ),
-              _buildTextField(
-                controller: _emailController,
-                label: 'E-mail',
-                hint: 'email@dominio.com',
-                keyboardType: TextInputType.emailAddress,
-              ),
-              _buildTextField(
-                controller: _celularController,
-                label: 'Celular',
-                hint: '(99) 99999-9999',
-                keyboardType: TextInputType.phone,
-                inputFormatters: const [_CellPhoneInputFormatter()],
-              ),
-              const SizedBox(height: 2),
-              CustomButton(
-                onPressed: _submit,
-                text: _isEditing ? 'Salvar' : 'Adicionar',
-                enabled: _canSubmit,
-                isLoading: _isLoading,
-              ),
-            ],
-          ),
+          child: form,
         ),
       ),
     );

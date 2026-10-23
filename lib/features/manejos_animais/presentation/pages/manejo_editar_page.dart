@@ -137,18 +137,18 @@ class _ManejoEditarPageState extends State<ManejoEditarPage> {
       ],
       8 => [
         _select('Raça', _controller.racaId, _controller.racas, _controller.setRaca),
-        _selectLote(),
+        _selectLote(femeasOnly: true),
         _texto('Duração da estação (dias)', _controller.duracao, '90', numero: true),
       ],
       9 => const [],
       10 => [
-        _selectLote(),
+        _selectLote(femeasOnly: true),
         _select('Etapa', _controller.tipoId, _controller.tipos, _controller.setTipo),
         _texto('Sêmen', _controller.semen, 'Opcional'),
         _texto('Responsável', _controller.responsavel, 'Opcional'),
       ],
       11 => [
-        _selectLote(),
+        _selectLote(femeasOnly: true),
         _select('Resultado', _controller.tipoId, _controller.tipos, _controller.setTipo),
         const _Label('Classificação'),
         _escolha(
@@ -161,7 +161,7 @@ class _ManejoEditarPageState extends State<ManejoEditarPage> {
         const SizedBox(height: 18),
       ],
       13 => [
-        _selectLote(),
+        _selectLote(femeasOnly: true),
         _texto('Motivo', _controller.motivo, 'Motivo', linhas: 3),
       ],
       14 => [
@@ -185,6 +185,18 @@ class _ManejoEditarPageState extends State<ManejoEditarPage> {
                 .toList(),
             _controller.setEstoque,
           ),
+          if (_controller.insumoSelecionado != null)
+            Padding(
+              padding: const EdgeInsets.only(bottom: 18),
+              child: Text(
+                'Unidade ${_controller.insumoSelecionado!.unidade?.nome ?? ''} · Saldo ${_controller.insumoSelecionado!.qtdTotal ?? 0}',
+                style: const TextStyle(
+                  color: Color(0xFF313131),
+                  fontSize: 13,
+                  fontFamily: 'Montserrat',
+                ),
+              ),
+            ),
           const _Label('Modo de dosagem'),
           _escolha(
             left: 'Por hectare',
@@ -195,6 +207,21 @@ class _ManejoEditarPageState extends State<ManejoEditarPage> {
           ),
           const SizedBox(height: 18),
           _texto('Quantidade', _controller.quantidade, '0', numero: true),
+          if (_controller.saldoInsuficienteCampo)
+            _erro('Saldo insuficiente no estoque para esta aplicação.')
+          else if (_controller.quantidade.text.trim().isNotEmpty)
+            Padding(
+              padding: const EdgeInsets.only(bottom: 18),
+              child: Text(
+                'Total ${_controller.quantidadeInteiraCampo} ${_controller.insumoSelecionado?.unidade?.nome ?? ''}',
+                style: const TextStyle(
+                  color: Color(0xFF3D6B4F),
+                  fontSize: 13,
+                  fontFamily: 'Montserrat',
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ),
         ],
         _texto('Observações', _controller.obs, 'Detalhes...', linhas: 3),
       ],
@@ -204,11 +231,12 @@ class _ManejoEditarPageState extends State<ManejoEditarPage> {
     };
   }
 
-  Widget _selectLote() {
+  Widget _selectLote({bool femeasOnly = false}) {
+    final lotes = femeasOnly ? _controller.lotesFemea : _controller.lotes;
     return _select(
-      'Lote',
+      femeasOnly ? 'Lote (vacas/novilhas)' : 'Lote',
       _controller.loteId,
-      _controller.lotes.map((item) => ListItemEntity(id: item.id, nome: item.nome)).toList(),
+      lotes.map((item) => ListItemEntity(id: item.id, nome: item.nome)).toList(),
       _controller.setLote,
     );
   }

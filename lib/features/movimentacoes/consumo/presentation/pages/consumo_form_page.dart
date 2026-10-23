@@ -1,16 +1,25 @@
+import 'package:costeira/core/components/adaptive_selection_modal.dart';
 import 'package:costeira/core/components/app_snack.dart';
 import 'package:costeira/core/components/custom_button.dart';
 import 'package:costeira/features/movimentacoes/consumo/domain/entities/consumo_upsert_entity.dart';
 import 'package:costeira/features/movimentacoes/consumo/presentation/page_controllers/consumo_form_page_controller.dart';
 import 'package:costeira/features/movimentacoes/consumo/presentation/pages/consumo_animais_page.dart';
 import 'package:costeira/theme/colors.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_modular/flutter_modular.dart';
 
 class ConsumoFormPage extends StatefulWidget {
-  const ConsumoFormPage({super.key, this.consumo});
+  const ConsumoFormPage({
+    super.key,
+    this.consumo,
+    this.embeddedInWebDialog = false,
+  });
 
   final ConsumoUpsertEntity? consumo;
+
+  /// When true, renders only the form body (no Scaffold/AppBar) for web dialogs.
+  final bool embeddedInWebDialog;
 
   @override
   State<ConsumoFormPage> createState() => _ConsumoFormPageState();
@@ -63,6 +72,18 @@ class _ConsumoFormPageState extends State<ConsumoFormPage> {
     if (_pageController.isEdit) {
       return;
     }
+    if (kIsWeb || widget.embeddedInWebDialog) {
+      await showAdaptiveSelectionModal<void>(
+        context: context,
+        title: 'Selecionar animais',
+        builder: (embeddedInDialog) => ConsumoAnimaisPage(
+          pageController: _pageController,
+          embeddedInDialog: embeddedInDialog,
+        ),
+      );
+      return;
+    }
+
     await Navigator.push(
       context,
       MaterialPageRoute(
@@ -76,6 +97,52 @@ class _ConsumoFormPageState extends State<ConsumoFormPage> {
     return AnimatedBuilder(
       animation: _pageController,
       builder: (context, _) {
+        final form = Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            _buildTextField(
+              controller: _pageController.dataController,
+              label: 'Data do consumo',
+              hint: '00/00/0000',
+              readOnly: true,
+              onTap: _selectDate,
+            ),
+            _buildTextField(
+              controller: _pageController.obsController,
+              label: 'Observações',
+              hint: 'Digite as observações sobre o consumo',
+              maxLines: 3,
+            ),
+            if (_pageController.isEdit)
+              const _ReadOnlyHint(
+                text:
+                    'Os animais vinculados ao consumo não podem ser alterados nesta edição.',
+              )
+            else
+              _buildAnimalsSummary(),
+            if (_pageController.errorMessage != null) ...[
+              const SizedBox(height: 8),
+              Text(
+                _pageController.errorMessage!,
+                style: const TextStyle(color: Colors.red, fontSize: 12),
+              ),
+            ],
+            const SizedBox(height: 20),
+            CustomButton(
+              onPressed: _submit,
+              text: _pageController.isEdit ? 'Salvar' : 'Adicionar',
+              enabled: _pageController.isFormValid,
+              isLoading: _pageController.isLoading,
+            ),
+            if (!widget.embeddedInWebDialog) const SizedBox(height: 80),
+          ],
+        );
+
+        if (widget.embeddedInWebDialog) {
+          return form;
+        }
+
         return Scaffold(
           backgroundColor: Colors.white,
           floatingActionButton: !_pageController.isEdit
@@ -105,46 +172,7 @@ class _ConsumoFormPageState extends State<ConsumoFormPage> {
           ),
           body: SingleChildScrollView(
             padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                _buildTextField(
-                  controller: _pageController.dataController,
-                  label: 'Data do consumo',
-                  hint: '00/00/0000',
-                  readOnly: true,
-                  onTap: _selectDate,
-                ),
-                _buildTextField(
-                  controller: _pageController.obsController,
-                  label: 'Observações',
-                  hint: 'Digite as observações sobre o consumo',
-                  maxLines: 3,
-                ),
-                if (_pageController.isEdit)
-                  const _ReadOnlyHint(
-                    text:
-                        'Os animais vinculados ao consumo não podem ser alterados nesta edição.',
-                  )
-                else
-                  _buildAnimalsSummary(),
-                if (_pageController.errorMessage != null) ...[
-                  const SizedBox(height: 8),
-                  Text(
-                    _pageController.errorMessage!,
-                    style: const TextStyle(color: Colors.red, fontSize: 12),
-                  ),
-                ],
-                const SizedBox(height: 20),
-                CustomButton(
-                  onPressed: _submit,
-                  text: _pageController.isEdit ? 'Salvar' : 'Adicionar',
-                  enabled: _pageController.isFormValid,
-                  isLoading: _pageController.isLoading,
-                ),
-                const SizedBox(height: 80),
-              ],
-            ),
+            child: form,
           ),
         );
       },

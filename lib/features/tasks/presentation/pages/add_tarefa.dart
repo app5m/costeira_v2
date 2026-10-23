@@ -2,21 +2,26 @@ import 'package:costeira/core/api/api_exception.dart';
 import 'package:costeira/core/components/app_select_overlay.dart';
 import 'package:costeira/core/components/app_snack.dart';
 import 'package:costeira/core/components/custom_button.dart';
+import 'package:costeira/core/components/web_dialog_frame.dart';
 import 'package:costeira/features/tasks/domain/entities/task_entity.dart';
 import 'package:costeira/features/tasks/domain/entities/task_responsavel_entity.dart';
 import 'package:costeira/features/tasks/presentation/pages/add_task_responsavel.dart';
 import 'package:costeira/features/tasks/presentation/controllers/list_task_responsaveis_controller.dart';
 import 'package:costeira/features/tasks/presentation/controllers/save_task_controller.dart';
 import 'package:costeira/features/tasks/presentation/helpers/task_formatters.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_modular/flutter_modular.dart';
 
 import '../../../../theme/colors.dart';
 
 class AddTask extends StatefulWidget {
-  const AddTask({super.key, this.task});
+  const AddTask({super.key, this.task, this.embeddedInWebDialog = false});
 
   final TaskEntity? task;
+
+  /// When true, renders only the form body (no Scaffold/AppBar) for web dialogs.
+  final bool embeddedInWebDialog;
 
   @override
   State<AddTask> createState() => _AddTaskState();
@@ -149,6 +154,18 @@ class _AddTaskState extends State<AddTask> {
     }
 
     final datas = _buildDatasPayload();
+    final dataPrazo = _buildDataPrazo();
+    if (dataPrazo == null || dataPrazo.isEmpty) {
+      AppSnackBar.show(
+        context: context,
+        message: _selectedType == 1
+            ? 'Informe a data final (prazo).'
+            : 'Selecione ao menos um mes para definir o prazo.',
+        isError: true,
+      );
+      return;
+    }
+
     setState(() => _isLoading = true);
 
     try {
@@ -160,9 +177,7 @@ class _AddTaskState extends State<AddTask> {
         obs: _obsController.text.trim(),
         urgencia: _selectedUrgency!,
         datas: datas,
-        dataPrazo: _selectedType == 1 && _endDate != null
-            ? formatTaskDate(_endDate!)
-            : null,
+        dataPrazo: dataPrazo,
       );
 
       if (!mounted) {
@@ -203,6 +218,25 @@ class _AddTaskState extends State<AddTask> {
     return [formatTaskDate(_startDate!), formatTaskDate(_endDate!)];
   }
 
+  /// API exige `data_prazo` em todos os tipos.
+  /// Datas (1): data final. Mensal (2): último dia do último mês selecionado.
+  String? _buildDataPrazo() {
+    if (_selectedType == 1) {
+      if (_endDate == null) return null;
+      return formatTaskDate(_endDate!);
+    }
+    if (_selectedType == 2) {
+      if (_selectedMonths.isEmpty) return null;
+      final sorted = List<String>.from(_selectedMonths)..sort();
+      final month = int.tryParse(sorted.last) ?? 0;
+      if (month < 1 || month > 12) return null;
+      final year = DateTime.now().year;
+      final lastDay = DateTime(year, month + 1, 0);
+      return formatTaskDate(lastDay);
+    }
+    return null;
+  }
+
   Future<void> _openResponsavelSelection() async {
     if (_responsaveisController.responsaveis.isEmpty &&
         !_responsaveisController.isLoading) {
@@ -213,35 +247,14 @@ class _AddTaskState extends State<AddTask> {
       return;
     }
 
-    final result = await showModalBottomSheet<_ResponsavelSelectionResult>(
-      context: context,
-      isScrollControlled: true,
-      backgroundColor: Colors.white,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
-      ),
-      builder: (_) => AnimatedBuilder(
-        animation: _responsaveisController,
-        builder: (context, _) {
-          return _ResponsavelSelectionSheet(
-            responsaveis: _responsaveisController.responsaveis,
-            initialSelectedId: _selectedResponsavelId,
-            isLoading: _responsaveisController.isLoading,
-            errorMessage: _responsaveisController.errorMessage,
-          );
-        },
-      ),
-    );
+    final result = await _showResponsavelSelection();
 
     if (!mounted || result == null) {
       return;
     }
 
     if (result.shouldAdd) {
-      final created = await Navigator.push<TaskResponsavelSaveResult?>(
-        context,
-        MaterialPageRoute(builder: (_) => const AddTaskResponsavel()),
-      );
+      final created = await _openAddResponsavelForm();
       await _responsaveisController.load().catchError((_) {});
       if (created != null) {
         _selectCreatedResponsavel(created);
@@ -255,12 +268,76 @@ class _AddTaskState extends State<AddTask> {
     setState(() => _selectedResponsavelId = result.selectedId);
   }
 
+  Widget _responsavelSelectionBody({required bool embeddedInDialog}) {
+    return AnimatedBuilder(
+      animation: _responsaveisController,
+      builder: (context, _) {
+        return _ResponsavelSelectionSheet(
+          responsaveis: _responsaveisController.responsaveis,
+          initialSelectedId: _selectedResponsavelId,
+          isLoading: _responsaveisController.isLoading,
+          errorMessage: _responsaveisController.errorMessage,
+          embeddedInDialog: embeddedInDialog,
+        );
+      },
+    );
+  }
+
+  Future<_ResponsavelSelectionResult?> _showResponsavelSelection() {
+    if (kIsWeb) {
+      return showDialog<_ResponsavelSelectionResult>(
+        context: context,
+        builder: (_) => WebDialogFrame(
+          title: 'Selecionar responsável',
+          width: 520,
+          maxHeight: 640,
+          sizeMode: WebDialogSizeMode.fitContent,
+          scrollableBody: false,
+          bodyPadding: const EdgeInsets.fromLTRB(24, 4, 24, 20),
+          child: _responsavelSelectionBody(embeddedInDialog: true),
+        ),
+      );
+    }
+
+    return showModalBottomSheet<_ResponsavelSelectionResult>(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.white,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+      ),
+      builder: (_) => _responsavelSelectionBody(embeddedInDialog: false),
+    );
+  }
+
+  Future<TaskResponsavelSaveResult?> _openAddResponsavelForm() async {
+    if (kIsWeb) {
+      return showDialog<TaskResponsavelSaveResult?>(
+        context: context,
+        barrierDismissible: false,
+        builder: (_) => const WebDialogFrame(
+          title: 'Adicionar responsável',
+          width: 560,
+          maxHeight: 720,
+          sizeMode: WebDialogSizeMode.fitContent,
+          bodyPadding: EdgeInsets.fromLTRB(24, 8, 24, 20),
+          child: AddTaskResponsavel(embeddedInWebDialog: true),
+        ),
+      );
+    }
+
+    return Navigator.push<TaskResponsavelSaveResult?>(
+      context,
+      MaterialPageRoute(builder: (_) => const AddTaskResponsavel()),
+    );
+  }
+
   void _selectCreatedResponsavel(TaskResponsavelSaveResult result) {
     final created = result.responsavel;
     final fromList = _responsaveisController.responsaveis
         .where(
           (item) =>
-              item.id == created.id ||
+              (created.id != null && item.id == created.id) ||
               (item.nome.trim() == created.nome.trim() &&
                   item.email.trim() == created.email.trim() &&
                   item.celular.trim() == created.celular.trim()),
@@ -272,8 +349,9 @@ class _AddTaskState extends State<AddTask> {
       return;
     }
 
-    if (result.isPendingSync || created.id == null) {
-      _responsaveisController.upsert(created, null);
+    // Mantém o recém-criado na lista local até o próximo reload da API.
+    _responsaveisController.upsert(created, null);
+    if (created.id != null) {
       setState(() => _selectedResponsavelId = created.id);
     }
   }
@@ -305,23 +383,119 @@ class _AddTaskState extends State<AddTask> {
   }
 
   Future<void> _openMonthSelection() async {
-    final result = await showModalBottomSheet<List<String>>(
-      context: context,
-      isScrollControlled: true,
-      backgroundColor: Colors.white,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
-      ),
-      builder: (_) => _MonthSelectionSheet(selectedMonths: _selectedMonths),
-    );
+    final result = kIsWeb
+        ? await showDialog<List<String>>(
+            context: context,
+            builder: (_) => WebDialogFrame(
+              title: 'Selecionar meses',
+              width: 480,
+              maxHeight: 640,
+              sizeMode: WebDialogSizeMode.fitContent,
+              scrollableBody: false,
+              bodyPadding: const EdgeInsets.fromLTRB(24, 4, 24, 20),
+              child: _MonthSelectionSheet(
+                selectedMonths: _selectedMonths,
+                embeddedInDialog: true,
+              ),
+            ),
+          )
+        : await showModalBottomSheet<List<String>>(
+            context: context,
+            isScrollControlled: true,
+            backgroundColor: Colors.white,
+            shape: const RoundedRectangleBorder(
+              borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+            ),
+            builder: (_) =>
+                _MonthSelectionSheet(selectedMonths: _selectedMonths),
+          );
 
-    if (result != null) {
-      setState(() => _selectedMonths = result);
+    if (result == null) {
+      return;
     }
+    setState(() => _selectedMonths = result);
   }
 
   @override
   Widget build(BuildContext context) {
+    final form = Column(
+      mainAxisSize: MainAxisSize.min,
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        _buildTextField(
+          controller: _descricaoController,
+          label: 'O que fazer',
+          hint: 'Descrição da tarefa',
+        ),
+        _buildSelectField(
+          label: 'Responsável',
+          value: _selectedResponsavelName,
+          placeholder: 'Selecionar responsável',
+          onTap: _openResponsavelSelection,
+        ),
+        _buildDropdown(
+          label: 'Tipo',
+          value: _selectedType,
+          options: _taskTypes,
+          onChanged: (value) {
+            setState(() {
+              _selectedType = value;
+              _startDate = null;
+              _endDate = null;
+              _selectedMonths = [];
+            });
+          },
+        ),
+        if (_selectedType == 1) ...[
+          _buildDateField(
+            label: 'Data inicial',
+            value: _startDate == null
+                ? 'Selecionar data'
+                : formatTaskDate(_startDate!),
+            onTap: () => _pickDate(isStart: true),
+          ),
+          _buildDateField(
+            label: 'Data final',
+            value: _endDate == null
+                ? 'Selecionar data'
+                : formatTaskDate(_endDate!),
+            onTap: () => _pickDate(isStart: false),
+          ),
+        ],
+        if (_selectedType == 2)
+          _buildSelectField(
+            label: 'Meses',
+            value: _selectedMonthsLabel,
+            placeholder: 'Selecionar meses',
+            onTap: _openMonthSelection,
+          ),
+        _buildDropdown(
+          label: 'Urgência',
+          value: _selectedUrgency,
+          options: _urgencies,
+          onChanged: (value) => setState(() => _selectedUrgency = value),
+        ),
+        _buildTextField(
+          controller: _obsController,
+          label: 'Observações',
+          hint: 'Observações da tarefa',
+          maxLines: 3,
+        ),
+        const SizedBox(height: 16),
+        CustomButton(
+          onPressed: _submit,
+          text: _isEditing ? 'Salvar' : 'Adicionar',
+          enabled: _isFormValid,
+          isLoading: _isLoading,
+        ),
+        if (!widget.embeddedInWebDialog) const SizedBox(height: 32),
+      ],
+    );
+
+    if (widget.embeddedInWebDialog) {
+      return form;
+    }
+
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: AppBar(
@@ -344,78 +518,7 @@ class _AddTaskState extends State<AddTask> {
         top: false,
         child: SingleChildScrollView(
           padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              _buildTextField(
-                controller: _descricaoController,
-                label: 'O que fazer',
-                hint: 'Descrição da tarefa',
-              ),
-              _buildSelectField(
-                label: 'Responsável',
-                value: _selectedResponsavelName,
-                placeholder: 'Selecionar responsável',
-                onTap: _openResponsavelSelection,
-              ),
-              _buildDropdown(
-                label: 'Tipo',
-                value: _selectedType,
-                options: _taskTypes,
-                onChanged: (value) {
-                  setState(() {
-                    _selectedType = value;
-                    _startDate = null;
-                    _endDate = null;
-                    _selectedMonths = [];
-                  });
-                },
-              ),
-              if (_selectedType == 1) ...[
-                _buildDateField(
-                  label: 'Data inicial',
-                  value: _startDate == null
-                      ? 'Selecionar data'
-                      : formatTaskDate(_startDate!),
-                  onTap: () => _pickDate(isStart: true),
-                ),
-                _buildDateField(
-                  label: 'Data final',
-                  value: _endDate == null
-                      ? 'Selecionar data'
-                      : formatTaskDate(_endDate!),
-                  onTap: () => _pickDate(isStart: false),
-                ),
-              ],
-              if (_selectedType == 2)
-                _buildSelectField(
-                  label: 'Meses',
-                  value: _selectedMonthsLabel,
-                  placeholder: 'Selecionar meses',
-                  onTap: _openMonthSelection,
-                ),
-              _buildDropdown(
-                label: 'Urgência',
-                value: _selectedUrgency,
-                options: _urgencies,
-                onChanged: (value) => setState(() => _selectedUrgency = value),
-              ),
-              _buildTextField(
-                controller: _obsController,
-                label: 'Observações',
-                hint: 'Observações da tarefa',
-                maxLines: 3,
-              ),
-              const SizedBox(height: 16),
-              CustomButton(
-                onPressed: _submit,
-                text: _isEditing ? 'Salvar' : 'Adicionar',
-                enabled: _isFormValid,
-                isLoading: _isLoading,
-              ),
-              const SizedBox(height: 32),
-            ],
-          ),
+          child: form,
         ),
       ),
     );
@@ -602,12 +705,14 @@ class _ResponsavelSelectionSheet extends StatefulWidget {
     required this.initialSelectedId,
     this.isLoading = false,
     this.errorMessage,
+    this.embeddedInDialog = false,
   });
 
   final List<TaskResponsavelEntity> responsaveis;
   final int? initialSelectedId;
   final bool isLoading;
   final String? errorMessage;
+  final bool embeddedInDialog;
 
   @override
   State<_ResponsavelSelectionSheet> createState() =>
@@ -656,6 +761,98 @@ class _ResponsavelSelectionSheetState
 
   @override
   Widget build(BuildContext context) {
+    final content = Column(
+      mainAxisSize: MainAxisSize.min,
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        if (!widget.embeddedInDialog) ...[
+          Center(
+            child: Container(
+              width: 72,
+              height: 4,
+              decoration: BoxDecoration(
+                color: const Color(0xFFE2E2E2),
+                borderRadius: BorderRadius.circular(999),
+              ),
+            ),
+          ),
+          const SizedBox(height: 24),
+          const Text(
+            'Selecionar responsável',
+            style: TextStyle(
+              color: Color(0xFF313131),
+              fontSize: 20,
+              fontFamily: 'Montserrat',
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+          const SizedBox(height: 6),
+        ],
+        const Text(
+          'Escolha um responsável já cadastrado ou adicione um novo.',
+          style: TextStyle(
+            color: Color(0xFF8C8C8C),
+            fontSize: 14,
+            fontFamily: 'Montserrat',
+            fontWeight: FontWeight.w400,
+          ),
+        ),
+        const SizedBox(height: 20),
+        if (!widget.isLoading &&
+            (widget.errorMessage ?? '').trim().isEmpty &&
+            widget.responsaveis.isNotEmpty) ...[
+          _buildSearchField(),
+          const SizedBox(height: 16),
+        ],
+        ConstrainedBox(
+          constraints: BoxConstraints(
+            maxHeight: widget.embeddedInDialog ? 320 : 420,
+            minHeight:
+                widget.isLoading || widget.responsaveis.isEmpty ? 120 : 0,
+          ),
+          child: _buildBody(),
+        ),
+        const SizedBox(height: 20),
+        SizedBox(
+          width: double.infinity,
+          child: OutlinedButton.icon(
+            onPressed: () {
+              Navigator.pop(
+                context,
+                const _ResponsavelSelectionResult(shouldAdd: true),
+              );
+            },
+            icon: const Icon(Icons.add_circle_outline),
+            label: const Text('Adicionar responsável'),
+            style: OutlinedButton.styleFrom(
+              foregroundColor: MyColors.colorPrimary,
+              side: const BorderSide(color: MyColors.colorPrimary),
+              minimumSize: const Size(double.infinity, 48),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(8),
+              ),
+            ),
+          ),
+        ),
+        if (widget.responsaveis.isNotEmpty) ...[
+          const SizedBox(height: 12),
+          CustomButton(
+            onPressed: () {
+              Navigator.pop(
+                context,
+                _ResponsavelSelectionResult(selectedId: _selectedId),
+              );
+            },
+            text: 'Confirmar',
+          ),
+        ],
+      ],
+    );
+
+    if (widget.embeddedInDialog) {
+      return content;
+    }
+
     return SafeArea(
       child: Padding(
         padding: EdgeInsets.only(
@@ -664,84 +861,7 @@ class _ResponsavelSelectionSheetState
           top: 16,
           bottom: 24 + MediaQuery.of(context).viewInsets.bottom,
         ),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Center(
-              child: Container(
-                width: 72,
-                height: 4,
-                decoration: BoxDecoration(
-                  color: const Color(0xFFE2E2E2),
-                  borderRadius: BorderRadius.circular(999),
-                ),
-              ),
-            ),
-            const SizedBox(height: 24),
-            const Text(
-              'Selecionar responsável',
-              style: TextStyle(
-                color: Color(0xFF313131),
-                fontSize: 20,
-                fontFamily: 'Montserrat',
-                fontWeight: FontWeight.w600,
-              ),
-            ),
-            const SizedBox(height: 6),
-            const Text(
-              'Escolha um responsável já cadastrado ou adicione um novo.',
-              style: TextStyle(
-                color: Color(0xFF8C8C8C),
-                fontSize: 14,
-                fontFamily: 'Montserrat',
-                fontWeight: FontWeight.w400,
-              ),
-            ),
-            const SizedBox(height: 20),
-            if (!widget.isLoading &&
-                (widget.errorMessage ?? '').trim().isEmpty &&
-                widget.responsaveis.isNotEmpty) ...[
-              _buildSearchField(),
-              const SizedBox(height: 16),
-            ],
-            Flexible(child: _buildBody()),
-            const SizedBox(height: 20),
-            SizedBox(
-              width: double.infinity,
-              child: OutlinedButton.icon(
-                onPressed: () {
-                  Navigator.pop(
-                    context,
-                    const _ResponsavelSelectionResult(shouldAdd: true),
-                  );
-                },
-                icon: const Icon(Icons.add_circle_outline),
-                label: const Text('Adicionar responsável'),
-                style: OutlinedButton.styleFrom(
-                  foregroundColor: MyColors.colorPrimary,
-                  side: const BorderSide(color: MyColors.colorPrimary),
-                  minimumSize: const Size(double.infinity, 48),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                ),
-              ),
-            ),
-            if (widget.responsaveis.isNotEmpty) ...[
-              const SizedBox(height: 12),
-              CustomButton(
-                onPressed: () {
-                  Navigator.pop(
-                    context,
-                    _ResponsavelSelectionResult(selectedId: _selectedId),
-                  );
-                },
-                text: 'Confirmar',
-              ),
-            ],
-          ],
-        ),
+        child: content,
       ),
     );
   }
@@ -887,9 +1007,13 @@ class _ResponsavelSelectionSheetState
 }
 
 class _MonthSelectionSheet extends StatefulWidget {
-  const _MonthSelectionSheet({required this.selectedMonths});
+  const _MonthSelectionSheet({
+    required this.selectedMonths,
+    this.embeddedInDialog = false,
+  });
 
   final List<String> selectedMonths;
+  final bool embeddedInDialog;
 
   @override
   State<_MonthSelectionSheet> createState() => _MonthSelectionSheetState();
@@ -900,66 +1024,77 @@ class _MonthSelectionSheetState extends State<_MonthSelectionSheet> {
 
   @override
   Widget build(BuildContext context) {
+    final content = Column(
+      mainAxisSize: MainAxisSize.min,
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        if (!widget.embeddedInDialog) ...[
+          Center(
+            child: Container(
+              width: 72,
+              height: 4,
+              decoration: BoxDecoration(
+                color: const Color(0xFFE2E2E2),
+                borderRadius: BorderRadius.circular(999),
+              ),
+            ),
+          ),
+          const SizedBox(height: 24),
+          const Text(
+            'Selecionar meses',
+            style: TextStyle(
+              color: Color(0xFF313131),
+              fontSize: 20,
+              fontFamily: 'Montserrat',
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+          const SizedBox(height: 20),
+        ],
+        ConstrainedBox(
+          constraints: BoxConstraints(
+            maxHeight: widget.embeddedInDialog ? 360 : 420,
+          ),
+          child: ListView.separated(
+            shrinkWrap: true,
+            itemCount: _AddTaskState._months.length,
+            separatorBuilder: (_, __) => const SizedBox(height: 10),
+            itemBuilder: (context, index) {
+              final month = _AddTaskState._months[index];
+              final isSelected = _selected.contains(month.value);
+              return CheckboxListTile(
+                value: isSelected,
+                title: Text(month.label),
+                controlAffinity: ListTileControlAffinity.trailing,
+                onChanged: (_) {
+                  setState(() {
+                    isSelected
+                        ? _selected.remove(month.value)
+                        : _selected.add(month.value);
+                  });
+                },
+              );
+            },
+          ),
+        ),
+        const SizedBox(height: 12),
+        CustomButton(
+          onPressed: () {
+            Navigator.pop(context, _selected.toList(growable: false));
+          },
+          text: 'Confirmar',
+        ),
+      ],
+    );
+
+    if (widget.embeddedInDialog) {
+      return content;
+    }
+
     return SafeArea(
       child: Padding(
         padding: const EdgeInsets.fromLTRB(20, 16, 20, 24),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Center(
-              child: Container(
-                width: 72,
-                height: 4,
-                decoration: BoxDecoration(
-                  color: const Color(0xFFE2E2E2),
-                  borderRadius: BorderRadius.circular(999),
-                ),
-              ),
-            ),
-            const SizedBox(height: 24),
-            const Text(
-              'Selecionar meses',
-              style: TextStyle(
-                color: Color(0xFF313131),
-                fontSize: 20,
-                fontFamily: 'Montserrat',
-                fontWeight: FontWeight.w600,
-              ),
-            ),
-            const SizedBox(height: 20),
-            Flexible(
-              child: ListView.separated(
-                shrinkWrap: true,
-                itemCount: _AddTaskState._months.length,
-                separatorBuilder: (_, __) => const SizedBox(height: 10),
-                itemBuilder: (context, index) {
-                  final month = _AddTaskState._months[index];
-                  final isSelected = _selected.contains(month.value);
-                  return CheckboxListTile(
-                    value: isSelected,
-                    title: Text(month.label),
-                    controlAffinity: ListTileControlAffinity.trailing,
-                    onChanged: (_) {
-                      setState(() {
-                        isSelected
-                            ? _selected.remove(month.value)
-                            : _selected.add(month.value);
-                      });
-                    },
-                  );
-                },
-              ),
-            ),
-            const SizedBox(height: 12),
-            CustomButton(
-              onPressed: () {
-                Navigator.pop(context, _selected.toList(growable: false));
-              },
-              text: 'Confirmar',
-            ),
-          ],
-        ),
+        child: content,
       ),
     );
   }

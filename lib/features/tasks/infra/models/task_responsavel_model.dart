@@ -6,6 +6,7 @@ class TaskResponsavelModel extends TaskResponsavelEntity {
     required super.nome,
     super.email,
     super.celular,
+    super.appFazendasId,
     super.idLocal,
     super.syncStatus,
     super.pendingAction,
@@ -18,6 +19,11 @@ class TaskResponsavelModel extends TaskResponsavelEntity {
       nome: json['nome']?.toString() ?? '',
       email: json['email']?.toString() ?? '',
       celular: json['celular']?.toString() ?? '',
+      appFazendasId: int.tryParse(
+        json['app_fazendas_id']?.toString() ??
+            json['id_fazenda']?.toString() ??
+            '',
+      ),
       idLocal: json['idLocal']?.toString(),
       syncStatus: json['syncStatus']?.toString(),
       pendingAction: json['pendingAction']?.toString(),

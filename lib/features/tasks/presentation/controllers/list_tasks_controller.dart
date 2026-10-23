@@ -134,6 +134,7 @@ class ListTasksController extends ChangeNotifier {
   }
 
   void _setLoading(bool value) {
+    if (_isLoading == value) return;
     _isLoading = value;
     notifyListeners();
   }

@@ -7,6 +7,7 @@ class TaskStatusEntity {
   });
 
   static const int pendente = 1;
+  static const int emAtraso = 2;
   static const int concluido = 3;
 
   final int appUsersId;

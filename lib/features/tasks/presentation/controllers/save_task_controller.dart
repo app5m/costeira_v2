@@ -47,7 +47,7 @@ class SaveTaskController extends ChangeNotifier {
           obs: obs,
           urgencia: urgencia,
           datas: datas,
-          dataPrazo: tipo == 1 ? dataPrazo : null,
+          dataPrazo: dataPrazo,
         ),
       );
     } finally {
