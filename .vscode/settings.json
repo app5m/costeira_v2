@@ -1,0 +1,5 @@
+{
+  "dart.env": {
+    "PATH": "/Users/thiago/.rbenv/shims:/opt/homebrew/bin:/usr/local/bin:${env:PATH}"
+  }
+}
