@@ -90,6 +90,55 @@ void main() {
     expect(lista.gmdLote.valor('gmd_medio').exibir(), '—');
     expect(numeroIndicador(lista.kgProduzido.calculo['compras_entradas']), isNull);
     expect(lista.areaMedia.graficos, isEmpty);
+    expect(lista.taxaDesfrute.valor('taxa_desfrute').exibir(), '—');
+  });
+
+  test('parser lê desfrute_saidas', () {
+    final lista = IndicadoresResponseModel.fromJson({
+      'status': '01',
+      'data': {
+        'desfrute_saidas': {
+          'taxa_desfrute': {
+            'indicadores': {
+              'taxa_desfrute': {'qtd': 7.1, 'string': '%', 'texto': '7.1%'},
+              'kg_produzido': {'qtd': 3150, 'string': 'kg'},
+              'kg_inventario_inicial': {'qtd': 44410, 'string': 'kg'},
+            },
+            'detalhamento': [],
+          },
+          'taxa_abate': {
+            'indicadores': {
+              'taxa_abate': {'qtd': 0, 'string': '%', 'texto': '0.0%'},
+              'kg_vendidos': {'qtd': 0, 'string': 'kg', 'texto': '0 kg'},
+              'kg_estoque_inicial': {'qtd': 44410, 'string': 'kg'},
+            },
+          },
+          'taxa_giro': {
+            'indicadores': {
+              'taxa_giro': {'qtd': 0, 'string': '%', 'texto': '0.000%'},
+              'cabecas_vendidas': {'qtd': 0, 'string': 'cab'},
+              'estoque_inicial': {'qtd': 104, 'string': 'cab'},
+            },
+          },
+          'mortalidade': {
+            'indicadores': {
+              'taxa_mortalidade': {'qtd': 0, 'string': '%', 'texto': '0.00%'},
+              'animais_perdidos': {'qtd': 0},
+              'estoque_medio': {'qtd': 135},
+            },
+            'graficos': {'mortalidade_categoria': []},
+            'detalhamento': [],
+            'meses_estoque_medio': 4,
+          },
+        },
+      },
+    });
+
+    expect(lista.taxaDesfrute.valor('taxa_desfrute').partes().numero, '7.1');
+    expect(lista.taxaAbate.valor('kg_vendidos').exibir(), '0 kg');
+    expect(lista.taxaGiro.valor('estoque_inicial').qtd, 104);
+    expect(lista.mortalidade.mesesEstoqueMedio, 4);
+    expect(lista.mortalidade.serie('mortalidade_categoria'), isEmpty);
   });
 
   test('todo o período não manda periodo', () {

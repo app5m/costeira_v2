@@ -38,6 +38,7 @@ class AppRoutes {
   static const String climateRainEdit = '/climate-and-rain/edit';
   static const String estoque = '/estoque';
   static const String indicadores = '/indicadores';
+  static const String financeiro = '/financeiro';
   static const String tasks = '/tasks';
   static const String comingSoon = '/coming-soon';
   static const String fazendasAdd = '/fazendas/add';
