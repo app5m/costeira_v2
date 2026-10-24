@@ -148,7 +148,13 @@ class _FinanceiroShellPageState extends State<FinanceiroShellPage> {
     final ok = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Inativar conta?', style: TextStyle(fontFamily: 'Montserrat', fontWeight: FontWeight.w700)),
+        title: const Text(
+          'Inativar conta?',
+          style: TextStyle(
+            fontFamily: 'Montserrat',
+            fontWeight: FontWeight.w700,
+          ),
+        ),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -160,13 +166,21 @@ class _FinanceiroShellPageState extends State<FinanceiroShellPage> {
             const SizedBox(height: 12),
             TextField(
               controller: motivo,
-              decoration: const InputDecoration(labelText: 'Motivo da inativação'),
+              decoration: const InputDecoration(
+                labelText: 'Motivo da inativação',
+              ),
             ),
           ],
         ),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(context, false), child: const Text('Voltar')),
-          TextButton(onPressed: () => Navigator.pop(context, true), child: const Text('Inativar')),
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: const Text('Voltar'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(context, true),
+            child: const Text('Inativar'),
+          ),
         ],
       ),
     );
@@ -222,7 +236,13 @@ class _FinanceiroShellPageState extends State<FinanceiroShellPage> {
               ListTile(
                 selected: _aba == i,
                 selectedColor: MyColors.colorPrimary,
-                title: Text(itens[i], style: const TextStyle(fontFamily: 'Montserrat', fontWeight: FontWeight.w600)),
+                title: Text(
+                  itens[i],
+                  style: const TextStyle(
+                    fontFamily: 'Montserrat',
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
                 onTap: () => _abaIr(i),
               ),
           ],
@@ -233,10 +253,12 @@ class _FinanceiroShellPageState extends State<FinanceiroShellPage> {
 
   Widget _miolo({required bool barra}) {
     if (_passo == _Passo.form) {
-      return LancamentoFormPage(aoFechar: () => setState(() {
-        _aba = 1;
-        _passo = _Passo.abas;
-      }));
+      return LancamentoFormPage(
+        aoFechar: () => setState(() {
+          _aba = 1;
+          _passo = _Passo.abas;
+        }),
+      );
     }
     if (_passo == _Passo.detalhe && _lancamento != null) {
       return LancamentoDetalhePage(
@@ -278,7 +300,8 @@ class _FinanceiroShellPageState extends State<FinanceiroShellPage> {
     if (_passo == _Passo.contaForm) {
       return ContaFormPage(
         conta: _contaNova ? null : _conta,
-        aoVoltar: () => setState(() => _passo = _contaNova ? _Passo.abas : _Passo.conta),
+        aoVoltar: () =>
+            setState(() => _passo = _contaNova ? _Passo.abas : _Passo.conta),
       );
     }
     if (_passo == _Passo.saldo && _conta != null) {
@@ -307,7 +330,11 @@ class _FinanceiroShellPageState extends State<FinanceiroShellPage> {
                 child: Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    Icon(LucideIcons.home, size: 16, color: MyColors.colorPrimary),
+                    Icon(
+                      LucideIcons.home,
+                      size: 16,
+                      color: MyColors.colorPrimary,
+                    ),
                     SizedBox(width: 8),
                     Text(
                       'Dashboard',
@@ -355,20 +382,26 @@ class _FinanceiroShellPageState extends State<FinanceiroShellPage> {
               onPressed: () => setState(() => _passo = _Passo.form),
               backgroundColor: MyColors.colorPrimary,
               icon: const Icon(Icons.add),
-              label: const Text('Novo lançamento', style: TextStyle(fontFamily: 'Montserrat')),
+              label: const Text(
+                'Novo lançamento',
+                style: TextStyle(fontFamily: 'Montserrat'),
+              ),
             )
           : _aba == 3
-              ? FloatingActionButton.extended(
-                  onPressed: () => setState(() {
-                    _contaNova = true;
-                    _conta = null;
-                    _passo = _Passo.contaForm;
-                  }),
-                  backgroundColor: MyColors.colorPrimary,
-                  icon: const Icon(Icons.add),
-                  label: const Text('Adicionar conta', style: TextStyle(fontFamily: 'Montserrat')),
-                )
-              : null,
+          ? FloatingActionButton.extended(
+              onPressed: () => setState(() {
+                _contaNova = true;
+                _conta = null;
+                _passo = _Passo.contaForm;
+              }),
+              backgroundColor: MyColors.colorPrimary,
+              icon: const Icon(Icons.add),
+              label: const Text(
+                'Adicionar conta',
+                style: TextStyle(fontFamily: 'Montserrat'),
+              ),
+            )
+          : null,
       bottomNavigationBar: barra
           ? _BarraFinanceiro(indice: _aba, aoEscolher: _abaIr)
           : null,

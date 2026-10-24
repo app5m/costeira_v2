@@ -20,6 +20,7 @@ import 'package:costeira/theme/colors.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_modular/flutter_modular.dart';
 import 'package:lucide_icons/lucide_icons.dart';
+import 'package:package_info_plus/package_info_plus.dart';
 
 class ProfileWebPage extends StatefulWidget {
   const ProfileWebPage({
@@ -28,12 +29,14 @@ class ProfileWebPage extends StatefulWidget {
     this.onOpenPotreiros,
     this.onOpenEstoque,
     this.onOpenPluviosidade,
+    this.onOpenIndicadores,
   });
 
   final VoidCallback? onOpenTasks;
   final VoidCallback? onOpenPotreiros;
   final VoidCallback? onOpenEstoque;
   final VoidCallback? onOpenPluviosidade;
+  final VoidCallback? onOpenIndicadores;
 
   @override
   State<ProfileWebPage> createState() => _ProfileWebPageState();
@@ -51,6 +54,7 @@ class _ProfileWebPageState extends State<ProfileWebPage> {
   UserSession? _user;
   AccountProfile? _profile;
   String _selected = _summary;
+  String _version = '';
   bool _loadingProfile = true;
   bool _processingAccount = false;
 
@@ -61,6 +65,7 @@ class _ProfileWebPageState extends State<ProfileWebPage> {
     _menus = Modular.get<AppMenusController>();
     _menus.addListener(_onMenusChanged);
     _menus.load();
+    _loadVersion();
     _loadProfile();
   }
 
@@ -72,6 +77,14 @@ class _ProfileWebPageState extends State<ProfileWebPage> {
 
   void _onMenusChanged() {
     if (mounted) setState(() {});
+  }
+
+  Future<void> _loadVersion() async {
+    final info = await PackageInfo.fromPlatform();
+    if (!mounted) return;
+    setState(
+      () => _version = 'Versão ${info.version} • build ${info.buildNumber}',
+    );
   }
 
   Future<void> _loadProfile() async {
@@ -223,6 +236,11 @@ class _ProfileWebPageState extends State<ProfileWebPage> {
             onTap: _processingAccount ? null : _confirmLogout,
           ),
         ),
+        if (_version.isNotEmpty)
+          Padding(
+            padding: const EdgeInsets.only(bottom: 12),
+            child: _VersionLabel(_version),
+          ),
       ],
     );
   }
@@ -278,6 +296,10 @@ class _ProfileWebPageState extends State<ProfileWebPage> {
               child: _panelContent(),
             ),
           ),
+          if (_version.isNotEmpty) ...[
+            const SizedBox(height: 28),
+            _VersionLabel(_version),
+          ],
         ],
       ),
     );
@@ -442,6 +464,13 @@ class _ProfileWebPageState extends State<ProfileWebPage> {
       final openPluviosidade = widget.onOpenPluviosidade;
       if (openPluviosidade != null) {
         openPluviosidade();
+        return;
+      }
+    }
+    if (slug == MenuSlug.indicadores) {
+      final openIndicadores = widget.onOpenIndicadores;
+      if (openIndicadores != null) {
+        openIndicadores();
         return;
       }
     }
@@ -977,6 +1006,28 @@ class _SummaryRow extends StatelessWidget {
           ),
         ),
       ],
+    );
+  }
+}
+
+class _VersionLabel extends StatelessWidget {
+  const _VersionLabel(this.value);
+
+  final String value;
+
+  @override
+  Widget build(BuildContext context) {
+    return Center(
+      child: Text(
+        value,
+        style: const TextStyle(
+          fontFamily: 'Montserrat',
+          fontSize: 10,
+          fontWeight: FontWeight.w500,
+          letterSpacing: 0.15,
+          color: Color(0xFF9A9A9A),
+        ),
+      ),
     );
   }
 }

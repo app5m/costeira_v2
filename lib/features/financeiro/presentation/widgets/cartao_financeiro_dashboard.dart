@@ -1,8 +1,10 @@
 import 'package:costeira/app/app_routes.dart';
 import 'package:costeira/core/menus/app_menus_controller.dart';
+import 'package:costeira/core/menus/menu_action_resolver.dart';
 import 'package:costeira/features/financeiro/presentation/financeiro_acesso.dart';
 import 'package:costeira/features/financeiro/presentation/financeiro_shell_page.dart';
 import 'package:costeira/theme/colors.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_modular/flutter_modular.dart';
 import 'package:lucide_icons/lucide_icons.dart';
@@ -11,7 +13,8 @@ class CartaoFinanceiroDashboard extends StatefulWidget {
   const CartaoFinanceiroDashboard({super.key});
 
   @override
-  State<CartaoFinanceiroDashboard> createState() => _CartaoFinanceiroDashboardState();
+  State<CartaoFinanceiroDashboard> createState() =>
+      _CartaoFinanceiroDashboardState();
 }
 
 class _CartaoFinanceiroDashboardState extends State<CartaoFinanceiroDashboard> {
@@ -35,9 +38,18 @@ class _CartaoFinanceiroDashboardState extends State<CartaoFinanceiroDashboard> {
   }
 
   void _abrir({required bool form}) {
+    if (kIsWeb) {
+      MenuActionResolver.showDevelopmentDialog(
+        context,
+        moduleName: 'Financeiro',
+      );
+      return;
+    }
     Modular.to.pushNamed(
       AppRoutes.financeiro,
-      arguments: form ? const FinanceiroAbrir.form() : const FinanceiroAbrir.modulo(),
+      arguments: form
+          ? const FinanceiroAbrir.form()
+          : const FinanceiroAbrir.modulo(),
     );
   }
 
@@ -63,7 +75,11 @@ class _CartaoFinanceiroDashboardState extends State<CartaoFinanceiroDashboard> {
                   color: const Color(0x1400823A),
                   borderRadius: BorderRadius.circular(10),
                 ),
-                child: const Icon(LucideIcons.wallet, size: 16, color: MyColors.colorPrimary),
+                child: const Icon(
+                  LucideIcons.wallet,
+                  size: 16,
+                  color: MyColors.colorPrimary,
+                ),
               ),
               const SizedBox(width: 10),
               const Expanded(
@@ -94,7 +110,11 @@ class _CartaoFinanceiroDashboardState extends State<CartaoFinanceiroDashboard> {
           const SizedBox(height: 8),
           const Text(
             'Saldo disponível em 20/10/2026',
-            style: TextStyle(fontFamily: 'Montserrat', fontSize: 12, color: Color(0xFF8A8A8A)),
+            style: TextStyle(
+              fontFamily: 'Montserrat',
+              fontSize: 12,
+              color: Color(0xFF8A8A8A),
+            ),
           ),
           const Text(
             'R\$ 24.580,00',
@@ -108,21 +128,43 @@ class _CartaoFinanceiroDashboardState extends State<CartaoFinanceiroDashboard> {
           const SizedBox(height: 10),
           Row(
             children: const [
-              Expanded(child: _Faixa(rotulo: 'A pagar no período', valor: 'R\$ 3.250,00', fundo: Color(0xFFFDECEC), letra: Color(0xFFC62828))),
+              Expanded(
+                child: _Faixa(
+                  rotulo: 'A pagar no período',
+                  valor: 'R\$ 3.250,00',
+                  fundo: Color(0xFFFDECEC),
+                  letra: Color(0xFFC62828),
+                ),
+              ),
               SizedBox(width: 8),
-              Expanded(child: _Faixa(rotulo: 'A receber no período', valor: 'R\$ 8.900,00', fundo: Color(0xFFE7F6EC), letra: MyColors.colorPrimary)),
+              Expanded(
+                child: _Faixa(
+                  rotulo: 'A receber no período',
+                  valor: 'R\$ 8.900,00',
+                  fundo: Color(0xFFE7F6EC),
+                  letra: MyColors.colorPrimary,
+                ),
+              ),
             ],
           ),
           const SizedBox(height: 12),
           OutlinedButton.icon(
             onPressed: () => _abrir(form: true),
             icon: const Icon(Icons.add, size: 16),
-            label: const Text('Novo lançamento', style: TextStyle(fontFamily: 'Montserrat', fontWeight: FontWeight.w600)),
+            label: const Text(
+              'Novo lançamento',
+              style: TextStyle(
+                fontFamily: 'Montserrat',
+                fontWeight: FontWeight.w600,
+              ),
+            ),
             style: OutlinedButton.styleFrom(
               foregroundColor: MyColors.colorPrimary,
               minimumSize: const Size.fromHeight(44),
               side: const BorderSide(color: Color(0xFFD7E8DC)),
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12),
+              ),
             ),
           ),
         ],
@@ -155,11 +197,23 @@ class _Faixa extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(rotulo, style: TextStyle(fontFamily: 'Montserrat', fontSize: 11, color: letra)),
+          Text(
+            rotulo,
+            style: TextStyle(
+              fontFamily: 'Montserrat',
+              fontSize: 11,
+              color: letra,
+            ),
+          ),
           const SizedBox(height: 2),
           Text(
             valor,
-            style: TextStyle(fontFamily: 'Montserrat', fontSize: 14, fontWeight: FontWeight.w800, color: letra),
+            style: TextStyle(
+              fontFamily: 'Montserrat',
+              fontSize: 14,
+              fontWeight: FontWeight.w800,
+              color: letra,
+            ),
           ),
         ],
       ),

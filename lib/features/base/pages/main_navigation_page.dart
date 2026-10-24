@@ -38,6 +38,7 @@ import 'package:costeira/features/movimentacoes/transferencias/presentation/web/
 import 'package:costeira/features/movimentacoes/vendas/presentation/web/vendas_web_page.dart';
 import 'package:costeira/features/movimentacoes/movimentacoes.dart';
 import 'package:costeira/features/notifications/presentation/pages/notification_page.dart';
+import 'package:costeira/features/indicadores/presentation/web/indicadores_web_page.dart';
 import 'package:costeira/features/insumos/presentation/web/estoque_insumos_web_page.dart';
 import 'package:costeira/features/potreiros/presentation/web/potreiros_web_page.dart';
 import 'package:costeira/features/tasks/presentation/web/tasks_web_page.dart';
@@ -242,7 +243,11 @@ class _MainNavigationPageState extends State<MainNavigationPage>
       dashboard: _menusController.dashboardMenu,
     );
 
-    if (currentSlug != null &&
+    if (kIsWeb &&
+        currentSlug != null &&
+        MenuActionResolver.isDevelopmentModule(currentSlug)) {
+      kicked = _goToDashboardTab(tabs);
+    } else if (currentSlug != null &&
         _menusController.navigationMenu.isNotEmpty &&
         !access.allowsNavSlug(currentSlug)) {
       kicked = _goToDashboardTab(tabs);
@@ -500,12 +505,13 @@ class _MainNavigationPageState extends State<MainNavigationPage>
                           ? _dashboardGreeting
                           : current?.label ?? 'Costeira',
                       subtitle:
-                          !overlayActive &&
-                              current?.slug == MenuSlug.dashboard
+                          !overlayActive && current?.slug == MenuSlug.dashboard
                           ? 'Bem-vindo ao Costeira'
                           : null,
                       showMenuButton: !useSidebar,
-                      onBack: showingWebProfile ? _closeWebProfileOverlay : null,
+                      onBack: showingWebProfile
+                          ? _closeWebProfileOverlay
+                          : null,
                       controls:
                           !overlayActive &&
                               current?.slug == MenuSlug.dashboard &&
@@ -592,37 +598,26 @@ class _MainNavigationPageState extends State<MainNavigationPage>
   }
 
   void _openWebTasks() {
-    _openWebProfileModule(
-      slug: MenuSlug.tarefas,
-      title: 'Tarefas',
-    );
+    _openWebProfileModule(slug: MenuSlug.tarefas, title: 'Tarefas');
   }
 
   void _openWebPotreiros() {
-    _openWebProfileModule(
-      slug: MenuSlug.potreiros,
-      title: 'Potreiros',
-    );
+    _openWebProfileModule(slug: MenuSlug.potreiros, title: 'Potreiros');
   }
 
   void _openWebEstoque() {
-    _openWebProfileModule(
-      slug: MenuSlug.estoque,
-      title: 'Estoque de Insumos',
-    );
+    _openWebProfileModule(slug: MenuSlug.estoque, title: 'Estoque de Insumos');
   }
 
   void _openWebPluviosidade() {
-    _openWebProfileModule(
-      slug: MenuSlug.pluviosidade,
-      title: 'Clima e Chuvas',
-    );
+    _openWebProfileModule(slug: MenuSlug.pluviosidade, title: 'Clima e Chuvas');
   }
 
-  void _openWebProfileModule({
-    required String slug,
-    required String title,
-  }) {
+  void _openWebIndicadores() {
+    _openWebProfileModule(slug: MenuSlug.indicadores, title: 'Indicadores');
+  }
+
+  void _openWebProfileModule({required String slug, required String title}) {
     if (!kIsWeb) return;
     final tabs = _tabs;
     final perfilIndex = tabs.indexWhere((tab) => tab.slug == MenuSlug.perfil);
@@ -641,9 +636,7 @@ class _MainNavigationPageState extends State<MainNavigationPage>
       _syncPageController(perfilIndex);
     }
     unawaited(
-      SessionStorage.saveWebSidebarSection(
-        _WebSidebarSection.navigation.name,
-      ),
+      SessionStorage.saveWebSidebarSection(_WebSidebarSection.navigation.name),
     );
   }
 
@@ -668,9 +661,7 @@ class _MainNavigationPageState extends State<MainNavigationPage>
 
   Widget _webContent(List<_NavTab> tabs, {required bool hasTabs}) {
     if (_activeWebProfileSlug == MenuSlug.tarefas) {
-      return TasksWebPage(
-        key: ValueKey('$_shellGeracao-${MenuSlug.tarefas}'),
-      );
+      return TasksWebPage(key: ValueKey('$_shellGeracao-${MenuSlug.tarefas}'));
     }
     if (_activeWebProfileSlug == MenuSlug.potreiros) {
       return PotreirosWebPage(
@@ -687,15 +678,18 @@ class _MainNavigationPageState extends State<MainNavigationPage>
         key: ValueKey('$_shellGeracao-${MenuSlug.pluviosidade}'),
       );
     }
+    if (_activeWebProfileSlug == MenuSlug.indicadores) {
+      return IndicadoresWebPage(
+        key: ValueKey('$_shellGeracao-${MenuSlug.indicadores}'),
+      );
+    }
     if (_activeWebMovementSlug == MenuSlug.compras) {
       return ComprasWebPage(
         key: ValueKey('$_shellGeracao-${MenuSlug.compras}'),
       );
     }
     if (_activeWebMovementSlug == MenuSlug.vendas) {
-      return VendasWebPage(
-        key: ValueKey('$_shellGeracao-${MenuSlug.vendas}'),
-      );
+      return VendasWebPage(key: ValueKey('$_shellGeracao-${MenuSlug.vendas}'));
     }
     if (_activeWebMovementSlug == MenuSlug.transferencias) {
       return TransferenciasWebPage(
@@ -703,9 +697,7 @@ class _MainNavigationPageState extends State<MainNavigationPage>
       );
     }
     if (_activeWebMovementSlug == MenuSlug.mortes) {
-      return MortesWebPage(
-        key: ValueKey('$_shellGeracao-${MenuSlug.mortes}'),
-      );
+      return MortesWebPage(key: ValueKey('$_shellGeracao-${MenuSlug.mortes}'));
     }
     if (_activeWebMovementSlug == MenuSlug.nascimentos) {
       return NascimentosWebPage(
@@ -900,6 +892,7 @@ class _MainNavigationPageState extends State<MainNavigationPage>
                 onOpenPotreiros: _openWebPotreiros,
                 onOpenEstoque: _openWebEstoque,
                 onOpenPluviosidade: _openWebPluviosidade,
+                onOpenIndicadores: _openWebIndicadores,
               )
             : Menu(key: chave),
       _ => ModulePlaceholderPage(
@@ -915,13 +908,23 @@ class _MainNavigationPageState extends State<MainNavigationPage>
     if (index < 0 || index >= tabs.length) {
       return;
     }
+    final target = tabs[index];
+    if (kIsWeb && MenuActionResolver.isDevelopmentModule(target.slug)) {
+      unawaited(
+        MenuActionResolver.showDevelopmentDialog(
+          context,
+          moduleName: target.label,
+        ),
+      );
+      return;
+    }
     setState(() {
       _activeWebMovementSlug = null;
       _activeWebMovementTitle = null;
       _activeWebProfileSlug = null;
       _activeWebProfileTitle = null;
       _selectedIndex = index;
-      _rememberActiveSlug(tabs[index].slug);
+      _rememberActiveSlug(target.slug);
     });
     _syncPageController(index);
   }

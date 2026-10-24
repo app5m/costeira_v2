@@ -117,11 +117,7 @@ class _ChipOpcao extends StatelessWidget {
 }
 
 class CampoFinanceiro extends StatelessWidget {
-  const CampoFinanceiro({
-    super.key,
-    required this.rotulo,
-    required this.child,
-  });
+  const CampoFinanceiro({super.key, required this.rotulo, required this.child});
 
   final String rotulo;
   final Widget child;
@@ -130,11 +126,7 @@ class CampoFinanceiro extends StatelessWidget {
   Widget build(BuildContext context) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        SecaoRotulo(rotulo),
-        const SizedBox(height: 6),
-        child,
-      ],
+      children: [SecaoRotulo(rotulo), const SizedBox(height: 6), child],
     );
   }
 }

@@ -28,6 +28,9 @@ $builtIndexPath = Join-Path $root 'build/web/index.html'
 if (-not (Test-Path -LiteralPath $builtIndexPath)) {
   throw 'Build gerado sem build/web/index.html.'
 }
+if ((Get-Item -LiteralPath $builtIndexPath).Length -eq 0) {
+  throw 'Build gerado com build/web/index.html vazio.'
+}
 
 $builtIndex = Get-Content -Raw -LiteralPath $builtIndexPath
 if ($builtIndex -notmatch [regex]::Escape("<base href=`"$baseHref`">")) {
@@ -67,4 +70,54 @@ Get-ChildItem -Path (Join-Path $root 'build/web') -Recurse -Filter '.env' -Force
     Remove-Item -LiteralPath $_.FullName -Force
   }
 
-Write-Host "Build web gerado em build/web (pronto para publicar em $siteUrl)."
+$buildPath = Join-Path $root 'build/web'
+$criticalFiles = @(
+  'index.html',
+  'flutter_bootstrap.js',
+  'main.dart.js',
+  'manifest.json',
+  'version.json',
+  'assets/AssetManifest.bin.json',
+  'assets/icon/noti.svg',
+  '.htaccess'
+)
+
+foreach ($relativePath in $criticalFiles) {
+  $criticalPath = Join-Path $buildPath $relativePath
+  if (-not (Test-Path -LiteralPath $criticalPath)) {
+    throw "Build incompleto: arquivo ausente: $relativePath"
+  }
+  if ((Get-Item -LiteralPath $criticalPath).Length -eq 0) {
+    throw "Build incompleto: arquivo vazio: $relativePath"
+  }
+}
+
+$archivePath = Join-Path $root 'build/costeira-web.zip'
+if (Test-Path -LiteralPath $archivePath) {
+  Remove-Item -LiteralPath $archivePath -Force
+}
+
+Add-Type -AssemblyName System.IO.Compression.FileSystem
+[System.IO.Compression.ZipFile]::CreateFromDirectory(
+  $buildPath,
+  $archivePath,
+  [System.IO.Compression.CompressionLevel]::Optimal,
+  $false
+)
+
+$archive = [System.IO.Compression.ZipFile]::OpenRead($archivePath)
+try {
+  foreach ($relativePath in @('index.html', '.htaccess')) {
+    $entry = $archive.Entries | Where-Object { $_.FullName -eq $relativePath }
+    if ($null -eq $entry -or $entry.Length -eq 0) {
+      throw "Pacote ZIP invalido: $relativePath ausente ou vazio."
+    }
+  }
+}
+finally {
+  $archive.Dispose()
+}
+
+Write-Host "Build web gerado em build/web."
+Write-Host "Pacote para upload gerado em build/costeira-web.zip."
+Write-Host "Extraia o ZIP diretamente na pasta publicada em $siteUrl."

@@ -15,7 +15,6 @@ import 'package:costeira/features/dashboard/presentation/controllers/get_dashboa
 import 'package:costeira/core/components/web_dialog_frame.dart';
 import 'package:costeira/features/dashboard/presentation/web/dashboard_action_web_dialog.dart';
 import 'package:costeira/features/dashboard/presentation/widgets/dashboard_charts.dart';
-import 'package:costeira/features/financeiro/presentation/widgets/cartao_financeiro_dashboard.dart';
 import 'package:costeira/features/fazendas/domain/entities/fazenda_entity.dart';
 import 'package:costeira/features/fazendas/domain/entities/fazenda_filter_entity.dart';
 import 'package:costeira/features/fazendas/domain/usecases/get_fazendas_usecase.dart';
@@ -630,8 +629,6 @@ class _DashboardWebPageState extends State<DashboardWebPage> {
                                   overdue: indicators.emAtraso,
                                   urgent: indicators.urgentes,
                                 ),
-                                const SizedBox(height: 12),
-                                const CartaoFinanceiroDashboard(),
                                 const SizedBox(height: 12),
                                 _metricGrid(viewportWidth),
                                 const SizedBox(height: 12),
@@ -1293,10 +1290,7 @@ class _DashboardActionsDialog extends StatelessWidget {
                 children: [
                   for (var index = 0; index < items.length; index++) ...[
                     if (index > 0) const SizedBox(height: 8),
-                    _DashboardActionTile(
-                      item: items[index],
-                      onOpen: onOpen,
-                    ),
+                    _DashboardActionTile(item: items[index], onOpen: onOpen),
                   ],
                 ],
               ),

@@ -1,6 +1,7 @@
 import 'package:costeira/app/app_route_data.dart';
 import 'package:costeira/app/app_routes.dart';
 import 'package:costeira/core/common/get_list/domain/entities/app_menu_entity.dart';
+import 'package:costeira/core/components/web_dialog_frame.dart';
 import 'package:costeira/core/menus/menu_slug.dart';
 import 'package:costeira/core/utils/app_logger.dart';
 import 'package:costeira/features/manejos_animais/presentation/pages/manejo_animal_sessao_page.dart';
@@ -39,9 +40,11 @@ import 'package:costeira/features/movimentacoes/vendas/presentation/pages/vendas
 import 'package:costeira/features/movimentacoes/vendas/presentation/web/vendas_web_page.dart';
 import 'package:costeira/features/pastagem_nutricao_suplemento/presentation/pages/suplementacao/add_suplemento.dart';
 import 'package:costeira/features/sanitarios/presentation/pages/add_planejamento.dart';
+import 'package:costeira/theme/colors.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_modular/flutter_modular.dart';
+import 'package:lucide_icons/lucide_icons.dart';
 
 enum MenuSurface { dashboard, profile, nav, movimentacoes }
 
@@ -57,13 +60,18 @@ class MenuActionResolver {
     AppMenuEntity item, {
     required MenuSurface surface,
   }) async {
+    final slug = slugOf(item);
+    if (kIsWeb && isDevelopmentModule(slug)) {
+      await showDevelopmentDialog(context, moduleName: item.name);
+      return;
+    }
+
     final action = item.action?.trim() ?? '';
     if (action.startsWith('/')) {
       Modular.to.pushNamed(action);
       return;
     }
 
-    final slug = slugOf(item);
     AppLogger.info(
       'MENU ACTION: surface=$surface nome=${item.name} action=${item.action} slug=$slug',
     );
@@ -118,6 +126,78 @@ class MenuActionResolver {
     }
   }
 
+  static bool isDevelopmentModule(String slug) {
+    return slug == MenuSlug.financeiro || slug == MenuSlug.relatorios;
+  }
+
+  static Future<void> showDevelopmentDialog(
+    BuildContext context, {
+    required String moduleName,
+  }) {
+    return showDialog<void>(
+      context: context,
+      barrierDismissible: false,
+      builder: (dialogContext) => WebDialogFrame(
+        title: 'Em desenvolvimento',
+        width: 560,
+        bodyPadding: const EdgeInsets.fromLTRB(32, 34, 32, 30),
+        footer: Padding(
+          padding: const EdgeInsets.fromLTRB(28, 20, 28, 24),
+          child: SizedBox(
+            width: double.infinity,
+            height: 48,
+            child: ElevatedButton(
+              onPressed: () => Navigator.of(dialogContext).pop(),
+              style: ElevatedButton.styleFrom(
+                elevation: 0,
+                backgroundColor: MyColors.colorPrimary,
+                foregroundColor: Colors.white,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                textStyle: const TextStyle(
+                  fontFamily: 'Montserrat',
+                  fontSize: 14,
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
+              child: const Text('Entendi'),
+            ),
+          ),
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Container(
+              width: 58,
+              height: 58,
+              decoration: BoxDecoration(
+                color: MyColors.colorPrimary.withValues(alpha: 0.09),
+                borderRadius: BorderRadius.circular(16),
+              ),
+              child: const Icon(
+                LucideIcons.hardHat,
+                size: 29,
+                color: MyColors.colorPrimary,
+              ),
+            ),
+            const SizedBox(height: 24),
+            Text(
+              'O módulo $moduleName ainda está em desenvolvimento.',
+              textAlign: TextAlign.center,
+              style: const TextStyle(
+                fontFamily: 'Montserrat',
+                fontSize: 17,
+                fontWeight: FontWeight.w700,
+                color: Color(0xFF4A4A4A),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
   static String? profileRoute(String slug) {
     return switch (slug) {
       MenuSlug.potreiros => AppRoutes.potreirosHub,
@@ -138,20 +218,19 @@ class MenuActionResolver {
       MenuSlug.compras =>
         () => kIsWeb ? const ComprasWebPage() : const Compras(),
       MenuSlug.vendas => () => kIsWeb ? const VendasWebPage() : const Vendas(),
-      MenuSlug.mortes =>
-        () => kIsWeb ? const MortesWebPage() : const Mortes(),
-      MenuSlug.nascimentos => () =>
-          kIsWeb ? const NascimentosWebPage() : const Nascimentos(),
-      MenuSlug.trocasCategoria => () =>
-          kIsWeb ? const TrocaCategoriaWebPage() : const TrocaCategoria(),
+      MenuSlug.mortes => () => kIsWeb ? const MortesWebPage() : const Mortes(),
+      MenuSlug.nascimentos =>
+        () => kIsWeb ? const NascimentosWebPage() : const Nascimentos(),
+      MenuSlug.trocasCategoria =>
+        () => kIsWeb ? const TrocaCategoriaWebPage() : const TrocaCategoria(),
       MenuSlug.abigeato =>
         () => kIsWeb ? const AbigeatosWebPage() : const Abigeatos(),
       MenuSlug.abortos =>
         () => kIsWeb ? const AbortosWebPage() : const Abortos(),
       MenuSlug.consumo =>
         () => kIsWeb ? const ConsumoWebPage() : const Consumo(),
-      MenuSlug.transferencias => () =>
-          kIsWeb ? const TransferenciasWebPage() : const Transferencia(),
+      MenuSlug.transferencias =>
+        () => kIsWeb ? const TransferenciasWebPage() : const Transferencia(),
       MenuSlug.movimentacoes => () => const Movimentacoes(),
       _ => null,
     };

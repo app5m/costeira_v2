@@ -4,7 +4,11 @@ import 'package:costeira/theme/colors.dart';
 import 'package:flutter/material.dart';
 
 class VisaoGeralPage extends StatelessWidget {
-  const VisaoGeralPage({super.key, required this.aoVerExtrato, required this.aoAbrir});
+  const VisaoGeralPage({
+    super.key,
+    required this.aoVerExtrato,
+    required this.aoAbrir,
+  });
 
   final VoidCallback aoVerExtrato;
   final ValueChanged<LancamentoMock> aoAbrir;
@@ -18,20 +22,40 @@ class VisaoGeralPage extends StatelessWidget {
       children: [
         Row(
           children: const [
-            Expanded(child: _FiltroPill(icone: Icons.warehouse_outlined, rotulo: 'Fazenda Filial Norte')),
+            Expanded(
+              child: _FiltroPill(
+                icone: Icons.warehouse_outlined,
+                rotulo: 'Fazenda Filial Norte',
+              ),
+            ),
             SizedBox(width: 8),
-            Expanded(child: _FiltroPill(icone: Icons.calendar_today_outlined, rotulo: '2026/2027')),
+            Expanded(
+              child: _FiltroPill(
+                icone: Icons.calendar_today_outlined,
+                rotulo: '2026/2027',
+              ),
+            ),
           ],
         ),
         const SizedBox(height: 12),
         Row(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Expanded(child: _Mini('Saldo disponível', reais(loja.saldoDisponivel), MyColors.colorPrimary)),
+            Expanded(
+              child: _Mini(
+                'Saldo disponível',
+                reais(loja.saldoDisponivel),
+                MyColors.colorPrimary,
+              ),
+            ),
             const SizedBox(width: 8),
-            Expanded(child: _Mini('Entradas', reais(8900), MyColors.colorPrimary)),
+            Expanded(
+              child: _Mini('Entradas', reais(8900), MyColors.colorPrimary),
+            ),
             const SizedBox(width: 8),
-            Expanded(child: _Mini('Saídas', reais(3250), const Color(0xFFC62828))),
+            Expanded(
+              child: _Mini('Saídas', reais(3250), const Color(0xFFC62828)),
+            ),
           ],
         ),
         const SizedBox(height: 12),
@@ -43,11 +67,26 @@ class VisaoGeralPage extends StatelessWidget {
             children: [
               const Text(
                 'Pendências a pagar e receber',
-                style: TextStyle(fontFamily: 'Montserrat', fontWeight: FontWeight.w700),
+                style: TextStyle(
+                  fontFamily: 'Montserrat',
+                  fontWeight: FontWeight.w700,
+                ),
               ),
               const SizedBox(height: 8),
-              Text('A pagar ${reais(loja.aPagar)}', style: const TextStyle(fontFamily: 'Montserrat', color: Color(0xFFC62828))),
-              Text('A receber ${reais(loja.aReceber)}', style: const TextStyle(fontFamily: 'Montserrat', color: MyColors.colorPrimary)),
+              Text(
+                'A pagar ${reais(loja.aPagar)}',
+                style: const TextStyle(
+                  fontFamily: 'Montserrat',
+                  color: Color(0xFFC62828),
+                ),
+              ),
+              Text(
+                'A receber ${reais(loja.aReceber)}',
+                style: const TextStyle(
+                  fontFamily: 'Montserrat',
+                  color: MyColors.colorPrimary,
+                ),
+              ),
             ],
           ),
         ),
@@ -57,10 +96,17 @@ class VisaoGeralPage extends StatelessWidget {
             const Expanded(
               child: Text(
                 'Últimos movimentos',
-                style: TextStyle(fontFamily: 'Montserrat', fontWeight: FontWeight.w700, fontSize: 15),
+                style: TextStyle(
+                  fontFamily: 'Montserrat',
+                  fontWeight: FontWeight.w700,
+                  fontSize: 15,
+                ),
               ),
             ),
-            TextButton(onPressed: aoVerExtrato, child: const Text('Ver extrato')),
+            TextButton(
+              onPressed: aoVerExtrato,
+              child: const Text('Ver extrato'),
+            ),
           ],
         ),
         for (final item in recentes) ...[
@@ -71,13 +117,27 @@ class VisaoGeralPage extends StatelessWidget {
                 Icon(
                   item.entrada ? Icons.south_west : Icons.north_east,
                   size: 16,
-                  color: item.entrada ? MyColors.colorPrimary : const Color(0xFFC62828),
+                  color: item.entrada
+                      ? MyColors.colorPrimary
+                      : const Color(0xFFC62828),
                 ),
                 const SizedBox(width: 8),
                 Expanded(
-                  child: Text(item.titulo, style: const TextStyle(fontFamily: 'Montserrat', fontWeight: FontWeight.w600)),
+                  child: Text(
+                    item.titulo,
+                    style: const TextStyle(
+                      fontFamily: 'Montserrat',
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
                 ),
-                Text(reais(item.valor), style: const TextStyle(fontFamily: 'Montserrat', fontWeight: FontWeight.w700)),
+                Text(
+                  reais(item.valor),
+                  style: const TextStyle(
+                    fontFamily: 'Montserrat',
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
               ],
             ),
           ),
@@ -112,7 +172,11 @@ class _FiltroPill extends StatelessWidget {
               rotulo,
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
-              style: const TextStyle(fontFamily: 'Montserrat', fontSize: 12, fontWeight: FontWeight.w600),
+              style: const TextStyle(
+                fontFamily: 'Montserrat',
+                fontSize: 12,
+                fontWeight: FontWeight.w600,
+              ),
             ),
           ),
         ],
@@ -189,7 +253,10 @@ class _BarrasFluxo extends StatelessWidget {
       children: [
         const Text(
           'Fluxo de caixa realizado',
-          style: TextStyle(fontFamily: 'Montserrat', fontWeight: FontWeight.w700),
+          style: TextStyle(
+            fontFamily: 'Montserrat',
+            fontWeight: FontWeight.w700,
+          ),
         ),
         const SizedBox(height: 12),
         SizedBox(
@@ -238,7 +305,11 @@ class RelatoriosPage extends StatelessWidget {
       children: [
         const Text(
           'Em desenvolvimento',
-          style: TextStyle(fontFamily: 'Montserrat', fontWeight: FontWeight.w700, fontSize: 16),
+          style: TextStyle(
+            fontFamily: 'Montserrat',
+            fontWeight: FontWeight.w700,
+            fontSize: 16,
+          ),
         ),
         const SizedBox(height: 6),
         const Text(
@@ -250,10 +321,29 @@ class RelatoriosPage extends StatelessWidget {
           CartaoBranco(
             child: Row(
               children: [
-                const Icon(Icons.insert_chart_outlined, color: MyColors.colorPrimary, size: 18),
+                const Icon(
+                  Icons.insert_chart_outlined,
+                  color: MyColors.colorPrimary,
+                  size: 18,
+                ),
                 const SizedBox(width: 10),
-                Expanded(child: Text(item, style: const TextStyle(fontFamily: 'Montserrat', fontWeight: FontWeight.w600))),
-                const Text('Em breve', style: TextStyle(fontFamily: 'Montserrat', fontSize: 12, color: Color(0xFF8A8A8A))),
+                Expanded(
+                  child: Text(
+                    item,
+                    style: const TextStyle(
+                      fontFamily: 'Montserrat',
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ),
+                const Text(
+                  'Em breve',
+                  style: TextStyle(
+                    fontFamily: 'Montserrat',
+                    fontSize: 12,
+                    color: Color(0xFF8A8A8A),
+                  ),
+                ),
               ],
             ),
           ),

@@ -181,6 +181,31 @@ class IndicadoresController extends ChangeNotifier {
     carregar();
   }
 
+  /// Aplica vários filtros de uma vez (ex.: dialog web) e recarrega uma única vez.
+  Future<void> aplicarFiltros({
+    required TipoPeriodoIndicador periodo,
+    int? loteId,
+    int? categoriaId,
+    int? piqueteId,
+    int ultimosDias = 30,
+    DateTime? dataDe,
+    DateTime? dataAte,
+  }) async {
+    this.periodo = periodo;
+    this.loteId = loteId;
+    this.categoriaId = categoriaId;
+    this.piqueteId = piqueteId;
+    this.ultimosDias = ultimosDias > 0 ? ultimosDias : 30;
+    this.dataDe = dataDe;
+    this.dataAte = dataAte;
+    if (periodo == TipoPeriodoIndicador.personalizado) {
+      final hoje = DateTime.now();
+      this.dataDe ??= DateTime(hoje.year, hoje.month, 1);
+      this.dataAte ??= hoje;
+    }
+    await carregar();
+  }
+
   void setLote(int? id) {
     loteId = id;
     carregar();
