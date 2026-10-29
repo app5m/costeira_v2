@@ -1,4 +1,5 @@
 import 'package:costeira/core/config/ws_constantes.dart';
+import 'package:costeira/core/storage/sub_user_payload.dart';
 import 'package:costeira/features/movimentacoes/abigeatos/domain/entities/abigeato_upsert_animal_entity.dart';
 import 'package:costeira/features/movimentacoes/abigeatos/domain/entities/abigeato_upsert_entity.dart';
 
@@ -9,15 +10,17 @@ class AbigeatoUpsertRequestModel {
 
   factory AbigeatoUpsertRequestModel.create(AbigeatoUpsertEntity abigeato) {
     return AbigeatoUpsertRequestModel._(
-      _baseData(abigeato)..addAll({
-        'animais': abigeato.animais.map(_animalToJson).toList(growable: false),
-      }),
+      withSubUser(
+        _baseData(abigeato)..addAll({
+          'animais': abigeato.animais.map(_animalToJson).toList(growable: false),
+        }),
+      ),
     );
   }
 
   factory AbigeatoUpsertRequestModel.update(AbigeatoUpsertEntity abigeato) {
     return AbigeatoUpsertRequestModel._(
-      _baseData(abigeato)..addAll({'id': abigeato.id}),
+      withSubUser(_baseData(abigeato)..addAll({'id': abigeato.id})),
     );
   }
 

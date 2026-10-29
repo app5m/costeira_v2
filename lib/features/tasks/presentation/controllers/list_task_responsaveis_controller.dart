@@ -1,6 +1,8 @@
 import 'package:costeira/core/api/api_exception.dart';
 import 'package:costeira/core/models/api_message.dart';
 import 'package:costeira/core/storage/session_storage.dart';
+import 'package:costeira/core/utils/app_logger.dart';
+import 'package:costeira/features/fazendas/domain/usecases/resolve_current_farm_id.dart';
 import 'package:costeira/features/tasks/domain/entities/delete_task_responsavel_entity.dart';
 import 'package:costeira/features/tasks/domain/entities/task_filter_entity.dart';
 import 'package:costeira/features/tasks/domain/entities/task_responsavel_entity.dart';
@@ -12,10 +14,12 @@ class ListTaskResponsaveisController extends ChangeNotifier {
   ListTaskResponsaveisController(
     this._getTaskResponsaveisUsecase,
     this._deleteTaskResponsavelUsecase,
+    this._resolveCurrentFarmId,
   );
 
   final GetTaskResponsaveisUsecase _getTaskResponsaveisUsecase;
   final DeleteTaskResponsavelUsecase _deleteTaskResponsavelUsecase;
+  final ResolveCurrentFarmId _resolveCurrentFarmId;
 
   bool _isLoading = false;
   String? _errorMessage;
@@ -31,8 +35,15 @@ class ListTaskResponsaveisController extends ChangeNotifier {
 
     try {
       final userId = await _getUserId('listar responsaveis');
-      _responsaveis = await _getTaskResponsaveisUsecase(
-        TaskFilterEntity(appUsersId: userId),
+      final farmId = await _farmId(userId);
+      final raw = await _getTaskResponsaveisUsecase(
+        TaskFilterEntity(appUsersId: userId, appFazendasId: farmId),
+      );
+      _responsaveis = _scopedToFarm(raw, farmId);
+      AppLogger.info(
+        'TASKS RESPONSAVEIS: FARM=$farmId RAW=${raw.length} '
+        'SCOPED=${_responsaveis.length} '
+        'NAMES=${_responsaveis.map((item) => item.nome).join(' | ')}',
       );
     } on ApiException catch (error) {
       _errorMessage = error.message;
@@ -40,6 +51,34 @@ class ListTaskResponsaveisController extends ChangeNotifier {
     } finally {
       _setLoading(false);
     }
+  }
+
+  /// Mantém só da fazenda atual (quando a API manda `app_fazendas_id`) e remove duplicatas.
+  List<TaskResponsavelEntity> _scopedToFarm(
+    List<TaskResponsavelEntity> items,
+    int farmId,
+  ) {
+    final hasFarmScoped = items.any((item) => item.appFazendasId != null);
+    final filtered = !hasFarmScoped
+        ? items
+        : items
+            .where(
+              (item) =>
+                  item.appFazendasId == null || item.appFazendasId == farmId,
+            )
+            .toList(growable: false);
+
+    final seenIds = <int>{};
+    final result = <TaskResponsavelEntity>[];
+    for (final item in filtered) {
+      final id = item.id;
+      if (id != null) {
+        if (seenIds.contains(id)) continue;
+        seenIds.add(id);
+      }
+      result.add(item);
+    }
+    return result;
   }
 
   Future<ApiMessage> deleteResponsavel(
@@ -52,8 +91,13 @@ class ListTaskResponsaveisController extends ChangeNotifier {
     }
 
     final userId = await _getUserId('excluir responsavel');
+    final farmId = await _farmId(userId);
     final message = await _deleteTaskResponsavelUsecase(
-      DeleteTaskResponsavelEntity(appUsersId: userId, id: id),
+      DeleteTaskResponsavelEntity(
+        appUsersId: userId,
+        appFazendasId: farmId,
+        id: id,
+      ),
     );
     remove(responsavel);
     return message;
@@ -86,6 +130,16 @@ class ListTaskResponsaveisController extends ChangeNotifier {
     notifyListeners();
   }
 
+  Future<int> _farmId(int userId) async {
+    final farmId = await _resolveCurrentFarmId(userId: userId);
+    if (farmId == null || farmId <= 0) {
+      throw ApiException(
+        'Selecione uma fazenda antes de ver os responsaveis.',
+      );
+    }
+    return farmId;
+  }
+
   Future<int> _getUserId(String action) async {
     final user = await SessionStorage.getUserSession();
     final userId = user?.id ?? 0;
@@ -96,6 +150,7 @@ class ListTaskResponsaveisController extends ChangeNotifier {
   }
 
   void _setLoading(bool value) {
+    if (_isLoading == value) return;
     _isLoading = value;
     notifyListeners();
   }

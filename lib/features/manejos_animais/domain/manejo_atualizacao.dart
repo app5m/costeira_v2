@@ -141,17 +141,22 @@ Map<String, dynamic> montarAtualizacaoManejo(ManejoEdicaoCampos campos) {
       'motivo': campos.motivo.trim(),
       'app_animais_lotes_id': campos.loteId,
     },
-    14 => {
-      'id': campos.id,
-      'id_categoria': 14,
-      'id_tipo': campos.tipoId,
-      'app_potreiros_id': campos.piqueteId,
-      'data': campos.data,
-      if (obs.isNotEmpty) 'obs': obs,
-      if (campos.usarProduto) 'id_estoque': campos.estoqueId,
-      if (campos.usarProduto) 'tipo_dosagem': campos.tipoDosagem ?? 4,
-      if (campos.usarProduto) 'quantidade': _numero(campos.quantidade).round(),
-    },
+    14 => () {
+      final qtd = _numero(campos.quantidade).round();
+      final dosagemValor = qtd > 0 ? qtd : 1;
+      return {
+        'id': campos.id,
+        'id_categoria': 14,
+        'id_tipo': campos.tipoId,
+        'app_potreiros_id': campos.piqueteId,
+        'data': campos.data,
+        'tipo_dosagem': campos.tipoDosagem ?? 4,
+        'dosagem': dosagemValor,
+        if (obs.isNotEmpty) 'obs': obs,
+        if (campos.usarProduto) 'id_estoque': campos.estoqueId,
+        if (campos.usarProduto) 'quantidade': dosagemValor,
+      };
+    }(),
     _ => base,
   };
 }

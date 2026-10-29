@@ -306,12 +306,15 @@ class _ComprasWebPageState extends State<ComprasWebPage>
               if (isList) ...[
                 const SizedBox(width: 8),
                 SizedBox(
-                  width: compact ? 126 : 170,
                   height: 46,
                   child: ElevatedButton.icon(
                     onPressed: isLoading ? null : () => _openForm(),
                     icon: const Icon(Icons.add_rounded, size: 19),
-                    label: Text(compact ? 'Adicionar' : 'Adicionar compra'),
+                    label: Text(
+                      compact ? 'Adicionar' : 'Adicionar compra',
+                      softWrap: false,
+                      maxLines: 1,
+                    ),
                     style: ElevatedButton.styleFrom(
                       elevation: 0,
                       padding: const EdgeInsets.symmetric(horizontal: 14),

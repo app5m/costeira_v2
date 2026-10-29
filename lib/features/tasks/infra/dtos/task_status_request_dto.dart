@@ -1,4 +1,5 @@
 import 'package:costeira/core/config/ws_constantes.dart';
+import 'package:costeira/core/storage/sub_user_payload.dart';
 import 'package:costeira/features/tasks/domain/entities/task_status_entity.dart';
 
 class TaskStatusRequestDto {
@@ -7,12 +8,12 @@ class TaskStatusRequestDto {
   final Map<String, dynamic> data;
 
   factory TaskStatusRequestDto.fromEntity(TaskStatusEntity task) {
-    return TaskStatusRequestDto._({
+    return TaskStatusRequestDto._(withSubUser({
       'token': WSConstantes.token,
       'app_users_id': task.appUsersId,
       'app_fazendas_id': task.appFazendasId,
       'id': task.id,
       'status': task.status,
-    });
+    }));
   }
 }

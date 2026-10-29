@@ -70,10 +70,15 @@ class WebEmptyState extends StatelessWidget {
               ElevatedButton.icon(
                 onPressed: onAction,
                 icon: const Icon(Icons.add_rounded, size: 18),
-                label: Text(actionLabel!.trim()),
+                label: Text(
+                  actionLabel!.trim(),
+                  softWrap: false,
+                  maxLines: 1,
+                ),
                 style: ElevatedButton.styleFrom(
                   elevation: 0,
-                  minimumSize: const Size(132, 44),
+                  minimumSize: const Size(0, 44),
+                  padding: const EdgeInsets.symmetric(horizontal: 18),
                   backgroundColor: MyColors.colorPrimary,
                   foregroundColor: Colors.white,
                   shape: RoundedRectangleBorder(

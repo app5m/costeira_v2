@@ -32,7 +32,18 @@ class ManejoEditarController extends ChangeNotifier {
        _potreiros = potreiros,
        _getInsumos = getInsumos,
        _resolveFarm = resolveFarm {
-    for (final campo in [obs, score, dosagem, responsavel, novoBrinco, motivo, duracao, semen, quantidade]) {
+    for (final campo in [
+      data,
+      obs,
+      score,
+      dosagem,
+      responsavel,
+      novoBrinco,
+      motivo,
+      duracao,
+      semen,
+      quantidade,
+    ]) {
       campo.addListener(notifyListeners);
     }
   }
@@ -76,9 +87,15 @@ class ManejoEditarController extends ChangeNotifier {
   List<ListCategoryEntity> categoriasAnimais = const [];
   List<InsumoEntity> insumos = const [];
 
+  _ManejoEdicaoSnapshot? _inicial;
+
   int? get categoria => item.idCategoria;
 
   List<AnimalLotEntity> get lotes => _lots.lots;
+
+  /// Entrada de touro (cat. 8): apenas lotes exclusivos de fêmeas (sexo = 2).
+  List<AnimalLotEntity> get lotesFemea =>
+      lotes.where((lote) => lote.isFemea).toList(growable: false);
 
   List<PotreiroEntity> get piquetes => _potreiros.potreiros;
 
@@ -89,8 +106,49 @@ class ManejoEditarController extends ChangeNotifier {
           .firstOrNull ??
       const [];
 
+  InsumoEntity? get insumoSelecionado =>
+      insumos.where((item) => item.id == estoqueId).firstOrNull;
+
+  PotreiroEntity? get piqueteSelecionado =>
+      piquetes.where((item) => item.id == piqueteId).firstOrNull;
+
+  double get quantidadeInformadaCampo {
+    final texto = quantidade.text.trim().replaceAll(',', '.');
+    return num.tryParse(texto)?.toDouble() ?? 0;
+  }
+
+  double get quantidadeTotalCampo {
+    if (tipoDosagem == 4) {
+      return quantidadeInformadaCampo;
+    }
+    final area =
+        piqueteSelecionado?.areaUtil ?? piqueteSelecionado?.areaTotal ?? 0;
+    return quantidadeInformadaCampo * area;
+  }
+
+  int get quantidadeInteiraCampo => quantidadeTotalCampo.round();
+
+  bool get saldoInsuficienteCampo {
+    if (categoria != 14 || !usarProduto) {
+      return false;
+    }
+    final saldo = insumoSelecionado?.qtdTotal;
+    if (saldo == null || quantidade.text.trim().isEmpty) {
+      return false;
+    }
+    return quantidadeInteiraCampo > saldo;
+  }
+
+  bool get temAlteracoes {
+    final inicial = _inicial;
+    if (inicial == null) {
+      return false;
+    }
+    return _snapshotAtual() != inicial;
+  }
+
   bool get podeSalvar {
-    if (saving || item.id == null || data.text.trim().isEmpty) {
+    if (saving || item.id == null || data.text.trim().isEmpty || !temAlteracoes) {
       return false;
     }
     return switch (categoria) {
@@ -107,7 +165,36 @@ class ManejoEditarController extends ChangeNotifier {
         (categoria != 14 || piqueteId != null) &&
         (categoria != 14 ||
             !usarProduto ||
-            (estoqueId != null && (num.tryParse(quantidade.text.trim().replaceAll(',', '.')) ?? 0) >= 1));
+            (estoqueId != null &&
+                quantidadeInformadaCampo >= 1 &&
+                !saldoInsuficienteCampo));
+  }
+
+  _ManejoEdicaoSnapshot _snapshotAtual() {
+    return _ManejoEdicaoSnapshot(
+      data: data.text.trim(),
+      obs: obs.text.trim(),
+      score: score.text.trim(),
+      dosagem: dosagem.text.trim(),
+      responsavel: responsavel.text.trim(),
+      novoBrinco: novoBrinco.text.trim(),
+      motivo: motivo.text.trim(),
+      duracao: duracao.text.trim(),
+      semen: semen.text.trim(),
+      quantidade: quantidade.text.trim(),
+      tipoId: tipoId,
+      tipoDosagem: tipoDosagem,
+      loteId: loteId,
+      piqueteId: piqueteId,
+      categoriaAnimalId: categoriaAnimalId,
+      faseId: faseId,
+      racaId: racaId,
+      classificacao: classificacao,
+      estoqueId: estoqueId,
+      trocaBrinco: trocaBrinco,
+      usarProduto: usarProduto,
+      destinoPiquete: destinoPiquete,
+    );
   }
 
   Future<void> init() async {
@@ -211,6 +298,7 @@ class ManejoEditarController extends ChangeNotifier {
     trocaBrinco = novoBrinco.text.isNotEmpty || _texto(json['motivo_troca_brinco']).isNotEmpty;
     usarProduto = estoqueId != null;
     destinoPiquete = piqueteId != null;
+    _inicial = _snapshotAtual();
   }
 
   void setData(DateTime value) {
@@ -371,12 +459,126 @@ class ManejoEditarController extends ChangeNotifier {
 
   @override
   void dispose() {
-    for (final campo in [data, obs, score, dosagem, responsavel, novoBrinco, motivo, duracao, semen, quantidade]) {
+    for (final campo in [
+      data,
+      obs,
+      score,
+      dosagem,
+      responsavel,
+      novoBrinco,
+      motivo,
+      duracao,
+      semen,
+      quantidade,
+    ]) {
       campo.removeListener(notifyListeners);
       campo.dispose();
     }
     super.dispose();
   }
+}
+
+class _ManejoEdicaoSnapshot {
+  const _ManejoEdicaoSnapshot({
+    required this.data,
+    required this.obs,
+    required this.score,
+    required this.dosagem,
+    required this.responsavel,
+    required this.novoBrinco,
+    required this.motivo,
+    required this.duracao,
+    required this.semen,
+    required this.quantidade,
+    required this.tipoId,
+    required this.tipoDosagem,
+    required this.loteId,
+    required this.piqueteId,
+    required this.categoriaAnimalId,
+    required this.faseId,
+    required this.racaId,
+    required this.classificacao,
+    required this.estoqueId,
+    required this.trocaBrinco,
+    required this.usarProduto,
+    required this.destinoPiquete,
+  });
+
+  final String data;
+  final String obs;
+  final String score;
+  final String dosagem;
+  final String responsavel;
+  final String novoBrinco;
+  final String motivo;
+  final String duracao;
+  final String semen;
+  final String quantidade;
+  final int? tipoId;
+  final int? tipoDosagem;
+  final int? loteId;
+  final int? piqueteId;
+  final int? categoriaAnimalId;
+  final int? faseId;
+  final int? racaId;
+  final int? classificacao;
+  final int? estoqueId;
+  final bool trocaBrinco;
+  final bool usarProduto;
+  final bool destinoPiquete;
+
+  @override
+  bool operator ==(Object other) {
+    return other is _ManejoEdicaoSnapshot &&
+        data == other.data &&
+        obs == other.obs &&
+        score == other.score &&
+        dosagem == other.dosagem &&
+        responsavel == other.responsavel &&
+        novoBrinco == other.novoBrinco &&
+        motivo == other.motivo &&
+        duracao == other.duracao &&
+        semen == other.semen &&
+        quantidade == other.quantidade &&
+        tipoId == other.tipoId &&
+        tipoDosagem == other.tipoDosagem &&
+        loteId == other.loteId &&
+        piqueteId == other.piqueteId &&
+        categoriaAnimalId == other.categoriaAnimalId &&
+        faseId == other.faseId &&
+        racaId == other.racaId &&
+        classificacao == other.classificacao &&
+        estoqueId == other.estoqueId &&
+        trocaBrinco == other.trocaBrinco &&
+        usarProduto == other.usarProduto &&
+        destinoPiquete == other.destinoPiquete;
+  }
+
+  @override
+  int get hashCode => Object.hashAll([
+        data,
+        obs,
+        score,
+        dosagem,
+        responsavel,
+        novoBrinco,
+        motivo,
+        duracao,
+        semen,
+        quantidade,
+        tipoId,
+        tipoDosagem,
+        loteId,
+        piqueteId,
+        categoriaAnimalId,
+        faseId,
+        racaId,
+        classificacao,
+        estoqueId,
+        trocaBrinco,
+        usarProduto,
+        destinoPiquete,
+      ]);
 }
 
 String _texto(dynamic valor) {

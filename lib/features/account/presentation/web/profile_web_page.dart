@@ -22,7 +22,18 @@ import 'package:flutter_modular/flutter_modular.dart';
 import 'package:lucide_icons/lucide_icons.dart';
 
 class ProfileWebPage extends StatefulWidget {
-  const ProfileWebPage({super.key});
+  const ProfileWebPage({
+    super.key,
+    this.onOpenTasks,
+    this.onOpenPotreiros,
+    this.onOpenEstoque,
+    this.onOpenPluviosidade,
+  });
+
+  final VoidCallback? onOpenTasks;
+  final VoidCallback? onOpenPotreiros;
+  final VoidCallback? onOpenEstoque;
+  final VoidCallback? onOpenPluviosidade;
 
   @override
   State<ProfileWebPage> createState() => _ProfileWebPageState();
@@ -406,6 +417,34 @@ class _ProfileWebPageState extends State<ProfileWebPage> {
 
   Future<void> _openModule(AppMenuEntity item) async {
     final slug = MenuSlug.resolve(action: item.action, name: item.name);
+    if (slug == MenuSlug.tarefas) {
+      final openTasks = widget.onOpenTasks;
+      if (openTasks != null) {
+        openTasks();
+        return;
+      }
+    }
+    if (slug == MenuSlug.potreiros) {
+      final openPotreiros = widget.onOpenPotreiros;
+      if (openPotreiros != null) {
+        openPotreiros();
+        return;
+      }
+    }
+    if (slug == MenuSlug.estoque) {
+      final openEstoque = widget.onOpenEstoque;
+      if (openEstoque != null) {
+        openEstoque();
+        return;
+      }
+    }
+    if (slug == MenuSlug.pluviosidade) {
+      final openPluviosidade = widget.onOpenPluviosidade;
+      if (openPluviosidade != null) {
+        openPluviosidade();
+        return;
+      }
+    }
     final Widget? dialog = switch (slug) {
       MenuSlug.fornecedores => const ParceirosListWebDialog(
         kind: ParceiroKind.fornecedor,

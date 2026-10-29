@@ -86,6 +86,7 @@ class ManejoAnimalSessaoController extends ChangeNotifier {
   bool loading = true;
   bool sessionOn = false;
   bool saving = false;
+  bool finalizando = false;
   String? error;
   String? formError;
 
@@ -437,7 +438,7 @@ class ManejoAnimalSessaoController extends ChangeNotifier {
     if (insumosDaCategoria(estoqueCategoria).isEmpty) {
       return false;
     }
-    if (escopoAnimais.isEmpty || insumoId == null || dosePorAnimal <= 1) {
+    if (escopoAnimais.isEmpty || insumoId == null || dosePorAnimal <= 0) {
       return false;
     }
     return !saldoInsuficiente;
@@ -589,7 +590,17 @@ class ManejoAnimalSessaoController extends ChangeNotifier {
     if (acoes.isEmpty) {
       return 'Registre ao menos uma ação.';
     }
-    return null;
+    if (saving || finalizando) {
+      return null;
+    }
+    finalizando = true;
+    notifyListeners();
+    try {
+      return null;
+    } finally {
+      finalizando = false;
+      notifyListeners();
+    }
   }
 
   ManejoSessaoAcao? _pesagem() {
@@ -630,10 +641,10 @@ class ManejoAnimalSessaoController extends ChangeNotifier {
           'Nenhum produto cadastrado na categoria de estoque "${nomeCategoriaEstoque(estoqueCategoria)}".';
       return null;
     }
-    if (escopoAnimais.isEmpty || insumoId == null || dosePorAnimal <= 1) {
+    if (escopoAnimais.isEmpty || insumoId == null || dosePorAnimal <= 0) {
       formError = categoria == 2 || categoria == 3
-          ? 'A quantidade por animal precisa ser maior que 1.'
-          : 'A dose por animal precisa ser maior que 1.';
+          ? 'Informe a quantidade por animal.'
+          : 'Informe a dose por animal.';
       return null;
     }
     if (saldoInsuficiente) {

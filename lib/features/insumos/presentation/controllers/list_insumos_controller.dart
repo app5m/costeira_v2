@@ -58,7 +58,8 @@ class ListInsumosController extends ChangeNotifier {
       _tipoInsumos = result.tipoInsumos;
       _rows = result.rows;
       AppLogger.success(
-        'INSUMOS LIST CONTROLLER: LISTA CARREGADA COM ${result.rows} REGISTROS',
+        'INSUMOS LIST CONTROLLER: LISTA=${result.lista.length} '
+        'MOVIMENTOS=${result.registros.length}',
       );
     } on ApiException catch (error) {
       _errorMessage = error.message;

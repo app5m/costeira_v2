@@ -28,6 +28,8 @@ class MenuSlug {
   static const nascimentos = 'nascimentos';
   static const trocasCategoria = 'trocas_categoria';
   static const abortos = 'abortos';
+  static const consumo = 'consumo';
+  static const abigeato = 'abigeato';
   static const transferencias = 'transferencias';
 
   static const _aliases = {
@@ -42,7 +44,8 @@ class MenuSlug {
     'saidas': 'saida',
     'trocas_de_categoria': trocasCategoria,
     'transferencias_de_campo': transferencias,
-    'consumo_carnear': 'consumo',
+    'consumo_carnear': consumo,
+    'abigeatos': abigeato,
   };
 
   static String resolve({String? action, required String name}) {

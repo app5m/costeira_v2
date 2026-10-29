@@ -92,7 +92,9 @@ class TasksDatasourceImpl implements TasksDatasource {
       pendingMessage: 'Status da tarefa salvo para sincronizar.',
       rawResponseLog: 'TASKS DATASOURCE: SET DONE RAW RESPONSE',
       operationName: 'SET TASK DONE',
-      expectedSuccessMessage: 'Tarefa concluida com sucesso.',
+      expectedSuccessMessage: task.status == TaskStatusEntity.concluido
+          ? 'Tarefa concluida com sucesso.'
+          : 'Tarefa marcada como pendente.',
     );
   }
 
@@ -233,8 +235,14 @@ Map<String, dynamic> _defaultTaskResponsaveisListPayload(Map<String, dynamic> pa
   if (userId == null) {
     return <String, dynamic>{};
   }
+  final farmId = int.tryParse(payload['app_fazendas_id']?.toString() ?? '');
 
-  return TaskFilterRequestDto.fromEntity(TaskFilterEntity(appUsersId: userId)).data;
+  return TaskFilterRequestDto.fromEntity(
+    TaskFilterEntity(
+      appUsersId: userId,
+      appFazendasId: farmId != null && farmId > 0 ? farmId : null,
+    ),
+  ).data;
 }
 
 Map<String, dynamic> _defaultTasksListPayload(Map<String, dynamic> payload) {
@@ -242,9 +250,14 @@ Map<String, dynamic> _defaultTasksListPayload(Map<String, dynamic> payload) {
   if (userId == null) {
     return <String, dynamic>{};
   }
+  final farmId = int.tryParse(payload['app_fazendas_id']?.toString() ?? '');
 
   return TaskFilterRequestDto.fromEntity(
-    TaskFilterEntity(appUsersId: userId, month: DateTime.now()),
+    TaskFilterEntity(
+      appUsersId: userId,
+      appFazendasId: farmId != null && farmId > 0 ? farmId : null,
+      month: DateTime.now(),
+    ),
   ).data;
 }
 

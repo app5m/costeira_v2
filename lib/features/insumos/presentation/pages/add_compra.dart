@@ -6,11 +6,13 @@ import 'package:costeira/core/input_formatters/brazilian_currency_input_formatte
 import 'package:costeira/features/cadastros/domain/entities/parceiro_kind.dart';
 import 'package:costeira/features/cadastros/domain/usecases/get_parceiros_usecase.dart';
 import 'package:costeira/features/cadastros/presentation/pages/parceiro_form_page.dart';
+import 'package:costeira/features/cadastros/presentation/web/parceiro_form_web_dialog.dart';
 import 'package:costeira/features/fazendas/domain/usecases/resolve_current_farm_id.dart';
 import 'package:costeira/features/insumos/domain/usecases/get_insumos_usecase.dart';
 import 'package:costeira/features/insumos/domain/usecases/movimentar_estoque_usecase.dart';
 import 'package:costeira/features/insumos/presentation/controllers/add_insumo_registro_controller.dart';
 import 'package:costeira/theme/colors.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_modular/flutter_modular.dart';
@@ -93,6 +95,26 @@ class _AddCompraInsumoState extends State<AddCompraInsumo> {
   Future<void> _cadastrarFornecedor() async {
     final farmId = _controller.farmId;
     if (farmId == null) return;
+    if (kIsWeb) {
+      final result = await showDialog<Map<String, dynamic>?>(
+        context: context,
+        barrierDismissible: false,
+        builder: (_) => ParceiroFormWebDialog(
+          kind: ParceiroKind.fornecedor,
+          appFazendasId: farmId,
+        ),
+      );
+      if (!mounted) return;
+      if (result?['success'] == true) {
+        await _controller.reloadFornecedores();
+        if (!mounted) return;
+        final message = result?['message']?.toString();
+        if (message != null && message.isNotEmpty) {
+          AppSnackBar.show(context: context, message: message, isError: false);
+        }
+      }
+      return;
+    }
     await Navigator.push<void>(
       context,
       MaterialPageRoute(

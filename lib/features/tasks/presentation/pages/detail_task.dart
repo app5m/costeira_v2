@@ -95,6 +95,12 @@ class _DetailTaskState extends State<DetailTask> {
                 buildTextField('Tipo', task.tipo == 2 ? 'Mensal' : 'Datas'),
                 buildTextField('Urgência', task.urgenciaNome),
                 buildTextField('Status', task.statusNome),
+                buildTextField(
+                  'Prazo',
+                  (task.dataPrazo?.trim().isNotEmpty ?? false)
+                      ? task.dataPrazo!.trim()
+                      : '-',
+                ),
                 buildTextField('Datas', _datesLabel(task)),
                 buildTextField(
                   'Observações',

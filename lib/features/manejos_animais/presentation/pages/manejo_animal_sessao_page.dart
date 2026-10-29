@@ -236,9 +236,17 @@ class _ManejoAnimalSessaoPageState extends State<ManejoAnimalSessaoPage> {
       const SizedBox(height: 12),
       CustomButton(
         text: 'Finalizar sessão',
-        isLoading: _controller.saving,
-        enabled: _controller.acoes.isNotEmpty && !_controller.saving,
+        isLoading: _controller.finalizando,
+        enabled: _controller.acoes.isNotEmpty &&
+            !_controller.saving &&
+            !_controller.finalizando,
         onPressed: _finalizar,
+        backgroundColor: Colors.white,
+        textColor: MyColors.colorPrimary,
+        borderColor: MyColors.colorPrimary,
+        disabledColor: const Color(0xFFF3F3F3),
+        disabledTextColor: const Color(0xFF9E9E9E),
+        loaderColor: MyColors.colorPrimary,
       ),
     ];
   }
@@ -935,7 +943,9 @@ class _ManejoAnimalSessaoPageState extends State<ManejoAnimalSessaoPage> {
       padding: const EdgeInsets.only(bottom: 8),
       child: CustomButton(
         text: label,
-        enabled: _controller.podeRegistrar && !_controller.saving,
+        enabled: _controller.podeRegistrar &&
+            !_controller.saving &&
+            !_controller.finalizando,
         isLoading: _controller.saving,
         onPressed: _registrarAcao,
       ),

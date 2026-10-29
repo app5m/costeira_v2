@@ -49,7 +49,16 @@ class TaskEntity {
     return statusId == 3 || name.contains('conclu') || name == 'realizado';
   }
 
-  bool get isOverdue => _plainStatus(statusNome).contains('atras');
+  bool get isOverdue {
+    final name = _plainStatus(statusNome);
+    return statusId == 2 || name.contains('atras');
+  }
+
+  bool get isPending {
+    if (isDone || isOverdue) return false;
+    final name = _plainStatus(statusNome);
+    return statusId == 1 || name.contains('pendente') || name.isEmpty;
+  }
 }
 
 String _plainStatus(String value) {

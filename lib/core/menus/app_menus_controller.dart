@@ -40,7 +40,9 @@ class AppMenusController extends ChangeNotifier {
     }
 
     isLoading = true;
-    if (!silent) {
+    // Só notifica loading inicial — evita rebuild/piscar do shell na web
+    // a cada refresh quando os menus já estão na tela.
+    if (!silent && !loaded) {
       notifyListeners();
     }
 
@@ -80,9 +82,6 @@ class AppMenusController extends ChangeNotifier {
       return false;
     } finally {
       isLoading = false;
-      if (!silent) {
-        notifyListeners();
-      }
     }
   }
 
@@ -121,7 +120,9 @@ class AppMenusController extends ChangeNotifier {
   }
 
   String _slugTree(List<AppMenuEntity> items) {
-    return items
+    // Ordena para a signature não oscilar se a API mudar a ordem dos itens
+    // (isso gerava notify + rebuild/piscar na web a cada poll).
+    final parts = items
         .map((item) {
           final slug = MenuActionResolver.slugOf(item);
           final action = item.action ?? '-';
@@ -130,6 +131,8 @@ class AppMenusController extends ChangeNotifier {
           }
           return '$action>$slug[${_slugTree(item.children)}]';
         })
-        .join(',');
+        .toList(growable: false)
+      ..sort();
+    return parts.join(',');
   }
 }

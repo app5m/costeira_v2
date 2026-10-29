@@ -24,6 +24,7 @@ class AnimalLotEntity {
   final String? createAt;
   final String? updateAt;
   final int animalsCount;
+  /// Sexo exclusivo do lote (1/2). Null quando o lote é misto.
   final int? sexo;
   final String? categoriaNome;
   final List<int> animalIds;
@@ -32,4 +33,7 @@ class AnimalLotEntity {
   final String? syncStatus;
   final String? pendingAction;
   final bool isLocalOnly;
+
+  /// Entrada de touro: apenas lote exclusivo de fêmeas (sexo = 2).
+  bool get isFemea => sexo == 2;
 }

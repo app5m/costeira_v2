@@ -234,6 +234,7 @@ class _TransferenciaFazendaFormPageState
 
   Widget _buildDocumento() {
     final documento = _pageController.selectedDestinoDocumento;
+    final empty = documento.isEmpty;
     return Padding(
       padding: const EdgeInsets.only(bottom: 18),
       child: Column(
@@ -244,15 +245,48 @@ class _TransferenciaFazendaFormPageState
             style: TextStyle(color: Color(0xFF313131), fontSize: 14),
           ),
           const SizedBox(height: 6),
-          Text(
-            documento.isEmpty
-                ? 'Deve ser o mesmo titular desta fazenda'
-                : documento,
-            style: const TextStyle(color: Color(0xFF313131), fontSize: 15),
+          InputDecorator(
+            decoration: InputDecoration(
+              filled: true,
+              fillColor: const Color(0xFFEBEBEB),
+              contentPadding: const EdgeInsets.symmetric(
+                horizontal: 15,
+                vertical: 16,
+              ),
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(8),
+                borderSide: BorderSide.none,
+              ),
+            ),
+            child: Text(
+              empty
+                  ? 'Deve ser o mesmo titular desta fazenda'
+                  : _formatCpfCnpj(documento),
+              style: TextStyle(
+                color: empty
+                    ? const Color(0xFF8C8C8C)
+                    : const Color(0xFF313131),
+                fontSize: 14,
+              ),
+            ),
           ),
         ],
       ),
     );
+  }
+
+  String _formatCpfCnpj(String value) {
+    final digits = value.replaceAll(RegExp(r'\D'), '');
+    if (digits.length == 11) {
+      return '${digits.substring(0, 3)}.${digits.substring(3, 6)}.'
+          '${digits.substring(6, 9)}-${digits.substring(9)}';
+    }
+    if (digits.length == 14) {
+      return '${digits.substring(0, 2)}.${digits.substring(2, 5)}.'
+          '${digits.substring(5, 8)}/${digits.substring(8, 12)}-'
+          '${digits.substring(12)}';
+    }
+    return value;
   }
 
   Widget _buildCategory() {

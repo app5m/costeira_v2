@@ -26,10 +26,21 @@ import 'package:costeira/features/fazendas/presentation/web/fazendas_web_page.da
 import 'package:costeira/features/fazendas/domain/usecases/resolve_current_farm_id.dart';
 import 'package:costeira/features/manejos_animais/presentation/pages/manejos_animais_page.dart';
 import 'package:costeira/features/manejos_animais/presentation/web/manejos_web_page.dart';
+import 'package:costeira/features/climate_and_rain/presentation/web/climate_web_page.dart';
+import 'package:costeira/features/movimentacoes/abigeatos/presentation/web/abigeatos_web_page.dart';
+import 'package:costeira/features/movimentacoes/abortos/presentation/web/abortos_web_page.dart';
 import 'package:costeira/features/movimentacoes/compras/presentation/web/compras_web_page.dart';
+import 'package:costeira/features/movimentacoes/consumo/presentation/web/consumo_web_page.dart';
+import 'package:costeira/features/movimentacoes/mortes/presentation/web/mortes_web_page.dart';
+import 'package:costeira/features/movimentacoes/nascimento/presentation/web/nascimentos_web_page.dart';
+import 'package:costeira/features/movimentacoes/troca_categoria/presentation/web/troca_categoria_web_page.dart';
+import 'package:costeira/features/movimentacoes/transferencias/presentation/web/transferencias_web_page.dart';
 import 'package:costeira/features/movimentacoes/vendas/presentation/web/vendas_web_page.dart';
 import 'package:costeira/features/movimentacoes/movimentacoes.dart';
 import 'package:costeira/features/notifications/presentation/pages/notification_page.dart';
+import 'package:costeira/features/insumos/presentation/web/estoque_insumos_web_page.dart';
+import 'package:costeira/features/potreiros/presentation/web/potreiros_web_page.dart';
+import 'package:costeira/features/tasks/presentation/web/tasks_web_page.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:lucide_icons/lucide_icons.dart';
@@ -62,6 +73,8 @@ class _MainNavigationPageState extends State<MainNavigationPage>
   String? _activeSlug;
   String? _activeWebMovementSlug;
   String? _activeWebMovementTitle;
+  String? _activeWebProfileSlug;
+  String? _activeWebProfileTitle;
   _WebSidebarSection _webSidebarSection = _WebSidebarSection.navigation;
   String _userDisplayName = '';
   DashboardWebToolbarData? _dashboardToolbarData;
@@ -140,6 +153,8 @@ class _MainNavigationPageState extends State<MainNavigationPage>
       _activeSlug = null;
       _activeWebMovementSlug = null;
       _activeWebMovementTitle = null;
+      _activeWebProfileSlug = null;
+      _activeWebProfileTitle = null;
       _webSidebarSection = _WebSidebarSection.navigation;
     });
     if (kIsWeb) {
@@ -215,6 +230,8 @@ class _MainNavigationPageState extends State<MainNavigationPage>
       return;
     }
 
+    final previousIndex = _selectedIndex;
+    final previousSignature = _lastHandledSignature;
     final tabs = _tabs;
     var kicked = false;
 
@@ -250,7 +267,7 @@ class _MainNavigationPageState extends State<MainNavigationPage>
     }
 
     final signature = _menusController.signature;
-    if (kicked && signature.isNotEmpty && signature != _lastHandledSignature) {
+    if (kicked && signature.isNotEmpty && signature != previousSignature) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
         if (!mounted) {
           return;
@@ -263,6 +280,14 @@ class _MainNavigationPageState extends State<MainNavigationPage>
       });
     }
     _lastHandledSignature = signature;
+
+    // Evita rebuild do shell (e o "piscar" na web) quando só o loading
+    // dos menus mudou e a árvore permanece igual.
+    final indexChanged = _selectedIndex != previousIndex;
+    final signatureChanged = signature != previousSignature;
+    if (!kicked && !indexChanged && !signatureChanged) {
+      return;
+    }
 
     setState(() {});
   }
@@ -436,6 +461,8 @@ class _MainNavigationPageState extends State<MainNavigationPage>
       builder: (context, constraints) {
         final useSidebar = constraints.maxWidth >= 760;
         final showingWebMovement = _activeWebMovementSlug != null;
+        final showingWebProfile = _activeWebProfileSlug != null;
+        final overlayActive = showingWebMovement || showingWebProfile;
         return Scaffold(
           key: _scaffoldKey,
           backgroundColor: current?.slug == MenuSlug.dashboard
@@ -465,19 +492,22 @@ class _MainNavigationPageState extends State<MainNavigationPage>
                 child: Column(
                   children: [
                     _WebTopBar(
-                      title: showingWebMovement
+                      title: showingWebProfile
+                          ? _activeWebProfileTitle ?? 'Tarefas'
+                          : showingWebMovement
                           ? _activeWebMovementTitle ?? 'Movimentações'
                           : current?.slug == MenuSlug.dashboard
                           ? _dashboardGreeting
                           : current?.label ?? 'Costeira',
                       subtitle:
-                          !showingWebMovement &&
+                          !overlayActive &&
                               current?.slug == MenuSlug.dashboard
                           ? 'Bem-vindo ao Costeira'
                           : null,
                       showMenuButton: !useSidebar,
+                      onBack: showingWebProfile ? _closeWebProfileOverlay : null,
                       controls:
-                          !showingWebMovement &&
+                          !overlayActive &&
                               current?.slug == MenuSlug.dashboard &&
                               _dashboardToolbarData != null
                           ? DashboardWebToolbar(data: _dashboardToolbarData!)
@@ -485,33 +515,7 @@ class _MainNavigationPageState extends State<MainNavigationPage>
                       onMenu: () => _scaffoldKey.currentState?.openDrawer(),
                       onNotifications: () => unawaited(_openNotifications()),
                     ),
-                    Expanded(
-                      child: _activeWebMovementSlug == MenuSlug.compras
-                          ? ComprasWebPage(
-                              key: ValueKey(
-                                '$_shellGeracao-${MenuSlug.compras}',
-                              ),
-                            )
-                          : _activeWebMovementSlug == MenuSlug.vendas
-                          ? VendasWebPage(
-                              key: ValueKey(
-                                '$_shellGeracao-${MenuSlug.vendas}',
-                              ),
-                            )
-                          : hasTabs
-                          ? PageView(
-                              controller: _pageController,
-                              physics: const NeverScrollableScrollPhysics(),
-                              onPageChanged: (page) {
-                                setState(() {
-                                  _selectedIndex = page;
-                                  _rememberActiveSlug(tabs[page].slug);
-                                });
-                              },
-                              children: [for (final tab in tabs) _pageFor(tab)],
-                            )
-                          : _emptyNavigationContent(),
-                    ),
+                    Expanded(child: _webContent(tabs, hasTabs: hasTabs)),
                   ],
                 ),
               ),
@@ -563,8 +567,20 @@ class _MainNavigationPageState extends State<MainNavigationPage>
   bool _openWebMovement(AppMenuEntity item) {
     if (!kIsWeb) return false;
     final slug = MenuActionResolver.slugOf(item);
-    if (slug != MenuSlug.compras && slug != MenuSlug.vendas) return false;
+    if (slug != MenuSlug.compras &&
+        slug != MenuSlug.vendas &&
+        slug != MenuSlug.transferencias &&
+        slug != MenuSlug.mortes &&
+        slug != MenuSlug.nascimentos &&
+        slug != MenuSlug.trocasCategoria &&
+        slug != MenuSlug.abortos &&
+        slug != MenuSlug.consumo &&
+        slug != MenuSlug.abigeato) {
+      return false;
+    }
     setState(() {
+      _activeWebProfileSlug = null;
+      _activeWebProfileTitle = null;
       _activeWebMovementSlug = slug;
       _activeWebMovementTitle = item.name;
       _webSidebarSection = _WebSidebarSection.movements;
@@ -573,6 +589,163 @@ class _MainNavigationPageState extends State<MainNavigationPage>
       SessionStorage.saveWebSidebarSection(_WebSidebarSection.movements.name),
     );
     return true;
+  }
+
+  void _openWebTasks() {
+    _openWebProfileModule(
+      slug: MenuSlug.tarefas,
+      title: 'Tarefas',
+    );
+  }
+
+  void _openWebPotreiros() {
+    _openWebProfileModule(
+      slug: MenuSlug.potreiros,
+      title: 'Potreiros',
+    );
+  }
+
+  void _openWebEstoque() {
+    _openWebProfileModule(
+      slug: MenuSlug.estoque,
+      title: 'Estoque de Insumos',
+    );
+  }
+
+  void _openWebPluviosidade() {
+    _openWebProfileModule(
+      slug: MenuSlug.pluviosidade,
+      title: 'Clima e Chuvas',
+    );
+  }
+
+  void _openWebProfileModule({
+    required String slug,
+    required String title,
+  }) {
+    if (!kIsWeb) return;
+    final tabs = _tabs;
+    final perfilIndex = tabs.indexWhere((tab) => tab.slug == MenuSlug.perfil);
+    setState(() {
+      _activeWebMovementSlug = null;
+      _activeWebMovementTitle = null;
+      _activeWebProfileSlug = slug;
+      _activeWebProfileTitle = title;
+      if (perfilIndex >= 0) {
+        _selectedIndex = perfilIndex;
+        _rememberActiveSlug(MenuSlug.perfil);
+      }
+      _webSidebarSection = _WebSidebarSection.navigation;
+    });
+    if (perfilIndex >= 0) {
+      _syncPageController(perfilIndex);
+    }
+    unawaited(
+      SessionStorage.saveWebSidebarSection(
+        _WebSidebarSection.navigation.name,
+      ),
+    );
+  }
+
+  void _closeWebProfileOverlay() {
+    final perfilIndex = _tabs.indexWhere((tab) => tab.slug == MenuSlug.perfil);
+    final targetIndex = perfilIndex >= 0 ? perfilIndex : _selectedIndex;
+    setState(() {
+      _activeWebProfileSlug = null;
+      _activeWebProfileTitle = null;
+      _selectedIndex = targetIndex;
+      _rememberActiveSlug(
+        perfilIndex >= 0 ? MenuSlug.perfil : (_tabs[targetIndex].slug),
+      );
+    });
+    // PageView fica fora da árvore enquanto o overlay está ativo; ao voltar
+    // remonta na página 0 do controller — sincroniza após o frame.
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      _syncPageController(targetIndex);
+    });
+  }
+
+  Widget _webContent(List<_NavTab> tabs, {required bool hasTabs}) {
+    if (_activeWebProfileSlug == MenuSlug.tarefas) {
+      return TasksWebPage(
+        key: ValueKey('$_shellGeracao-${MenuSlug.tarefas}'),
+      );
+    }
+    if (_activeWebProfileSlug == MenuSlug.potreiros) {
+      return PotreirosWebPage(
+        key: ValueKey('$_shellGeracao-${MenuSlug.potreiros}'),
+      );
+    }
+    if (_activeWebProfileSlug == MenuSlug.estoque) {
+      return EstoqueInsumosWebPage(
+        key: ValueKey('$_shellGeracao-${MenuSlug.estoque}'),
+      );
+    }
+    if (_activeWebProfileSlug == MenuSlug.pluviosidade) {
+      return ClimateWebPage(
+        key: ValueKey('$_shellGeracao-${MenuSlug.pluviosidade}'),
+      );
+    }
+    if (_activeWebMovementSlug == MenuSlug.compras) {
+      return ComprasWebPage(
+        key: ValueKey('$_shellGeracao-${MenuSlug.compras}'),
+      );
+    }
+    if (_activeWebMovementSlug == MenuSlug.vendas) {
+      return VendasWebPage(
+        key: ValueKey('$_shellGeracao-${MenuSlug.vendas}'),
+      );
+    }
+    if (_activeWebMovementSlug == MenuSlug.transferencias) {
+      return TransferenciasWebPage(
+        key: ValueKey('$_shellGeracao-${MenuSlug.transferencias}'),
+      );
+    }
+    if (_activeWebMovementSlug == MenuSlug.mortes) {
+      return MortesWebPage(
+        key: ValueKey('$_shellGeracao-${MenuSlug.mortes}'),
+      );
+    }
+    if (_activeWebMovementSlug == MenuSlug.nascimentos) {
+      return NascimentosWebPage(
+        key: ValueKey('$_shellGeracao-${MenuSlug.nascimentos}'),
+      );
+    }
+    if (_activeWebMovementSlug == MenuSlug.trocasCategoria) {
+      return TrocaCategoriaWebPage(
+        key: ValueKey('$_shellGeracao-${MenuSlug.trocasCategoria}'),
+      );
+    }
+    if (_activeWebMovementSlug == MenuSlug.abortos) {
+      return AbortosWebPage(
+        key: ValueKey('$_shellGeracao-${MenuSlug.abortos}'),
+      );
+    }
+    if (_activeWebMovementSlug == MenuSlug.consumo) {
+      return ConsumoWebPage(
+        key: ValueKey('$_shellGeracao-${MenuSlug.consumo}'),
+      );
+    }
+    if (_activeWebMovementSlug == MenuSlug.abigeato) {
+      return AbigeatosWebPage(
+        key: ValueKey('$_shellGeracao-${MenuSlug.abigeato}'),
+      );
+    }
+    if (!hasTabs) {
+      return _emptyNavigationContent();
+    }
+    return PageView(
+      controller: _pageController,
+      physics: const NeverScrollableScrollPhysics(),
+      onPageChanged: (page) {
+        setState(() {
+          _selectedIndex = page;
+          _rememberActiveSlug(tabs[page].slug);
+        });
+      },
+      children: [for (final tab in tabs) _pageFor(tab)],
+    );
   }
 
   Widget _emptyNavigationContent() {
@@ -695,6 +868,17 @@ class _MainNavigationPageState extends State<MainNavigationPage>
                 onWebContextChanged: _onFarmChanged,
                 onToolbarChanged: (data) {
                   if (!mounted || data == null) return;
+                  final prev = _dashboardToolbarData;
+                  if (prev != null &&
+                      prev.selectedFarmId == data.selectedFarmId &&
+                      prev.selectedPeriod == data.selectedPeriod &&
+                      prev.customPeriodLabel == data.customPeriodLabel &&
+                      prev.loadingFarms == data.loadingFarms &&
+                      prev.loadingDashboard == data.loadingDashboard &&
+                      prev.farms.length == data.farms.length &&
+                      prev.years.length == data.years.length) {
+                    return;
+                  }
                   setState(() => _dashboardToolbarData = data);
                 },
               )
@@ -708,7 +892,16 @@ class _MainNavigationPageState extends State<MainNavigationPage>
       MenuSlug.movimentacoes => Movimentacoes(key: chave),
       MenuSlug.manejos =>
         kIsWeb ? ManejosWebPage(key: chave) : ManejosAnimaisPage(key: chave),
-      MenuSlug.perfil => kIsWeb ? ProfileWebPage(key: chave) : Menu(key: chave),
+      MenuSlug.perfil =>
+        kIsWeb
+            ? ProfileWebPage(
+                key: chave,
+                onOpenTasks: _openWebTasks,
+                onOpenPotreiros: _openWebPotreiros,
+                onOpenEstoque: _openWebEstoque,
+                onOpenPluviosidade: _openWebPluviosidade,
+              )
+            : Menu(key: chave),
       _ => ModulePlaceholderPage(
         title: tab.label,
         item: tab.item,
@@ -725,6 +918,8 @@ class _MainNavigationPageState extends State<MainNavigationPage>
     setState(() {
       _activeWebMovementSlug = null;
       _activeWebMovementTitle = null;
+      _activeWebProfileSlug = null;
+      _activeWebProfileTitle = null;
       _selectedIndex = index;
       _rememberActiveSlug(tabs[index].slug);
     });
@@ -762,6 +957,7 @@ class _WebTopBar extends StatelessWidget {
     required this.onNotifications,
     this.controls,
     this.subtitle,
+    this.onBack,
   });
 
   final String title;
@@ -770,6 +966,7 @@ class _WebTopBar extends StatelessWidget {
   final VoidCallback onNotifications;
   final Widget? controls;
   final String? subtitle;
+  final VoidCallback? onBack;
 
   @override
   Widget build(BuildContext context) {
@@ -785,6 +982,14 @@ class _WebTopBar extends StatelessWidget {
                 tooltip: 'Abrir menu',
                 onPressed: onMenu,
                 icon: const Icon(Icons.menu_rounded),
+              ),
+              const SizedBox(width: 4),
+            ],
+            if (onBack != null) ...[
+              IconButton(
+                tooltip: 'Voltar',
+                onPressed: onBack,
+                icon: const Icon(Icons.arrow_back_ios_new_rounded, size: 18),
               ),
               const SizedBox(width: 4),
             ],
