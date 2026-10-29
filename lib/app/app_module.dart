@@ -294,8 +294,11 @@ class AppModule extends Module {
       AppRoutes.financeiro,
       child: (_) {
         final data = r.args.data;
-        final abrir = data is FinanceiroAbrir && data.abrirForm;
-        return FinanceiroShellPage(abrirForm: abrir);
+        final args = data is FinanceiroAbrir ? data : const FinanceiroAbrir.modulo();
+        return FinanceiroShellPage(
+          abrirForm: args.abrirForm,
+          abrirInvestidores: args.abrirInvestidores,
+        );
       },
     );
     r.child(AppRoutes.tasks, child: (_) => const TaskPage());

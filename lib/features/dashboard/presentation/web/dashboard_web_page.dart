@@ -273,9 +273,18 @@ class _DashboardWebPageState extends State<DashboardWebPage> {
       _publishToolbar();
       await _loadDashboard();
     } catch (_) {
-      if (mounted) {
-        setState(() => _loadingFarms = false);
-        _publishToolbar();
+      final saved = await SessionStorage.getSelectedFarmId();
+      if (!mounted) return;
+      setState(() {
+        _farmId = saved;
+        _farms = saved != null && saved > 0
+            ? [FazendaEntity.stub(id: saved)]
+            : const [];
+        _loadingFarms = false;
+      });
+      _publishToolbar();
+      if (saved != null && saved > 0) {
+        await _loadDashboard();
       }
     }
   }

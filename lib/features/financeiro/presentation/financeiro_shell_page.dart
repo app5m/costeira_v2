@@ -1,7 +1,20 @@
+import 'package:costeira/core/api/api_exception.dart';
+import 'package:costeira/core/components/app_snack.dart';
 import 'package:costeira/features/financeiro/domain/financeiro_mock.dart';
+import 'package:costeira/features/financeiro/presentation/pages/acerto_parceria_page.dart';
+import 'package:costeira/features/financeiro/presentation/pages/baixa_titulo_parceria_page.dart';
 import 'package:costeira/features/financeiro/presentation/pages/contas_page.dart';
+import 'package:costeira/features/financeiro/presentation/pages/contrato_detalhe_page.dart';
+import 'package:costeira/features/financeiro/presentation/pages/despesa_parceria_detalhe_page.dart';
+import 'package:costeira/features/financeiro/presentation/pages/despesa_parceria_form_page.dart';
+import 'package:costeira/features/financeiro/presentation/pages/despesas_parceria_page.dart';
+import 'package:costeira/features/financeiro/presentation/pages/entrada_parceria_page.dart';
+import 'package:costeira/features/financeiro/presentation/pages/investidores_page.dart';
 import 'package:costeira/features/financeiro/presentation/pages/lancamento_form_page.dart';
 import 'package:costeira/features/financeiro/presentation/pages/lancamentos_page.dart';
+import 'package:costeira/features/financeiro/presentation/pages/relatorio_detalhe_page.dart';
+import 'package:costeira/features/financeiro/presentation/pages/venda_parceria_form_page.dart';
+import 'package:costeira/features/financeiro/presentation/pages/vendas_parceria_page.dart';
 import 'package:costeira/features/financeiro/presentation/pages/visao_page.dart';
 import 'package:costeira/features/financeiro/presentation/widgets/financeiro_ui.dart';
 import 'package:costeira/theme/colors.dart';
@@ -97,22 +110,60 @@ class _ItemBarra extends StatelessWidget {
 }
 
 class FinanceiroAbrir {
-  const FinanceiroAbrir.form() : abrirForm = true;
-  const FinanceiroAbrir.modulo() : abrirForm = false;
+  const FinanceiroAbrir.form()
+      : abrirForm = true,
+        abrirInvestidores = false;
+  const FinanceiroAbrir.modulo()
+      : abrirForm = false,
+        abrirInvestidores = false;
+  const FinanceiroAbrir.investidores()
+      : abrirForm = false,
+        abrirInvestidores = true;
 
   final bool abrirForm;
+  final bool abrirInvestidores;
 }
 
 class FinanceiroShellPage extends StatefulWidget {
-  const FinanceiroShellPage({super.key, this.abrirForm = false});
+  const FinanceiroShellPage({
+    super.key,
+    this.abrirForm = false,
+    this.abrirInvestidores = false,
+  });
 
   final bool abrirForm;
+  final bool abrirInvestidores;
 
   @override
   State<FinanceiroShellPage> createState() => _FinanceiroShellPageState();
 }
 
-enum _Passo { abas, form, detalhe, baixa, conta, contaForm, saldo }
+enum _Passo {
+  abas,
+  form,
+  detalhe,
+  baixa,
+  conta,
+  contaForm,
+  saldo,
+  relatorio,
+  investidores,
+  investidorForm,
+  contratos,
+  contratoForm,
+  contratoDetalhe,
+  entradaForm,
+  despesasLista,
+  despesaDetalhe,
+  despesaForm,
+  vendasLista,
+  vendaForm,
+  acerto,
+  financeiroVenda,
+  baixaTitulo,
+}
+
+enum _VoltaBaixa { contrato, despesas, despesaDetalhe, financeiroVenda }
 
 class _FinanceiroShellPageState extends State<FinanceiroShellPage> {
   final _loja = FinanceiroLoja();
@@ -121,11 +172,38 @@ class _FinanceiroShellPageState extends State<FinanceiroShellPage> {
   LancamentoMock? _lancamento;
   ContaMock? _conta;
   bool _contaNova = true;
+  bool _editando = false;
+  String? _relatorio;
+  ModoAjusteSaldo _modoSaldo = ModoAjusteSaldo.abertura;
+  ParteFin? _investidor;
+  ParteFin? _investidorEdicao;
+  ParceriaFin? _parceria;
+  TituloParceriaFin? _tituloParceria;
+  VendaParceriaFin? _vendaParceria;
+  _VoltaBaixa _voltaBaixa = _VoltaBaixa.contrato;
+  _Passo _voltaDespesaForm = _Passo.despesasLista;
+  _Passo _voltaVendaForm = _Passo.vendasLista;
 
   @override
   void initState() {
     super.initState();
-    if (widget.abrirForm) _passo = _Passo.form;
+    if (widget.abrirInvestidores) {
+      _aba = 2;
+      _passo = _Passo.investidores;
+    } else if (widget.abrirForm) {
+      _passo = _Passo.form;
+    }
+  }
+
+  void _voltarInvestidoresRaiz() {
+    if (widget.abrirInvestidores) {
+      Modular.to.pop();
+      return;
+    }
+    setState(() {
+      _aba = 2;
+      _passo = _Passo.abas;
+    });
   }
 
   @override
@@ -173,18 +251,14 @@ class _FinanceiroShellPageState extends State<FinanceiroShellPage> {
     final texto = motivo.text;
     motivo.dispose();
     if (ok != true || !mounted) return;
-    _loja.salvarConta(
-      ContaMock(
-        id: conta.id,
-        nome: conta.nome,
-        tipo: conta.tipo,
-        saldo: conta.saldo,
-        ativa: false,
-        motivo: texto,
-        saldoInicialRegistrado: conta.saldoInicialRegistrado,
-        movimentos: conta.movimentos,
-      ),
-    );
+    try {
+      await _loja.inativar(conta.id, texto.trim().isEmpty ? 'Inativação da conta' : texto.trim());
+    } on ApiException catch (error) {
+      if (!mounted) return;
+      AppSnackBar.show(context: context, message: error.message);
+      return;
+    }
+    if (!mounted) return;
     setState(() => _passo = _Passo.abas);
   }
 
@@ -233,23 +307,53 @@ class _FinanceiroShellPageState extends State<FinanceiroShellPage> {
 
   Widget _miolo({required bool barra}) {
     if (_passo == _Passo.form) {
-      return LancamentoFormPage(aoFechar: () => setState(() {
-        _aba = 1;
-        _passo = _Passo.abas;
-      }));
+      return LancamentoFormPage(
+        item: _editando ? _lancamento : null,
+        aoFechar: () => setState(() {
+          _editando = false;
+          _aba = 1;
+          _passo = _Passo.abas;
+        }),
+      );
     }
     if (_passo == _Passo.detalhe && _lancamento != null) {
       return LancamentoDetalhePage(
         item: _lancamento!,
         aoVoltar: () => setState(() => _passo = _Passo.abas),
-        aoBaixa: () => setState(() => _passo = _Passo.baixa),
-        aoEstornar: () {
-          _loja.estornar(_lancamento!.id);
-          setState(() {});
+        aoBaixa: () => setState(() {
+          final id = _lancamento!.id;
+          _lancamento = _loja.lancamentos.where((e) => e.id == id).firstOrNull ?? _lancamento;
+          _passo = _Passo.baixa;
+        }),
+        aoEditar: () => setState(() {
+          _editando = true;
+          _passo = _Passo.form;
+        }),
+        aoEstornar: ({required data, required motivo}) async {
+          await _loja.estornar(_lancamento!.id, data: data, motivo: motivo);
+          if (!mounted) return;
+          setState(() {
+            _lancamento = _loja.lancamentos.cast<LancamentoMock?>().where((e) => e?.id == _lancamento!.id).firstOrNull;
+            _passo = _Passo.abas;
+          });
         },
-        aoEstornarPagamento: () {
-          _loja.estornarPagamento(_lancamento!.id);
-          setState(() {});
+        aoEstornarPagamento: ({required data, required motivo, baixaId}) async {
+          final id = _lancamento!.id;
+          await _loja.estornarPagamento(
+            id,
+            data: data,
+            motivo: motivo,
+            baixaId: baixaId,
+          );
+          if (!mounted) return;
+          final atualizado = _loja.lancamentos.where((e) => e.id == id).firstOrNull;
+          setState(() {
+            _lancamento = atualizado;
+            _passo = atualizado == null ? _Passo.abas : _Passo.detalhe;
+          });
+          if (atualizado != null && mounted) {
+            AppSnackBar.show(context: context, message: 'Baixa estornada.', isError: false);
+          }
         },
       );
     }
@@ -257,9 +361,28 @@ class _FinanceiroShellPageState extends State<FinanceiroShellPage> {
       return RegistrarBaixaPage(
         item: _lancamento!,
         aoVoltar: () => setState(() => _passo = _Passo.detalhe),
-        aoConfirmar: (valor, conta) {
-          _loja.registrarBaixa(_lancamento!.id, valor: valor, conta: conta);
-          setState(() => _passo = _Passo.detalhe);
+        aoConfirmar: (valor, conta, {data}) async {
+          try {
+            final id = _lancamento!.id;
+            await _loja.registrarBaixa(
+              id,
+              valor: valor,
+              conta: conta,
+              data: data,
+            );
+            if (!mounted) return;
+            final atualizado = _loja.lancamentos.where((e) => e.id == id).firstOrNull;
+            setState(() {
+              _lancamento = atualizado;
+              _passo = atualizado == null || atualizado.pendente <= 0.001
+                  ? _Passo.abas
+                  : _Passo.detalhe;
+            });
+            AppSnackBar.show(context: context, message: 'Baixa registrada.', isError: false);
+          } on ApiException catch (error) {
+            if (!mounted) return;
+            AppSnackBar.show(context: context, message: error.message);
+          }
         },
       );
     }
@@ -272,19 +395,255 @@ class _FinanceiroShellPageState extends State<FinanceiroShellPage> {
           _passo = _Passo.contaForm;
         }),
         aoInativar: _inativar,
-        aoSaldo: () => setState(() => _passo = _Passo.saldo),
+        aoSaldo: (modo) => setState(() {
+          _modoSaldo = modo;
+          _passo = _Passo.saldo;
+        }),
       );
     }
     if (_passo == _Passo.contaForm) {
       return ContaFormPage(
         conta: _contaNova ? null : _conta,
-        aoVoltar: () => setState(() => _passo = _contaNova ? _Passo.abas : _Passo.conta),
+        aoVoltar: () => setState(() {
+          if (!_contaNova && _conta != null) {
+            _conta = _loja.contas.where((c) => c.id == _conta!.id).firstOrNull ?? _conta;
+          }
+          _passo = _contaNova ? _Passo.abas : _Passo.conta;
+        }),
+        aoSaldoInicial: (conta) => setState(() {
+          _conta = conta;
+          _modoSaldo = ModoAjusteSaldo.abertura;
+          _passo = _Passo.saldo;
+        }),
       );
     }
     if (_passo == _Passo.saldo && _conta != null) {
       return SaldoInicialPage(
         conta: _conta!,
-        aoVoltar: () => setState(() => _passo = _Passo.conta),
+        modo: _modoSaldo,
+        aoVoltar: () => setState(() {
+          _conta = _loja.contas.where((c) => c.id == _conta!.id).firstOrNull ?? _conta;
+          _passo = _Passo.conta;
+        }),
+      );
+    }
+    if (_passo == _Passo.relatorio && _relatorio != null) {
+      return RelatorioDetalhePage(
+        id: _relatorio!,
+        aoVoltar: () => setState(() => _passo = _Passo.abas),
+      );
+    }
+    if (_passo == _Passo.investidores) {
+      return InvestidoresPage(
+        aoVoltar: _voltarInvestidoresRaiz,
+        aoAbrir: (item) => setState(() {
+          _investidor = item;
+          _passo = _Passo.contratos;
+        }),
+        aoAdicionar: () => setState(() {
+          _investidorEdicao = null;
+          _passo = _Passo.investidorForm;
+        }),
+      );
+    }
+    if (_passo == _Passo.investidorForm) {
+      final editando = _investidorEdicao != null;
+      return InvestidorFormPage(
+        investidor: _investidorEdicao,
+        aoVoltar: () => setState(() {
+          _passo = editando ? _Passo.contratos : _Passo.investidores;
+          _investidorEdicao = null;
+        }),
+        aoSalvo: (item) => setState(() {
+          _investidor = item;
+          _investidorEdicao = null;
+          _passo = _Passo.contratos;
+        }),
+      );
+    }
+    if (_passo == _Passo.contratos && _investidor != null) {
+      return ContratosInvestidorPage(
+        investidor: _investidor!,
+        aoVoltar: () => setState(() => _passo = _Passo.investidores),
+        aoAbrir: (item) => setState(() {
+          _parceria = item;
+          _passo = _Passo.contratoDetalhe;
+        }),
+        aoAdicionar: () => setState(() => _passo = _Passo.contratoForm),
+        aoEditar: () => setState(() {
+          _investidorEdicao = _investidor;
+          _passo = _Passo.investidorForm;
+        }),
+        aoExcluir: () async {
+          if (!mounted) return;
+          setState(() {
+            _investidor = null;
+            _parceria = null;
+            _passo = _Passo.investidores;
+          });
+        },
+      );
+    }
+    if (_passo == _Passo.contratoForm && _investidor != null) {
+      return ContratoFormPage(
+        investidor: _investidor!,
+        aoVoltar: () => setState(() => _passo = _Passo.contratos),
+        aoSalvo: (item) => setState(() {
+          _parceria = item;
+          _passo = _Passo.contratoDetalhe;
+        }),
+      );
+    }
+    if (_passo == _Passo.contratoDetalhe && _parceria != null) {
+      return ContratoDetalhePage(
+        parceriaId: _parceria!.id,
+        aoVoltar: () => setState(() => _passo = _Passo.contratos),
+        aoRegistrarEntrada: () => setState(() => _passo = _Passo.entradaForm),
+        aoDespesas: () => setState(() => _passo = _Passo.despesasLista),
+        aoVendas: () => setState(() => _passo = _Passo.vendasLista),
+        aoBaixaTitulo: (titulo) => setState(() {
+          _tituloParceria = titulo;
+          _voltaBaixa = _VoltaBaixa.contrato;
+          _passo = _Passo.baixaTitulo;
+        }),
+        aoInativar: () async {
+          if (!mounted) return;
+          setState(() => _passo = _Passo.contratos);
+        },
+      );
+    }
+    if (_passo == _Passo.entradaForm && _parceria != null) {
+      return EntradaParceriaPage(
+        parceriaId: _parceria!.id,
+        aoVoltar: () => setState(() => _passo = _Passo.contratoDetalhe),
+        aoSalvo: () => setState(() => _passo = _Passo.contratoDetalhe),
+      );
+    }
+    if (_passo == _Passo.despesasLista && _parceria != null) {
+      return DespesasParceriaPage(
+        parceriaId: _parceria!.id,
+        aoVoltar: () => setState(() => _passo = _Passo.contratoDetalhe),
+        aoAdicionar: () => setState(() {
+          _voltaDespesaForm = _Passo.despesasLista;
+          _passo = _Passo.despesaForm;
+        }),
+        aoAbrir: (titulo) => setState(() {
+          _tituloParceria = titulo;
+          _passo = _Passo.despesaDetalhe;
+        }),
+      );
+    }
+    if (_passo == _Passo.despesaDetalhe && _parceria != null && _tituloParceria != null) {
+      return DespesaParceriaDetalhePage(
+        parceriaId: _parceria!.id,
+        titulo: _tituloParceria!,
+        aoVoltar: () => setState(() => _passo = _Passo.despesasLista),
+        aoPagar: () => setState(() {
+          _voltaBaixa = _VoltaBaixa.despesaDetalhe;
+          _passo = _Passo.baixaTitulo;
+        }),
+      );
+    }
+    if (_passo == _Passo.despesaForm && _parceria != null) {
+      return DespesaParceriaFormPage(
+        parceriaId: _parceria!.id,
+        aoVoltar: () => setState(() => _passo = _voltaDespesaForm),
+        aoSalvo: () => setState(() => _passo = _Passo.despesasLista),
+      );
+    }
+    if (_passo == _Passo.vendasLista && _parceria != null) {
+      return VendasParceriaPage(
+        parceriaId: _parceria!.id,
+        aoVoltar: () => setState(() => _passo = _Passo.contratoDetalhe),
+        aoRegistrar: () => setState(() {
+          _voltaVendaForm = _Passo.vendasLista;
+          _passo = _Passo.vendaForm;
+        }),
+        aoAcerto: (venda) => setState(() {
+          _vendaParceria = venda;
+          // Acerto já confirmado: só financeiro (não reabre simulação).
+          _passo = venda.acertoConfirmado ? _Passo.financeiroVenda : _Passo.acerto;
+        }),
+        aoFinanceiro: (venda) => setState(() {
+          _vendaParceria = venda;
+          _passo = _Passo.financeiroVenda;
+        }),
+      );
+    }
+    if (_passo == _Passo.vendaForm && _parceria != null) {
+      return VendaParceriaFormPage(
+        parceriaId: _parceria!.id,
+        aoVoltar: () => setState(() => _passo = _voltaVendaForm),
+        aoSalvo: (vendaId) => setState(() {
+          _vendaParceria = VendaParceriaFin(
+            id: vendaId,
+            data: '',
+            precoKg: '',
+          );
+          _passo = _Passo.acerto;
+        }),
+      );
+    }
+    if (_passo == _Passo.acerto && _parceria != null && _vendaParceria != null) {
+      // Defesa: se lista atualizou e venda já tem acerto, manda pro financeiro.
+      final vendaAtual = (_parceria?.vendas ?? const <VendaParceriaFin>[])
+          .where((v) => v.id == _vendaParceria!.id)
+          .firstOrNull;
+      if (vendaAtual?.acertoConfirmado == true || _vendaParceria!.acertoConfirmado) {
+        return FinanceiroVendaParceriaPage(
+          parceriaId: _parceria!.id,
+          vendaId: _vendaParceria!.id,
+          aoVoltar: () => setState(() => _passo = _Passo.vendasLista),
+          aoBaixa: (titulo) => setState(() {
+            _tituloParceria = titulo;
+            _voltaBaixa = _VoltaBaixa.financeiroVenda;
+            _passo = _Passo.baixaTitulo;
+          }),
+        );
+      }
+      return AcertoParceriaPage(
+        parceriaId: _parceria!.id,
+        vendaId: _vendaParceria!.id,
+        aoVoltar: () => setState(() => _passo = _Passo.vendasLista),
+        aoConfirmado: () => setState(() {
+          _vendaParceria = (_vendaParceria ?? vendaAtual)?.copiar(acertoConfirmado: true) ??
+              VendaParceriaFin(id: _vendaParceria!.id, data: '', precoKg: '', acertoConfirmado: true);
+          _passo = _Passo.financeiroVenda;
+        }),
+      );
+    }
+    if (_passo == _Passo.financeiroVenda && _parceria != null && _vendaParceria != null) {
+      return FinanceiroVendaParceriaPage(
+        parceriaId: _parceria!.id,
+        vendaId: _vendaParceria!.id,
+        aoVoltar: () => setState(() => _passo = _Passo.vendasLista),
+        aoBaixa: (titulo) => setState(() {
+          _tituloParceria = titulo;
+          _voltaBaixa = _VoltaBaixa.financeiroVenda;
+          _passo = _Passo.baixaTitulo;
+        }),
+      );
+    }
+    if (_passo == _Passo.baixaTitulo && _parceria != null && _tituloParceria != null) {
+      return BaixaTituloParceriaPage(
+        parceriaId: _parceria!.id,
+        titulo: _tituloParceria!,
+        aoVoltar: () => setState(() {
+          _passo = switch (_voltaBaixa) {
+            _VoltaBaixa.contrato => _Passo.contratoDetalhe,
+            _VoltaBaixa.despesas => _Passo.despesasLista,
+            _VoltaBaixa.despesaDetalhe => _Passo.despesaDetalhe,
+            _VoltaBaixa.financeiroVenda => _Passo.financeiroVenda,
+          };
+        }),
+        aoSalvo: () => setState(() {
+          _passo = switch (_voltaBaixa) {
+            _VoltaBaixa.contrato => _Passo.contratoDetalhe,
+            _VoltaBaixa.despesas => _Passo.despesasLista,
+            _VoltaBaixa.despesaDetalhe => _Passo.despesasLista,
+            _VoltaBaixa.financeiroVenda => _Passo.financeiroVenda,
+          };
+        }),
       );
     }
 
@@ -341,7 +700,17 @@ class _FinanceiroShellPageState extends State<FinanceiroShellPage> {
               _passo = _Passo.detalhe;
             }),
           ),
-          const RelatoriosPage(),
+          RelatoriosPage(
+            aoAbrir: (id) => setState(() {
+              _aba = 2;
+              if (id == 'investidor') {
+                _passo = _Passo.investidores;
+                return;
+              }
+              _relatorio = id;
+              _passo = _Passo.relatorio;
+            }),
+          ),
           ContasPage(
             aoAbrir: (conta) => setState(() {
               _conta = conta;
@@ -352,7 +721,11 @@ class _FinanceiroShellPageState extends State<FinanceiroShellPage> {
       ),
       floatingActionButton: _aba == 0 || _aba == 1
           ? FloatingActionButton.extended(
-              onPressed: () => setState(() => _passo = _Passo.form),
+              onPressed: () => setState(() {
+                _editando = false;
+                _lancamento = null;
+                _passo = _Passo.form;
+              }),
               backgroundColor: MyColors.colorPrimary,
               icon: const Icon(Icons.add),
               label: const Text('Novo lançamento', style: TextStyle(fontFamily: 'Montserrat')),

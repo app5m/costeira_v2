@@ -50,6 +50,49 @@ class _FazendaFormWebDialogState extends State<FazendaFormWebDialog> {
     setState(() => _submitError = result.message);
   }
 
+  Future<void> _delete() async {
+    if (!_controller.canDelete || _controller.isLoading) return;
+    final ok = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text(
+          'Excluir fazenda?',
+          style: TextStyle(fontFamily: 'Montserrat', fontWeight: FontWeight.w700),
+        ),
+        content: const Text(
+          'A fazenda será removida. Esta ação não pode ser desfeita.',
+          style: TextStyle(fontFamily: 'Montserrat', fontSize: 13),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: const Text('Voltar'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(context, true),
+            child: const Text(
+              'Excluir',
+              style: TextStyle(color: Color(0xFFC62828)),
+            ),
+          ),
+        ],
+      ),
+    );
+    if (ok != true || !mounted) return;
+    setState(() => _submitError = null);
+    final result = await _controller.delete();
+    if (!mounted) return;
+    if (result.isSuccess) {
+      Navigator.of(context).pop({
+        'success': true,
+        'deleted': true,
+        'message': result.message,
+      });
+      return;
+    }
+    setState(() => _submitError = result.message);
+  }
+
   @override
   Widget build(BuildContext context) {
     final narrow = MediaQuery.sizeOf(context).width < 620;
@@ -58,6 +101,13 @@ class _FazendaFormWebDialogState extends State<FazendaFormWebDialog> {
       title: _controller.isEditing ? 'Editar fazenda' : 'Adicionar fazenda',
       width: 700,
       maxHeight: 760,
+      headerActions: _controller.canDelete
+          ? IconButton(
+              onPressed: _controller.isLoading ? null : _delete,
+              icon: const Icon(Icons.delete_outline, color: Color(0xFFC62828)),
+              tooltip: 'Excluir fazenda',
+            )
+          : null,
       bodyPadding: EdgeInsets.fromLTRB(
         narrow ? 18 : 28,
         24,

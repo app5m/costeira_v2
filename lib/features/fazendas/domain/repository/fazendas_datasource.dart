@@ -7,4 +7,5 @@ abstract interface class FazendasDatasource {
   Future<FazendaListEntity> getFazendas(FazendaFilterEntity filter);
   Future<ApiMessage> createFazenda(FazendaUpsertEntity fazenda);
   Future<ApiMessage> updateFazenda(FazendaUpsertEntity fazenda);
+  Future<ApiMessage> deleteFazenda({required int id, required int appUsersId});
 }

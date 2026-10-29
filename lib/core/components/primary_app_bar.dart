@@ -7,6 +7,7 @@ class PrimarySectionAppBar extends AppBar {
     super.key,
     required BuildContext context,
     required String title,
+    super.actions,
   }) : super(
          backgroundColor: MyColors.colorPrimary,
          foregroundColor: Colors.white,

@@ -54,6 +54,7 @@ class FazendaFormPageController extends ChangeNotifier {
   bool _isLoadingProfile = true;
   bool _isLookingUpCnpj = false;
   bool _isCnpjApproved = false;
+  bool _isMaster = false;
   String? _cnpjMessage;
   bool _cnpjMessageIsError = false;
   String _lastLookedUpCnpj = '';
@@ -77,6 +78,7 @@ class FazendaFormPageController extends ChangeNotifier {
   String? get cnpjMessage => _cnpjMessage;
   bool get cnpjMessageIsError => _cnpjMessageIsError;
   bool get isEditing => _currentFazenda != null;
+  bool get canDelete => isEditing && _isMaster;
   AccountProfile? get profile => _profile;
   String? get profileError => _profileError;
   bool get hasMatrizProfile =>
@@ -104,6 +106,7 @@ class FazendaFormPageController extends ChangeNotifier {
 
     try {
       final user = await SessionStorage.getUserSession();
+      _isMaster = user?.isMaster ?? false;
       if (user != null) {
         _profile = await _accountRepository.fetchProfile(
           userId: sessionAccountUserId(user.id),
@@ -237,6 +240,37 @@ class FazendaFormPageController extends ChangeNotifier {
         message:
             _saveController.errorMessage ??
             'Nao foi possivel salvar a fazenda.',
+      );
+    }
+  }
+
+  Future<PageActionResult> delete() async {
+    if (!canDelete) {
+      return const PageActionResult(
+        isSuccess: false,
+        message: 'Somente o usuario master pode excluir fazenda.',
+      );
+    }
+    final id = _currentFazenda?.id;
+    if (id == null || id <= 0) {
+      return const PageActionResult(
+        isSuccess: false,
+        message: 'Fazenda invalida para exclusao.',
+      );
+    }
+
+    try {
+      final result = await _saveController.delete(id: id);
+      return PageActionResult(
+        isSuccess: result.isSuccess,
+        message: result.message,
+      );
+    } catch (_) {
+      return PageActionResult(
+        isSuccess: false,
+        message:
+            _saveController.errorMessage ??
+            'Nao foi possivel excluir a fazenda.',
       );
     }
   }

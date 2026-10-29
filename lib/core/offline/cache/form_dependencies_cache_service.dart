@@ -89,7 +89,7 @@ class FormDependenciesCacheService {
       await _safe('util/lista femea', () {
         return _getListUsecase(GetListParamsEntity(sexo: 2, userId: userId));
       });
-      final farmId = await _resolveCurrentFarmId(userId: userId);
+      final farmId = await _resolveFarmIdSafe(userId);
       if (farmId != null) {
         await _safe('potreiros', () {
           return _getPotreirosUsecase(
@@ -211,7 +211,7 @@ class FormDependenciesCacheService {
     await _safe('animal form util/lista femea', () {
       return _getListUsecase(GetListParamsEntity(sexo: 2, userId: userId));
     });
-    final farmId = await _resolveCurrentFarmId(userId: userId);
+    final farmId = await _resolveFarmIdSafe(userId);
     if (farmId != null) {
       await _safe('animal form lotes', () {
         return _getAnimalLotsUsecase(
@@ -246,7 +246,7 @@ class FormDependenciesCacheService {
       'FORM DEPENDENCIES CACHE: preload do formulario de nascimento userId=$userId',
     );
 
-    final farmId = await _resolveCurrentFarmId(userId: userId);
+    final farmId = await _resolveFarmIdSafe(userId);
     if (farmId != null) {
       await _safe('nascimento form animais', () {
         return _getAnimalsUsecase(
@@ -286,7 +286,7 @@ class FormDependenciesCacheService {
       'FORM DEPENDENCIES CACHE: preload do formulario de aborto userId=$userId',
     );
 
-    final farmId = await _resolveCurrentFarmId(userId: userId);
+    final farmId = await _resolveFarmIdSafe(userId);
     if (farmId != null) {
       await _safe('aborto form animais', () {
         return _getAnimalsUsecase(
@@ -326,7 +326,7 @@ class FormDependenciesCacheService {
       'FORM DEPENDENCIES CACHE: preload do formulario de suplemento userId=$userId',
     );
 
-    final farmId = await _resolveCurrentFarmId(userId: userId);
+    final farmId = await _resolveFarmIdSafe(userId);
     if (farmId != null) {
       await _safe('suplemento form potreiros', () {
         return _getPotreirosUsecase(
@@ -368,6 +368,25 @@ class FormDependenciesCacheService {
       return 0;
     }
     return sessionAccountUserId(id);
+  }
+
+  /// Resolve fazenda sem derrubar preload (race/hot restart em /fazendas/listar).
+  Future<int?> _resolveFarmIdSafe(int userId) async {
+    try {
+      return await _resolveCurrentFarmId(userId: userId);
+    } catch (error) {
+      AppLogger.warning(
+        'FORM DEPENDENCIES CACHE: falha ao resolver fazenda: $error',
+      );
+      final saved = await SessionStorage.getSelectedFarmId();
+      if (saved != null && saved > 0) {
+        AppLogger.info(
+          'FORM DEPENDENCIES CACHE: usando fazenda salva id=$saved',
+        );
+        return saved;
+      }
+      return null;
+    }
   }
 
   Future<void> _safe(
