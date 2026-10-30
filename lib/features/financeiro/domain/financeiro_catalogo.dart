@@ -9,7 +9,7 @@ class TipoLancamentoOpcao {
 const tiposLancamento = [
   TipoLancamentoOpcao('recebimento', 'Recebimento'),
   TipoLancamentoOpcao('pagamento', 'Pagamento'),
-  TipoLancamentoOpcao('investimento', 'Investimento', travado: true),
+  TipoLancamentoOpcao('investimento', 'Investimento'),
   TipoLancamentoOpcao('estoque', 'Estoque', travado: true),
 ];
 

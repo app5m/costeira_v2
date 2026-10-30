@@ -70,6 +70,16 @@ class DespesaParceriaDetalhePage extends StatelessWidget {
     final fornecedor = (titulo.parteNome == null || titulo.parteNome!.trim().isEmpty)
         ? 'Sem fornecedor'
         : titulo.parteNome!.trim();
+    final contaFallback = loja.lancamentos
+        .where((l) => l.id == titulo.id)
+        .expand((l) => l.pagamentos)
+        .map((p) => p.conta.trim())
+        .where((nome) => nome.isNotEmpty)
+        .toSet()
+        .join(' · ');
+    final conta = (titulo.contaPagamento?.trim().isNotEmpty == true)
+        ? titulo.contaPagamento!.trim()
+        : (contaFallback.isEmpty ? null : contaFallback);
 
     return Scaffold(
       backgroundColor: fundoFinanceiro,
@@ -188,6 +198,7 @@ class DespesaParceriaDetalhePage extends StatelessWidget {
                 if (titulo.categoriaNome != null && titulo.categoriaNome!.trim().isNotEmpty)
                   _Linha(rotulo: 'Rubrica', valor: titulo.categoriaNome!.trim()),
                 _Linha(rotulo: 'Fornecedor', valor: fornecedor),
+                if (conta != null) _Linha(rotulo: 'Conta', valor: conta),
                 _Linha(
                   rotulo: 'Animais',
                   valor: qtd > 0 ? '$qtd ${qtd == 1 ? 'animal' : 'animais'}' : '—',

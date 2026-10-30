@@ -52,6 +52,7 @@ class CartaoIndicador extends StatelessWidget {
     this.unidadePadrao,
     this.inteiro = false,
     this.legenda,
+    this.ajuda,
   });
 
   final String titulo;
@@ -60,7 +61,49 @@ class CartaoIndicador extends StatelessWidget {
   final String? unidade;
   final String? unidadePadrao;
   final bool inteiro;
+  /// Texto curto no card (só se [ajuda] for null — evita corte ilegível).
   final String? legenda;
+  /// Explicação completa: mostra `?` e abre sheet ao tocar.
+  final String? ajuda;
+
+  Future<void> _abrirAjuda(BuildContext context) async {
+    final texto = ajuda?.trim();
+    if (texto == null || texto.isEmpty) {
+      return;
+    }
+    await showDialog<void>(
+      context: context,
+      builder: (dialog) {
+        return AlertDialog(
+          backgroundColor: Colors.white,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+          title: Text(titulo, style: tituloSecao),
+          content: Text(
+            texto,
+            style: const TextStyle(
+              fontFamily: 'Montserrat',
+              fontSize: 14,
+              height: 1.4,
+              color: Color(0xFF313131),
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(dialog),
+              child: const Text(
+                'Entendi',
+                style: TextStyle(
+                  fontFamily: 'Montserrat',
+                  fontWeight: FontWeight.w700,
+                  color: MyColors.colorPrimary,
+                ),
+              ),
+            ),
+          ],
+        );
+      },
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -70,9 +113,11 @@ class CartaoIndicador extends StatelessWidget {
     );
     final numero = partes?.numero ?? valor ?? '—';
     final unidadeLinha = partes?.unidade ?? unidade;
+    final temAjuda = ajuda != null && ajuda!.trim().isNotEmpty;
+    final legendaCurta = !temAjuda && legenda != null && legenda!.isNotEmpty;
     return Container(
-      constraints: const BoxConstraints(minHeight: 118),
-      padding: const EdgeInsets.fromLTRB(14, 14, 14, 12),
+      constraints: const BoxConstraints(minHeight: 108),
+      padding: const EdgeInsets.fromLTRB(12, 12, 10, 12),
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(16),
@@ -81,18 +126,38 @@ class CartaoIndicador extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-            titulo.toUpperCase(),
-            maxLines: 1,
-            softWrap: false,
-            overflow: TextOverflow.ellipsis,
-            style: const TextStyle(
-              fontFamily: 'Montserrat',
-              fontSize: 9,
-              fontWeight: FontWeight.w700,
-              letterSpacing: 0.2,
-              color: Color(0xFF6B6B6B),
-            ),
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Expanded(
+                child: Text(
+                  titulo.toUpperCase(),
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                  style: const TextStyle(
+                    fontFamily: 'Montserrat',
+                    fontSize: 9,
+                    fontWeight: FontWeight.w700,
+                    letterSpacing: 0.2,
+                    color: Color(0xFF6B6B6B),
+                    height: 1.2,
+                  ),
+                ),
+              ),
+              if (temAjuda)
+                InkWell(
+                  onTap: () => _abrirAjuda(context),
+                  borderRadius: BorderRadius.circular(12),
+                  child: const Padding(
+                    padding: EdgeInsets.fromLTRB(4, 0, 0, 4),
+                    child: Icon(
+                      Icons.help_outline_rounded,
+                      size: 16,
+                      color: Color(0xFF8A8A8A),
+                    ),
+                  ),
+                ),
+            ],
           ),
           const SizedBox(height: 8),
           Text(
@@ -121,7 +186,7 @@ class CartaoIndicador extends StatelessWidget {
               ),
             ),
           ],
-          if (legenda != null && legenda!.isNotEmpty) ...[
+          if (legendaCurta) ...[
             const SizedBox(height: 4),
             Text(
               legenda!,

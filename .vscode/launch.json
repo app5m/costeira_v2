@@ -8,6 +8,12 @@
         {
             "name": "costeira",
             "request": "launch",
+            "type": "dart",
+            "deviceId": "12652FAA-1913-4A91-BDB0-7F0F83928562"
+        },
+        {
+            "name": "costeira (selecionar device)",
+            "request": "launch",
             "type": "dart"
         },
         {

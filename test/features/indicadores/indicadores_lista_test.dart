@@ -150,4 +150,51 @@ void main() {
     expect(corpo['app_users_id'], 450);
     expect(corpo.containsKey('app_animais_lotes_id'), isFalse);
   });
+
+  test('parser lê reproducao com detalhamento mapa e metadados', () {
+    final lista = IndicadoresResponseModel.fromJson({
+      'status': '01',
+      'data': {
+        'reproducao': {
+          'taxa_prenhez': {
+            'indicadores': {
+              'valor': {'qtd': 0, 'string': '%', 'texto': '0.000%'},
+            },
+            'graficos': [],
+            'detalhamento': {'prenhas': 0, 'acasaladas': 2},
+          },
+          'histograma_paricao': {
+            'indicadores': {
+              'valor': {'qtd': 3, 'string': 'cab.', 'texto': '3.000 cab.'},
+            },
+            'graficos': {
+              'nascimentos_mes': [
+                {'mes': '2026-09', 'quantidade': 3},
+              ],
+            },
+            'detalhamento': [],
+          },
+          'metadados': {
+            'parcial': true,
+            'pendencias': [
+              {
+                'brinco': '0010',
+                'msg': 'Matriz sem diagnostico.',
+              },
+            ],
+            'limitacoes': ['Filtros usam vínculos atuais.'],
+          },
+        },
+      },
+    });
+
+    expect(lista.taxaPrenhez.valorPrincipal.exibir(), '0.000%');
+    expect(lista.taxaPrenhez.detalheCampos['acasaladas'], 2);
+    expect(lista.taxaPrenhez.detalhamento, isEmpty);
+    expect(lista.histogramaParicao.valorPrincipal.partes().numero, '3.000');
+    expect(lista.histogramaParicao.serie('nascimentos_mes').first['quantidade'], 3);
+    expect(lista.reproducaoMeta.parcial, isTrue);
+    expect(lista.reproducaoMeta.pendencias.first['brinco'], '0010');
+    expect(lista.reproducaoMeta.limitacoes, hasLength(1));
+  });
 }

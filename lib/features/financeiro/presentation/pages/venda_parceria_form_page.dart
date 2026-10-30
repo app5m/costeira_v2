@@ -1,10 +1,13 @@
 import 'package:costeira/core/api/api_exception.dart';
 import 'package:costeira/core/components/app_snack.dart';
+import 'package:costeira/core/config/ws_constantes.dart';
 import 'package:costeira/core/input_formatters/brazilian_currency_input_formatter.dart';
 import 'package:costeira/core/storage/session_storage.dart';
 import 'package:costeira/features/cadastros/domain/entities/parceiro_entity.dart';
 import 'package:costeira/features/cadastros/domain/entities/parceiro_filter_entity.dart';
 import 'package:costeira/features/cadastros/domain/entities/parceiro_kind.dart';
+import 'package:costeira/features/cadastros/domain/entities/parceiro_upsert_entity.dart';
+import 'package:costeira/features/cadastros/domain/usecases/create_parceiro_usecase.dart';
 import 'package:costeira/features/cadastros/domain/usecases/get_parceiros_usecase.dart';
 import 'package:costeira/features/fazendas/domain/usecases/resolve_current_farm_id.dart';
 import 'package:costeira/features/financeiro/domain/financeiro_mock.dart';
@@ -74,6 +77,49 @@ class _VendaParceriaFormPageState extends State<VendaParceriaFormPage> {
     return true;
   }
 
+  DateTime? _parseBr(String texto) {
+    final m = RegExp(r'^(\d{2})/(\d{2})/(\d{4})$').firstMatch(texto.trim());
+    if (m == null) return null;
+    final dia = int.tryParse(m.group(1)!);
+    final mes = int.tryParse(m.group(2)!);
+    final ano = int.tryParse(m.group(3)!);
+    if (dia == null || mes == null || ano == null) return null;
+    final data = DateTime(ano, mes, dia);
+    if (data.year != ano || data.month != mes || data.day != dia) return null;
+    return data;
+  }
+
+  String _fmtBr(DateTime data) {
+    final d = data.day.toString().padLeft(2, '0');
+    final m = data.month.toString().padLeft(2, '0');
+    return '$d/$m/${data.year}';
+  }
+
+  Future<void> _escolherData() async {
+    final atual = _parseBr(_data.text) ?? DateTime.now();
+    final escolhida = await showDatePicker(
+      context: context,
+      initialDate: atual,
+      firstDate: DateTime(atual.year - 10),
+      lastDate: DateTime(atual.year + 10),
+      helpText: 'Data da venda',
+    );
+    if (escolhida == null || !mounted) return;
+    setState(() => _data.text = _fmtBr(escolhida));
+  }
+
+  Future<void> _carregarCompradores() async {
+    final user = await SessionStorage.getUserSession();
+    if (user == null) return;
+    final farmId = await Modular.get<ResolveCurrentFarmId>()(userId: user.id);
+    if (farmId == null) return;
+    final lista = await Modular.get<GetParceirosUsecase>()(
+      ParceiroFilterEntity(kind: ParceiroKind.comprador, appUsersId: user.id, appFazendasId: farmId),
+    );
+    if (!mounted) return;
+    setState(() => _compradores = lista.data);
+  }
+
   Future<void> _carregar() async {
     setState(() => _carregando = true);
     try {
@@ -83,16 +129,7 @@ class _VendaParceriaFormPageState extends State<VendaParceriaFormPage> {
         for (final animal in parceria?.animaisAtivos ?? const <AnimalParceriaFin>[])
           if (animal.appAnimaisId != null && animal.brinco.trim().isNotEmpty) animal,
       ];
-      final user = await SessionStorage.getUserSession();
-      if (user != null) {
-        final farmId = await Modular.get<ResolveCurrentFarmId>()(userId: user.id);
-        if (farmId != null) {
-          final lista = await Modular.get<GetParceirosUsecase>()(
-            ParceiroFilterEntity(kind: ParceiroKind.comprador, appUsersId: user.id, appFazendasId: farmId),
-          );
-          _compradores = lista.data;
-        }
-      }
+      await _carregarCompradores();
       if (!mounted) return;
       setState(() {
         _parceria = parceria;
@@ -153,6 +190,164 @@ class _VendaParceriaFormPageState extends State<VendaParceriaFormPage> {
         ..clear()
         ..addAll(resultado.itens);
     });
+  }
+
+  Future<void> _escolherComprador() async {
+    final opcoes = <({int value, String label})>[
+      for (final item in _compradores) (value: item.id, label: item.nome),
+      (value: -1, label: 'Cadastrar comprador'),
+    ];
+    final escolhido = await abrirOpcoesFinanceiro<int>(
+      context: context,
+      titulo: 'Comprador',
+      atual: _compradorId,
+      opcoes: opcoes,
+    );
+    if (escolhido == null || !mounted) return;
+    if (escolhido == -1) {
+      await _modalNovoComprador();
+      return;
+    }
+    setState(() => _compradorId = escolhido);
+  }
+
+  Future<void> _modalNovoComprador() async {
+    final nome = TextEditingController();
+    final celular = TextEditingController();
+    var salvando = false;
+    String? erro;
+
+    final ok = await showModalBottomSheet<bool>(
+      context: context,
+      isScrollControlled: true,
+      showDragHandle: true,
+      builder: (sheet) {
+        return StatefulBuilder(
+          builder: (sheet, setSheet) {
+            return Padding(
+              padding: EdgeInsets.fromLTRB(16, 12, 16, 16 + MediaQuery.of(sheet).viewInsets.bottom),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Text(
+                    'Cadastrar comprador',
+                    style: TextStyle(fontFamily: 'Montserrat', fontWeight: FontWeight.w700, fontSize: 16),
+                  ),
+                  const SizedBox(height: 12),
+                  if (erro != null) ...[
+                    Text(erro!, style: const TextStyle(fontFamily: 'Montserrat', color: Color(0xFFC62828), fontSize: 13)),
+                    const SizedBox(height: 8),
+                  ],
+                  CampoFinanceiro(
+                    rotulo: 'NOME',
+                    child: TextField(
+                      controller: nome,
+                      decoration: decoracaoCampo('Nome do comprador'),
+                      onChanged: (_) => setSheet(() => erro = null),
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  CampoFinanceiro(
+                    rotulo: 'CELULAR (OPCIONAL)',
+                    child: TextField(
+                      controller: celular,
+                      keyboardType: TextInputType.phone,
+                      decoration: decoracaoCampo('(00) 00000-0000'),
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  FilledButton(
+                    onPressed: salvando
+                        ? null
+                        : () async {
+                            if (nome.text.trim().isEmpty) {
+                              setSheet(() => erro = 'Informe o nome.');
+                              return;
+                            }
+                            setSheet(() {
+                              salvando = true;
+                              erro = null;
+                            });
+                            try {
+                              final user = await SessionStorage.getUserSession();
+                              if (user == null) throw ApiException('Usuário não autenticado.');
+                              final farmId = await Modular.get<ResolveCurrentFarmId>()(userId: user.id);
+                              if (farmId == null) throw ApiException('Selecione uma fazenda.');
+                              final criado = await Modular.get<CreateParceiroUsecase>()(
+                                ParceiroUpsertEntity(
+                                  kind: ParceiroKind.comprador,
+                                  appUsersId: user.id,
+                                  appFazendasId: farmId,
+                                  tipoPessoa: WSConstantes.tipoPessoaFisica,
+                                  nome: nome.text.trim(),
+                                  email: '',
+                                  celular: celular.text.trim(),
+                                  documento: '',
+                                  endereco: '-',
+                                  numero: 'S/N',
+                                ),
+                              );
+                              if (!criado.isSuccess) throw ApiException(criado.message);
+                              var cadastroId = criado.resourceId;
+                              if (cadastroId == null || cadastroId <= 0) {
+                                final lista = await Modular.get<GetParceirosUsecase>()(
+                                  ParceiroFilterEntity(
+                                    kind: ParceiroKind.comprador,
+                                    appUsersId: user.id,
+                                    appFazendasId: farmId,
+                                    nome: nome.text.trim(),
+                                  ),
+                                );
+                                cadastroId = lista.data
+                                    .where((p) => p.nome.trim().toLowerCase() == nome.text.trim().toLowerCase())
+                                    .firstOrNull
+                                    ?.id;
+                              }
+                              if (cadastroId == null || cadastroId <= 0) {
+                                throw ApiException('Cadastro criado, mas o id não voltou.');
+                              }
+                              if (!sheet.mounted) return;
+                              Navigator.pop(sheet, true);
+                              if (!mounted) return;
+                              await _carregarCompradores();
+                              if (!mounted) return;
+                              setState(() => _compradorId = cadastroId);
+                              AppSnackBar.show(context: context, message: 'Comprador cadastrado.', isError: false);
+                            } on ApiException catch (error) {
+                              setSheet(() {
+                                salvando = false;
+                                erro = error.message;
+                              });
+                            } catch (error) {
+                              setSheet(() {
+                                salvando = false;
+                                erro = error.toString();
+                              });
+                            }
+                          },
+                    style: FilledButton.styleFrom(
+                      backgroundColor: MyColors.colorPrimary,
+                      minimumSize: const Size.fromHeight(48),
+                    ),
+                    child: salvando
+                        ? const SizedBox(
+                            width: 22,
+                            height: 22,
+                            child: CircularProgressIndicator(strokeWidth: 2.4, color: Colors.white),
+                          )
+                        : const Text('Salvar', style: TextStyle(fontFamily: 'Montserrat')),
+                  ),
+                ],
+              ),
+            );
+          },
+        );
+      },
+    );
+    nome.dispose();
+    celular.dispose();
+    if (ok != true) return;
   }
 
   Future<void> _salvar() async {
@@ -222,7 +417,7 @@ class _VendaParceriaFormPageState extends State<VendaParceriaFormPage> {
       appBar: AppBar(
         backgroundColor: MyColors.colorPrimary,
         foregroundColor: Colors.white,
-        title: const Text('Registrar venda', style: TextStyle(fontFamily: 'Montserrat', fontWeight: FontWeight.w600)),
+        title: Text('Registrar venda', style: estiloTituloAppBarPilha()),
         leading: IconButton(icon: const Icon(Icons.arrow_back), onPressed: _salvando ? null : widget.aoVoltar),
       ),
       body: _carregando
@@ -244,7 +439,12 @@ class _VendaParceriaFormPageState extends State<VendaParceriaFormPage> {
                     controller: _data,
                     inputFormatters: [_maskData],
                     keyboardType: tecladoData,
-                    decoration: decoracaoCampo('DD/MM/AAAA'),
+                    decoration: decoracaoCampo('DD/MM/AAAA').copyWith(
+                      suffixIcon: IconButton(
+                        onPressed: _escolherData,
+                        icon: const Icon(Icons.calendar_today_outlined, size: 18),
+                      ),
+                    ),
                   ),
                 ),
                 const SizedBox(height: 12),
@@ -256,22 +456,22 @@ class _VendaParceriaFormPageState extends State<VendaParceriaFormPage> {
                             .map((c) => c.nome)
                             .firstOrNull ??
                         '',
-                    placeholder: _compradores.isEmpty ? 'Sem compradores' : 'Selecione o comprador',
-                    habilitado: _compradores.isNotEmpty,
-                    onTap: () async {
-                      final escolhido = await abrirOpcoesFinanceiro<int>(
-                        context: context,
-                        titulo: 'Comprador',
-                        atual: _compradorId,
-                        opcoes: [
-                          for (final item in _compradores) (value: item.id, label: item.nome),
-                        ],
-                      );
-                      if (escolhido == null || !mounted) return;
-                      setState(() => _compradorId = escolhido);
-                    },
+                    placeholder: 'Selecione ou cadastre o comprador',
+                    habilitado: true,
+                    onTap: _escolherComprador,
                   ),
                 ),
+                if (_compradores.isEmpty) ...[
+                  const SizedBox(height: 8),
+                  Align(
+                    alignment: Alignment.centerLeft,
+                    child: TextButton.icon(
+                      onPressed: _modalNovoComprador,
+                      icon: const Icon(Icons.person_add_alt_1_outlined, size: 18),
+                      label: const Text('Cadastrar comprador', style: TextStyle(fontFamily: 'Montserrat')),
+                    ),
+                  ),
+                ],
                 const SizedBox(height: 12),
                 CampoFinanceiro(
                   rotulo: 'PREÇO POR KG VIVO',

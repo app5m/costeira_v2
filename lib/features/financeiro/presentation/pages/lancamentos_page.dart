@@ -52,10 +52,11 @@ class _LancamentosPageState extends State<LancamentosPage> {
         ),
         const SizedBox(height: 12),
         Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Expanded(child: _total('A pagar', loja.aPagar, const Color(0xFFC62828))),
+            Expanded(child: IndicadorMiniFinanceiro('A pagar', reais(loja.aPagar), const Color(0xFFC62828))),
             const SizedBox(width: 8),
-            Expanded(child: _total('A receber', loja.aReceber, MyColors.colorPrimary)),
+            Expanded(child: IndicadorMiniFinanceiro('A receber', reais(loja.aReceber), MyColors.colorPrimary)),
           ],
         ),
         const SizedBox(height: 12),
@@ -116,33 +117,6 @@ class _LancamentosPageState extends State<LancamentosPage> {
     );
   }
 
-  Widget _total(String rotulo, double valor, Color cor) {
-    return CartaoBranco(
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            rotulo,
-            style: TextStyle(
-              fontFamily: 'Montserrat',
-              fontSize: 12,
-              fontWeight: FontWeight.w600,
-              color: cor,
-            ),
-          ),
-          Text(
-            reais(valor),
-            style: TextStyle(
-              fontFamily: 'Montserrat',
-              fontSize: 16,
-              fontWeight: FontWeight.w800,
-              color: cor,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
 }
 
 class _Selo extends StatelessWidget {
@@ -201,11 +175,15 @@ class LancamentoDetalhePage extends StatelessWidget {
       (l) => l.id == item.id,
       orElse: () => item,
     );
-    final temBaixa = atual.pagamentos.isNotEmpty || atual.baixaIds.isNotEmpty;
+    final temBaixa = atual.temLiquidacao;
     final podeBaixa = atual.pendente > 0.001 &&
         atual.situacao != SituacaoLancamento.rascunho &&
         atual.estado != 'estornado';
-    final podeEstornarLancamento = !temBaixa &&
+    final podeEstornarAjuste = atual.ehAjusteConta &&
+        atual.estado != 'estornado' &&
+        atual.situacao != SituacaoLancamento.rascunho;
+    final podeEstornarLancamento = !atual.ehAjusteConta &&
+        !temBaixa &&
         atual.estado != 'estornado' &&
         atual.situacao != SituacaoLancamento.rascunho;
     final tituloHero = atual.rubrica.trim().isNotEmpty ? atual.rubrica : atual.titulo;
@@ -285,7 +263,10 @@ class LancamentoDetalhePage extends StatelessWidget {
                 _linha('Liquidado', reais(atual.liquidado), valorCor: MyColors.colorPrimary),
                 _linha('Pendente', reais(atual.pendente), valorCor: atual.pendente > 0 ? const Color(0xFFC45C26) : null),
                 _linha('Competência', atual.competencia),
-                if (atual.fornecedor != null) _linha('Fornecedor', atual.fornecedor!),
+                if (_rotuloParteInvestidor(atual) != null)
+                  _linha('Investidor', _rotuloParteInvestidor(atual)!)
+                else if (atual.fornecedor != null)
+                  _linha('Fornecedor', atual.fornecedor!),
                 if (atual.comprador != null) _linha('Comprador', atual.comprador!),
               ],
             ),
@@ -410,7 +391,20 @@ class LancamentoDetalhePage extends StatelessWidget {
             BotaoPrimarioFinanceiro(rotulo: 'Editar rascunho', onPressed: aoEditar)
           else if (podeBaixa)
             BotaoPrimarioFinanceiro(rotulo: 'Registrar baixa', onPressed: aoBaixa),
-          if (podeEstornarLancamento)
+          if (podeEstornarAjuste)
+            TextButton(
+              onPressed: () => _pedirEstorno(
+                context,
+                titulo: 'Estornar ajuste de saldo',
+                motivoPadrao: 'Estorno do ajuste de saldo',
+                aoConfirmar: aoEstornar,
+              ),
+              child: const Text(
+                'Estornar ajuste de saldo',
+                style: TextStyle(fontFamily: 'Montserrat', fontWeight: FontWeight.w600, color: Color(0xFFC62828)),
+              ),
+            )
+          else if (podeEstornarLancamento)
             TextButton(
               onPressed: () => _pedirEstorno(
                 context,
@@ -573,13 +567,15 @@ class LancamentoDetalhePage extends StatelessWidget {
     final motivoCtrl = TextEditingController(text: motivoPadrao);
     final mascara = mascaraData();
     String? erroLocal;
+    var salvando = false;
 
-    Map<String, String>? dados;
     try {
-      dados = await showModalBottomSheet<Map<String, String>>(
+      await showModalBottomSheet<void>(
         context: context,
         isScrollControlled: true,
         showDragHandle: true,
+        isDismissible: false,
+        enableDrag: false,
         backgroundColor: Colors.white,
         shape: const RoundedRectangleBorder(
           borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
@@ -587,64 +583,89 @@ class LancamentoDetalhePage extends StatelessWidget {
         builder: (sheet) {
           return StatefulBuilder(
             builder: (sheet, setSheet) {
-              return Padding(
-                padding: EdgeInsets.fromLTRB(20, 8, 20, 16 + MediaQuery.of(sheet).viewInsets.bottom),
-                child: SingleChildScrollView(
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(titulo, style: const TextStyle(fontFamily: 'Montserrat', fontWeight: FontWeight.w700, fontSize: 16)),
-                      const SizedBox(height: 6),
-                      const Text(
-                        'Informe a data e o motivo do estorno.',
-                        style: TextStyle(fontFamily: 'Montserrat', fontSize: 13, color: Color(0xFF8692A8)),
-                      ),
-                      const SizedBox(height: 14),
-                      CampoFinanceiro(
-                        rotulo: 'DATA',
-                        child: TextField(
-                          controller: dataCtrl,
-                          keyboardType: tecladoData,
-                          inputFormatters: [mascara],
-                          decoration: decoracaoCampo('dd/MM/aaaa'),
+              return PopScope(
+                canPop: !salvando,
+                child: Padding(
+                  padding: EdgeInsets.fromLTRB(20, 8, 20, 16 + MediaQuery.of(sheet).viewInsets.bottom),
+                  child: SingleChildScrollView(
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(titulo, style: const TextStyle(fontFamily: 'Montserrat', fontWeight: FontWeight.w700, fontSize: 16)),
+                        const SizedBox(height: 6),
+                        const Text(
+                          'Informe a data e o motivo do estorno.',
+                          style: TextStyle(fontFamily: 'Montserrat', fontSize: 13, color: Color(0xFF8692A8)),
                         ),
-                      ),
-                      const SizedBox(height: 12),
-                      CampoFinanceiro(
-                        rotulo: 'MOTIVO',
-                        child: TextField(
-                          controller: motivoCtrl,
-                          decoration: decoracaoCampo('Motivo do estorno'),
+                        const SizedBox(height: 14),
+                        CampoFinanceiro(
+                          rotulo: 'DATA',
+                          child: TextField(
+                            controller: dataCtrl,
+                            enabled: !salvando,
+                            keyboardType: tecladoData,
+                            inputFormatters: [mascara],
+                            decoration: decoracaoCampo('dd/MM/aaaa'),
+                          ),
                         ),
-                      ),
-                      if (erroLocal != null) ...[
-                        const SizedBox(height: 10),
-                        Text(erroLocal!, style: const TextStyle(fontFamily: 'Montserrat', fontSize: 12, color: Color(0xFFC62828))),
+                        const SizedBox(height: 12),
+                        CampoFinanceiro(
+                          rotulo: 'MOTIVO',
+                          child: TextField(
+                            controller: motivoCtrl,
+                            enabled: !salvando,
+                            decoration: decoracaoCampo('Motivo do estorno'),
+                          ),
+                        ),
+                        if (erroLocal != null) ...[
+                          const SizedBox(height: 10),
+                          Text(erroLocal!, style: const TextStyle(fontFamily: 'Montserrat', fontSize: 12, color: Color(0xFFC62828))),
+                        ],
+                        const SizedBox(height: 16),
+                        BotaoPrimarioFinanceiro(
+                          rotulo: 'Confirmar estorno',
+                          carregando: salvando,
+                          habilitado: !salvando,
+                          onPressed: () async {
+                            if (dataCtrl.text.trim().length < 10) {
+                              setSheet(() => erroLocal = 'Informe a data.');
+                              return;
+                            }
+                            if (motivoCtrl.text.trim().isEmpty) {
+                              setSheet(() => erroLocal = 'Informe o motivo.');
+                              return;
+                            }
+                            setSheet(() {
+                              salvando = true;
+                              erroLocal = null;
+                            });
+                            try {
+                              await aoConfirmar(
+                                data: dataCtrl.text.trim(),
+                                motivo: motivoCtrl.text.trim(),
+                              );
+                              if (!sheet.mounted) return;
+                              Navigator.pop(sheet);
+                            } on ApiException catch (error) {
+                              setSheet(() {
+                                salvando = false;
+                                erroLocal = error.message;
+                              });
+                            } catch (error) {
+                              setSheet(() {
+                                salvando = false;
+                                erroLocal = error.toString();
+                              });
+                            }
+                          },
+                        ),
+                        TextButton(
+                          onPressed: salvando ? null : () => Navigator.pop(sheet),
+                          child: const Text('Cancelar', style: TextStyle(fontFamily: 'Montserrat', color: Color(0xFF313131))),
+                        ),
                       ],
-                      const SizedBox(height: 16),
-                      BotaoPrimarioFinanceiro(
-                        rotulo: 'Confirmar estorno',
-                        onPressed: () {
-                          if (dataCtrl.text.trim().length < 10) {
-                            setSheet(() => erroLocal = 'Informe a data.');
-                            return;
-                          }
-                          if (motivoCtrl.text.trim().isEmpty) {
-                            setSheet(() => erroLocal = 'Informe o motivo.');
-                            return;
-                          }
-                          Navigator.pop(sheet, {
-                            'data': dataCtrl.text.trim(),
-                            'motivo': motivoCtrl.text.trim(),
-                          });
-                        },
-                      ),
-                      TextButton(
-                        onPressed: () => Navigator.pop(sheet),
-                        child: const Text('Cancelar', style: TextStyle(fontFamily: 'Montserrat', color: Color(0xFF313131))),
-                      ),
-                    ],
+                    ),
                   ),
                 ),
               );
@@ -658,17 +679,19 @@ class LancamentoDetalhePage extends StatelessWidget {
         motivoCtrl.dispose();
       });
     }
+  }
 
-    if (dados == null || !context.mounted) return;
-    try {
-      await aoConfirmar(data: dados['data']!, motivo: dados['motivo']!);
-    } on ApiException catch (error) {
-      if (!context.mounted) return;
-      AppSnackBar.show(context: context, message: error.message);
-    } catch (error) {
-      if (!context.mounted) return;
-      AppSnackBar.show(context: context, message: error.toString());
+  String? _rotuloParteInvestidor(LancamentoMock atual) {
+    if (atual.investidor != null && atual.investidor!.trim().isNotEmpty) {
+      return atual.investidor!.trim();
     }
+    final categoriaId = atual.categoriaId ?? 0;
+    if (rubricaParceriaSistema(categoriaId) &&
+        atual.fornecedor != null &&
+        atual.fornecedor!.trim().isNotEmpty) {
+      return atual.fornecedor!.trim();
+    }
+    return null;
   }
 
   Widget _linha(String rotulo, String valor, {Color? valorCor}) {

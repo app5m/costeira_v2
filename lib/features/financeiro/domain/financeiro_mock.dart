@@ -35,6 +35,7 @@ class LancamentoMock {
     required this.competencia,
     this.fornecedor,
     this.comprador,
+    this.investidor,
     this.descricao = '',
     this.pagamentos = const [],
     this.alocacao = const [],
@@ -43,6 +44,7 @@ class LancamentoMock {
     this.categoriaId,
     this.baixaIds = const [],
     this.estado = '',
+    this.documento = '',
   });
 
   final int id;
@@ -58,6 +60,7 @@ class LancamentoMock {
   final String competencia;
   final String? fornecedor;
   final String? comprador;
+  final String? investidor;
   final String descricao;
   final List<PagamentoMock> pagamentos;
   final List<AlocacaoMock> alocacao;
@@ -66,10 +69,18 @@ class LancamentoMock {
   final int? categoriaId;
   final List<int> baixaIds;
   final String estado;
+  final String documento;
 
   double get pendente => (valor - liquidado).clamp(0, valor);
 
   bool get entrada => tipo == 'recebimento';
+
+  bool get ehAjusteConta {
+    final doc = documento.trim().toUpperCase();
+    return doc == 'AJUSTE-ENTRADA' || doc == 'AJUSTE-SAIDA';
+  }
+
+  bool get temLiquidacao => liquidado > 0.001 || pagamentos.isNotEmpty || baixaIds.isNotEmpty;
 }
 
 class PagamentoMock {
@@ -272,6 +283,7 @@ class TituloParceriaFin {
     this.saldoPendenteString,
     this.fluxo,
     this.qtdAnimais,
+    this.contaPagamento,
   });
 
   final int id;
@@ -289,6 +301,7 @@ class TituloParceriaFin {
   final String? saldoPendenteString;
   final String? fluxo;
   final int? qtdAnimais;
+  final String? contaPagamento;
 
   bool get pendente => saldoPendente > 0.001;
   bool get pago => saldoPendente <= 0.001 && valorLiquidado > 0;
@@ -308,6 +321,26 @@ class TituloParceriaFin {
     qtd ??= int.tryParse(
       map['qtd_animais']?.toString() ?? map['quantidade_animais']?.toString() ?? '',
     );
+    final baixasRaw = [
+      for (final item in (map['baixas'] is List ? map['baixas'] as List : const []))
+        if (item is Map) Map<String, dynamic>.from(item),
+    ];
+    final baixasEstornadas = {
+      for (final item in baixasRaw)
+        if (item['estorno_de_id'] != null) int.tryParse(item['estorno_de_id'].toString()) ?? 0,
+    }.where((id) => id > 0).toSet();
+    bool baixaAtiva(Map<String, dynamic> item) {
+      final itemId = int.tryParse(item['id']?.toString() ?? '') ?? 0;
+      return (item['natureza']?.toString() ?? '') != 'estorno' &&
+          item['estorno_de_id'] == null &&
+          !baixasEstornadas.contains(itemId);
+    }
+    final contas = <String>[
+      for (final item in baixasRaw)
+        if (baixaAtiva(item))
+          if ((item['conta'] is Map ? item['conta']['nome']?.toString() : null)?.trim().isNotEmpty == true)
+            (item['conta'] as Map)['nome'].toString().trim(),
+    ];
     return TituloParceriaFin(
       id: int.tryParse(map['id']?.toString() ?? '') ?? 0,
       descricao: map['descricao']?.toString() ??
@@ -331,6 +364,7 @@ class TituloParceriaFin {
       saldoPendenteString: map['saldo_pendente_string']?.toString(),
       fluxo: map['fluxo']?.toString() ?? map['tipo']?.toString(),
       qtdAnimais: qtd,
+      contaPagamento: contas.isEmpty ? null : contas.toSet().join(' · '),
     );
   }
 }
@@ -954,13 +988,44 @@ class FinanceiroLoja extends ChangeNotifier {
     required String data,
     required String motivo,
   }) async {
+    LancamentoMock? item;
+    for (final atual in lancamentos) {
+      if (atual.id == id) item = atual;
+    }
     final textoMotivo = motivo.trim().isEmpty ? 'Estorno do lançamento' : motivo.trim();
-    await _api.estornarLancamento(
-      id: id,
-      data: _dataApiIso(data),
-      chave: ChaveIdempotencia.nova('estornar'),
-      motivo: textoMotivo,
-    );
+    final dataIso = _dataApiIso(data);
+
+    // Ajuste de saldo = lançamento + baixa. API exige baixa estornada antes;
+    // se UI não listou pagamento, ainda assim limpa baixaIds e tenta.
+    if (item != null && (item.ehAjusteConta || item.temLiquidacao)) {
+      for (final baixaId in item.baixaIds) {
+        await _api.estornarBaixa(
+          baixaId: baixaId,
+          data: dataIso,
+          chave: ChaveIdempotencia.nova('estornar-baixa'),
+          motivo: textoMotivo,
+        );
+      }
+    }
+
+    try {
+      await _api.estornarLancamento(
+        id: id,
+        data: dataIso,
+        chave: ChaveIdempotencia.nova('estornar'),
+        motivo: textoMotivo,
+      );
+    } on ApiException catch (error) {
+      final msg = error.message.toLowerCase();
+      if (msg.contains('manual original') || msg.contains('lançamento manual')) {
+        throw ApiException(
+          item?.ehAjusteConta == true
+              ? 'Ajuste de saldo ainda tem baixa ativa. Estorne o pagamento primeiro (ou atualize a tela).'
+              : 'Estorne o pagamento/baixa antes de estornar o lançamento.',
+        );
+      }
+      rethrow;
+    }
     await carregar();
   }
 
@@ -1470,6 +1535,73 @@ class FinanceiroLoja extends ChangeNotifier {
     await carregar();
   }
 
+  /// Ajuste pós-abertura: cria lançamento confirmado + baixa na conta.
+  /// (`registrarSaldoInicial` só vale na 1ª abertura — API rejeita conta com movimento.)
+  Future<void> registrarAjusteConta({
+    required int contaId,
+    required String data,
+    required bool entrada,
+    required String valor,
+    String? documento,
+    required String motivo,
+  }) async {
+    final tipo = entrada ? 'recebimento' : 'pagamento';
+    final classifs = [
+      for (final c in classificacoes)
+        if (c.tipo == tipo && c.manual) c,
+    ];
+    if (classifs.isEmpty) {
+      throw ApiException('Sem classificação disponível para ajuste de saldo.');
+    }
+    final escolhida = entrada
+        ? (classifs.where((c) {
+              final n = c.nome.toLowerCase();
+              return n.contains('não operacional') || n.contains('nao operacional');
+            }).firstOrNull ??
+            classifs.first)
+        : (classifs.where((c) {
+              final n = c.nome.toLowerCase();
+              return n.contains('financeiro') || n.contains('fixo');
+            }).firstOrNull ??
+            classifs.first);
+    final rubs = [for (final r in rubricas) if (r.classificacaoId == escolhida.id) r];
+    if (rubs.isEmpty) {
+      throw ApiException('Sem rubrica disponível para ajuste de saldo.');
+    }
+    final rubrica = rubs.where((r) {
+          final n = r.nome.toLowerCase();
+          return n.contains('outras') || n.contains('ajuste') || n.contains('financeira');
+        }).firstOrNull ??
+        rubs.first;
+    int? centroId;
+    if (escolhida.exigeCentro) {
+      if (centros.isEmpty) {
+        throw ApiException('Cadastre um centro de custo antes do ajuste.');
+      }
+      centroId = centros.first.id;
+    }
+    final doc = (documento ?? '').trim().isEmpty
+        ? (entrada ? 'AJUSTE-ENTRADA' : 'AJUSTE-SAIDA')
+        : documento!.trim();
+    final desc = motivo.trim().isEmpty
+        ? (entrada ? 'Adicionar saldo na conta' : 'Remover saldo da conta')
+        : motivo.trim();
+    await salvarLancamento(
+      rascunho: false,
+      classificacaoId: escolhida.id,
+      categoriaId: rubrica.id,
+      centroId: centroId,
+      competencia: data,
+      vencimento: data,
+      descricao: desc,
+      documento: doc,
+      valor: valor,
+      pago: true,
+      contaId: contaId,
+      dataBaixa: data,
+    );
+  }
+
   Future<void> inativar(int id, String motivo) async {
     await _api.inativarConta(id: id, motivo: motivo, chave: ChaveIdempotencia.nova('inativar'));
     await carregar();
@@ -1555,17 +1687,21 @@ class FinanceiroLoja extends ChangeNotifier {
     ];
     String? fornecedor;
     String? comprador;
+    String? investidor;
     for (final parte in partes) {
       final papel = (parte['papel']?.toString() ?? '').toLowerCase();
       final nome = parte['nome']?.toString() ?? '';
       if (nome.isEmpty) continue;
       if (papel.contains('comprador')) {
         comprador = nome;
+      } else if (papel.contains('investidor')) {
+        investidor = nome;
       } else {
         fornecedor = nome;
       }
     }
 
+    final documento = json['documento']?.toString() ?? '';
     final baixasRaw = [
       for (final item in (json['baixas'] is List ? json['baixas'] as List : const []))
         if (item is Map && item['id'] != null) Map<String, dynamic>.from(item),
@@ -1574,17 +1710,25 @@ class FinanceiroLoja extends ChangeNotifier {
       for (final linha in linhas)
         if (int.tryParse(linha['lancamento_id']?.toString() ?? '') == id) linha,
     ];
+    // Só confia em baixas do próprio lançamento — extrato já poluiu estorno_de_id
+    // e escondia pagamentos → UI liberava estorno do lançamento liquidado.
     final baixasEstornadas = {
       for (final item in baixasRaw)
-        if (item['estorno_de_id'] != null) int.tryParse(item['estorno_de_id'].toString()) ?? 0,
-      for (final linha in linhasDoLancamento)
-        if (linha['estorno_de_id'] != null) int.tryParse(linha['estorno_de_id'].toString()) ?? 0,
+        if ((item['natureza']?.toString() ?? '') == 'estorno')
+          int.tryParse(item['estorno_de_id']?.toString() ?? '') ?? 0,
     }.where((item) => item > 0).toSet();
+    bool ehEstornoBaixa(Map<String, dynamic> item) {
+      final natureza = (item['natureza']?.toString() ?? '').toLowerCase();
+      final estornoDe = item['estorno_de_id'];
+      final temEstornoDe = estornoDe != null && '$estornoDe'.trim().isNotEmpty && '$estornoDe' != '0';
+      return natureza == 'estorno' || temEstornoDe;
+    }
     bool baixaAtiva(Map<String, dynamic> item) {
       final itemId = int.tryParse(item['id']?.toString() ?? '') ?? 0;
-      return (item['natureza']?.toString() ?? '') != 'estorno' &&
-          item['estorno_de_id'] == null &&
-          !baixasEstornadas.contains(itemId);
+      if (itemId <= 0) return false;
+      if (ehEstornoBaixa(item)) return false;
+      if (baixasEstornadas.contains(itemId)) return false;
+      return true;
     }
 
     final pagamentosApi = <PagamentoMock>[
@@ -1610,11 +1754,8 @@ class FinanceiroLoja extends ChangeNotifier {
 
     final estornosHistorico = <String>[
       for (final item in baixasRaw)
-        if ((item['natureza']?.toString() ?? '') == 'estorno' || item['estorno_de_id'] != null)
+        if (ehEstornoBaixa(item))
           'Baixa estornada · ${_dataTela(item['criado_em']?.toString() ?? item['data']?.toString() ?? '')}',
-      for (final linha in linhasDoLancamento)
-        if ((linha['natureza']?.toString() ?? '') == 'estorno' || linha['estorno_de_id'] != null)
-          'Baixa estornada · ${_dataTela(linha['criado_em']?.toString() ?? linha['data']?.toString() ?? '')}',
     ];
 
     final historico = <String>[
@@ -1622,7 +1763,7 @@ class FinanceiroLoja extends ChangeNotifier {
         'Lançamento confirmado · ${_dataTela(criadoEm.isEmpty ? competencia : criadoEm)}',
       if (estado == 'rascunho') 'Rascunho criado · ${_dataTela(criadoEm.isEmpty ? competencia : criadoEm)}',
       for (final item in baixasRaw)
-        if ((item['natureza']?.toString() ?? '') != 'estorno' && item['estorno_de_id'] == null)
+        if (baixaAtiva(item))
           'Pagamento registrado · ${_dataTela(item['data']?.toString() ?? '')}'
               '${(double.tryParse(item['valor']?.toString() ?? '') ?? 0) > 0 ? ' · R\$ ${(double.tryParse(item['valor']?.toString() ?? '') ?? 0).toStringAsFixed(2).replaceAll('.', ',')}' : ''}',
       ...estornosHistorico.toSet(),
@@ -1643,6 +1784,7 @@ class FinanceiroLoja extends ChangeNotifier {
       competencia: competencia,
       fornecedor: fornecedor,
       comprador: comprador,
+      investidor: investidor,
       descricao: descricao,
       pagamentos: pagamentosApi,
       alocacao: alocacao,
@@ -1651,6 +1793,7 @@ class FinanceiroLoja extends ChangeNotifier {
       categoriaId: int.tryParse(json['categoria_id']?.toString() ?? ''),
       baixaIds: baixaIds,
       estado: estado,
+      documento: documento,
     );
   }
 

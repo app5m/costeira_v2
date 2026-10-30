@@ -365,7 +365,7 @@ class _AbaFinanceiro extends StatelessWidget {
         ),
         const SizedBox(height: 20),
         const Text(
-          'Movimentações pendentes',
+          'Últimas movimentações',
           style: TextStyle(fontFamily: 'Montserrat', fontWeight: FontWeight.w700, fontSize: 15),
         ),
         const SizedBox(height: 10),
@@ -378,7 +378,7 @@ class _AbaFinanceiro extends StatelessWidget {
           const Padding(
             padding: EdgeInsets.symmetric(vertical: 24),
             child: Text(
-              'Nenhum título pendente.',
+              'Nenhuma movimentação.',
               textAlign: TextAlign.center,
               style: TextStyle(fontFamily: 'Montserrat', color: Color(0xFF8A8A8A)),
             ),

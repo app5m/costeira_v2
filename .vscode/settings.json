@@ -1,5 +1,8 @@
 {
+  "dart.flutterSdkPath": "/Users/thiago/development/flutter",
+  "dart.sdkPath": "/Users/thiago/development/flutter/bin/cache/dart-sdk",
   "dart.env": {
-    "PATH": "/Users/thiago/.rbenv/shims:/opt/homebrew/bin:/usr/local/bin:${env:PATH}"
+    "ANDROID_HOME": "/Users/thiago/Library/Android/sdk",
+    "ANDROID_SDK_ROOT": "/Users/thiago/Library/Android/sdk"
   }
 }

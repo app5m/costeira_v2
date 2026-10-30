@@ -25,11 +25,11 @@ class VisaoGeralPage extends StatelessWidget {
           Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Expanded(child: _Mini('Saldo disponível', loja.saldoTexto, MyColors.colorPrimary)),
+              Expanded(child: IndicadorMiniFinanceiro('Saldo disponível', loja.saldoTexto, MyColors.colorPrimary)),
               const SizedBox(width: 8),
-              Expanded(child: _Mini('Entradas', loja.entradasTexto, MyColors.colorPrimary)),
+              Expanded(child: IndicadorMiniFinanceiro('Entradas', loja.entradasTexto, MyColors.colorPrimary)),
               const SizedBox(width: 8),
-              Expanded(child: _Mini('Saídas', loja.saidasTexto, const Color(0xFFC62828))),
+              Expanded(child: IndicadorMiniFinanceiro('Saídas', loja.saidasTexto, const Color(0xFFC62828))),
             ],
           ),
           const SizedBox(height: 12),
@@ -54,7 +54,7 @@ class VisaoGeralPage extends StatelessWidget {
             children: [
               const Expanded(
                 child: Text(
-                  'Últimos movimentos',
+                  'Últimas movimentações',
                   style: TextStyle(fontFamily: 'Montserrat', fontWeight: FontWeight.w700, fontSize: 15),
                 ),
               ),
@@ -95,63 +95,6 @@ class VisaoGeralPage extends StatelessWidget {
             ],
         ],
       ],
-    );
-  }
-}
-
-class _Mini extends StatelessWidget {
-  const _Mini(this.rotulo, this.valor, this.cor);
-
-  final String rotulo;
-  final String valor;
-  final Color cor;
-
-  @override
-  Widget build(BuildContext context) {
-    return DecoratedBox(
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: const Color(0xFFE6E6E6)),
-      ),
-      child: Padding(
-        padding: const EdgeInsets.fromLTRB(10, 10, 10, 12),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            SizedBox(
-              height: 28,
-              child: Text(
-                rotulo,
-                maxLines: 2,
-                overflow: TextOverflow.ellipsis,
-                style: const TextStyle(
-                  fontFamily: 'Montserrat',
-                  fontSize: 10,
-                  height: 1.25,
-                  fontWeight: FontWeight.w600,
-                  color: Color(0xFF8A8A8A),
-                ),
-              ),
-            ),
-            const SizedBox(height: 8),
-            FittedBox(
-              fit: BoxFit.scaleDown,
-              alignment: Alignment.centerLeft,
-              child: Text(
-                valor,
-                maxLines: 1,
-                style: TextStyle(
-                  fontFamily: 'Montserrat',
-                  fontSize: 14,
-                  fontWeight: FontWeight.w800,
-                  color: cor,
-                ),
-              ),
-            ),
-          ],
-        ),
-      ),
     );
   }
 }

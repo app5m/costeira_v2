@@ -126,6 +126,13 @@ class InvestidorFormPage extends StatefulWidget {
 
 class _InvestidorFormPageState extends State<InvestidorFormPage> {
   final _nome = TextEditingController();
+  final _codigo = TextEditingController();
+  final _inicio = TextEditingController();
+  final _fim = TextEditingController();
+  final _custo = TextEditingController(text: '40');
+  final _ganho = TextEditingController(text: '40');
+  final _maskInicio = MaskTextInputFormatter(mask: '##/##/####', filter: {'#': RegExp(r'[0-9]')});
+  final _maskFim = MaskTextInputFormatter(mask: '##/##/####', filter: {'#': RegExp(r'[0-9]')});
   bool _salvando = false;
 
   bool get _editando => widget.investidor != null;
@@ -134,21 +141,95 @@ class _InvestidorFormPageState extends State<InvestidorFormPage> {
   void initState() {
     super.initState();
     final atual = widget.investidor;
-    if (atual != null) _nome.text = atual.nome;
-    _nome.addListener(() => setState(() {}));
+    if (atual != null) {
+      _nome.text = atual.nome;
+    } else {
+      _inicio.text = _fmtBr(DateTime.now());
+    }
+    for (final c in [_nome, _codigo, _inicio, _fim, _custo, _ganho]) {
+      c.addListener(() => setState(() {}));
+    }
   }
 
   @override
   void dispose() {
     _nome.dispose();
+    _codigo.dispose();
+    _inicio.dispose();
+    _fim.dispose();
+    _custo.dispose();
+    _ganho.dispose();
     super.dispose();
   }
 
+  String _fmtBr(DateTime data) {
+    final d = data.day.toString().padLeft(2, '0');
+    final m = data.month.toString().padLeft(2, '0');
+    return '$d/$m/${data.year}';
+  }
+
+  DateTime? _parseBr(String texto) {
+    final m = RegExp(r'^(\d{2})/(\d{2})/(\d{4})$').firstMatch(texto.trim());
+    if (m == null) return null;
+    final dia = int.tryParse(m.group(1)!);
+    final mes = int.tryParse(m.group(2)!);
+    final ano = int.tryParse(m.group(3)!);
+    if (dia == null || mes == null || ano == null) return null;
+    final data = DateTime(ano, mes, dia);
+    if (data.year != ano || data.month != mes || data.day != dia) return null;
+    return data;
+  }
+
+  double? _parsePct(String texto) {
+    final limpo = texto.trim().replaceAll(',', '.');
+    if (limpo.isEmpty) return null;
+    return double.tryParse(limpo);
+  }
+
+  String? _validarContrato() {
+    if (_codigo.text.trim().isEmpty) return 'Informe o código do contrato.';
+    if (_codigo.text.trim().length > 40) return 'Código com no máximo 40 caracteres.';
+    final inicioTxt = _inicio.text.trim();
+    if (inicioTxt.isEmpty) return 'Informe a data de início.';
+    if (inicioTxt.length < 10) return 'Data de início incompleta. Use dd/mm/aaaa.';
+    final inicio = _parseBr(inicioTxt);
+    if (inicio == null) return 'Data de início inválida.';
+    final fimTxt = _fim.text.trim();
+    if (fimTxt.isNotEmpty) {
+      if (fimTxt.length < 10) return 'Data fim incompleta. Use dd/mm/aaaa.';
+      final fim = _parseBr(fimTxt);
+      if (fim == null) return 'Data fim inválida.';
+      if (fim.isBefore(inicio)) return 'Fim anterior ao início.';
+    }
+    final custo = _parsePct(_custo.text);
+    final ganho = _parsePct(_ganho.text);
+    if (custo == null) return 'Informe o percentual de custo.';
+    if (ganho == null) return 'Informe o percentual de ganho.';
+    if (custo < 0 || custo > 100) return 'Percentual de custo deve ficar entre 0 e 100.';
+    if (ganho < 0 || ganho > 100) return 'Percentual de ganho deve ficar entre 0 e 100.';
+    return null;
+  }
+
   bool get _podeSalvar {
+    if (_salvando) return false;
     final texto = _nome.text.trim();
-    if (_salvando || texto.isEmpty) return false;
-    if (_editando && texto == widget.investidor!.nome.trim()) return false;
-    return true;
+    if (texto.isEmpty) return false;
+    if (_editando) return texto != widget.investidor!.nome.trim();
+    return _validarContrato() == null;
+  }
+
+  Future<void> _escolherData({required bool inicio}) async {
+    final controller = inicio ? _inicio : _fim;
+    final atual = _parseBr(controller.text) ?? DateTime.now();
+    final escolhida = await showDatePicker(
+      context: context,
+      initialDate: atual,
+      firstDate: DateTime(atual.year - 10),
+      lastDate: DateTime(atual.year + 20),
+      helpText: inicio ? 'Data início' : 'Data fim',
+    );
+    if (escolhida == null || !mounted) return;
+    setState(() => controller.text = _fmtBr(escolhida));
   }
 
   Future<void> _salvar() async {
@@ -166,9 +247,33 @@ class _InvestidorFormPageState extends State<InvestidorFormPage> {
         widget.aoSalvo(atualizado);
         return;
       }
-      final id = await loja.adicionarInvestidor(nome: nome);
+      final erroContrato = _validarContrato();
+      if (erroContrato != null) {
+        AppSnackBar.show(context: context, message: erroContrato);
+        return;
+      }
+      final id = await loja.adicionarInvestidor(nome: nome, motivo: 'Cadastro de investidor');
       final criado = loja.investidores.where((e) => e.id == id).firstOrNull ??
           ParteFin(id: id, nome: nome, papel: 'investidor');
+      try {
+        await loja.adicionarContrato(
+          investidorId: id,
+          codigo: _codigo.text,
+          dataInicio: _inicio.text,
+          dataFim: _fim.text.trim().isEmpty ? null : _fim.text,
+          percentualCusto: _custo.text,
+          percentualGanho: _ganho.text,
+          motivo: 'Cadastro de contrato',
+        );
+      } on ApiException catch (error) {
+        if (!mounted) return;
+        AppSnackBar.show(
+          context: context,
+          message: 'Investidor criado, mas o contrato falhou: ${error.message}',
+        );
+        widget.aoSalvo(criado);
+        return;
+      }
       if (!mounted) return;
       widget.aoSalvo(criado);
     } on ApiException catch (error) {
@@ -188,7 +293,7 @@ class _InvestidorFormPageState extends State<InvestidorFormPage> {
         foregroundColor: Colors.white,
         title: Text(
           _editando ? 'Editar investidor' : 'Adicionar investidor',
-          style: const TextStyle(fontFamily: 'Montserrat', fontWeight: FontWeight.w600),
+          style: estiloTituloAppBarPilha(),
         ),
         leading: IconButton(icon: const Icon(Icons.arrow_back), onPressed: widget.aoVoltar),
       ),
@@ -204,9 +309,75 @@ class _InvestidorFormPageState extends State<InvestidorFormPage> {
               inputFormatters: [LengthLimitingTextInputFormatter(100)],
             ),
           ),
+          if (!_editando) ...[
+            const SizedBox(height: 16),
+            const Text(
+              'Primeiro contrato',
+              style: TextStyle(fontFamily: 'Montserrat', fontWeight: FontWeight.w700, fontSize: 15),
+            ),
+            const SizedBox(height: 12),
+            CampoFinanceiro(
+              rotulo: 'CÓDIGO',
+              child: TextField(
+                controller: _codigo,
+                textCapitalization: TextCapitalization.characters,
+                decoration: decoracaoCampo('PAR-001'),
+              ),
+            ),
+            const SizedBox(height: 12),
+            CampoFinanceiro(
+              rotulo: 'DATA INÍCIO',
+              child: TextField(
+                controller: _inicio,
+                keyboardType: TextInputType.number,
+                inputFormatters: [_maskInicio],
+                decoration: decoracaoCampo('dd/mm/aaaa').copyWith(
+                  suffixIcon: IconButton(
+                    onPressed: () => _escolherData(inicio: true),
+                    icon: const Icon(Icons.calendar_today_outlined, size: 18),
+                  ),
+                ),
+              ),
+            ),
+            const SizedBox(height: 12),
+            CampoFinanceiro(
+              rotulo: 'DATA FIM (OPCIONAL)',
+              child: TextField(
+                controller: _fim,
+                keyboardType: TextInputType.number,
+                inputFormatters: [_maskFim],
+                decoration: decoracaoCampo('dd/mm/aaaa').copyWith(
+                  suffixIcon: IconButton(
+                    onPressed: () => _escolherData(inicio: false),
+                    icon: const Icon(Icons.calendar_today_outlined, size: 18),
+                  ),
+                ),
+              ),
+            ),
+            const SizedBox(height: 12),
+            CampoFinanceiro(
+              rotulo: '% CUSTO',
+              child: TextField(
+                controller: _custo,
+                keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                inputFormatters: [mascaraPercentual],
+                decoration: decoracaoCampo('40'),
+              ),
+            ),
+            const SizedBox(height: 12),
+            CampoFinanceiro(
+              rotulo: '% GANHO',
+              child: TextField(
+                controller: _ganho,
+                keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                inputFormatters: [mascaraPercentual],
+                decoration: decoracaoCampo('40'),
+              ),
+            ),
+          ],
           const SizedBox(height: 24),
           BotaoPrimarioFinanceiro(
-            rotulo: _editando ? 'Salvar alterações' : 'Salvar investidor',
+            rotulo: _editando ? 'Salvar alterações' : 'Salvar investidor e contrato',
             carregando: _salvando,
             habilitado: _podeSalvar,
             onPressed: _salvar,

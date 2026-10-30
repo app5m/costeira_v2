@@ -23,6 +23,15 @@ enum IndicadorId {
   taxaAbate,
   taxaGiro,
   mortalidade,
+  taxaPrenhez,
+  taxaNatalidade,
+  taxaDesmame,
+  pesoDesmame,
+  kgVacaExposta,
+  taxaAborto,
+  intervaloEntrePartos,
+  histogramaParicao,
+  merma,
 }
 
 class IndicadoresPage extends StatefulWidget {
@@ -249,6 +258,24 @@ String _titulo(IndicadorId id) {
       return 'Taxa de giro';
     case IndicadorId.mortalidade:
       return 'Mortalidade';
+    case IndicadorId.taxaPrenhez:
+      return 'Taxa de prenhez';
+    case IndicadorId.taxaNatalidade:
+      return 'Taxa de natalidade';
+    case IndicadorId.taxaDesmame:
+      return 'Taxa de desmame';
+    case IndicadorId.pesoDesmame:
+      return 'Peso ao desmame';
+    case IndicadorId.kgVacaExposta:
+      return 'Kg/vaca exposta';
+    case IndicadorId.taxaAborto:
+      return 'Taxa de aborto';
+    case IndicadorId.intervaloEntrePartos:
+      return 'Intervalo entre partos';
+    case IndicadorId.histogramaParicao:
+      return 'Histograma de parição';
+    case IndicadorId.merma:
+      return 'Merma';
   }
 }
 
@@ -301,6 +328,70 @@ class _Detalhe extends StatelessWidget {
         return _giro(lista);
       case IndicadorId.mortalidade:
         return _mortalidade(lista);
+      case IndicadorId.taxaPrenhez:
+        return _reproTaxa(
+          lista,
+          bloco: lista.taxaPrenhez,
+          titulo: 'Taxa de prenhez',
+          unidade: '%',
+          legenda: 'Prenhas ÷ acasaladas',
+        );
+      case IndicadorId.taxaNatalidade:
+        return _reproTaxa(
+          lista,
+          bloco: lista.taxaNatalidade,
+          titulo: 'Taxa de natalidade',
+          unidade: '%',
+          legenda: 'Crias vivas ÷ acasaladas',
+        );
+      case IndicadorId.taxaDesmame:
+        return _reproTaxa(
+          lista,
+          bloco: lista.taxaDesmame,
+          titulo: 'Taxa de desmame',
+          unidade: '%',
+          legenda: 'Desmamados ÷ acasaladas',
+        );
+      case IndicadorId.pesoDesmame:
+        return _reproTaxa(
+          lista,
+          bloco: lista.pesoDesmame,
+          titulo: 'Peso ao desmame',
+          unidade: 'kg',
+          legenda: 'Média dos pesos de desmame',
+        );
+      case IndicadorId.kgVacaExposta:
+        return _reproTaxa(
+          lista,
+          bloco: lista.kgVacaExposta,
+          titulo: 'Kg/vaca exposta',
+          unidade: 'kg/vaca',
+        );
+      case IndicadorId.taxaAborto:
+        return _reproTaxa(
+          lista,
+          bloco: lista.taxaAborto,
+          titulo: 'Taxa de aborto',
+          unidade: '%',
+          legenda: 'Abortadas ÷ diagnosticadas prenhas',
+        );
+      case IndicadorId.intervaloEntrePartos:
+        return _reproTaxa(
+          lista,
+          bloco: lista.intervaloEntrePartos,
+          titulo: 'Intervalo entre partos',
+          unidade: 'dias',
+        );
+      case IndicadorId.histogramaParicao:
+        return _histogramaParicao(lista);
+      case IndicadorId.merma:
+        return _reproTaxa(
+          lista,
+          bloco: lista.merma,
+          titulo: 'Merma',
+          unidade: '%',
+          legenda: 'Perdas ÷ diagnosticadas prenhas',
+        );
     }
   }
 }
@@ -762,24 +853,24 @@ List<Widget> _desfrute(IndicadoresLista lista) {
           medicao: bloco.valor('taxa_desfrute'),
           unidadePadrao: '%',
           titulo: 'Desfrute',
-          legenda: 'Kg produzido ÷ Kg inventário inicial',
+          ajuda:
+              'Fórmula: kg produzido ÷ kg inventário inicial.\n\n'
+              'Quanto, em peso, a fazenda produziu (nasceu/engordou/saiu) em relação ao peso do rebanho com que o ano agrícola começou.\n\n'
+              'Mesmo cálculo do “Kg produzido”: estoque atual + saídas − inventário inicial − compras.',
         ),
         CartaoIndicador(
           medicao: bloco.valor('kg_produzido'),
           unidadePadrao: 'kg',
           titulo: 'Kg produzido',
+          ajuda: 'Peso produzido no período (estoque atual + saídas − inventário inicial − compras).',
         ),
         CartaoIndicador(
           medicao: bloco.valor('kg_inventario_inicial'),
           unidadePadrao: 'kg',
           titulo: 'Kg inventário',
+          ajuda: 'Peso do rebanho no início do ano agrícola (base da taxa de desfrute).',
         ),
       ],
-    ),
-    const SizedBox(height: 12),
-    const CaixaNota(
-      texto:
-          'Taxa de Desfrute = quanto, em peso, a fazenda produziu (nasceu/engordou/saiu) em relação ao peso do rebanho com que o ano agrícola começou. Mesmo cálculo do "Kg Produzido": estoque atual + saídas − inventário inicial − compras.',
     ),
     const SizedBox(height: 12),
     ListaCardsIndicador(
@@ -836,24 +927,25 @@ List<Widget> _abate(IndicadoresLista lista) {
           medicao: bloco.valor('taxa_abate'),
           unidadePadrao: '%',
           titulo: 'Abate',
-          legenda: 'Kg vendidos ÷ kg estoque inicial',
+          ajuda: [
+            'Fórmula: kg vendidos ÷ kg estoque inicial.',
+            if (equacao != null) 'Neste período: $equacao',
+          ].join('\n\n'),
         ),
         CartaoIndicador(
           medicao: vendidos,
           unidadePadrao: 'kg',
           titulo: 'Kg vendidos',
+          ajuda: 'Soma do peso das vendas no período.',
         ),
         CartaoIndicador(
           medicao: estoque,
           unidadePadrao: 'kg',
           titulo: 'Kg estoque',
+          ajuda: 'Peso do estoque inicial usado no cálculo da taxa de abate.',
         ),
       ],
     ),
-    if (equacao != null) ...[
-      const SizedBox(height: 12),
-      CaixaNota(titulo: 'Como foi calculado', texto: equacao),
-    ],
   ];
 }
 
@@ -876,24 +968,25 @@ List<Widget> _giro(IndicadoresLista lista) {
           medicao: bloco.valor('taxa_giro'),
           unidadePadrao: '%',
           titulo: 'Giro',
-          legenda: 'Cabeças vendidas ÷ estoque inicial',
+          ajuda: [
+            'Fórmula: cabeças vendidas ÷ estoque inicial.',
+            if (equacao != null) 'Neste período: $equacao',
+          ].join('\n\n'),
         ),
         CartaoIndicador(
           medicao: vendidas,
           unidadePadrao: 'cab',
           titulo: 'Vendidas',
+          ajuda: 'Quantidade de cabeças vendidas no período.',
         ),
         CartaoIndicador(
           medicao: estoque,
           unidadePadrao: 'cab',
           titulo: 'Estoque inicial',
+          ajuda: 'Cabeças no estoque inicial usadas no cálculo da taxa de giro.',
         ),
       ],
     ),
-    if (equacao != null) ...[
-      const SizedBox(height: 12),
-      CaixaNota(titulo: 'Como foi calculado', texto: equacao),
-    ],
   ];
 }
 
@@ -909,21 +1002,21 @@ List<Widget> _mortalidade(IndicadoresLista lista) {
           medicao: bloco.valor('taxa_mortalidade'),
           unidadePadrao: '%',
           titulo: 'Mortalidade',
-          legenda: 'Mortes + Abigeato ÷ Estoque Médio',
+          ajuda: 'Fórmula: (mortes + abigeato) ÷ estoque médio.',
         ),
         CartaoIndicador(
           medicao: bloco.valor('animais_perdidos'),
           inteiro: true,
           titulo: 'Perdidos',
-          legenda: 'Mortes + Abigeato',
+          ajuda: 'Soma de mortes e abigeatos no período.',
         ),
         CartaoIndicador(
           medicao: bloco.valor('estoque_medio'),
           inteiro: true,
           titulo: 'Estoque médio',
-          legenda: meses == null
-              ? 'Média mensal'
-              : 'Média mensal — $meses mês(es)',
+          ajuda: meses == null
+              ? 'Média mensal do estoque no período.'
+              : 'Média mensal do estoque no período ($meses mês(es)).',
         ),
       ],
     ),
@@ -1019,4 +1112,176 @@ String? _equacao({
   final esq = esquerda.partes(unidadePadrao: esquerdaUnidade);
   final dir = direita.partes(unidadePadrao: direitaUnidade);
   return '${esq.numero} ${esq.unidade ?? esquerdaUnidade} $esquerdaRotulo ÷ ${dir.numero} ${dir.unidade ?? direitaUnidade} $direitaRotulo.';
+}
+
+List<Widget> _reproTaxa(
+  IndicadoresLista lista, {
+  required IndicadorBloco bloco,
+  required String titulo,
+  required String unidade,
+  String? legenda,
+}) {
+  return [
+    ..._avisosReproducao(lista.reproducaoMeta),
+    GradeCartoes(
+      cartoes: [
+        CartaoIndicador(
+          medicao: bloco.valorPrincipal,
+          unidadePadrao: unidade,
+          titulo: titulo,
+          legenda: legenda,
+        ),
+        ..._cartoesDetalheRepro(bloco.detalheCampos),
+      ],
+    ),
+  ];
+}
+
+List<Widget> _histogramaParicao(IndicadoresLista lista) {
+  final bloco = lista.histogramaParicao;
+  final serie = bloco.serie('nascimentos_mes');
+  return [
+    ..._avisosReproducao(lista.reproducaoMeta),
+    GradeCartoes(
+      cartoes: [
+        CartaoIndicador(
+          medicao: bloco.valorPrincipal,
+          unidadePadrao: 'cab.',
+          titulo: 'Nascimentos no período',
+          legenda: 'Total no histograma',
+        ),
+        ..._cartoesDetalheRepro(bloco.detalheCampos),
+      ],
+    ),
+    const SizedBox(height: 12),
+    GraficoIndicador(
+      titulo: 'Nascimentos por mês',
+      barras: true,
+      pontos: [
+        for (final item in serie)
+          PontoSerie(
+            _rotuloMesRepro(item['mes']?.toString() ?? item['nome_mes']?.toString()),
+            numeroIndicador(item['quantidade'] ?? item['qtd']),
+          ),
+      ],
+    ),
+  ];
+}
+
+List<Widget> _avisosReproducao(ReproducaoMetadados meta) {
+  if (!meta.temAviso) {
+    return const [];
+  }
+  final linhas = <String>[
+    if (meta.parcial) 'Dados parciais — alguns vínculos ou horários são aproximados.',
+    for (final item in meta.pendencias)
+      if ((item['msg']?.toString() ?? '').trim().isNotEmpty)
+        '${item['brinco'] != null && item['brinco'].toString().trim().isNotEmpty ? 'Brinco ${item['brinco']}: ' : ''}${item['msg']}',
+  ];
+  if (linhas.isEmpty && meta.limitacoes.isEmpty) {
+    return const [];
+  }
+  return [
+    CaixaNota(
+      titulo: 'Atenção',
+      texto: [
+        ...linhas,
+        if (meta.limitacoes.isNotEmpty) ...[
+          if (linhas.isNotEmpty) '',
+          ...meta.limitacoes.take(3),
+          if (meta.limitacoes.length > 3) '…',
+        ],
+      ].join('\n'),
+    ),
+    const SizedBox(height: 12),
+  ];
+}
+
+List<CartaoIndicador> _cartoesDetalheRepro(Map<String, dynamic> mapa) {
+  final saida = <CartaoIndicador>[];
+  for (final entry in mapa.entries) {
+    final chave = entry.key;
+    final valor = entry.value;
+    if (valor is List) {
+      if (valor.isEmpty) {
+        continue;
+      }
+      saida.add(
+        CartaoIndicador(
+          valor: '${valor.length}',
+          titulo: _rotuloCampoRepro(chave),
+          inteiro: true,
+        ),
+      );
+      continue;
+    }
+    if (valor is bool) {
+      saida.add(
+        CartaoIndicador(
+          valor: valor ? 'Sim' : 'Não',
+          titulo: _rotuloCampoRepro(chave),
+        ),
+      );
+      continue;
+    }
+    final numero = numeroIndicador(valor);
+    if (numero != null) {
+      saida.add(
+        CartaoIndicador(
+          medicao: IndicadorValor(qtd: numero),
+          inteiro: numero % 1 == 0,
+          titulo: _rotuloCampoRepro(chave),
+        ),
+      );
+      continue;
+    }
+  }
+  return saida;
+}
+
+String _rotuloCampoRepro(String chave) {
+  return switch (chave) {
+    'prenhas' => 'Prenhas',
+    'acasaladas' => 'Acasaladas',
+    'matrizes_com_cria_viva' => 'Matrizes com cria viva',
+    'nascimentos' => 'Nascimentos',
+    'natimortos' => 'Natimortos',
+    'em_observacao_24h' => 'Em observação 24h',
+    'horario_indisponivel' => 'Horário indisponível',
+    'desmamados' => 'Desmamados',
+    'sem_pesagem' => 'Sem pesagem',
+    'abortadas' => 'Abortadas',
+    'diagnosticadas_prenhas' => 'Diagnosticadas prenhas',
+    'intervalos' => 'Intervalos',
+    'temporadas_ambiguas' => 'Temporadas ambíguas',
+    'perdas' => 'Perdas',
+    'matrizes' => 'Matrizes',
+    _ => chave.replaceAll('_', ' '),
+  };
+}
+
+String _rotuloMesRepro(String? mes) {
+  final texto = (mes ?? '').trim();
+  if (texto.isEmpty) {
+    return '—';
+  }
+  final match = RegExp(r'^(\d{4})-(\d{2})').firstMatch(texto);
+  if (match != null) {
+    const nomes = {
+      '01': 'Jan',
+      '02': 'Fev',
+      '03': 'Mar',
+      '04': 'Abr',
+      '05': 'Mai',
+      '06': 'Jun',
+      '07': 'Jul',
+      '08': 'Ago',
+      '09': 'Set',
+      '10': 'Out',
+      '11': 'Nov',
+      '12': 'Dez',
+    };
+    return nomes[match.group(2)!] ?? match.group(2)!;
+  }
+  return texto;
 }

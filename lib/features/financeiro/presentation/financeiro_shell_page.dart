@@ -270,12 +270,23 @@ class _FinanceiroShellPageState extends State<FinanceiroShellPage> {
         builder: (context, constraints) {
           final largo = constraints.maxWidth >= 760;
           final miolo = _miolo(barra: !largo);
-          if (!largo || _passo != _Passo.abas) return miolo;
+          final mioloPilha = _passo == _Passo.abas
+              ? miolo
+              : Theme(
+                  data: Theme.of(context).copyWith(
+                    appBarTheme: Theme.of(context).appBarTheme.copyWith(
+                          titleTextStyle: estiloTituloAppBarPilha(),
+                        ),
+                    textTheme: Theme.of(context).textTheme.apply(fontSizeFactor: 0.94),
+                  ),
+                  child: miolo,
+                );
+          if (!largo || _passo != _Passo.abas) return mioloPilha;
           return Row(
             children: [
               _menuLateral(),
               const VerticalDivider(width: 1),
-              Expanded(child: miolo),
+              Expanded(child: mioloPilha),
             ],
           );
         },

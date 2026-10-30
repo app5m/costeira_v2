@@ -78,6 +78,8 @@ class _LancamentoAnimaisPageState extends State<LancamentoAnimaisPage> {
     return (animal.brinco ?? '').trim().isNotEmpty;
   }
 
+  bool get _temFiltrosAtivos => _categoriaId != null || _faseId != null || _loteId != null;
+
   List<AnimalEntity> get _visiveis {
     final busca = _busca.text.trim().toLowerCase();
     return [
@@ -115,20 +117,105 @@ class _LancamentoAnimaisPageState extends State<LancamentoAnimaisPage> {
     });
   }
 
+  Future<void> _abrirFiltros() async {
+    final categorias = _opcoes((animal) => animal.categoria);
+    var categoriaId = _categoriaId;
+    var faseId = _faseId;
+    var loteId = _loteId;
+
+    final aplicado = await showModalBottomSheet<bool>(
+      context: context,
+      isScrollControlled: true,
+      showDragHandle: true,
+      builder: (sheet) {
+        return StatefulBuilder(
+          builder: (sheet, setSheet) {
+            final fases = _opcoes(
+              (animal) => animal.subcategoria,
+              onde: (animal) => categoriaId == null || animal.appAnimaisCategoriasId == categoriaId,
+            );
+            final lotes = _opcoes((animal) => animal.lote);
+            return Padding(
+              padding: EdgeInsets.fromLTRB(16, 8, 16, 16 + MediaQuery.of(sheet).viewInsets.bottom),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Text(
+                    'Filtros',
+                    style: TextStyle(fontFamily: 'Montserrat', fontWeight: FontWeight.w700, fontSize: 16),
+                  ),
+                  const SizedBox(height: 12),
+                  _Filtro(
+                    rotulo: 'Categoria',
+                    valor: categoriaId,
+                    opcoes: categorias,
+                    aoMudar: (valor) => setSheet(() {
+                      categoriaId = valor;
+                      faseId = null;
+                    }),
+                  ),
+                  const SizedBox(height: 8),
+                  _Filtro(
+                    rotulo: 'Fase',
+                    valor: faseId,
+                    opcoes: fases,
+                    aoMudar: (valor) => setSheet(() => faseId = valor),
+                  ),
+                  const SizedBox(height: 8),
+                  _Filtro(
+                    rotulo: 'Lote',
+                    valor: loteId,
+                    opcoes: lotes,
+                    aoMudar: (valor) => setSheet(() => loteId = valor),
+                  ),
+                  const SizedBox(height: 16),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: OutlinedButton(
+                          onPressed: () {
+                            categoriaId = null;
+                            faseId = null;
+                            loteId = null;
+                            Navigator.pop(sheet, true);
+                          },
+                          child: const Text('Limpar', style: TextStyle(fontFamily: 'Montserrat')),
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: FilledButton(
+                          onPressed: () => Navigator.pop(sheet, true),
+                          style: FilledButton.styleFrom(backgroundColor: MyColors.colorPrimary),
+                          child: const Text('Aplicar', style: TextStyle(fontFamily: 'Montserrat')),
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            );
+          },
+        );
+      },
+    );
+    if (aplicado != true || !mounted) return;
+    setState(() {
+      _categoriaId = categoriaId;
+      _faseId = faseId;
+      _loteId = loteId;
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
-    final categorias = _opcoes((animal) => animal.categoria);
-    final fases = _opcoes(
-      (animal) => animal.subcategoria,
-      onde: (animal) => _categoriaId == null || animal.appAnimaisCategoriasId == _categoriaId,
-    );
-    final lotes = _opcoes((animal) => animal.lote);
     return Scaffold(
       backgroundColor: fundoFinanceiro,
       appBar: AppBar(
         backgroundColor: MyColors.colorPrimary,
         foregroundColor: Colors.white,
-        title: const Text('Selecionar animais', style: TextStyle(fontFamily: 'Montserrat', fontWeight: FontWeight.w600, fontSize: 17)),
+        title: Text('Selecionar animais', style: estiloTituloAppBarPilha()),
         leading: IconButton(onPressed: () => Navigator.pop(context), icon: const Icon(Icons.arrow_back)),
       ),
       body: Column(
@@ -141,29 +228,13 @@ class _LancamentoAnimaisPageState extends State<LancamentoAnimaisPage> {
                   controller: _busca,
                   decoration: decoracaoCampo('Buscar por brinco'),
                 ),
-                const SizedBox(height: 8),
-                _Filtro(
-                  rotulo: 'Categoria',
-                  valor: _categoriaId,
-                  opcoes: categorias,
-                  aoMudar: (valor) => setState(() {
-                    _categoriaId = valor;
-                    _faseId = null;
-                  }),
-                ),
-                const SizedBox(height: 8),
-                _Filtro(
-                  rotulo: 'Fase',
-                  valor: _faseId,
-                  opcoes: fases,
-                  aoMudar: (valor) => setState(() => _faseId = valor),
-                ),
-                const SizedBox(height: 8),
-                _Filtro(
-                  rotulo: 'Lote',
-                  valor: _loteId,
-                  opcoes: lotes,
-                  aoMudar: (valor) => setState(() => _loteId = valor),
+                const SizedBox(height: 10),
+                Align(
+                  alignment: Alignment.centerLeft,
+                  child: _pillFiltrar(
+                    ativo: _temFiltrosAtivos,
+                    onTap: _abrirFiltros,
+                  ),
                 ),
                 const SizedBox(height: 8),
                 Align(
@@ -279,6 +350,44 @@ class _LancamentoAnimaisPageState extends State<LancamentoAnimaisPage> {
             ),
           ),
         ],
+      ),
+    );
+  }
+
+  Widget _pillFiltrar({required bool ativo, required VoidCallback onTap}) {
+    return Material(
+      color: ativo ? const Color(0x14128977) : Colors.transparent,
+      borderRadius: BorderRadius.circular(20),
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(20),
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(20),
+            border: Border.all(color: ativo ? MyColors.colorPrimary : const Color(0xFFE6E6E6)),
+          ),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(
+                Icons.tune_rounded,
+                size: 16,
+                color: ativo ? MyColors.colorPrimary : const Color(0xFF8C8C8C),
+              ),
+              const SizedBox(width: 6),
+              Text(
+                ativo ? 'Filtros ativos' : 'Filtrar',
+                style: TextStyle(
+                  fontFamily: 'Montserrat',
+                  fontSize: 12,
+                  fontWeight: FontWeight.w600,
+                  color: ativo ? MyColors.colorPrimary : const Color(0xFF8C8C8C),
+                ),
+              ),
+            ],
+          ),
+        ),
       ),
     );
   }

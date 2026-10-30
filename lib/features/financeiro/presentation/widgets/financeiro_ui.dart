@@ -158,6 +158,71 @@ class CampoFinanceiro extends StatelessWidget {
   }
 }
 
+/// Mini indicador no padrão Visão geral / Dashboard.
+class IndicadorMiniFinanceiro extends StatelessWidget {
+  const IndicadorMiniFinanceiro(this.rotulo, this.valor, this.cor, {super.key});
+
+  final String rotulo;
+  final String valor;
+  final Color cor;
+
+  @override
+  Widget build(BuildContext context) {
+    return DecoratedBox(
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: const Color(0xFFE6E6E6)),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.fromLTRB(10, 10, 10, 12),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            SizedBox(
+              height: 28,
+              child: Text(
+                rotulo,
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
+                style: const TextStyle(
+                  fontFamily: 'Montserrat',
+                  fontSize: 10,
+                  height: 1.25,
+                  fontWeight: FontWeight.w600,
+                  color: Color(0xFF8A8A8A),
+                ),
+              ),
+            ),
+            const SizedBox(height: 8),
+            FittedBox(
+              fit: BoxFit.scaleDown,
+              alignment: Alignment.centerLeft,
+              child: Text(
+                valor,
+                maxLines: 1,
+                style: TextStyle(
+                  fontFamily: 'Montserrat',
+                  fontSize: 14,
+                  fontWeight: FontWeight.w800,
+                  color: cor,
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+TextStyle estiloTituloAppBarPilha([double fontSize = 15]) => TextStyle(
+      fontFamily: 'Montserrat',
+      fontSize: fontSize,
+      fontWeight: FontWeight.w600,
+      color: Colors.white,
+    );
+
 /// Indicador colorido no padrão dashboard (`_Faixa`).
 class IndicadorFaixaFinanceiro extends StatelessWidget {
   const IndicadorFaixaFinanceiro({

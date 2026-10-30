@@ -98,6 +98,63 @@ class _DespesaParceriaFormPageState extends State<DespesaParceriaFormPage> {
     super.dispose();
   }
 
+  DateTime? _parseDataBr(String texto) {
+    final m = RegExp(r'^(\d{2})/(\d{2})/(\d{4})$').firstMatch(texto.trim());
+    if (m == null) return null;
+    final dia = int.tryParse(m.group(1)!);
+    final mes = int.tryParse(m.group(2)!);
+    final ano = int.tryParse(m.group(3)!);
+    if (dia == null || mes == null || ano == null) return null;
+    final data = DateTime(ano, mes, dia);
+    if (data.year != ano || data.month != mes || data.day != dia) return null;
+    return data;
+  }
+
+  String _fmtBr(DateTime data) {
+    final d = data.day.toString().padLeft(2, '0');
+    final m = data.month.toString().padLeft(2, '0');
+    return '$d/$m/${data.year}';
+  }
+
+  Future<void> _escolherCompetencia() async {
+    final hoje = DateTime.now();
+    final fim = DateTime(hoje.year, hoje.month, hoje.day);
+    final atual = _parseDataBr(_competencia.text) ?? hoje;
+    final escolhida = await showDatePicker(
+      context: context,
+      initialDate: atual.isAfter(fim) ? fim : atual,
+      firstDate: DateTime(hoje.year - 10),
+      lastDate: fim,
+      helpText: 'Competência',
+      cancelText: 'Cancelar',
+      confirmText: 'Ok',
+    );
+    if (escolhida == null || !mounted) return;
+    setState(() => _competencia.text = _fmtBr(escolhida));
+  }
+
+  Future<void> _escolherVencimento() async {
+    final hoje = DateTime.now();
+    final atual = _parseDataBr(_vencimento.text) ??
+        _parseDataBr(_competencia.text) ??
+        hoje;
+    final inicio = DateTime(hoje.year - 10);
+    final fim = DateTime(hoje.year + 10, 12, 31);
+    final escolhida = await showDatePicker(
+      context: context,
+      initialDate: atual.isBefore(inicio)
+          ? inicio
+          : (atual.isAfter(fim) ? fim : atual),
+      firstDate: inicio,
+      lastDate: fim,
+      helpText: 'Vencimento',
+      cancelText: 'Cancelar',
+      confirmText: 'Ok',
+    );
+    if (escolhida == null || !mounted) return;
+    setState(() => _vencimento.text = _fmtBr(escolhida));
+  }
+
   double get _valorNumero => BrazilianCurrency.parse(_valor.text) ?? 0;
 
   int get _totalCentavos => (_valorNumero * 100).round();
@@ -191,6 +248,8 @@ class _DespesaParceriaFormPageState extends State<DespesaParceriaFormPage> {
               'app_animais_id': item.animal.appAnimaisId,
               'centro_id': FinanceiroLoja.centroParceria,
               'valor': item.valor.toStringAsFixed(2),
+              'propriedade': 'terceiro',
+              'data_inicio_fase': _competencia.text.trim(),
             },
         ],
         pago: _pago,
@@ -321,7 +380,13 @@ class _DespesaParceriaFormPageState extends State<DespesaParceriaFormPage> {
               controller: _competencia,
               inputFormatters: [_maskComp],
               keyboardType: tecladoData,
-              decoration: decoracaoCampo('DD/MM/AAAA'),
+              decoration: decoracaoCampo('DD/MM/AAAA').copyWith(
+                suffixIcon: IconButton(
+                  tooltip: 'Escolher data',
+                  onPressed: _escolherCompetencia,
+                  icon: const Icon(Icons.calendar_today_outlined, size: 18),
+                ),
+              ),
             ),
           ),
           const SizedBox(height: 12),
@@ -331,7 +396,13 @@ class _DespesaParceriaFormPageState extends State<DespesaParceriaFormPage> {
               controller: _vencimento,
               inputFormatters: [_maskVenc],
               keyboardType: tecladoData,
-              decoration: decoracaoCampo('DD/MM/AAAA'),
+              decoration: decoracaoCampo('DD/MM/AAAA').copyWith(
+                suffixIcon: IconButton(
+                  tooltip: 'Escolher data',
+                  onPressed: _escolherVencimento,
+                  icon: const Icon(Icons.calendar_today_outlined, size: 18),
+                ),
+              ),
             ),
           ),
           const SizedBox(height: 12),

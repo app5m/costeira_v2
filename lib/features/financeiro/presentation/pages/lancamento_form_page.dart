@@ -93,7 +93,11 @@ class _LancamentoFormPageState extends State<LancamentoFormPage> {
       _competencia.text = _hojeData();
       return;
     }
-    _tipo = item.tipo == 'recebimento' ? 'Recebimento' : 'Pagamento';
+    _tipo = switch (item.tipo) {
+      'recebimento' => 'Recebimento',
+      'investimento' => 'Investimento',
+      _ => 'Pagamento',
+    };
     _classificacaoId = item.classificacaoId;
     _rubricaId = item.categoriaId;
     _competencia.text = item.competencia.isEmpty ? _hojeData() : item.competencia;
@@ -146,6 +150,30 @@ class _LancamentoFormPageState extends State<LancamentoFormPage> {
     setState(() => _competencia.text = '$d/$m/${escolhida.year}');
   }
 
+  Future<void> _escolherVencimento() async {
+    final hoje = DateTime.now();
+    final atual = _parseDataBr(_vencimento.text) ??
+        _parseDataBr(_competencia.text) ??
+        hoje;
+    final inicio = DateTime(hoje.year - 10);
+    final fim = DateTime(hoje.year + 10, 12, 31);
+    final escolhida = await showDatePicker(
+      context: context,
+      initialDate: atual.isBefore(inicio)
+          ? inicio
+          : (atual.isAfter(fim) ? fim : atual),
+      firstDate: inicio,
+      lastDate: fim,
+      helpText: 'Vencimento',
+      cancelText: 'Cancelar',
+      confirmText: 'Ok',
+    );
+    if (escolhida == null || !mounted) return;
+    final d = escolhida.day.toString().padLeft(2, '0');
+    final m = escolhida.month.toString().padLeft(2, '0');
+    setState(() => _vencimento.text = '$d/$m/${escolhida.year}');
+  }
+
   @override
   void dispose() {
     _competencia.dispose();
@@ -169,10 +197,31 @@ class _LancamentoFormPageState extends State<LancamentoFormPage> {
   String? get _tipoApi {
     if (_tipo == 'Recebimento') return 'recebimento';
     if (_tipo == 'Pagamento') return 'pagamento';
+    if (_tipo == 'Investimento') return 'investimento';
     return null;
   }
 
   double get _valorNumero => BrazilianCurrency.parse(_valor.text) ?? 0;
+
+  bool get _podeSalvar {
+    if (_salvando || _salvandoRascunho) return false;
+    if (_tipoApi == null || _classificacaoId == null || _rubricaId == null) return false;
+    if (_descricao.text.trim().isEmpty) return false;
+    if (_erroCompetencia() != null) return false;
+    if (_valorNumero <= 0) return false;
+    final loja = FinanceiroEscopo.of(context);
+    final classificacao = loja.classificacoes.where((c) => c.id == _classificacaoId).firstOrNull;
+    if (classificacao?.exigeCentro == true) {
+      if (_distribuir) {
+        if (_rateios.isEmpty || (_somaPercentualRateio - 100).abs() > 0.05) return false;
+      } else if (_centroId == null) {
+        return false;
+      }
+    }
+    if (_pago && _contaId == null) return false;
+    if (_erroAnimais() != null) return false;
+    return true;
+  }
 
   void _limparRateios() {
     for (final item in _rateios) {
@@ -344,7 +393,8 @@ class _LancamentoFormPageState extends State<LancamentoFormPage> {
         AppSnackBar.show(context: context, message: 'Selecione a conta do pagamento.');
         return;
       }
-      if (_tipoApi == 'pagamento' && conta.saldo + 0.001 < _valorNumero) {
+      if ((_tipoApi == 'pagamento' || _tipoApi == 'investimento') &&
+          conta.saldo + 0.001 < _valorNumero) {
         AppSnackBar.show(context: context, message: 'Saldo da conta insuficiente.');
         return;
       }
@@ -355,6 +405,7 @@ class _LancamentoFormPageState extends State<LancamentoFormPage> {
       return;
     }
     final valoresAnimais = _valoresAnimais();
+    final competencia = _competencia.text.trim();
     final animais = _animais.isEmpty
         ? null
         : [
@@ -363,6 +414,8 @@ class _LancamentoFormPageState extends State<LancamentoFormPage> {
                 'app_animais_id': _animais[i].animal.id,
                 'centro_id': _centroEfetivo(_animais[i]),
                 'valor': ((valoresAnimais[i] ?? 0) / 100).toStringAsFixed(2),
+                'propriedade': 'proprio',
+                'data_inicio_fase': competencia,
               },
           ];
     if (_salvando || _salvandoRascunho) return;
@@ -378,7 +431,7 @@ class _LancamentoFormPageState extends State<LancamentoFormPage> {
         categoriaId: _rubricaId!,
         centroId: centroId,
         parteId: _parteId,
-        competencia: _competencia.text.trim(),
+        competencia: competencia,
         vencimento: _vencimento.text.trim().isEmpty ? null : _vencimento.text.trim(),
         descricao: _descricao.text.trim(),
         documento: _documento.text.trim().isEmpty ? null : _documento.text.trim(),
@@ -434,7 +487,10 @@ class _LancamentoFormPageState extends State<LancamentoFormPage> {
       appBar: AppBar(
         backgroundColor: MyColors.colorPrimary,
         foregroundColor: Colors.white,
-        title: Text(widget.item == null ? 'Novo lançamento' : 'Editar rascunho', style: const TextStyle(fontFamily: 'Montserrat', fontWeight: FontWeight.w600, fontSize: 17)),
+        title: Text(
+          widget.item == null ? 'Novo lançamento' : 'Editar rascunho',
+          style: estiloTituloAppBarPilha(),
+        ),
         leading: IconButton(onPressed: ocupado ? null : widget.aoFechar, icon: const Icon(Icons.arrow_back)),
       ),
       body: ListView(
@@ -579,7 +635,14 @@ class _LancamentoFormPageState extends State<LancamentoFormPage> {
                     controller: _vencimento,
                     keyboardType: tecladoData,
                     inputFormatters: [_mascaraVencimento],
-                    decoration: decoracaoCampo('dd/MM/aaaa'),
+                    decoration: decoracaoCampo('dd/MM/aaaa').copyWith(
+                      suffixIcon: IconButton(
+                        tooltip: 'Escolher data',
+                        onPressed: _escolherVencimento,
+                        icon: const Icon(Icons.calendar_today_outlined, size: 18),
+                      ),
+                    ),
+                    onChanged: (_) => setState(() {}),
                   ),
                 ),
                 const SizedBox(height: 12),
@@ -724,7 +787,7 @@ class _LancamentoFormPageState extends State<LancamentoFormPage> {
           BotaoPrimarioFinanceiro(
             rotulo: 'Salvar lançamento',
             carregando: _salvando,
-            habilitado: !ocupado,
+            habilitado: !ocupado && _podeSalvar,
             onPressed: () => _salvar(rascunho: false),
           ),
         ],
@@ -940,7 +1003,7 @@ class _LancamentoFormPageState extends State<LancamentoFormPage> {
   Future<void> _modalNovaParte(FinanceiroLoja loja) async {
     final nome = TextEditingController();
     final celular = TextEditingController();
-    final motivo = TextEditingController(text: 'Vinculação no lançamento');
+    const motivoFixo = 'Vinculação no lançamento';
     var papel = _tipoApi == 'recebimento' ? 'comprador' : 'fornecedor';
     var modoNovo = true;
     int? existenteId;
@@ -1099,8 +1162,6 @@ class _LancamentoFormPageState extends State<LancamentoFormPage> {
                         ),
                       ),
                     ],
-                    const SizedBox(height: 12),
-                    CampoFinanceiro(rotulo: 'MOTIVO', child: TextField(controller: motivo, decoration: decoracaoCampo(''))),
                     const SizedBox(height: 16),
                     FilledButton(
                       onPressed: salvando
@@ -1163,7 +1224,7 @@ class _LancamentoFormPageState extends State<LancamentoFormPage> {
                                   papel: papel,
                                   fornecedorId: papel == 'fornecedor' ? cadastroId : null,
                                   compradorId: papel == 'comprador' ? cadastroId : null,
-                                  motivo: motivo.text.trim().isEmpty ? 'Vinculação no lançamento' : motivo.text.trim(),
+                                  motivo: motivoFixo,
                                 );
                                 if (!sheet.mounted) return;
                                 Navigator.pop(sheet, true);
@@ -1183,7 +1244,13 @@ class _LancamentoFormPageState extends State<LancamentoFormPage> {
                               }
                             },
                       style: FilledButton.styleFrom(backgroundColor: MyColors.colorPrimary, minimumSize: const Size.fromHeight(48)),
-                      child: Text(salvando ? 'Salvando...' : 'Salvar', style: const TextStyle(fontFamily: 'Montserrat')),
+                      child: salvando
+                          ? const SizedBox(
+                              width: 22,
+                              height: 22,
+                              child: CircularProgressIndicator(strokeWidth: 2.4, color: Colors.white),
+                            )
+                          : const Text('Salvar', style: TextStyle(fontFamily: 'Montserrat')),
                     ),
                   ],
                 ),
@@ -1195,7 +1262,6 @@ class _LancamentoFormPageState extends State<LancamentoFormPage> {
     );
     nome.dispose();
     celular.dispose();
-    motivo.dispose();
     if (ok != true) return;
   }
 
@@ -1205,7 +1271,7 @@ class _LancamentoFormPageState extends State<LancamentoFormPage> {
     final dataSaldo = TextEditingController(text: _hojeData());
     final valorSaldo = TextEditingController(text: BrazilianCurrency.format(0));
     final docSaldo = TextEditingController();
-    final motivoSaldo = TextEditingController(text: 'Saldo conferido no início do controle');
+    const motivoSaldoFixo = 'Saldo conferido no início do controle';
     final mascaraDataSaldo = mascaraData();
     var tipo = 'Banco';
     var etapa = 0;
@@ -1313,8 +1379,6 @@ class _LancamentoFormPageState extends State<LancamentoFormPage> {
                       ),
                       const SizedBox(height: 12),
                       CampoFinanceiro(rotulo: 'DOCUMENTO (OPCIONAL)', child: TextField(controller: docSaldo, decoration: decoracaoCampo(''))),
-                      const SizedBox(height: 12),
-                      CampoFinanceiro(rotulo: 'MOTIVO', child: TextField(controller: motivoSaldo, decoration: decoracaoCampo(''))),
                       const SizedBox(height: 16),
                       BotaoPrimarioFinanceiro(
                         rotulo: 'Registrar saldo inicial',
@@ -1328,7 +1392,7 @@ class _LancamentoFormPageState extends State<LancamentoFormPage> {
                               positivo: positivo,
                               valor: (BrazilianCurrency.parse(valorSaldo.text) ?? 0).toStringAsFixed(2),
                               documento: docSaldo.text.trim().isEmpty ? null : docSaldo.text.trim(),
-                              motivo: motivoSaldo.text.trim().isEmpty ? 'Saldo inicial' : motivoSaldo.text.trim(),
+                              motivo: motivoSaldoFixo,
                             );
                             if (!sheet.mounted) return;
                             Navigator.pop(sheet, true);
@@ -1354,7 +1418,6 @@ class _LancamentoFormPageState extends State<LancamentoFormPage> {
     dataSaldo.dispose();
     valorSaldo.dispose();
     docSaldo.dispose();
-    motivoSaldo.dispose();
     if (ok != true || !mounted || contaId == null) return;
     setState(() => _contaId = contaId);
     AppSnackBar.show(context: context, message: 'Conta pronta para o pagamento.', isError: false);

@@ -7,7 +7,8 @@ import 'package:costeira/theme/colors.dart';
 import 'package:flutter/material.dart';
 import 'package:mask_text_input_formatter/mask_text_input_formatter.dart';
 
-/// Ajuste de saldo via `/financeiro/registrarSaldoInicial`.
+/// Abertura: `/financeiro/registrarSaldoInicial`.
+/// Entrada/saída pós-abertura: lançamento + baixa na conta.
 enum ModoAjusteSaldo { abertura, entrada, saida }
 
 class ContasPage extends StatefulWidget {
@@ -574,7 +575,6 @@ class _SaldoInicialPageState extends State<SaldoInicialPage> {
   late final TextEditingController _data;
   final _valor = TextEditingController(text: BrazilianCurrency.format(0));
   late final TextEditingController _doc;
-  late final TextEditingController _motivo;
   late bool _positivo;
   bool _salvando = false;
   late final MaskTextInputFormatter _mascaraData = mascaraData();
@@ -598,9 +598,15 @@ class _SaldoInicialPageState extends State<SaldoInicialPage> {
         ModoAjusteSaldo.abertura =>
           'Informe o saldo existente na data de início do controle. Não é uma receita.',
         ModoAjusteSaldo.entrada =>
-          'Registra entrada na conta (direção entrada). Documento padrão: AJUSTE-ENTRADA.',
+          'Cria lançamento pago nesta conta (entrada). Documento padrão: AJUSTE-ENTRADA.',
         ModoAjusteSaldo.saida =>
-          'Registra saída na conta (direção saída). Documento padrão: AJUSTE-SAIDA.',
+          'Cria lançamento pago nesta conta (saída). Documento padrão: AJUSTE-SAIDA.',
+      };
+
+  String get _motivoPadrao => switch (widget.modo) {
+        ModoAjusteSaldo.abertura => 'Saldo inicial conciliado',
+        ModoAjusteSaldo.entrada => 'Adicionar saldo na conta',
+        ModoAjusteSaldo.saida => 'Remover saldo da conta',
       };
 
   @override
@@ -618,13 +624,6 @@ class _SaldoInicialPageState extends State<SaldoInicialPage> {
         ModoAjusteSaldo.saida => 'AJUSTE-SAIDA',
       },
     );
-    _motivo = TextEditingController(
-      text: switch (widget.modo) {
-        ModoAjusteSaldo.abertura => 'Saldo inicial conciliado',
-        ModoAjusteSaldo.entrada => 'Adicionar saldo na conta',
-        ModoAjusteSaldo.saida => 'Remover saldo da conta',
-      },
-    );
   }
 
   @override
@@ -632,7 +631,6 @@ class _SaldoInicialPageState extends State<SaldoInicialPage> {
     _data.dispose();
     _valor.dispose();
     _doc.dispose();
-    _motivo.dispose();
     super.dispose();
   }
 
@@ -649,22 +647,35 @@ class _SaldoInicialPageState extends State<SaldoInicialPage> {
     }
     setState(() => _salvando = true);
     final loja = FinanceiroEscopo.of(context);
-    final positivo = switch (widget.modo) {
-      ModoAjusteSaldo.abertura => _positivo,
-      ModoAjusteSaldo.entrada => true,
-      ModoAjusteSaldo.saida => false,
-    };
+    final data = _data.text.trim();
+    final valorTxt = valor.toStringAsFixed(2);
+    final doc = _doc.text.trim().isEmpty ? null : _doc.text.trim();
     try {
-      await loja.registrarSaldoInicial(
-        contaId: widget.conta.id,
-        data: _data.text.trim(),
-        positivo: positivo,
-        valor: valor.toStringAsFixed(2),
-        documento: _doc.text.trim().isEmpty ? null : _doc.text.trim(),
-        motivo: _motivo.text.trim().isEmpty ? _titulo : _motivo.text.trim(),
-      );
+      if (_abertura) {
+        await loja.registrarSaldoInicial(
+          contaId: widget.conta.id,
+          data: data,
+          positivo: _positivo,
+          valor: valorTxt,
+          documento: doc,
+          motivo: _motivoPadrao,
+        );
+      } else {
+        await loja.registrarAjusteConta(
+          contaId: widget.conta.id,
+          data: data,
+          entrada: widget.modo == ModoAjusteSaldo.entrada,
+          valor: valorTxt,
+          documento: doc,
+          motivo: _motivoPadrao,
+        );
+      }
       if (!mounted) return;
-      AppSnackBar.show(context: context, message: 'Saldo registrado com sucesso.', isError: false);
+      AppSnackBar.show(
+        context: context,
+        message: _abertura ? 'Saldo inicial registrado.' : 'Ajuste registrado com sucesso.',
+        isError: false,
+      );
       widget.aoVoltar();
     } on ApiException catch (error) {
       if (!mounted) return;
@@ -735,15 +746,6 @@ class _SaldoInicialPageState extends State<SaldoInicialPage> {
               controller: _doc,
               enabled: !_salvando && !_bloqueadoAbertura,
               decoration: decoracaoCampo(_doc.text),
-            ),
-          ),
-          const SizedBox(height: 12),
-          CampoFinanceiro(
-            rotulo: 'MOTIVO',
-            child: TextField(
-              controller: _motivo,
-              enabled: !_salvando && !_bloqueadoAbertura,
-              decoration: decoracaoCampo(''),
             ),
           ),
           const SizedBox(height: 8),
