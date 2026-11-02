@@ -23,6 +23,8 @@ class WSConstantes {
   static const String manejosExcluir = '/manejos/excluir';
   static const String dashboardListar = '/dashboard/listar';
   static const String indicadoresLista = '/indicadores/lista';
+  static const String relatoriosLista = '/relatorios/lista';
+  static const String relatoriosExportar = '/relatorios/exportar';
   static const String financeiroClassificacoes = '/financeiro/classificacoes';
   static const String financeiroCategorias = '/financeiro/categorias';
   static const String financeiroCentros = '/financeiro/centros';

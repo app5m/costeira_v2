@@ -26,6 +26,7 @@ import 'package:costeira/features/climate_and_rain/presentation/pages/climate_pa
 import 'package:costeira/features/dashboard/dashboard_binds.dart';
 import 'package:costeira/features/financeiro/presentation/financeiro_shell_page.dart';
 import 'package:costeira/features/indicadores/presentation/pages/indicadores_page.dart';
+import 'package:costeira/features/relatorios/presentation/pages/relatorios_page.dart';
 import 'package:costeira/features/fazendas/fazendas_binds.dart';
 import 'package:costeira/features/cadastros/cadastros_binds.dart';
 import 'package:costeira/features/usuarios/presentation/pages/sub_usuario_form_page.dart';
@@ -290,6 +291,7 @@ class AppModule extends Module {
     r.child(AppRoutes.climateRain, child: (_) => const ClimatePage());
     r.child(AppRoutes.estoque, child: (_) => const Insumos());
     r.child(AppRoutes.indicadores, child: (_) => const IndicadoresPage());
+    r.child(AppRoutes.relatorios, child: (_) => const RelatoriosPage());
     r.child(
       AppRoutes.financeiro,
       child: (_) {

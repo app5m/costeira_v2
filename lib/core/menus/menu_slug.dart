@@ -12,6 +12,7 @@ class MenuSlug {
   static const tarefas = 'tarefas';
   static const pluviosidade = 'pluviosidade';
   static const indicadores = 'indicadores';
+  static const relatorios = 'relatorios';
   static const fornecedores = 'fornecedores';
   static const compradores = 'compradores';
   static const investidores = 'investidores';

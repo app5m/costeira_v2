@@ -146,9 +146,19 @@ const _modulos = [
   ),
   _Modulo(
     titulo: 'Reprodução',
-    subtitulo: 'Em desenvolvimento',
-    aberto: false,
-    itens: [],
+    subtitulo: 'Prenhez, natalidade, desmame e parição',
+    aberto: true,
+    itens: [
+      (IndicadorId.taxaPrenhez, 'Taxa de prenhez'),
+      (IndicadorId.taxaNatalidade, 'Taxa de natalidade'),
+      (IndicadorId.taxaDesmame, 'Taxa de desmame'),
+      (IndicadorId.pesoDesmame, 'Peso ao desmame'),
+      (IndicadorId.kgVacaExposta, 'Kg/vaca exposta'),
+      (IndicadorId.taxaAborto, 'Taxa de aborto'),
+      (IndicadorId.intervaloEntrePartos, 'Intervalo entre partos'),
+      (IndicadorId.histogramaParicao, 'Histograma de parição'),
+      (IndicadorId.merma, 'Merma'),
+    ],
   ),
   _Modulo(
     titulo: 'Desfrute e saídas',
@@ -1121,6 +1131,7 @@ List<Widget> _reproTaxa(
   required String unidade,
   String? legenda,
 }) {
+  final listaDetalhe = _listaDetalhamentoRepro(bloco);
   return [
     ..._avisosReproducao(lista.reproducaoMeta),
     GradeCartoes(
@@ -1129,17 +1140,25 @@ List<Widget> _reproTaxa(
           medicao: bloco.valorPrincipal,
           unidadePadrao: unidade,
           titulo: titulo,
-          legenda: legenda,
+          ajuda: legenda,
         ),
         ..._cartoesDetalheRepro(bloco.detalheCampos),
       ],
     ),
+    if (listaDetalhe.isNotEmpty) ...[
+      const SizedBox(height: 12),
+      ListaCardsIndicador(
+        titulo: 'Detalhamento',
+        itens: listaDetalhe,
+      ),
+    ],
   ];
 }
 
 List<Widget> _histogramaParicao(IndicadoresLista lista) {
   final bloco = lista.histogramaParicao;
   final serie = bloco.serie('nascimentos_mes');
+  final listaDetalhe = _listaDetalhamentoRepro(bloco);
   return [
     ..._avisosReproducao(lista.reproducaoMeta),
     GradeCartoes(
@@ -1148,7 +1167,7 @@ List<Widget> _histogramaParicao(IndicadoresLista lista) {
           medicao: bloco.valorPrincipal,
           unidadePadrao: 'cab.',
           titulo: 'Nascimentos no período',
-          legenda: 'Total no histograma',
+          ajuda: 'Total no histograma',
         ),
         ..._cartoesDetalheRepro(bloco.detalheCampos),
       ],
@@ -1165,6 +1184,13 @@ List<Widget> _histogramaParicao(IndicadoresLista lista) {
           ),
       ],
     ),
+    if (listaDetalhe.isNotEmpty) ...[
+      const SizedBox(height: 12),
+      ListaCardsIndicador(
+        titulo: 'Detalhamento',
+        itens: listaDetalhe,
+      ),
+    ],
   ];
 }
 
@@ -1172,26 +1198,22 @@ List<Widget> _avisosReproducao(ReproducaoMetadados meta) {
   if (!meta.temAviso) {
     return const [];
   }
-  final linhas = <String>[
-    if (meta.parcial) 'Dados parciais — alguns vínculos ou horários são aproximados.',
+  final pendencias = <String>[
     for (final item in meta.pendencias)
       if ((item['msg']?.toString() ?? '').trim().isNotEmpty)
         '${item['brinco'] != null && item['brinco'].toString().trim().isNotEmpty ? 'Brinco ${item['brinco']}: ' : ''}${item['msg']}',
   ];
-  if (linhas.isEmpty && meta.limitacoes.isEmpty) {
+  if (!meta.parcial && pendencias.isEmpty && meta.limitacoes.isEmpty) {
     return const [];
   }
   return [
     CaixaNota(
       titulo: 'Atenção',
-      texto: [
-        ...linhas,
-        if (meta.limitacoes.isNotEmpty) ...[
-          if (linhas.isNotEmpty) '',
-          ...meta.limitacoes.take(3),
-          if (meta.limitacoes.length > 3) '…',
-        ],
-      ].join('\n'),
+      compacta: true,
+      texto: '',
+      parcial: meta.parcial,
+      pendencias: pendencias,
+      limitacoes: meta.limitacoes,
     ),
     const SizedBox(height: 12),
   ];
@@ -1224,6 +1246,32 @@ List<CartaoIndicador> _cartoesDetalheRepro(Map<String, dynamic> mapa) {
       );
       continue;
     }
+    if (valor is Map) {
+      final medicao = IndicadorValor.de(valor);
+      if (medicao.texto != null || medicao.qtd != null) {
+        saida.add(
+          CartaoIndicador(
+            medicao: medicao,
+            inteiro: medicao.qtd != null && medicao.qtd! % 1 == 0,
+            titulo: _rotuloCampoRepro(chave),
+          ),
+        );
+      }
+      continue;
+    }
+    if (valor is String) {
+      final texto = valor.trim();
+      if (texto.isEmpty) {
+        continue;
+      }
+      saida.add(
+        CartaoIndicador(
+          valor: texto,
+          titulo: _rotuloCampoRepro(chave),
+        ),
+      );
+      continue;
+    }
     final numero = numeroIndicador(valor);
     if (numero != null) {
       saida.add(
@@ -1233,10 +1281,65 @@ List<CartaoIndicador> _cartoesDetalheRepro(Map<String, dynamic> mapa) {
           titulo: _rotuloCampoRepro(chave),
         ),
       );
-      continue;
     }
   }
   return saida;
+}
+
+/// Lista (array) no detalhamento → cards; mapa fica em [_cartoesDetalheRepro].
+List<ItemCardIndicador> _listaDetalhamentoRepro(IndicadorBloco bloco) {
+  final linhas = bloco.detalhamento;
+  if (linhas.isEmpty) {
+    return const [];
+  }
+  return [
+    for (final item in linhas)
+      ItemCardIndicador(
+        titulo: _tituloLinhaRepro(item),
+        campos: [
+          for (final entry in item.entries)
+            if (entry.key != 'nome' &&
+                entry.key != 'titulo' &&
+                entry.key != 'brinco' &&
+                entry.key != 'id')
+              CampoCardIndicador(
+                _rotuloCampoRepro(entry.key),
+                _textoCampoRepro(entry.value),
+              ),
+        ],
+      ),
+  ];
+}
+
+String _tituloLinhaRepro(Map<String, dynamic> item) {
+  for (final chave in ['nome', 'titulo', 'brinco']) {
+    final valor = item[chave]?.toString().trim();
+    if (valor != null && valor.isNotEmpty) {
+      return chave == 'brinco' ? 'Brinco $valor' : valor;
+    }
+  }
+  final id = item['id'];
+  if (id != null) {
+    return 'Registro $id';
+  }
+  return 'Registro';
+}
+
+String _textoCampoRepro(dynamic valor) {
+  if (valor == null) {
+    return '—';
+  }
+  if (valor is bool) {
+    return valor ? 'Sim' : 'Não';
+  }
+  if (valor is Map) {
+    return IndicadorValor.de(valor).exibir();
+  }
+  if (valor is List) {
+    return valor.isEmpty ? '—' : '${valor.length}';
+  }
+  final texto = valor.toString().trim();
+  return texto.isEmpty ? '—' : texto;
 }
 
 String _rotuloCampoRepro(String chave) {
