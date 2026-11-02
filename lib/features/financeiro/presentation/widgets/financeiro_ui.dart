@@ -262,6 +262,48 @@ class IndicadorFaixaFinanceiro extends StatelessWidget {
   }
 }
 
+/// Faixa âmbar: período do contrato já passou (`data_fim` < hoje).
+class AvisoPeriodoVencido extends StatelessWidget {
+  const AvisoPeriodoVencido({super.key, this.dataFim});
+
+  final String? dataFim;
+
+  @override
+  Widget build(BuildContext context) {
+    final fim = (dataFim ?? '').trim();
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+      decoration: BoxDecoration(
+        color: const Color(0x14C45C26),
+        borderRadius: BorderRadius.circular(10),
+        border: Border.all(color: const Color(0x33C45C26)),
+      ),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Icon(Icons.event_busy_rounded, size: 16, color: Color(0xFFC45C26)),
+          const SizedBox(width: 8),
+          Expanded(
+            child: Text(
+              fim.isEmpty
+                  ? 'Período do contrato encerrado.'
+                  : 'Período encerrado em $fim.',
+              style: const TextStyle(
+                fontFamily: 'Montserrat',
+                fontSize: 12,
+                fontWeight: FontWeight.w600,
+                height: 1.3,
+                color: Color(0xFFC45C26),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
 class FlagStatusFinanceiro extends StatelessWidget {
   const FlagStatusFinanceiro({
     super.key,

@@ -530,6 +530,15 @@ class ParceriaFin {
   final List<VendaParceriaFin> vendas;
   final List<CustoParceriaFin> custos;
 
+  /// `data_fim` já passou (hoje > fim). Independente de [ativo] (inativação API).
+  bool get periodoVencido {
+    final fim = parseDataParceria(dataFim);
+    if (fim == null) return false;
+    final agora = DateTime.now();
+    final hoje = DateTime(agora.year, agora.month, agora.day);
+    return fim.isBefore(hoje);
+  }
+
   int get qtdAnimais => entradas.fold(0, (s, e) => s + e.animais.length);
 
   List<AnimalParceriaFin> get animaisAtivos {
@@ -661,6 +670,30 @@ class ParceriaFin {
       ],
     );
   }
+}
+
+DateTime? parseDataParceria(String? valor) {
+  final texto = (valor ?? '').trim();
+  if (texto.isEmpty) return null;
+  final br = RegExp(r'^(\d{2})/(\d{2})/(\d{4})$').firstMatch(texto);
+  if (br != null) {
+    final dia = int.tryParse(br.group(1)!);
+    final mes = int.tryParse(br.group(2)!);
+    final ano = int.tryParse(br.group(3)!);
+    if (dia == null || mes == null || ano == null) return null;
+    final data = DateTime(ano, mes, dia);
+    if (data.year != ano || data.month != mes || data.day != dia) return null;
+    return data;
+  }
+  final iso = RegExp(r'^(\d{4})-(\d{2})-(\d{2})').firstMatch(texto);
+  if (iso == null) return null;
+  final ano = int.tryParse(iso.group(1)!);
+  final mes = int.tryParse(iso.group(2)!);
+  final dia = int.tryParse(iso.group(3)!);
+  if (dia == null || mes == null || ano == null) return null;
+  final data = DateTime(ano, mes, dia);
+  if (data.year != ano || data.month != mes || data.day != dia) return null;
+  return data;
 }
 
 List<VendaParceriaFin> _vendasComAcerto({

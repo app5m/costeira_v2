@@ -196,6 +196,10 @@ class _ContratoDetalhePageState extends State<ContratoDetalhePage> with SingleTi
                               'Custo ${_pct(parceria.percentualCusto)} · Ganho ${_pct(parceria.percentualGanho)}',
                               style: const TextStyle(fontFamily: 'Montserrat', fontSize: 12, color: Color(0xFF8A8A8A)),
                             ),
+                            if (parceria.periodoVencido) ...[
+                              const SizedBox(height: 10),
+                              AvisoPeriodoVencido(dataFim: parceria.dataFim),
+                            ],
                             const SizedBox(height: 10),
                             Text(
                               '${parceria.qtdAnimais} ${parceria.qtdAnimais == 1 ? 'animal' : 'animais'} · ${parceria.entradas.length} ${parceria.entradas.length == 1 ? 'entrada' : 'entradas'}',

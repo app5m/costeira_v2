@@ -641,6 +641,10 @@ class _ContratosInvestidorPageState extends State<ContratosInvestidorPage> {
                       'Custo ${_pct(item.percentualCusto)} · Ganho ${_pct(item.percentualGanho)}',
                       style: const TextStyle(fontFamily: 'Montserrat', fontSize: 12, color: Color(0xFF8A8A8A)),
                     ),
+                    if (item.periodoVencido) ...[
+                      const SizedBox(height: 10),
+                      AvisoPeriodoVencido(dataFim: item.dataFim),
+                    ],
                   ],
                 ),
               ),
