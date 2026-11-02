@@ -135,7 +135,7 @@ class MenuActionResolver {
   }
 
   static bool isDevelopmentModule(String slug) {
-    return slug == MenuSlug.financeiro || slug == MenuSlug.relatorios;
+    return slug == MenuSlug.relatorios;
   }
 
   static Future<void> showDevelopmentDialog(

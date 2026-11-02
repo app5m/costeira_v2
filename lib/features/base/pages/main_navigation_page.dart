@@ -38,6 +38,7 @@ import 'package:costeira/features/movimentacoes/transferencias/presentation/web/
 import 'package:costeira/features/movimentacoes/vendas/presentation/web/vendas_web_page.dart';
 import 'package:costeira/features/movimentacoes/movimentacoes.dart';
 import 'package:costeira/features/notifications/presentation/pages/notification_page.dart';
+import 'package:costeira/features/financeiro/presentation/web/financeiro_web_shell.dart';
 import 'package:costeira/features/indicadores/presentation/web/indicadores_web_page.dart';
 import 'package:costeira/features/insumos/presentation/web/estoque_insumos_web_page.dart';
 import 'package:costeira/features/potreiros/presentation/web/potreiros_web_page.dart';
@@ -76,6 +77,9 @@ class _MainNavigationPageState extends State<MainNavigationPage>
   String? _activeWebMovementTitle;
   String? _activeWebProfileSlug;
   String? _activeWebProfileTitle;
+  bool _webFinanceiroAtivo = false;
+  bool _webFinanceiroAbrirForm = false;
+  bool _webFinanceiroAbrirInvestidores = false;
   _WebSidebarSection _webSidebarSection = _WebSidebarSection.navigation;
   String _userDisplayName = '';
   DashboardWebToolbarData? _dashboardToolbarData;
@@ -329,7 +333,8 @@ class _MainNavigationPageState extends State<MainNavigationPage>
     return [
       for (final item in _menusController.navigationMenu)
         if (!kIsWeb ||
-            MenuActionResolver.slugOf(item) != MenuSlug.movimentacoes)
+            (MenuActionResolver.slugOf(item) != MenuSlug.movimentacoes &&
+                MenuActionResolver.slugOf(item) != MenuSlug.financeiro))
           _NavTab(
             slug: MenuActionResolver.slugOf(item),
             label: item.name,
@@ -468,6 +473,13 @@ class _MainNavigationPageState extends State<MainNavigationPage>
         final showingWebMovement = _activeWebMovementSlug != null;
         final showingWebProfile = _activeWebProfileSlug != null;
         final overlayActive = showingWebMovement || showingWebProfile;
+        if (_webFinanceiroAtivo) {
+          return Scaffold(
+            key: _scaffoldKey,
+            backgroundColor: const Color(0xFFF6F4EE),
+            body: _webContent(tabs, hasTabs: hasTabs),
+          );
+        }
         return Scaffold(
           key: _scaffoldKey,
           backgroundColor: current?.slug == MenuSlug.dashboard
@@ -585,6 +597,9 @@ class _MainNavigationPageState extends State<MainNavigationPage>
       return false;
     }
     setState(() {
+      _webFinanceiroAtivo = false;
+      _webFinanceiroAbrirForm = false;
+      _webFinanceiroAbrirInvestidores = false;
       _activeWebProfileSlug = null;
       _activeWebProfileTitle = null;
       _activeWebMovementSlug = slug;
@@ -617,11 +632,55 @@ class _MainNavigationPageState extends State<MainNavigationPage>
     _openWebProfileModule(slug: MenuSlug.indicadores, title: 'Indicadores');
   }
 
+  void _openWebFinanceiro({
+    bool abrirForm = false,
+    bool abrirInvestidores = false,
+  }) {
+    if (!kIsWeb) return;
+    setState(() {
+      _activeWebMovementSlug = null;
+      _activeWebMovementTitle = null;
+      _activeWebProfileSlug = null;
+      _activeWebProfileTitle = null;
+      _webFinanceiroAtivo = true;
+      _webFinanceiroAbrirForm = abrirForm;
+      _webFinanceiroAbrirInvestidores = abrirInvestidores;
+      _webSidebarSection = _WebSidebarSection.navigation;
+    });
+    unawaited(
+      SessionStorage.saveWebSidebarSection(_WebSidebarSection.navigation.name),
+    );
+  }
+
+  void _closeWebFinanceiro() {
+    final tabs = _tabs;
+    final dashboardIndex = tabs.indexWhere(
+      (tab) => tab.slug == MenuSlug.dashboard,
+    );
+    final targetIndex = dashboardIndex >= 0 ? dashboardIndex : _selectedIndex;
+    setState(() {
+      _webFinanceiroAtivo = false;
+      _webFinanceiroAbrirForm = false;
+      _webFinanceiroAbrirInvestidores = false;
+      _selectedIndex = targetIndex;
+      _rememberActiveSlug(
+        dashboardIndex >= 0 ? MenuSlug.dashboard : tabs[targetIndex].slug,
+      );
+    });
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      _syncPageController(targetIndex);
+    });
+  }
+
   void _openWebProfileModule({required String slug, required String title}) {
     if (!kIsWeb) return;
     final tabs = _tabs;
     final perfilIndex = tabs.indexWhere((tab) => tab.slug == MenuSlug.perfil);
     setState(() {
+      _webFinanceiroAtivo = false;
+      _webFinanceiroAbrirForm = false;
+      _webFinanceiroAbrirInvestidores = false;
       _activeWebMovementSlug = null;
       _activeWebMovementTitle = null;
       _activeWebProfileSlug = slug;
@@ -660,6 +719,18 @@ class _MainNavigationPageState extends State<MainNavigationPage>
   }
 
   Widget _webContent(List<_NavTab> tabs, {required bool hasTabs}) {
+    if (_webFinanceiroAtivo) {
+      return FinanceiroWebShell(
+        key: ValueKey(
+          '$_shellGeracao-financeiro-'
+          '${_webFinanceiroAbrirForm ? 'form' : 'home'}-'
+          '${_webFinanceiroAbrirInvestidores ? 'inv' : 'std'}',
+        ),
+        onExit: _closeWebFinanceiro,
+        abrirForm: _webFinanceiroAbrirForm,
+        abrirInvestidores: _webFinanceiroAbrirInvestidores,
+      );
+    }
     if (_activeWebProfileSlug == MenuSlug.tarefas) {
       return TasksWebPage(key: ValueKey('$_shellGeracao-${MenuSlug.tarefas}'));
     }
@@ -727,16 +798,15 @@ class _MainNavigationPageState extends State<MainNavigationPage>
     if (!hasTabs) {
       return _emptyNavigationContent();
     }
-    return PageView(
-      controller: _pageController,
-      physics: const NeverScrollableScrollPhysics(),
-      onPageChanged: (page) {
-        setState(() {
-          _selectedIndex = page;
-          _rememberActiveSlug(tabs[page].slug);
-        });
-      },
-      children: [for (final tab in tabs) _pageFor(tab)],
+    // No web, os menus podem ser atualizados depois do primeiro frame. Manter
+    // um PageView com a lista antiga deixa o controller e os slivers fora de
+    // sincronia, resultando em conteúdo vazio e asserts de renderização.
+    // Renderizamos somente a aba ativa; a navegação continua sendo controlada
+    // pelo sidebar e o fluxo mobile permanece usando PageView.
+    final index = _selectedIndex.clamp(0, tabs.length - 1);
+    return KeyedSubtree(
+      key: ValueKey('$_shellGeracao-${tabs[index].slug}'),
+      child: _pageFor(tabs[index]),
     );
   }
 
@@ -858,6 +928,10 @@ class _MainNavigationPageState extends State<MainNavigationPage>
             ? DashboardWebPage(
                 key: chave,
                 onWebContextChanged: _onFarmChanged,
+                onOpenFinanceiro: () => _openWebFinanceiro(),
+                onOpenFinanceiroForm: () => _openWebFinanceiro(abrirForm: true),
+                onOpenInvestidores: () =>
+                    _openWebFinanceiro(abrirInvestidores: true),
                 onToolbarChanged: (data) {
                   if (!mounted || data == null) return;
                   final prev = _dashboardToolbarData;
@@ -893,6 +967,9 @@ class _MainNavigationPageState extends State<MainNavigationPage>
                 onOpenEstoque: _openWebEstoque,
                 onOpenPluviosidade: _openWebPluviosidade,
                 onOpenIndicadores: _openWebIndicadores,
+                onOpenFinanceiro: () => _openWebFinanceiro(),
+                onOpenInvestidores: () =>
+                    _openWebFinanceiro(abrirInvestidores: true),
               )
             : Menu(key: chave),
       _ => ModulePlaceholderPage(
@@ -919,6 +996,9 @@ class _MainNavigationPageState extends State<MainNavigationPage>
       return;
     }
     setState(() {
+      _webFinanceiroAtivo = false;
+      _webFinanceiroAbrirForm = false;
+      _webFinanceiroAbrirInvestidores = false;
       _activeWebMovementSlug = null;
       _activeWebMovementTitle = null;
       _activeWebProfileSlug = null;
@@ -1149,7 +1229,7 @@ class _WebSidebar extends StatelessWidget {
         profile = item;
         continue;
       }
-      if (slug == MenuSlug.movimentacoes) {
+      if (slug == MenuSlug.movimentacoes || slug == MenuSlug.financeiro) {
         continue;
       }
       final index = tabs.indexWhere((tab) => tab.slug == slug);

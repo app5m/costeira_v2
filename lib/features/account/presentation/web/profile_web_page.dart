@@ -15,6 +15,7 @@ import 'package:costeira/features/account/repositories/account_repository.dart';
 import 'package:costeira/features/auth/models/user_session.dart';
 import 'package:costeira/features/cadastros/domain/entities/parceiro_kind.dart';
 import 'package:costeira/features/cadastros/presentation/web/parceiros_list_web_dialog.dart';
+import 'package:costeira/features/financeiro/presentation/financeiro_acesso.dart';
 import 'package:costeira/features/usuarios/presentation/web/sub_usuarios_list_web_dialog.dart';
 import 'package:costeira/theme/colors.dart';
 import 'package:flutter/material.dart';
@@ -30,6 +31,8 @@ class ProfileWebPage extends StatefulWidget {
     this.onOpenEstoque,
     this.onOpenPluviosidade,
     this.onOpenIndicadores,
+    this.onOpenFinanceiro,
+    this.onOpenInvestidores,
   });
 
   final VoidCallback? onOpenTasks;
@@ -37,6 +40,8 @@ class ProfileWebPage extends StatefulWidget {
   final VoidCallback? onOpenEstoque;
   final VoidCallback? onOpenPluviosidade;
   final VoidCallback? onOpenIndicadores;
+  final VoidCallback? onOpenFinanceiro;
+  final VoidCallback? onOpenInvestidores;
 
   @override
   State<ProfileWebPage> createState() => _ProfileWebPageState();
@@ -387,8 +392,16 @@ class _ProfileWebPageState extends State<ProfileWebPage> {
 
   List<Widget> _menuChildren(List<AppMenuEntity> items, {required int depth}) {
     final widgets = <Widget>[];
+    final financeiroOk = podeVerFinanceiro(_menus);
     for (final item in items) {
+      final slug = MenuSlug.resolve(action: item.action, name: item.name);
+      if (!financeiroOk &&
+          (slug == MenuSlug.financeiro || slug == MenuSlug.investidores)) {
+        continue;
+      }
       if (item.children.isNotEmpty) {
+        final children = _menuChildren(item.children, depth: depth + 1);
+        if (children.isEmpty) continue;
         widgets.add(
           Padding(
             padding: EdgeInsets.fromLTRB(12.0 + depth * 12, 10, 8, 5),
@@ -405,7 +418,7 @@ class _ProfileWebPageState extends State<ProfileWebPage> {
             ),
           ),
         );
-        widgets.addAll(_menuChildren(item.children, depth: depth + 1));
+        widgets.addAll(children);
         continue;
       }
       widgets.add(
@@ -471,6 +484,20 @@ class _ProfileWebPageState extends State<ProfileWebPage> {
       final openIndicadores = widget.onOpenIndicadores;
       if (openIndicadores != null) {
         openIndicadores();
+        return;
+      }
+    }
+    if (slug == MenuSlug.financeiro) {
+      final openFinanceiro = widget.onOpenFinanceiro;
+      if (openFinanceiro != null) {
+        openFinanceiro();
+        return;
+      }
+    }
+    if (slug == MenuSlug.investidores) {
+      final openInvestidores = widget.onOpenInvestidores;
+      if (openInvestidores != null) {
+        openInvestidores();
         return;
       }
     }

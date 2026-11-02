@@ -18,6 +18,7 @@ import 'package:costeira/features/dashboard/presentation/widgets/dashboard_chart
 import 'package:costeira/features/fazendas/domain/entities/fazenda_entity.dart';
 import 'package:costeira/features/fazendas/domain/entities/fazenda_filter_entity.dart';
 import 'package:costeira/features/fazendas/domain/usecases/get_fazendas_usecase.dart';
+import 'package:costeira/features/financeiro/presentation/widgets/cartao_financeiro_dashboard.dart';
 import 'package:costeira/theme/colors.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_modular/flutter_modular.dart';
@@ -160,10 +161,16 @@ class DashboardWebPage extends StatefulWidget {
     super.key,
     this.onToolbarChanged,
     this.onWebContextChanged,
+    this.onOpenFinanceiro,
+    this.onOpenFinanceiroForm,
+    this.onOpenInvestidores,
   });
 
   final ValueChanged<DashboardWebToolbarData?>? onToolbarChanged;
   final Future<void> Function()? onWebContextChanged;
+  final VoidCallback? onOpenFinanceiro;
+  final VoidCallback? onOpenFinanceiroForm;
+  final VoidCallback? onOpenInvestidores;
 
   @override
   State<DashboardWebPage> createState() => _DashboardWebPageState();
@@ -424,6 +431,20 @@ class _DashboardWebPageState extends State<DashboardWebPage> {
 
   Future<void> _openDashboardItem(AppMenuEntity item) async {
     final slug = MenuActionResolver.slugOf(item);
+    if (slug == MenuSlug.financeiro) {
+      final open = widget.onOpenFinanceiro;
+      if (open != null) {
+        open();
+        return;
+      }
+    }
+    if (slug == MenuSlug.investidores) {
+      final open = widget.onOpenInvestidores;
+      if (open != null) {
+        open();
+        return;
+      }
+    }
     final page = MenuActionResolver.dashboardPage(slug);
     if (_usesWebDialog(slug) && page != null) {
       final result = await showDialog<Object?>(
@@ -637,6 +658,13 @@ class _DashboardWebPageState extends State<DashboardWebPage> {
                                   pending: indicators.pendentes,
                                   overdue: indicators.emAtraso,
                                   urgent: indicators.urgentes,
+                                ),
+                                const SizedBox(height: 12),
+                                CartaoFinanceiroDashboard(
+                                  onAbrir: widget.onOpenFinanceiro,
+                                  onNovoLancamento:
+                                      widget.onOpenFinanceiroForm ??
+                                      widget.onOpenFinanceiro,
                                 ),
                                 const SizedBox(height: 12),
                                 _metricGrid(viewportWidth),
