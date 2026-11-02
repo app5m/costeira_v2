@@ -61,8 +61,12 @@ class _FazendasPageState extends State<FazendasPage> {
     if (!mounted) {
       return;
     }
+    final deleted = result?['deleted'] == true;
     _showMessage(
-      result?['message']?.toString() ?? 'Fazenda atualizada com sucesso.',
+      result?['message']?.toString() ??
+          (deleted
+              ? 'Fazenda excluida com sucesso.'
+              : 'Fazenda atualizada com sucesso.'),
       isError: false,
     );
   }

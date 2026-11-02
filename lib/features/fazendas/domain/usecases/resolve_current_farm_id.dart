@@ -5,15 +5,50 @@ import 'package:costeira/features/fazendas/domain/usecases/get_fazendas_usecase.
 import 'package:flutter/foundation.dart';
 
 class ResolveCurrentFarmId {
-  const ResolveCurrentFarmId(this._getFazendasUsecase);
+  ResolveCurrentFarmId(this._getFazendasUsecase);
 
   final GetFazendasUsecase _getFazendasUsecase;
 
+  int? _cache;
+  Future<int?>? _inflight;
+
+  /// Limpa cache em memória (ex.: troca de fazenda / logout).
+  void limparCache() {
+    _cache = null;
+    _inflight = null;
+  }
+
   Future<int?> call({int? preferred, int? userId}) async {
     if (preferred != null && preferred > 0) {
+      _cache = preferred;
       return preferred;
     }
+    if (_cache != null && _cache! > 0) {
+      return _cache;
+    }
 
+    // Preferir fazenda já salva — evita N× /fazendas/listar (FinanceiroApi._base).
+    final saved = await SessionStorage.getSelectedFarmId();
+    if (saved != null && saved > 0) {
+      _cache = saved;
+      return saved;
+    }
+
+    final pending = _inflight;
+    if (pending != null) return pending;
+
+    final future = _resolverDaApi(userId);
+    _inflight = future;
+    try {
+      return await future;
+    } finally {
+      if (identical(_inflight, future)) {
+        _inflight = null;
+      }
+    }
+  }
+
+  Future<int?> _resolverDaApi(int? userId) async {
     final managedId = SessionStorage.cachedManagedClientId;
     final sessionUserId =
         managedId ?? userId ?? (await SessionStorage.getUserSession())?.id;
@@ -45,6 +80,7 @@ class ResolveCurrentFarmId {
     if (selected != saved) {
       await SessionStorage.saveSelectedFarmId(selected);
     }
+    _cache = selected;
     return selected;
   }
 }

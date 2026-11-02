@@ -1,3 +1,4 @@
+import 'package:costeira/core/api/api_exception.dart';
 import 'package:costeira/core/common/get_list/domain/entities/get_list_params_entity.dart';
 import 'package:costeira/core/common/get_list/domain/usecases/get_list_usecase.dart';
 import 'package:costeira/core/menus/app_menus_controller.dart';
@@ -34,6 +35,7 @@ class _DashboardState extends State<Dashboard> {
   List<FazendaEntity> _farms = const [];
   int? _farmId;
   bool _loadingFarms = true;
+  String? _farmsError;
   bool _wasLoading = false;
   int _chartPlay = 0;
 
@@ -97,11 +99,17 @@ class _DashboardState extends State<Dashboard> {
     if (_loadingFarms) {
       return 'Carregando...';
     }
-    if (_farms.isEmpty) {
-      return 'Nenhuma fazenda';
+    if (_farms.isNotEmpty) {
+      final selected = _farms.where((farm) => farm.id == _farmId);
+      return _farmLabel(selected.isNotEmpty ? selected.first : _farms.first);
     }
-    final selected = _farms.where((farm) => farm.id == _farmId);
-    return _farmLabel(selected.isNotEmpty ? selected.first : _farms.first);
+    if (_farmId != null && _farmId! > 0) {
+      return 'Fazenda $_farmId';
+    }
+    if (_farmsError != null) {
+      return 'Erro ao carregar';
+    }
+    return 'Nenhuma fazenda';
   }
 
   Future<void> _loadFarms() async {
@@ -109,7 +117,10 @@ class _DashboardState extends State<Dashboard> {
       final user = await SessionStorage.getUserSession();
       if (user == null) {
         if (mounted) {
-          setState(() => _loadingFarms = false);
+          setState(() {
+            _loadingFarms = false;
+            _farmsError = null;
+          });
         }
         return;
       }
@@ -132,12 +143,30 @@ class _DashboardState extends State<Dashboard> {
       setState(() {
         _farms = result.data;
         _farmId = selectedId;
+        _farmsError = null;
         _loadingFarms = false;
       });
       await _loadDashboard();
-    } catch (_) {
-      if (mounted) {
-        setState(() => _loadingFarms = false);
+    } catch (error) {
+      final saved = await SessionStorage.getSelectedFarmId();
+      final msg = error is ApiException
+          ? (error.statusCode == 500
+                ? 'Servidor falhou ao listar fazendas (/fazendas/listar).'
+                : error.message)
+          : 'Nao foi possivel carregar as fazendas.';
+      if (!mounted) {
+        return;
+      }
+      setState(() {
+        _farmsError = msg;
+        _farmId = saved;
+        _farms = saved != null && saved > 0
+            ? [FazendaEntity.stub(id: saved)]
+            : const [];
+        _loadingFarms = false;
+      });
+      if (saved != null && saved > 0) {
+        await _loadDashboard();
       }
     }
   }
@@ -192,7 +221,14 @@ class _DashboardState extends State<Dashboard> {
   }
 
   Future<void> _pickFarm() async {
-    if (_loadingFarms || _farms.isEmpty) {
+    if (_loadingFarms) {
+      return;
+    }
+    if (_farmsError != null) {
+      await _showFarmsErrorSheet();
+      return;
+    }
+    if (_farms.isEmpty) {
       return;
     }
     final selected = await showModalBottomSheet<int>(
@@ -346,6 +382,96 @@ class _DashboardState extends State<Dashboard> {
     }
     setState(() => _farmId = selected);
     await _loadDashboard();
+  }
+
+  Future<void> _showFarmsErrorSheet() async {
+    final retry = await showModalBottomSheet<bool>(
+      context: context,
+      backgroundColor: Colors.white,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (sheetContext) {
+        return SafeArea(
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(20, 10, 20, 20),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Center(
+                  child: Container(
+                    width: 40,
+                    height: 4,
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFD8D8D8),
+                      borderRadius: BorderRadius.circular(4),
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 16),
+                const Text(
+                  'Fazendas indisponíveis',
+                  style: TextStyle(
+                    fontFamily: 'Montserrat',
+                    fontSize: 18,
+                    fontWeight: FontWeight.w700,
+                    color: Color(0xFF1C1C1C),
+                  ),
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  _farmsError ??
+                      'Não foi possível listar as fazendas agora.',
+                  style: const TextStyle(
+                    fontFamily: 'Montserrat',
+                    fontSize: 13,
+                    color: Color(0xFF6B6B6B),
+                    height: 1.4,
+                  ),
+                ),
+                if (_farmId != null) ...[
+                  const SizedBox(height: 8),
+                  Text(
+                    'Usando fazenda salva #$_farmId enquanto a lista não volta.',
+                    style: const TextStyle(
+                      fontFamily: 'Montserrat',
+                      fontSize: 12,
+                      color: Color(0xFF8A8A8A),
+                    ),
+                  ),
+                ],
+                const SizedBox(height: 16),
+                SizedBox(
+                  width: double.infinity,
+                  child: ElevatedButton(
+                    onPressed: () => Navigator.pop(sheetContext, true),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: MyColors.colorPrimary,
+                      foregroundColor: Colors.white,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                    ),
+                    child: const Text(
+                      'Tentar de novo',
+                      style: TextStyle(
+                        fontFamily: 'Montserrat',
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+    if (retry == true && mounted) {
+      setState(() => _loadingFarms = true);
+      await _loadFarms();
+    }
   }
 
   String get _periodLabel {

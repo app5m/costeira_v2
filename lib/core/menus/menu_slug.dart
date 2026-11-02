@@ -16,6 +16,7 @@ class MenuSlug {
   static const relatorios = 'relatorios';
   static const fornecedores = 'fornecedores';
   static const compradores = 'compradores';
+  static const investidores = 'investidores';
   static const usuarios = 'usuarios';
   static const dashboard = 'dashboard';
   static const fazendas = 'fazendas';

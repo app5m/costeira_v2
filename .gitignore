@@ -43,3 +43,8 @@ app.*.map.json
 /android/app/debug
 /android/app/profile
 /android/app/release
+
+# Local / temp artifacts
+.tmp/
+.tmp_video_frames/
+third_party/lucide_icons/pubspec.lock

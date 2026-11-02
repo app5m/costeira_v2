@@ -46,6 +46,48 @@ class _FazendaFormPageState extends State<FazendaFormPage> {
     AppSnackBar.show(context: context, message: result.message, isError: true);
   }
 
+  Future<void> _delete() async {
+    if (!_pageController.canDelete || _pageController.isLoading) return;
+    final ok = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text(
+          'Excluir fazenda?',
+          style: TextStyle(fontFamily: 'Montserrat', fontWeight: FontWeight.w700),
+        ),
+        content: const Text(
+          'A fazenda será removida. Esta ação não pode ser desfeita.',
+          style: TextStyle(fontFamily: 'Montserrat', fontSize: 13),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: const Text('Voltar'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(context, true),
+            child: const Text(
+              'Excluir',
+              style: TextStyle(color: Color(0xFFC62828)),
+            ),
+          ),
+        ],
+      ),
+    );
+    if (ok != true || !mounted) return;
+    final result = await _pageController.delete();
+    if (!mounted) return;
+    if (result.isSuccess) {
+      Modular.to.pop({
+        'success': true,
+        'deleted': true,
+        'message': result.message,
+      });
+      return;
+    }
+    AppSnackBar.show(context: context, message: result.message, isError: true);
+  }
+
   @override
   Widget build(BuildContext context) {
     return AnimatedBuilder(
@@ -58,6 +100,15 @@ class _FazendaFormPageState extends State<FazendaFormPage> {
             title: _pageController.isEditing
                 ? 'Editar fazenda'
                 : 'Adicionar fazenda',
+            actions: _pageController.canDelete
+                ? [
+                    IconButton(
+                      onPressed: _pageController.isLoading ? null : _delete,
+                      icon: const Icon(Icons.delete_outline),
+                      tooltip: 'Excluir fazenda',
+                    ),
+                  ]
+                : null,
           ),
           body: _pageController.isLoadingProfile
               ? const Center(child: CircularProgressIndicator())

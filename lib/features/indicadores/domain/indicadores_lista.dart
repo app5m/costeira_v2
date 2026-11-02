@@ -51,9 +51,28 @@ class IndicadorBloco {
     return const {};
   }
 
-  List<Map<String, dynamic>> get detalhamento => _lista(raw['detalhamento']);
+  /// Lista quando API manda array; vazio se vier mapa (reprodução).
+  List<Map<String, dynamic>> get detalhamento {
+    final valor = raw['detalhamento'];
+    if (valor is List) {
+      return _lista(valor);
+    }
+    return const [];
+  }
+
+  /// Reprodução manda `detalhamento` como objeto chave→valor.
+  Map<String, dynamic> get detalheCampos {
+    final valor = raw['detalhamento'];
+    if (valor is Map) {
+      return Map<String, dynamic>.from(valor);
+    }
+    return const {};
+  }
 
   IndicadorValor valor(String chave) => IndicadorValor.de(indicadores[chave]);
+
+  /// Atalho do bloco de reprodução (`indicadores.valor`).
+  IndicadorValor get valorPrincipal => valor('valor');
 
   Map<String, dynamic> get calculo => _mapa(indicadores['calculo']);
 
@@ -61,6 +80,22 @@ class IndicadorBloco {
 
   int? get mesesEstoqueMedio =>
       numeroIndicador(raw['meses_estoque_medio'])?.round();
+}
+
+class ReproducaoMetadados {
+  const ReproducaoMetadados({
+    this.parcial = false,
+    this.pendencias = const [],
+    this.limitacoes = const [],
+  });
+
+  final bool parcial;
+  final List<Map<String, dynamic>> pendencias;
+  final List<String> limitacoes;
+
+  static const vazio = ReproducaoMetadados();
+
+  bool get temAviso => parcial || pendencias.isNotEmpty || limitacoes.isNotEmpty;
 }
 
 class IndicadoresLista {
@@ -76,6 +111,16 @@ class IndicadoresLista {
     required this.taxaAbate,
     required this.taxaGiro,
     required this.mortalidade,
+    this.taxaPrenhez = IndicadorBloco.vazio,
+    this.taxaNatalidade = IndicadorBloco.vazio,
+    this.taxaDesmame = IndicadorBloco.vazio,
+    this.pesoDesmame = IndicadorBloco.vazio,
+    this.kgVacaExposta = IndicadorBloco.vazio,
+    this.taxaAborto = IndicadorBloco.vazio,
+    this.intervaloEntrePartos = IndicadorBloco.vazio,
+    this.histogramaParicao = IndicadorBloco.vazio,
+    this.merma = IndicadorBloco.vazio,
+    this.reproducaoMeta = ReproducaoMetadados.vazio,
   });
 
   final PeriodoIndicadores periodo;
@@ -89,6 +134,16 @@ class IndicadoresLista {
   final IndicadorBloco taxaAbate;
   final IndicadorBloco taxaGiro;
   final IndicadorBloco mortalidade;
+  final IndicadorBloco taxaPrenhez;
+  final IndicadorBloco taxaNatalidade;
+  final IndicadorBloco taxaDesmame;
+  final IndicadorBloco pesoDesmame;
+  final IndicadorBloco kgVacaExposta;
+  final IndicadorBloco taxaAborto;
+  final IndicadorBloco intervaloEntrePartos;
+  final IndicadorBloco histogramaParicao;
+  final IndicadorBloco merma;
+  final ReproducaoMetadados reproducaoMeta;
 
   static const vazia = IndicadoresLista(
     periodo: PeriodoIndicadores(),

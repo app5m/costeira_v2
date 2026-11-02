@@ -1,5 +1,6 @@
 import 'package:costeira/features/fazendas/domain/repository/fazendas_datasource.dart';
 import 'package:costeira/features/fazendas/domain/usecases/create_fazenda_usecase.dart';
+import 'package:costeira/features/fazendas/domain/usecases/delete_fazenda_usecase.dart';
 import 'package:costeira/features/fazendas/domain/usecases/get_fazendas_usecase.dart';
 import 'package:costeira/features/fazendas/domain/usecases/resolve_current_farm_id.dart';
 import 'package:costeira/features/fazendas/domain/usecases/update_fazenda_usecase.dart';
@@ -17,6 +18,7 @@ class FazendasBinds {
     i.addLazySingleton(ResolveCurrentFarmId.new);
     i.addLazySingleton(CreateFazendaUsecase.new);
     i.addLazySingleton(UpdateFazendaUsecase.new);
+    i.addLazySingleton(DeleteFazendaUsecase.new);
     i.add(ListFazendasController.new);
     i.add(SaveFazendaController.new);
     i.add(FazendasListPageController.new);

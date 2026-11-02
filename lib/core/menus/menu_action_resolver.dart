@@ -39,6 +39,7 @@ import 'package:costeira/features/movimentacoes/vendas/presentation/pages/add_ve
 import 'package:costeira/features/movimentacoes/vendas/presentation/pages/vendas.dart';
 import 'package:costeira/features/movimentacoes/vendas/presentation/web/vendas_web_page.dart';
 import 'package:costeira/features/pastagem_nutricao_suplemento/presentation/pages/suplementacao/add_suplemento.dart';
+import 'package:costeira/features/financeiro/presentation/financeiro_shell_page.dart';
 import 'package:costeira/features/sanitarios/presentation/pages/add_planejamento.dart';
 import 'package:costeira/theme/colors.dart';
 import 'package:flutter/foundation.dart';
@@ -85,6 +86,13 @@ class MenuActionResolver {
             message: 'Em breve.',
             menu: item,
           ),
+        );
+        return;
+      }
+      if (slug == MenuSlug.investidores) {
+        Modular.to.pushNamed(
+          route,
+          arguments: const FinanceiroAbrir.investidores(),
         );
         return;
       }
@@ -205,8 +213,10 @@ class MenuActionResolver {
       MenuSlug.tarefas => AppRoutes.tasks,
       MenuSlug.pluviosidade => AppRoutes.climateRain,
       MenuSlug.indicadores => AppRoutes.indicadores,
+      MenuSlug.relatorios => AppRoutes.relatorios,
       MenuSlug.fornecedores => AppRoutes.fornecedores,
       MenuSlug.compradores => AppRoutes.compradores,
+      MenuSlug.investidores => AppRoutes.financeiro,
       MenuSlug.usuarios => AppRoutes.usuarios,
       MenuSlug.movimentacoes => AppRoutes.movimentacoes,
       _ => null,

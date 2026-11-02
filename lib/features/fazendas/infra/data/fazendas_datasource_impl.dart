@@ -76,6 +76,37 @@ class FazendasDatasourceImpl implements FazendasDatasource {
     );
   }
 
+  @override
+  Future<ApiMessage> deleteFazenda({
+    required int id,
+    required int appUsersId,
+  }) async {
+    if (id <= 0) {
+      throw ApiException('Informe o id da fazenda para excluir.');
+    }
+    if (appUsersId <= 0) {
+      throw ApiException('Usuario nao autenticado para excluir fazenda.');
+    }
+
+    final payload = <String, dynamic>{
+      'token': WSConstantes.token,
+      'id': id,
+      'app_users_id': appUsersId,
+    };
+    AppLogger.info('FAZENDAS DATASOURCE: DELETE PAYLOAD=$payload');
+
+    final response = await _apiClient.post(
+      WSConstantes.fazendasExcluir,
+      data: payload,
+    );
+    AppLogger.success('FAZENDAS DATASOURCE: DELETE RAW RESPONSE=$response');
+
+    return _parseMutation(
+      response,
+      fallbackMessage: 'Fazenda excluida com sucesso',
+    );
+  }
+
   FazendaListEntity _parseList(dynamic response) {
     final map = responseAsMap(response);
 

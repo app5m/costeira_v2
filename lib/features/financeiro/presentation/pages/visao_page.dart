@@ -16,238 +16,163 @@ class VisaoGeralPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final loja = FinanceiroEscopo.of(context);
-    final recentes = loja.lancamentos.take(4);
+    final recentes = loja.lancamentos.take(4).toList();
+    final carregando = loja.carregando;
     return ListView(
       padding: const EdgeInsets.fromLTRB(16, 12, 16, 96),
       children: [
-        Row(
-          children: const [
-            Expanded(
-              child: _FiltroPill(
-                icone: Icons.warehouse_outlined,
-                rotulo: 'Fazenda Filial Norte',
-              ),
-            ),
-            SizedBox(width: 8),
-            Expanded(
-              child: _FiltroPill(
-                icone: Icons.calendar_today_outlined,
-                rotulo: '2026/2027',
-              ),
-            ),
-          ],
-        ),
+        const ContextoFinanceiroFiltros(),
         const SizedBox(height: 12),
-        Row(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Expanded(
-              child: _Mini(
-                'Saldo disponível',
-                reais(loja.saldoDisponivel),
-                MyColors.colorPrimary,
-              ),
-            ),
-            const SizedBox(width: 8),
-            Expanded(
-              child: _Mini('Entradas', reais(8900), MyColors.colorPrimary),
-            ),
-            const SizedBox(width: 8),
-            Expanded(
-              child: _Mini('Saídas', reais(3250), const Color(0xFFC62828)),
-            ),
-          ],
-        ),
-        const SizedBox(height: 12),
-        const CartaoBranco(child: _BarrasFluxo()),
-        const SizedBox(height: 12),
-        CartaoBranco(
-          child: Column(
+        if (carregando && recentes.isEmpty) ...[
+          const LoadingFinanceiro(
+            altura: 220,
+            rotulo: 'Carregando movimentações…',
+          ),
+        ] else ...[
+          Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const Text(
-                'Pendências a pagar e receber',
-                style: TextStyle(
-                  fontFamily: 'Montserrat',
-                  fontWeight: FontWeight.w700,
+              Expanded(
+                child: IndicadorMiniFinanceiro(
+                  'Saldo disponível',
+                  loja.saldoTexto,
+                  MyColors.colorPrimary,
                 ),
               ),
-              const SizedBox(height: 8),
-              Text(
-                'A pagar ${reais(loja.aPagar)}',
-                style: const TextStyle(
-                  fontFamily: 'Montserrat',
-                  color: Color(0xFFC62828),
+              const SizedBox(width: 8),
+              Expanded(
+                child: IndicadorMiniFinanceiro(
+                  'Entradas',
+                  loja.entradasTexto,
+                  MyColors.colorPrimary,
                 ),
               ),
-              Text(
-                'A receber ${reais(loja.aReceber)}',
-                style: const TextStyle(
-                  fontFamily: 'Montserrat',
-                  color: MyColors.colorPrimary,
+              const SizedBox(width: 8),
+              Expanded(
+                child: IndicadorMiniFinanceiro(
+                  'Saídas',
+                  loja.saidasTexto,
+                  const Color(0xFFC62828),
                 ),
               ),
             ],
           ),
-        ),
-        const SizedBox(height: 16),
-        Row(
-          children: [
-            const Expanded(
-              child: Text(
-                'Últimos movimentos',
-                style: TextStyle(
-                  fontFamily: 'Montserrat',
-                  fontWeight: FontWeight.w700,
-                  fontSize: 15,
-                ),
-              ),
-            ),
-            TextButton(
-              onPressed: aoVerExtrato,
-              child: const Text('Ver extrato'),
-            ),
-          ],
-        ),
-        for (final item in recentes) ...[
+          const SizedBox(height: 12),
+          CartaoBranco(child: _BarrasFluxo(valores: loja.barrasFluxo)),
+          const SizedBox(height: 12),
           CartaoBranco(
-            aoToque: () => aoAbrir(item),
-            child: Row(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Icon(
-                  item.entrada ? Icons.south_west : Icons.north_east,
-                  size: 16,
-                  color: item.entrada
-                      ? MyColors.colorPrimary
-                      : const Color(0xFFC62828),
+                const Text(
+                  'Pendências a pagar e receber',
+                  style: TextStyle(
+                    fontFamily: 'Montserrat',
+                    fontWeight: FontWeight.w700,
+                  ),
                 ),
-                const SizedBox(width: 8),
-                Expanded(
-                  child: Text(
-                    item.titulo,
-                    style: const TextStyle(
-                      fontFamily: 'Montserrat',
-                      fontWeight: FontWeight.w600,
-                    ),
+                const SizedBox(height: 8),
+                Text(
+                  'A pagar ${reais(loja.aPagar)}',
+                  style: const TextStyle(
+                    fontFamily: 'Montserrat',
+                    color: Color(0xFFC62828),
                   ),
                 ),
                 Text(
-                  reais(item.valor),
+                  'A receber ${reais(loja.aReceber)}',
                   style: const TextStyle(
                     fontFamily: 'Montserrat',
-                    fontWeight: FontWeight.w700,
+                    color: MyColors.colorPrimary,
                   ),
                 ),
               ],
             ),
           ),
-          const SizedBox(height: 8),
+          const SizedBox(height: 16),
+          Row(
+            children: [
+              const Expanded(
+                child: Text(
+                  'Últimas movimentações',
+                  style: TextStyle(
+                    fontFamily: 'Montserrat',
+                    fontWeight: FontWeight.w700,
+                    fontSize: 15,
+                  ),
+                ),
+              ),
+              TextButton(
+                onPressed: aoVerExtrato,
+                child: const Text('Ver extrato'),
+              ),
+            ],
+          ),
+          if (carregando)
+            const LoadingFinanceiro(altura: 96, rotulo: 'Atualizando…')
+          else if (recentes.isEmpty)
+            const Padding(
+              padding: EdgeInsets.symmetric(vertical: 24),
+              child: Text(
+                'Nenhum movimento no período.',
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  fontFamily: 'Montserrat',
+                  fontSize: 13,
+                  color: Color(0xFF8692A8),
+                ),
+              ),
+            )
+          else
+            for (final item in recentes) ...[
+              CartaoBranco(
+                aoToque: () => aoAbrir(item),
+                child: Row(
+                  children: [
+                    Icon(
+                      item.entrada ? Icons.south_west : Icons.north_east,
+                      size: 16,
+                      color: item.entrada
+                          ? MyColors.colorPrimary
+                          : const Color(0xFFC62828),
+                    ),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: Text(
+                        item.titulo,
+                        style: const TextStyle(
+                          fontFamily: 'Montserrat',
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ),
+                    Text(
+                      reais(item.valor),
+                      style: const TextStyle(
+                        fontFamily: 'Montserrat',
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 8),
+            ],
         ],
       ],
     );
   }
 }
 
-class _FiltroPill extends StatelessWidget {
-  const _FiltroPill({required this.icone, required this.rotulo});
-
-  final IconData icone;
-  final String rotulo;
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: const Color(0xFFE6E6E6)),
-      ),
-      child: Row(
-        children: [
-          Icon(icone, size: 14, color: MyColors.colorPrimary),
-          const SizedBox(width: 6),
-          Expanded(
-            child: Text(
-              rotulo,
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-              style: const TextStyle(
-                fontFamily: 'Montserrat',
-                fontSize: 12,
-                fontWeight: FontWeight.w600,
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class _Mini extends StatelessWidget {
-  const _Mini(this.rotulo, this.valor, this.cor);
-
-  final String rotulo;
-  final String valor;
-  final Color cor;
-
-  @override
-  Widget build(BuildContext context) {
-    return DecoratedBox(
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: const Color(0xFFE6E6E6)),
-      ),
-      child: Padding(
-        padding: const EdgeInsets.fromLTRB(10, 10, 10, 12),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            SizedBox(
-              height: 28,
-              child: Text(
-                rotulo,
-                maxLines: 2,
-                overflow: TextOverflow.ellipsis,
-                style: const TextStyle(
-                  fontFamily: 'Montserrat',
-                  fontSize: 10,
-                  height: 1.25,
-                  fontWeight: FontWeight.w600,
-                  color: Color(0xFF8A8A8A),
-                ),
-              ),
-            ),
-            const SizedBox(height: 8),
-            FittedBox(
-              fit: BoxFit.scaleDown,
-              alignment: Alignment.centerLeft,
-              child: Text(
-                valor,
-                maxLines: 1,
-                style: TextStyle(
-                  fontFamily: 'Montserrat',
-                  fontSize: 14,
-                  fontWeight: FontWeight.w800,
-                  color: cor,
-                ),
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
 class _BarrasFluxo extends StatelessWidget {
-  const _BarrasFluxo();
+  const _BarrasFluxo({required this.valores});
+
+  final List<double> valores;
 
   @override
   Widget build(BuildContext context) {
-    const valores = [40.0, 70.0, 35.0, 90.0, 55.0, 80.0];
+    final barras = valores.isEmpty ? const [0.0] : valores;
+    final topo = barras.reduce((a, b) => a > b ? a : b);
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -264,14 +189,14 @@ class _BarrasFluxo extends StatelessWidget {
           child: Row(
             crossAxisAlignment: CrossAxisAlignment.end,
             children: [
-              for (final v in valores)
+              for (final v in barras)
                 Expanded(
                   child: Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 3),
                     child: Align(
                       alignment: Alignment.bottomCenter,
                       child: Container(
-                        height: v,
+                        height: topo == 0 ? 4 : (v / topo) * 72,
                         decoration: BoxDecoration(
                           color: MyColors.colorPrimary.withValues(alpha: 0.85),
                           borderRadius: BorderRadius.circular(4),
@@ -289,60 +214,61 @@ class _BarrasFluxo extends StatelessWidget {
 }
 
 class RelatoriosPage extends StatelessWidget {
-  const RelatoriosPage({super.key});
+  const RelatoriosPage({super.key, required this.aoAbrir});
+
+  final ValueChanged<String> aoAbrir;
 
   @override
   Widget build(BuildContext context) {
     const itens = [
-      'Extrato / Livro caixa',
-      'DRE',
-      'Resultado por categoria',
-      'Por investidor',
-      'Fluxo de caixa detalhado',
+      ('extrato', 'Extrato / Livro caixa', 'Movimentos de caixa do ano'),
+      ('fluxo', 'Fluxo de caixa', 'Saldo, entradas e meses'),
+      ('dre', 'DRE', 'Livro caixa, financeira e econômica'),
+      ('resultado', 'Resultado por categoria', 'Cabeças, custos e resultado'),
+      ('investidor', 'Por investidor', 'Contratos e entradas de parceria'),
     ];
     return ListView(
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.fromLTRB(16, 12, 16, 24),
       children: [
-        const Text(
-          'Em desenvolvimento',
-          style: TextStyle(
-            fontFamily: 'Montserrat',
-            fontWeight: FontWeight.w700,
-            fontSize: 16,
-          ),
-        ),
-        const SizedBox(height: 6),
-        const Text(
-          'Os relatórios entram quando o fluxo fechar. Por enquanto só a lista.',
-          style: TextStyle(fontFamily: 'Montserrat', color: Color(0xFF8A8A8A)),
-        ),
-        const SizedBox(height: 12),
         for (final item in itens) ...[
           CartaoBranco(
+            aoToque: () => aoAbrir(item.$1),
             child: Row(
               children: [
-                const Icon(
-                  Icons.insert_chart_outlined,
+                Icon(
+                  item.$1 == 'investidor'
+                      ? Icons.handshake_outlined
+                      : Icons.insert_chart_outlined,
                   color: MyColors.colorPrimary,
                   size: 18,
                 ),
                 const SizedBox(width: 10),
                 Expanded(
-                  child: Text(
-                    item,
-                    style: const TextStyle(
-                      fontFamily: 'Montserrat',
-                      fontWeight: FontWeight.w600,
-                    ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        item.$2,
+                        style: const TextStyle(
+                          fontFamily: 'Montserrat',
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
+                      Text(
+                        item.$3,
+                        style: const TextStyle(
+                          fontFamily: 'Montserrat',
+                          fontSize: 12,
+                          color: Color(0xFF8A8A8A),
+                        ),
+                      ),
+                    ],
                   ),
                 ),
-                const Text(
-                  'Em breve',
-                  style: TextStyle(
-                    fontFamily: 'Montserrat',
-                    fontSize: 12,
-                    color: Color(0xFF8A8A8A),
-                  ),
+                const Icon(
+                  Icons.chevron_right,
+                  color: Color(0xFF8A8A8A),
+                  size: 18,
                 ),
               ],
             ),

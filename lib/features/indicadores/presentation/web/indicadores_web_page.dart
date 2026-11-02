@@ -607,6 +607,16 @@ IconData _iconeIndicador(IndicadorId id) {
     case IndicadorId.taxaGiro:
     case IndicadorId.mortalidade:
       return LucideIcons.percent;
+    case IndicadorId.taxaPrenhez:
+    case IndicadorId.taxaNatalidade:
+    case IndicadorId.taxaDesmame:
+    case IndicadorId.pesoDesmame:
+    case IndicadorId.kgVacaExposta:
+    case IndicadorId.taxaAborto:
+    case IndicadorId.intervaloEntrePartos:
+    case IndicadorId.histogramaParicao:
+    case IndicadorId.merma:
+      return LucideIcons.heartPulse;
   }
 }
 
@@ -634,5 +644,23 @@ String _descricaoIndicador(IndicadorId id) {
       return 'Rotatividade do rebanho';
     case IndicadorId.mortalidade:
       return 'Perdas sobre o estoque médio';
+    case IndicadorId.taxaPrenhez:
+      return 'Prenhas sobre matrizes acasaladas';
+    case IndicadorId.taxaNatalidade:
+      return 'Crias vivas sobre matrizes acasaladas';
+    case IndicadorId.taxaDesmame:
+      return 'Bezerros desmamados no período';
+    case IndicadorId.pesoDesmame:
+      return 'Peso médio dos animais ao desmame';
+    case IndicadorId.kgVacaExposta:
+      return 'Produção por matriz exposta';
+    case IndicadorId.taxaAborto:
+      return 'Abortos sobre diagnósticos positivos';
+    case IndicadorId.intervaloEntrePartos:
+      return 'Tempo médio entre partos';
+    case IndicadorId.histogramaParicao:
+      return 'Distribuição dos nascimentos por mês';
+    case IndicadorId.merma:
+      return 'Perdas entre nascimento e desmame';
   }
 }

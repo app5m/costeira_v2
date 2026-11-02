@@ -13,6 +13,23 @@ class FazendaEntity {
     required this.status,
   });
 
+  /// Placeholder quando `/fazendas/listar` falha mas há farm salva na sessão.
+  factory FazendaEntity.stub({required int id, String? nome}) {
+    return FazendaEntity(
+      id: id,
+      nome: (nome ?? '').trim().isEmpty ? 'Fazenda $id' : nome!.trim(),
+      email: '',
+      celular: '',
+      mesmoCnpj: 1,
+      tipoPessoa: 2,
+      documento: '',
+      cnpj: '',
+      razaoSocial: '',
+      nomeFantasia: '',
+      status: 1,
+    );
+  }
+
   final int id;
   final String nome;
   final String email;

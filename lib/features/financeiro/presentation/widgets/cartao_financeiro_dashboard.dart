@@ -1,6 +1,8 @@
 import 'package:costeira/app/app_routes.dart';
 import 'package:costeira/core/menus/app_menus_controller.dart';
+import 'package:costeira/core/api/api_client.dart';
 import 'package:costeira/core/menus/menu_action_resolver.dart';
+import 'package:costeira/features/financeiro/infra/financeiro_api.dart';
 import 'package:costeira/features/financeiro/presentation/financeiro_acesso.dart';
 import 'package:costeira/features/financeiro/presentation/financeiro_shell_page.dart';
 import 'package:costeira/theme/colors.dart';
@@ -19,12 +21,63 @@ class CartaoFinanceiroDashboard extends StatefulWidget {
 
 class _CartaoFinanceiroDashboardState extends State<CartaoFinanceiroDashboard> {
   late final AppMenusController _menus;
+  String _saldo = r'R$ 0,00';
+  String _pagar = r'R$ 0,00';
+  String _receber = r'R$ 0,00';
 
   @override
   void initState() {
     super.initState();
     _menus = Modular.get<AppMenusController>();
     _menus.addListener(_atualizar);
+    _carregar();
+  }
+
+  Future<void> _carregar() async {
+    final api = FinanceiroApi(ApiClient.instance);
+    try {
+      final fluxo = await api.fluxo();
+      final lista = await api.lancamentos(limite: 50);
+      if (!mounted) {
+        return;
+      }
+      final dados = lista['dados'];
+      var pagar = 0.0;
+      var receber = 0.0;
+      if (dados is List) {
+        for (final item in dados) {
+          if (item is! Map) continue;
+          final estado = item['estado']?.toString() ?? '';
+          if (estado == 'rascunho' ||
+              estado == 'estornado' ||
+              estado == 'cancelado')
+            continue;
+          final pendente =
+              double.tryParse(item['saldo_pendente']?.toString() ?? '') ??
+              ((double.tryParse(item['valor']?.toString() ?? '') ?? 0) -
+                  (double.tryParse(item['valor_liquidado']?.toString() ?? '') ??
+                      0));
+          if (pendente <= 0) continue;
+          if ((item['tipo']?.toString() ?? '').toLowerCase() == 'recebimento') {
+            receber += pendente;
+          } else {
+            pagar += pendente;
+          }
+        }
+      }
+      setState(() {
+        _saldo =
+            fluxo['indicadores']?['saldo_disponivel_string']?.toString() ??
+            _saldo;
+        _pagar = _reais(pagar);
+        _receber = _reais(receber);
+      });
+    } catch (_) {}
+  }
+
+  String _reais(double valor) {
+    final texto = valor.toStringAsFixed(2).replaceAll('.', ',');
+    return 'R\$ $texto';
   }
 
   @override
@@ -109,15 +162,15 @@ class _CartaoFinanceiroDashboardState extends State<CartaoFinanceiroDashboard> {
           ),
           const SizedBox(height: 8),
           const Text(
-            'Saldo disponível em 20/10/2026',
+            'Saldo disponível',
             style: TextStyle(
               fontFamily: 'Montserrat',
               fontSize: 12,
               color: Color(0xFF8A8A8A),
             ),
           ),
-          const Text(
-            'R\$ 24.580,00',
+          Text(
+            _saldo,
             style: TextStyle(
               fontFamily: 'Montserrat',
               fontSize: 26,
@@ -127,21 +180,21 @@ class _CartaoFinanceiroDashboardState extends State<CartaoFinanceiroDashboard> {
           ),
           const SizedBox(height: 10),
           Row(
-            children: const [
+            children: [
               Expanded(
                 child: _Faixa(
                   rotulo: 'A pagar no período',
-                  valor: 'R\$ 3.250,00',
-                  fundo: Color(0xFFFDECEC),
-                  letra: Color(0xFFC62828),
+                  valor: _pagar,
+                  fundo: const Color(0xFFFDECEC),
+                  letra: const Color(0xFFC62828),
                 ),
               ),
-              SizedBox(width: 8),
+              const SizedBox(width: 8),
               Expanded(
                 child: _Faixa(
                   rotulo: 'A receber no período',
-                  valor: 'R\$ 8.900,00',
-                  fundo: Color(0xFFE7F6EC),
+                  valor: _receber,
+                  fundo: const Color(0xFFE7F6EC),
                   letra: MyColors.colorPrimary,
                 ),
               ),

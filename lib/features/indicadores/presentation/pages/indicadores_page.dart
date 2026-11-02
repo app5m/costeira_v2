@@ -150,7 +150,10 @@ class _ListaModulo extends StatelessWidget {
           borderRadius: BorderRadius.circular(12),
           child: ListTile(
             title: Text(item.$2, style: tituloLista),
-            trailing: const Icon(Icons.chevron_right, color: IndicadorCores.verde),
+            trailing: const Icon(
+              Icons.chevron_right,
+              color: IndicadorCores.verde,
+            ),
             onTap: () => aoAbrir(item.$1),
           ),
         );

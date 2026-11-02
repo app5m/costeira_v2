@@ -27,6 +27,9 @@ class UserSession {
 
   bool get isAdmin => idGrupo == 1;
 
+  /// Conta dona (master). Sub-usuário tem `appSubUsersId` preenchido.
+  bool get isMaster => appSubUsersId == null;
+
   Map<String, dynamic> toJson() {
     return {
       'id': id,

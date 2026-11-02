@@ -53,12 +53,15 @@ class _FazendasWebPageState extends State<FazendasWebPage> {
     if (!mounted || result?['success'] != true) return;
     await _controller.reload();
     if (!mounted) return;
+    final deleted = result?['deleted'] == true;
     AppSnackBar.show(
       context: context,
       message:
           result?['message']?.toString() ??
           (fazenda == null
               ? 'Fazenda salva com sucesso.'
+              : deleted
+              ? 'Fazenda excluida com sucesso.'
               : 'Fazenda atualizada com sucesso.'),
       isError: false,
     );

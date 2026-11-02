@@ -52,6 +52,7 @@ class CartaoIndicador extends StatelessWidget {
     this.unidadePadrao,
     this.inteiro = false,
     this.legenda,
+    this.ajuda,
   });
 
   final String titulo;
@@ -60,7 +61,18 @@ class CartaoIndicador extends StatelessWidget {
   final String? unidade;
   final String? unidadePadrao;
   final bool inteiro;
+  /// Texto curto no card (só se [ajuda] for null — evita corte ilegível).
   final String? legenda;
+  /// Explicação completa: mostra `?` e abre sheet ao tocar.
+  final String? ajuda;
+
+  Future<void> _abrirAjuda(BuildContext context) async {
+    await abrirAjudaIndicador(
+      context,
+      titulo: titulo,
+      texto: ajuda,
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -70,9 +82,11 @@ class CartaoIndicador extends StatelessWidget {
     );
     final numero = partes?.numero ?? valor ?? '—';
     final unidadeLinha = partes?.unidade ?? unidade;
+    final temAjuda = ajuda != null && ajuda!.trim().isNotEmpty;
+    final legendaCurta = !temAjuda && legenda != null && legenda!.isNotEmpty;
     return Container(
-      constraints: const BoxConstraints(minHeight: 118),
-      padding: const EdgeInsets.fromLTRB(14, 14, 14, 12),
+      constraints: const BoxConstraints(minHeight: 108),
+      padding: const EdgeInsets.fromLTRB(12, 12, 10, 12),
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(16),
@@ -81,18 +95,38 @@ class CartaoIndicador extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-            titulo.toUpperCase(),
-            maxLines: 1,
-            softWrap: false,
-            overflow: TextOverflow.ellipsis,
-            style: const TextStyle(
-              fontFamily: 'Montserrat',
-              fontSize: 9,
-              fontWeight: FontWeight.w700,
-              letterSpacing: 0.2,
-              color: Color(0xFF6B6B6B),
-            ),
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Expanded(
+                child: Text(
+                  titulo.toUpperCase(),
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                  style: const TextStyle(
+                    fontFamily: 'Montserrat',
+                    fontSize: 9,
+                    fontWeight: FontWeight.w700,
+                    letterSpacing: 0.2,
+                    color: Color(0xFF6B6B6B),
+                    height: 1.2,
+                  ),
+                ),
+              ),
+              if (temAjuda)
+                InkWell(
+                  onTap: () => _abrirAjuda(context),
+                  borderRadius: BorderRadius.circular(12),
+                  child: const Padding(
+                    padding: EdgeInsets.fromLTRB(4, 0, 0, 4),
+                    child: Icon(
+                      Icons.help_outline_rounded,
+                      size: 16,
+                      color: Color(0xFF8A8A8A),
+                    ),
+                  ),
+                ),
+            ],
           ),
           const SizedBox(height: 8),
           Text(
@@ -121,7 +155,7 @@ class CartaoIndicador extends StatelessWidget {
               ),
             ),
           ],
-          if (legenda != null && legenda!.isNotEmpty) ...[
+          if (legendaCurta) ...[
             const SizedBox(height: 4),
             Text(
               legenda!,
@@ -150,33 +184,405 @@ class GradeCartoes extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return LayoutBuilder(
-      builder: (context, constraints) {
-        const gap = 8.0;
-        final porLinha = colunas ?? (cartoes.length == 3 ? 3 : 2);
-        final largura =
-            (constraints.maxWidth - gap * (porLinha - 1)) / porLinha;
-        return Wrap(
-          spacing: gap,
-          runSpacing: gap,
-          children: [
-            for (final cartao in cartoes)
-              SizedBox(width: largura, child: cartao),
+    if (cartoes.isEmpty) {
+      return const SizedBox.shrink();
+    }
+    final porLinha = colunas ?? (cartoes.length == 3 ? 3 : 2);
+    final linhas = <Widget>[];
+    for (var i = 0; i < cartoes.length; i += porLinha) {
+      final fatia = cartoes.sublist(
+        i,
+        i + porLinha > cartoes.length ? cartoes.length : i + porLinha,
+      );
+      if (linhas.isNotEmpty) {
+        linhas.add(const SizedBox(height: 8));
+      }
+      linhas.add(
+        IntrinsicHeight(
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              for (var j = 0; j < fatia.length; j++) ...[
+                if (j > 0) const SizedBox(width: 8),
+                Expanded(child: fatia[j]),
+              ],
+              for (var j = fatia.length; j < porLinha; j++) ...[
+                const SizedBox(width: 8),
+                const Expanded(child: SizedBox.shrink()),
+              ],
+            ],
+          ),
+        ),
+      );
+    }
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: linhas,
+    );
+  }
+}
+
+Future<void> abrirAjudaIndicador(
+  BuildContext context, {
+  required String titulo,
+  String? texto,
+}) async {
+  final corpo = texto?.trim();
+  if (corpo == null || corpo.isEmpty) {
+    return;
+  }
+  await _abrirSheetIndicador(
+    context,
+    titulo: titulo,
+    filho: Text(
+      corpo,
+      style: const TextStyle(
+        fontFamily: 'Montserrat',
+        fontSize: 14,
+        height: 1.45,
+        color: Color(0xFF313131),
+      ),
+    ),
+  );
+}
+
+Future<void> abrirAvisoIndicador(
+  BuildContext context, {
+  required String titulo,
+  bool parcial = false,
+  List<String> pendencias = const [],
+  List<String> limitacoes = const [],
+}) async {
+  if (!parcial && pendencias.isEmpty && limitacoes.isEmpty) {
+    return;
+  }
+  await _abrirSheetIndicador(
+    context,
+    titulo: titulo,
+    filho: Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        if (parcial) ...[
+          const _ChipAviso(
+            icone: Icons.info_outline_rounded,
+            texto: 'Dados parciais — alguns vínculos ou horários são aproximados.',
+          ),
+          if (pendencias.isNotEmpty || limitacoes.isNotEmpty)
+            const SizedBox(height: 14),
+        ],
+        if (pendencias.isNotEmpty) ...[
+          const _TituloSecaoAviso('Pendências'),
+          const SizedBox(height: 8),
+          for (var i = 0; i < pendencias.length; i++) ...[
+            if (i > 0) const SizedBox(height: 8),
+            _ItemAviso(
+              icone: Icons.warning_amber_rounded,
+              texto: pendencias[i],
+            ),
           ],
-        );
-      },
+          if (limitacoes.isNotEmpty) const SizedBox(height: 16),
+        ],
+        if (limitacoes.isNotEmpty) ...[
+          const _TituloSecaoAviso('Limitações'),
+          const SizedBox(height: 8),
+          for (var i = 0; i < limitacoes.length; i++) ...[
+            if (i > 0) const SizedBox(height: 8),
+            _ItemAviso(
+              icone: Icons.circle,
+              iconePequeno: true,
+              texto: limitacoes[i],
+            ),
+          ],
+        ],
+      ],
+    ),
+  );
+}
+
+Future<void> _abrirSheetIndicador(
+  BuildContext context, {
+  required String titulo,
+  required Widget filho,
+}) {
+  return showModalBottomSheet<void>(
+    context: context,
+    isScrollControlled: true,
+    backgroundColor: Colors.white,
+    shape: const RoundedRectangleBorder(
+      borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+    ),
+    builder: (sheet) {
+      final maxH = MediaQuery.sizeOf(sheet).height * 0.72;
+      return SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(16, 12, 16, 16),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Container(
+                width: 40,
+                height: 4,
+                decoration: BoxDecoration(
+                  color: const Color(0xFFD9D9D9),
+                  borderRadius: BorderRadius.circular(999),
+                ),
+              ),
+              const SizedBox(height: 14),
+              Text(
+                titulo,
+                style: const TextStyle(
+                  fontFamily: 'Montserrat',
+                  fontWeight: FontWeight.w700,
+                  fontSize: 18,
+                  color: Color(0xFF1C1C1C),
+                ),
+              ),
+              const SizedBox(height: 14),
+              ConstrainedBox(
+                constraints: BoxConstraints(maxHeight: maxH - 120),
+                child: SingleChildScrollView(child: filho),
+              ),
+              const SizedBox(height: 16),
+              SizedBox(
+                width: double.infinity,
+                child: FilledButton(
+                  onPressed: () => Navigator.pop(sheet),
+                  style: FilledButton.styleFrom(
+                    backgroundColor: MyColors.colorPrimary,
+                    foregroundColor: Colors.white,
+                    padding: const EdgeInsets.symmetric(vertical: 14),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                  ),
+                  child: const Text(
+                    'Entendi',
+                    style: TextStyle(
+                      fontFamily: 'Montserrat',
+                      fontWeight: FontWeight.w700,
+                      fontSize: 14,
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      );
+    },
+  );
+}
+
+class _ChipAviso extends StatelessWidget {
+  const _ChipAviso({required this.icone, required this.texto});
+
+  final IconData icone;
+  final String texto;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: const Color(0xFFF7F4EA),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: const Color(0xFFE8E4D9)),
+      ),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Icon(icone, size: 18, color: MyColors.colorPrimary),
+          const SizedBox(width: 10),
+          Expanded(
+            child: Text(
+              texto,
+              style: const TextStyle(
+                fontFamily: 'Montserrat',
+                fontSize: 13,
+                height: 1.35,
+                fontWeight: FontWeight.w600,
+                color: Color(0xFF313131),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _TituloSecaoAviso extends StatelessWidget {
+  const _TituloSecaoAviso(this.texto);
+
+  final String texto;
+
+  @override
+  Widget build(BuildContext context) {
+    return Text(
+      texto.toUpperCase(),
+      style: const TextStyle(
+        fontFamily: 'Montserrat',
+        fontSize: 11,
+        fontWeight: FontWeight.w700,
+        letterSpacing: 0.4,
+        color: Color(0xFF8A8A8A),
+      ),
+    );
+  }
+}
+
+class _ItemAviso extends StatelessWidget {
+  const _ItemAviso({
+    required this.icone,
+    required this.texto,
+    this.iconePequeno = false,
+  });
+
+  final IconData icone;
+  final String texto;
+  final bool iconePequeno;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: IndicadorCores.linha),
+      ),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Padding(
+            padding: EdgeInsets.only(top: iconePequeno ? 5 : 1),
+            child: Icon(
+              icone,
+              size: iconePequeno ? 7 : 18,
+              color: iconePequeno
+                  ? const Color(0xFFB0B0B0)
+                  : const Color(0xFFC4A35A),
+            ),
+          ),
+          const SizedBox(width: 10),
+          Expanded(
+            child: Text(
+              texto,
+              style: const TextStyle(
+                fontFamily: 'Montserrat',
+                fontSize: 13,
+                height: 1.4,
+                color: Color(0xFF313131),
+              ),
+            ),
+          ),
+        ],
+      ),
     );
   }
 }
 
 class CaixaNota extends StatelessWidget {
-  const CaixaNota({super.key, required this.texto, this.titulo});
+  const CaixaNota({
+    super.key,
+    required this.texto,
+    this.titulo,
+    this.compacta = false,
+    this.parcial = false,
+    this.pendencias = const [],
+    this.limitacoes = const [],
+  });
 
   final String texto;
   final String? titulo;
+  /// Só título + `?`; abre sheet.
+  final bool compacta;
+  final bool parcial;
+  final List<String> pendencias;
+  final List<String> limitacoes;
+
+  bool get _temEstrutura =>
+      parcial || pendencias.isNotEmpty || limitacoes.isNotEmpty;
 
   @override
   Widget build(BuildContext context) {
+    final tituloExibir = titulo ?? 'Atenção';
+    if (compacta) {
+      final resumo = parcial
+          ? 'Dados parciais'
+          : pendencias.isNotEmpty
+              ? '${pendencias.length} pendência${pendencias.length == 1 ? '' : 's'}'
+              : limitacoes.isNotEmpty
+                  ? '${limitacoes.length} limitação${limitacoes.length == 1 ? '' : 'ões'}'
+                  : 'Ver detalhes';
+      return Material(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(12),
+        child: InkWell(
+          onTap: () {
+            if (_temEstrutura) {
+              abrirAvisoIndicador(
+                context,
+                titulo: tituloExibir,
+                parcial: parcial,
+                pendencias: pendencias,
+                limitacoes: limitacoes,
+              );
+            } else {
+              abrirAjudaIndicador(
+                context,
+                titulo: tituloExibir,
+                texto: texto,
+              );
+            }
+          },
+          borderRadius: BorderRadius.circular(12),
+          child: Container(
+            width: double.infinity,
+            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(color: IndicadorCores.linha),
+            ),
+            child: Row(
+              children: [
+                const Icon(
+                  Icons.info_outline_rounded,
+                  size: 18,
+                  color: MyColors.colorPrimary,
+                ),
+                const SizedBox(width: 10),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(tituloExibir, style: tituloSecao),
+                      const SizedBox(height: 2),
+                      Text(
+                        resumo,
+                        style: const TextStyle(
+                          fontFamily: 'Montserrat',
+                          fontSize: 12,
+                          fontWeight: FontWeight.w500,
+                          color: Color(0xFF8A8A8A),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                const Icon(
+                  Icons.help_outline_rounded,
+                  size: 18,
+                  color: Color(0xFF8A8A8A),
+                ),
+              ],
+            ),
+          ),
+        ),
+      );
+    }
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(14),
