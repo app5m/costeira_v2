@@ -692,7 +692,7 @@ class _DashboardState extends State<Dashboard> {
   @override
   Widget build(BuildContext context) {
     return ColoredBox(
-      color: const Color(0xFFF6F4EE),
+      color: MyColors.surface,
       child: Column(
         children: [
           const SizedBox(height: 12),

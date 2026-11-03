@@ -53,7 +53,7 @@ class _SubUsuarioFormPageState extends State<SubUsuarioFormPage> {
       animation: _pageController,
       builder: (context, _) {
         return Scaffold(
-          backgroundColor: const Color(0xFFF6F4EE),
+          backgroundColor: MyColors.surface,
           appBar: PrimarySectionAppBar(
             context: context,
             title: _pageController.isEditing

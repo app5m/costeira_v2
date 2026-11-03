@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:costeira/app/app_routes.dart';
 import 'package:costeira/core/menus/app_menus_controller.dart';
 import 'package:costeira/core/api/api_client.dart';
@@ -38,13 +40,10 @@ class _CartaoFinanceiroDashboardState extends State<CartaoFinanceiroDashboard> {
     super.initState();
     _menus = Modular.get<AppMenusController>();
     _menus.addListener(_atualizar);
-    // No dashboard web os dados completos são carregados pelo ambiente
-    // Financeiro. Evita uma segunda chamada concorrente durante a montagem
-    // do dashboard, que pode deixar o PageView sem conteúdo em caso de sessão
-    // ainda não pronta. O fluxo mobile permanece inalterado.
-    if (!kIsWeb) {
-      _carregar();
-    }
+    // Após o primeiro frame para não competir com a montagem do dashboard.
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) unawaited(_carregar());
+    });
   }
 
   Future<void> _carregar() async {
@@ -138,9 +137,9 @@ class _CartaoFinanceiroDashboardState extends State<CartaoFinanceiroDashboard> {
     return Container(
       padding: const EdgeInsets.fromLTRB(14, 14, 14, 14),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: MyColors.card,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: const Color(0xFFE8E4D9)),
+        border: Border.all(color: MyColors.surfaceBorder),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -211,7 +210,6 @@ class _CartaoFinanceiroDashboardState extends State<CartaoFinanceiroDashboard> {
                 child: _Faixa(
                   rotulo: 'A pagar no período',
                   valor: _pagar,
-                  fundo: const Color(0xFFFDECEC),
                   letra: const Color(0xFFC62828),
                 ),
               ),
@@ -220,7 +218,6 @@ class _CartaoFinanceiroDashboardState extends State<CartaoFinanceiroDashboard> {
                 child: _Faixa(
                   rotulo: 'A receber no período',
                   valor: _receber,
-                  fundo: const Color(0xFFE7F6EC),
                   letra: MyColors.colorPrimary,
                 ),
               ),
@@ -256,119 +253,13 @@ class _CartaoFinanceiroDashboardState extends State<CartaoFinanceiroDashboard> {
       builder: (context, constraints) {
         final compacto = constraints.maxWidth < 760;
         final acaoCompacta = constraints.maxWidth < 500;
-        return Container(
-          padding: EdgeInsets.fromLTRB(
-            compacto ? 16 : 20,
-            compacto ? 16 : 18,
-            compacto ? 16 : 20,
-            compacto ? 16 : 18,
-          ),
-          decoration: BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.circular(16),
-            border: Border.all(color: const Color(0xFFE1E5DE)),
-            boxShadow: const [
-              BoxShadow(
-                color: Color(0x08000000),
-                blurRadius: 18,
-                offset: Offset(0, 5),
-              ),
-            ],
-          ),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Row(
-                children: [
-                  Container(
-                    width: 40,
-                    height: 40,
-                    decoration: BoxDecoration(
-                      color: const Color(0x142F7A4A),
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    child: const Icon(
-                      LucideIcons.walletCards,
-                      size: 19,
-                      color: MyColors.colorPrimary,
-                    ),
-                  ),
-                  const SizedBox(width: 12),
-                  const Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          'Financeiro',
-                          style: TextStyle(
-                            fontFamily: 'Montserrat',
-                            fontSize: 16,
-                            fontWeight: FontWeight.w800,
-                            color: Color(0xFF263A2C),
-                          ),
-                        ),
-                        SizedBox(height: 3),
-                        Text(
-                          'Resumo financeiro do período selecionado',
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                          style: TextStyle(
-                            fontFamily: 'Montserrat',
-                            fontSize: 11,
-                            color: Color(0xFF7B827D),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                  if (acaoCompacta)
-                    IconButton(
-                      tooltip: 'Ver financeiro',
-                      onPressed: () => _abrir(form: false),
-                      color: MyColors.colorPrimary,
-                      icon: const Icon(LucideIcons.arrowUpRight, size: 18),
-                    )
-                  else ...[
-                    SizedBox(
-                      height: 48,
-                      child: OutlinedButton(
-                        onPressed: () => _abrir(form: false),
-                        style: OutlinedButton.styleFrom(
-                          foregroundColor: MyColors.colorPrimary,
-                          side: const BorderSide(color: Color(0xFFC9D4CB)),
-                          padding: const EdgeInsets.symmetric(horizontal: 16),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(11),
-                          ),
-                          textStyle: const TextStyle(
-                            fontFamily: 'Montserrat',
-                            fontSize: 12,
-                            fontWeight: FontWeight.w700,
-                          ),
-                        ),
-                        child: const Text('Ver financeiro'),
-                      ),
-                    ),
-                    const SizedBox(width: 8),
-                    SizedBox(
-                      width: 190,
-                      child: _BotaoNovoLancamento(
-                        onPressed: () => _abrir(form: true),
-                      ),
-                    ),
-                  ],
-                ],
-              ),
-              const SizedBox(height: 18),
-              if (compacto) ...[
+        final metricas = compacto
+            ? <Widget>[
                 _MetricaFinanceira(
                   rotulo: 'Saldo disponível',
                   valor: _saldo,
                   apoio: 'Disponível para movimentação',
-                  fundo: const Color(0xFFF4F8F2),
-                  borda: const Color(0xFFE1EDE1),
-                  letra: const Color(0xFF1F3D2A),
-                  rotuloCor: const Color(0xFF68806C),
+                  letra: MyColors.colorPrimary,
                 ),
                 const SizedBox(height: 10),
                 Row(
@@ -378,10 +269,7 @@ class _CartaoFinanceiroDashboardState extends State<CartaoFinanceiroDashboard> {
                         rotulo: 'A pagar',
                         valor: _pagar,
                         apoio: 'No período selecionado',
-                        fundo: const Color(0xFFFDECEC),
-                        borda: const Color(0xFFF3D4D4),
                         letra: const Color(0xFFC62828),
-                        rotuloCor: const Color(0xFFC62828),
                       ),
                     ),
                     const SizedBox(width: 10),
@@ -390,17 +278,15 @@ class _CartaoFinanceiroDashboardState extends State<CartaoFinanceiroDashboard> {
                         rotulo: 'A receber',
                         valor: _receber,
                         apoio: 'No período selecionado',
-                        fundo: const Color(0xFFE7F6EC),
-                        borda: const Color(0xFFD2E8D8),
                         letra: MyColors.colorPrimary,
-                        rotuloCor: MyColors.colorPrimary,
                       ),
                     ),
                   ],
                 ),
                 const SizedBox(height: 12),
                 _BotaoNovoLancamento(onPressed: () => _abrir(form: true)),
-              ] else
+              ]
+            : <Widget>[
                 Row(
                   children: [
                     Expanded(
@@ -408,10 +294,7 @@ class _CartaoFinanceiroDashboardState extends State<CartaoFinanceiroDashboard> {
                         rotulo: 'Saldo disponível',
                         valor: _saldo,
                         apoio: 'Disponível para movimentação',
-                        fundo: const Color(0xFFF4F8F2),
-                        borda: const Color(0xFFE1EDE1),
-                        letra: const Color(0xFF1F3D2A),
-                        rotuloCor: const Color(0xFF68806C),
+                        letra: MyColors.colorPrimary,
                       ),
                     ),
                     const SizedBox(width: 10),
@@ -420,10 +303,7 @@ class _CartaoFinanceiroDashboardState extends State<CartaoFinanceiroDashboard> {
                         rotulo: 'A pagar no período',
                         valor: _pagar,
                         apoio: 'Pendências a liquidar',
-                        fundo: const Color(0xFFFDECEC),
-                        borda: const Color(0xFFF3D4D4),
                         letra: const Color(0xFFC62828),
-                        rotuloCor: const Color(0xFFC62828),
                       ),
                     ),
                     const SizedBox(width: 10),
@@ -432,15 +312,143 @@ class _CartaoFinanceiroDashboardState extends State<CartaoFinanceiroDashboard> {
                         rotulo: 'A receber no período',
                         valor: _receber,
                         apoio: 'Valores a entrar',
-                        fundo: const Color(0xFFE7F6EC),
-                        borda: const Color(0xFFD2E8D8),
                         letra: MyColors.colorPrimary,
-                        rotuloCor: MyColors.colorPrimary,
                       ),
                     ),
                   ],
                 ),
+              ];
+
+        return Container(
+          decoration: BoxDecoration(
+            color: MyColors.card,
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(color: MyColors.surfaceBorder),
+            boxShadow: const [
+              BoxShadow(
+                color: Color(0x08000000),
+                blurRadius: 18,
+                offset: Offset(0, 5),
+              ),
             ],
+          ),
+          // Clip só o conteúdo, por dentro da borda, para não cortá-la.
+          child: ClipRRect(
+            borderRadius: BorderRadius.circular(15),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                ColoredBox(
+                  color: MyColors.card,
+                  child: Padding(
+                    padding: EdgeInsets.fromLTRB(
+                      compacto ? 16 : 20,
+                      compacto ? 16 : 18,
+                      compacto ? 16 : 20,
+                      compacto ? 14 : 16,
+                    ),
+                    child: Row(
+                      children: [
+                        Container(
+                          width: 40,
+                          height: 40,
+                          decoration: BoxDecoration(
+                            color: const Color(0x142F7A4A),
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          child: const Icon(
+                            LucideIcons.walletCards,
+                            size: 19,
+                            color: MyColors.colorPrimary,
+                          ),
+                        ),
+                        const SizedBox(width: 12),
+                        const Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                'Financeiro',
+                                style: TextStyle(
+                                  fontFamily: 'Montserrat',
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.w800,
+                                  color: Color(0xFF263A2C),
+                                ),
+                              ),
+                              SizedBox(height: 3),
+                              Text(
+                                'Resumo financeiro do período selecionado',
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                                style: TextStyle(
+                                  fontFamily: 'Montserrat',
+                                  fontSize: 11,
+                                  color: Color(0xFF7B827D),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                        if (acaoCompacta)
+                          IconButton(
+                            tooltip: 'Ver financeiro',
+                            onPressed: () => _abrir(form: false),
+                            color: MyColors.colorPrimary,
+                            icon: const Icon(LucideIcons.arrowUpRight, size: 18),
+                          )
+                        else ...[
+                          SizedBox(
+                            height: 48,
+                            child: OutlinedButton(
+                              onPressed: () => _abrir(form: false),
+                              style: OutlinedButton.styleFrom(
+                                foregroundColor: MyColors.colorPrimary,
+                                side: const BorderSide(color: Color(0xFFC9D4CB)),
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 16,
+                                ),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(11),
+                                ),
+                                textStyle: const TextStyle(
+                                  fontFamily: 'Montserrat',
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.w700,
+                                ),
+                              ),
+                              child: const Text('Ver financeiro'),
+                            ),
+                          ),
+                          const SizedBox(width: 8),
+                          SizedBox(
+                            width: 190,
+                            child: _BotaoNovoLancamento(
+                              onPressed: () => _abrir(form: true),
+                            ),
+                          ),
+                        ],
+                      ],
+                    ),
+                  ),
+                ),
+                ColoredBox(
+                  color: MyColors.surface,
+                  child: Padding(
+                    padding: EdgeInsets.fromLTRB(
+                      compacto ? 16 : 20,
+                      compacto ? 14 : 16,
+                      compacto ? 16 : 20,
+                      compacto ? 16 : 18,
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: metricas,
+                    ),
+                  ),
+                ),
+              ],
+            ),
           ),
         );
       },
@@ -453,19 +461,13 @@ class _MetricaFinanceira extends StatelessWidget {
     required this.rotulo,
     required this.valor,
     required this.apoio,
-    required this.fundo,
-    required this.borda,
     required this.letra,
-    required this.rotuloCor,
   });
 
   final String rotulo;
   final String valor;
   final String apoio;
-  final Color fundo;
-  final Color borda;
   final Color letra;
-  final Color rotuloCor;
 
   @override
   Widget build(BuildContext context) {
@@ -473,9 +475,9 @@ class _MetricaFinanceira extends StatelessWidget {
       height: 104,
       padding: const EdgeInsets.fromLTRB(14, 12, 14, 12),
       decoration: BoxDecoration(
-        color: fundo,
+        color: MyColors.card,
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: borda),
+        border: Border.all(color: MyColors.surfaceBorder),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -485,12 +487,12 @@ class _MetricaFinanceira extends StatelessWidget {
             rotulo.toUpperCase(),
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
-            style: TextStyle(
+            style: const TextStyle(
               fontFamily: 'Montserrat',
               fontSize: 10,
               fontWeight: FontWeight.w700,
               letterSpacing: .35,
-              color: rotuloCor,
+              color: Color(0xFF8A8A8A),
             ),
           ),
           const SizedBox(height: 7),
@@ -512,10 +514,10 @@ class _MetricaFinanceira extends StatelessWidget {
             apoio,
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
-            style: TextStyle(
+            style: const TextStyle(
               fontFamily: 'Montserrat',
               fontSize: 10,
-              color: rotuloCor.withValues(alpha: 0.85),
+              color: Color(0xFF8A8A8A),
             ),
           ),
         ],
@@ -565,13 +567,11 @@ class _Faixa extends StatelessWidget {
   const _Faixa({
     required this.rotulo,
     required this.valor,
-    required this.fundo,
     required this.letra,
   });
 
   final String rotulo;
   final String valor;
-  final Color fundo;
   final Color letra;
 
   @override
@@ -579,18 +579,19 @@ class _Faixa extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(10),
       decoration: BoxDecoration(
-        color: fundo,
+        color: MyColors.card,
         borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: MyColors.surfaceBorder),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
             rotulo,
-            style: TextStyle(
+            style: const TextStyle(
               fontFamily: 'Montserrat',
               fontSize: 11,
-              color: letra,
+              color: Color(0xFF8A8A8A),
             ),
           ),
           const SizedBox(height: 2),

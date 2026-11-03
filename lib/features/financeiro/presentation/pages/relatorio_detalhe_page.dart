@@ -174,15 +174,7 @@ class _RelatorioDetalhePageState extends State<RelatorioDetalhePage> {
     }
   }
 
-  List<double> get _barrasFluxo {
-    final series = (_mapa['grafico']?['series'] as List?) ?? const [];
-    final entradas = series.cast<Map?>().whereType<Map>().where((s) => s['chave'] == 'entradas');
-    if (entradas.isEmpty) return const [];
-    final dados = (entradas.first['dados'] as List?) ?? const [];
-    return [
-      for (final item in dados) double.tryParse(item.toString()) ?? 0,
-    ];
-  }
+  List<double> get _barrasFluxo => barrasFluxoRelatorio(_mapa);
 
   Future<void> _abrirFiltros() async {
     final loja = FinanceiroEscopo.of(context);
@@ -405,20 +397,57 @@ class _RelatorioDetalhePageState extends State<RelatorioDetalhePage> {
           if (_carregando)
             const LoadingFinanceiro(altura: 160, rotulo: 'Carregando relatório…')
           else
-            switch (widget.id) {
-              'extrato' => _Extrato(mapa: _mapa),
-              'fluxo' => _Fluxo(mapa: _mapa, barras: _barrasFluxo),
-              'dre' => _Dre(
-                mapa: _mapa,
-                bloco: _dre,
-                aoEscolher: (valor) => setState(() => _dre = valor),
-              ),
-              _ => _Resultado(mapa: _mapa),
-            },
+            FinanceiroRelatorioConteudo(
+              id: widget.id,
+              mapa: _mapa,
+              dreBloco: _dre,
+              aoEscolherDre: (valor) => setState(() => _dre = valor),
+            ),
         ],
       ),
     );
   }
+}
+
+/// Conteúdo formatado do relatório (reutilizado na web).
+class FinanceiroRelatorioConteudo extends StatelessWidget {
+  const FinanceiroRelatorioConteudo({
+    super.key,
+    required this.id,
+    required this.mapa,
+    this.dreBloco = 'livro_caixa',
+    this.aoEscolherDre,
+  });
+
+  final String id;
+  final Map<String, dynamic> mapa;
+  final String dreBloco;
+  final ValueChanged<String>? aoEscolherDre;
+
+  @override
+  Widget build(BuildContext context) {
+    return switch (id) {
+      'extrato' => _Extrato(mapa: mapa),
+      'fluxo' => _Fluxo(mapa: mapa, barras: barrasFluxoRelatorio(mapa)),
+      'dre' => _Dre(
+          mapa: mapa,
+          bloco: dreBloco,
+          aoEscolher: aoEscolherDre ?? (_) {},
+        ),
+      _ => _Resultado(mapa: mapa),
+    };
+  }
+}
+
+List<double> barrasFluxoRelatorio(Map<String, dynamic> mapa) {
+  final series = (mapa['grafico']?['series'] as List?) ?? const [];
+  final entradas =
+      series.cast<Map?>().whereType<Map>().where((s) => s['chave'] == 'entradas');
+  if (entradas.isEmpty) return const [];
+  final dados = (entradas.first['dados'] as List?) ?? const [];
+  return [
+    for (final item in dados) double.tryParse(item.toString()) ?? 0,
+  ];
 }
 
 class _Extrato extends StatelessWidget {

@@ -1,13 +1,16 @@
+import 'package:costeira/core/components/adaptive_selection_modal.dart';
+import 'package:costeira/core/components/app_select_overlay.dart';
 import 'package:costeira/core/input_formatters/brazilian_currency_input_formatter.dart';
 import 'package:costeira/features/dashboard/domain/entities/dashboard_filter_entity.dart';
 import 'package:costeira/features/fazendas/domain/entities/fazenda_entity.dart';
 import 'package:costeira/features/financeiro/domain/financeiro_mock.dart';
 import 'package:costeira/theme/colors.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:mask_text_input_formatter/mask_text_input_formatter.dart';
 
-const fundoFinanceiro = Color(0xFFF6F4EE);
+const fundoFinanceiro = MyColors.surface;
 
 const mascaraMoeda = BrazilianCurrencyInputFormatter();
 
@@ -383,6 +386,80 @@ InputDecoration decoracaoCampo(String hint) {
   );
 }
 
+/// Estado vazio padronizado: ícone + mensagem + botão, centralizados.
+class EstadoAcaoFinanceiro extends StatelessWidget {
+  const EstadoAcaoFinanceiro({
+    super.key,
+    required this.icone,
+    required this.mensagem,
+    required this.rotuloBotao,
+    required this.onPressed,
+    this.botaoPrimario = false,
+  });
+
+  final IconData icone;
+  final String mensagem;
+  final String rotuloBotao;
+  final VoidCallback onPressed;
+  final bool botaoPrimario;
+
+  @override
+  Widget build(BuildContext context) {
+    final shape = RoundedRectangleBorder(borderRadius: BorderRadius.circular(12));
+    final label = Text(
+      rotuloBotao,
+      style: TextStyle(
+        fontFamily: 'Montserrat',
+        fontWeight: FontWeight.w600,
+        color: botaoPrimario ? Colors.white : MyColors.colorPrimary,
+      ),
+    );
+    final botao = botaoPrimario
+        ? FilledButton(
+            onPressed: onPressed,
+            style: FilledButton.styleFrom(
+              backgroundColor: MyColors.colorPrimary,
+              minimumSize: const Size(0, 46),
+              padding: const EdgeInsets.symmetric(horizontal: 20),
+              shape: shape,
+            ),
+            child: label,
+          )
+        : OutlinedButton(
+            onPressed: onPressed,
+            style: OutlinedButton.styleFrom(
+              minimumSize: const Size(0, 46),
+              padding: const EdgeInsets.symmetric(horizontal: 20),
+              side: const BorderSide(color: MyColors.colorPrimary),
+              shape: shape,
+            ),
+            child: label,
+          );
+
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 8),
+      child: Column(
+        children: [
+          Icon(icone, size: 36, color: MyColors.colorPrimary.withValues(alpha: 0.85)),
+          const SizedBox(height: 12),
+          Text(
+            mensagem,
+            textAlign: TextAlign.center,
+            style: const TextStyle(
+              fontFamily: 'Montserrat',
+              fontSize: 13,
+              height: 1.4,
+              color: Color(0xFF8A8A8A),
+            ),
+          ),
+          const SizedBox(height: 16),
+          botao,
+        ],
+      ),
+    );
+  }
+}
+
 /// Campo select no padrão financeiro (tap → bottom sheet). Evita overflow do DropdownButton.
 class CampoEscolhaFinanceiro extends StatelessWidget {
   const CampoEscolhaFinanceiro({
@@ -449,88 +526,105 @@ Future<T?> abrirOpcoesFinanceiro<T>({
   T? atual,
 }) {
   if (opcoes.isEmpty) return Future.value(null);
-  return showModalBottomSheet<T>(
+  return showAdaptiveSelectionModal<T>(
     context: context,
-    backgroundColor: Colors.white,
-    isScrollControlled: true,
-    shape: const RoundedRectangleBorder(
-      borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
-    ),
-    builder: (ctx) {
-      final maxH = MediaQuery.sizeOf(ctx).height * 0.55;
-      return SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.fromLTRB(16, 12, 16, 16),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Center(
-                child: Container(
-                  width: 40,
-                  height: 4,
-                  decoration: BoxDecoration(
-                    color: const Color(0xFFD9D9D9),
-                    borderRadius: BorderRadius.circular(999),
-                  ),
-                ),
-              ),
-              const SizedBox(height: 14),
-              Text(
-                titulo,
-                style: const TextStyle(fontFamily: 'Montserrat', fontWeight: FontWeight.w700, fontSize: 16),
-              ),
-              const SizedBox(height: 12),
-              ConstrainedBox(
-                constraints: BoxConstraints(maxHeight: maxH),
-                child: ListView.separated(
-                  shrinkWrap: true,
-                  itemCount: opcoes.length,
-                  separatorBuilder: (_, _) => const SizedBox(height: 8),
-                  itemBuilder: (_, index) {
-                    final item = opcoes[index];
-                    final marcada = item.value == atual;
-                    return Material(
-                      color: marcada ? const Color(0xFFE7F6EC) : Colors.white,
-                      borderRadius: BorderRadius.circular(12),
-                      child: InkWell(
-                        onTap: () => Navigator.pop(ctx, item.value),
-                        borderRadius: BorderRadius.circular(12),
-                        child: Container(
-                          width: double.infinity,
-                          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
-                          decoration: BoxDecoration(
-                            borderRadius: BorderRadius.circular(12),
-                            border: Border.all(
-                              color: marcada ? MyColors.colorPrimary : const Color(0xFFE6E6E6),
-                            ),
-                          ),
-                          child: Row(
-                            children: [
-                              Expanded(
-                                child: Text(
-                                  item.label,
-                                  style: TextStyle(
-                                    fontFamily: 'Montserrat',
-                                    fontWeight: marcada ? FontWeight.w700 : FontWeight.w600,
-                                    fontSize: 14,
-                                    color: const Color(0xFF313131),
-                                  ),
-                                ),
-                              ),
-                              if (marcada)
-                                const Icon(Icons.check_circle, color: MyColors.colorPrimary, size: 20),
-                            ],
-                          ),
+    title: titulo,
+    builder: (embeddedInDialog) {
+      return Builder(
+        builder: (ctx) {
+          final maxH = MediaQuery.sizeOf(ctx).height * (embeddedInDialog ? 0.5 : 0.55);
+          return SafeArea(
+            top: false,
+            child: Padding(
+              padding: EdgeInsets.fromLTRB(16, embeddedInDialog ? 8 : 12, 16, 16),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  if (!embeddedInDialog) ...[
+                    Center(
+                      child: Container(
+                        width: 40,
+                        height: 4,
+                        decoration: BoxDecoration(
+                          color: const Color(0xFFD9D9D9),
+                          borderRadius: BorderRadius.circular(999),
                         ),
                       ),
-                    );
-                  },
-                ),
+                    ),
+                    const SizedBox(height: 14),
+                    Text(
+                      titulo,
+                      style: const TextStyle(
+                        fontFamily: 'Montserrat',
+                        fontWeight: FontWeight.w700,
+                        fontSize: 16,
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+                  ],
+                  ConstrainedBox(
+                    constraints: BoxConstraints(maxHeight: maxH),
+                    child: ListView.separated(
+                      shrinkWrap: true,
+                      itemCount: opcoes.length,
+                      separatorBuilder: (_, _) => const SizedBox(height: 8),
+                      itemBuilder: (_, index) {
+                        final item = opcoes[index];
+                        final marcada = item.value == atual;
+                        return Material(
+                          color: marcada ? const Color(0xFFE7F6EC) : Colors.white,
+                          borderRadius: BorderRadius.circular(12),
+                          child: InkWell(
+                            onTap: () => Navigator.pop(ctx, item.value),
+                            borderRadius: BorderRadius.circular(12),
+                            child: Container(
+                              width: double.infinity,
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 14,
+                                vertical: 14,
+                              ),
+                              decoration: BoxDecoration(
+                                borderRadius: BorderRadius.circular(12),
+                                border: Border.all(
+                                  color: marcada
+                                      ? MyColors.colorPrimary
+                                      : const Color(0xFFE6E6E6),
+                                ),
+                              ),
+                              child: Row(
+                                children: [
+                                  Expanded(
+                                    child: Text(
+                                      item.label,
+                                      style: TextStyle(
+                                        fontFamily: 'Montserrat',
+                                        fontWeight:
+                                            marcada ? FontWeight.w700 : FontWeight.w600,
+                                        fontSize: 14,
+                                        color: const Color(0xFF313131),
+                                      ),
+                                    ),
+                                  ),
+                                  if (marcada)
+                                    const Icon(
+                                      Icons.check_circle,
+                                      color: MyColors.colorPrimary,
+                                      size: 20,
+                                    ),
+                                ],
+                              ),
+                            ),
+                          ),
+                        );
+                      },
+                    ),
+                  ),
+                ],
               ),
-            ],
-          ),
-        ),
+            ),
+          );
+        },
       );
     },
   );
@@ -890,6 +984,7 @@ class ContextoFinanceiroFiltros extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final loja = FinanceiroEscopo.of(context);
+    if (kIsWeb) return _buildWeb(loja);
     return Row(
       children: [
         Expanded(
@@ -909,6 +1004,67 @@ class ContextoFinanceiroFiltros extends StatelessWidget {
             ),
           ),
         ],
+      ],
+    );
+  }
+
+  Widget _buildWeb(FinanceiroLoja loja) {
+    final fazenda = AppSelectOverlay<int>(
+      value: loja.fazendas.any((f) => f.id == loja.fazendaId) ? loja.fazendaId : null,
+      options: [
+        for (final farm in loja.fazendas)
+          AppSelectOption(value: farm.id, label: _nomeFazenda(farm)),
+      ],
+      enabled: loja.fazendas.isNotEmpty,
+      placeholder: loja.fazendas.isEmpty ? 'Nenhuma fazenda' : 'Fazenda',
+      selectedPrefix: 'Fazenda: ',
+      height: 46,
+      padding: const EdgeInsets.symmetric(horizontal: 12),
+      fieldColor: Colors.white,
+      menuColor: const Color(0xFFFFFEFB),
+      menuMaxHeight: 280,
+      adaptiveMenuPlacement: true,
+      border: Border.all(color: const Color(0xFFD4D9D1)),
+      borderRadius: 9,
+      leading: const Icon(Icons.warehouse_outlined, size: 17, color: MyColors.colorPrimary),
+      onChanged: (id) async {
+        if (id != null) await loja.selecionarFazenda(id);
+      },
+    );
+
+    if (!mostrarAno) return fazenda;
+
+    final anoLabel = loja.anoAgricola?.label;
+    final ano = AppSelectOverlay<String>(
+      value: loja.anosAgricolas.any((a) => a.label == anoLabel) ? anoLabel : null,
+      options: [
+        for (final item in loja.anosAgricolas)
+          AppSelectOption(value: item.label, label: item.label),
+      ],
+      enabled: loja.anosAgricolas.isNotEmpty,
+      placeholder: loja.anosAgricolas.isEmpty ? 'Sem ano agrícola' : 'Ano agrícola',
+      selectedPrefix: 'Ano agrícola: ',
+      height: 46,
+      padding: const EdgeInsets.symmetric(horizontal: 12),
+      fieldColor: Colors.white,
+      menuColor: const Color(0xFFFFFEFB),
+      menuMaxHeight: 280,
+      adaptiveMenuPlacement: true,
+      border: Border.all(color: const Color(0xFFD4D9D1)),
+      borderRadius: 9,
+      leading: const Icon(Icons.calendar_today_outlined, size: 17, color: MyColors.colorPrimary),
+      onChanged: (label) async {
+        final selecionado =
+            loja.anosAgricolas.where((item) => item.label == label).firstOrNull;
+        if (selecionado != null) await loja.selecionarAnoAgricola(selecionado);
+      },
+    );
+
+    return Row(
+      children: [
+        Expanded(child: fazenda),
+        const SizedBox(width: 8),
+        Expanded(child: ano),
       ],
     );
   }
@@ -1104,127 +1260,151 @@ Future<ContaMock?> escolherContaFinanceiro(
   String titulo = 'Escolher conta',
 }) {
   if (contas.isEmpty) return Future.value(null);
-  return showModalBottomSheet<ContaMock>(
+  return showAdaptiveSelectionModal<ContaMock>(
     context: context,
-    backgroundColor: Colors.white,
-    isScrollControlled: true,
-    shape: const RoundedRectangleBorder(
-      borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
-    ),
-    builder: (sheet) {
-      return SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.fromLTRB(16, 12, 16, 16),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Center(
-                child: Container(
-                  width: 40,
-                  height: 4,
-                  decoration: BoxDecoration(
-                    color: const Color(0xFFD9D9D9),
-                    borderRadius: BorderRadius.circular(999),
-                  ),
-                ),
-              ),
-              const SizedBox(height: 14),
-              Text(
-                titulo,
-                style: const TextStyle(fontFamily: 'Montserrat', fontWeight: FontWeight.w700, fontSize: 16),
-              ),
-              const SizedBox(height: 4),
-              const Text(
-                'Saldo atual de cada conta',
-                style: TextStyle(fontFamily: 'Montserrat', fontSize: 12, color: Color(0xFF8A8A8A)),
-              ),
-              const SizedBox(height: 12),
-              Flexible(
-                child: ListView.separated(
-                  shrinkWrap: true,
-                  itemCount: contas.length,
-                  separatorBuilder: (_, __) => const SizedBox(height: 8),
-                  itemBuilder: (_, index) {
-                    final conta = contas[index];
-                    final marcada = selecionada?.id == conta.id;
-                    final saldoNegativo = conta.saldo < 0;
-                    return Material(
-                      color: marcada ? const Color(0xFFE7F6EC) : Colors.white,
-                      borderRadius: BorderRadius.circular(12),
-                      child: InkWell(
-                        onTap: () => Navigator.pop(sheet, conta),
-                        borderRadius: BorderRadius.circular(12),
-                        child: Container(
-                          width: double.infinity,
-                          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
-                          decoration: BoxDecoration(
-                            borderRadius: BorderRadius.circular(12),
-                            border: Border.all(
-                              color: marcada ? MyColors.colorPrimary : const Color(0xFFE6E6E6),
-                            ),
-                          ),
-                          child: Row(
-                            children: [
-                              Container(
-                                width: 40,
-                                height: 40,
-                                decoration: BoxDecoration(
-                                  color: marcada ? const Color(0xFFD7F0E0) : const Color(0xFFF3F3F3),
-                                  borderRadius: BorderRadius.circular(10),
-                                ),
-                                child: Icon(
-                                  conta.tipo.toLowerCase().contains('caixa')
-                                      ? Icons.payments_outlined
-                                      : Icons.account_balance_outlined,
-                                  size: 20,
-                                  color: MyColors.colorPrimary,
-                                ),
-                              ),
-                              const SizedBox(width: 12),
-                              Expanded(
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Text(
-                                      conta.nome,
-                                      style: const TextStyle(
-                                        fontFamily: 'Montserrat',
-                                        fontWeight: FontWeight.w700,
-                                        fontSize: 14,
-                                      ),
-                                    ),
-                                    Text(
-                                      conta.tipo,
-                                      style: const TextStyle(
-                                        fontFamily: 'Montserrat',
-                                        fontSize: 11,
-                                        color: Color(0xFF8A8A8A),
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                              Text(
-                                reais(conta.saldo),
-                                style: TextStyle(
-                                  fontFamily: 'Montserrat',
-                                  fontWeight: FontWeight.w800,
-                                  fontSize: 14,
-                                  color: saldoNegativo ? const Color(0xFFC62828) : MyColors.colorPrimary,
-                                ),
-                              ),
-                            ],
-                          ),
+    title: titulo,
+    builder: (embeddedInDialog) {
+      return Builder(
+        builder: (sheet) {
+          return SafeArea(
+            top: false,
+            child: Padding(
+              padding: EdgeInsets.fromLTRB(16, embeddedInDialog ? 8 : 12, 16, 16),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  if (!embeddedInDialog) ...[
+                    Center(
+                      child: Container(
+                        width: 40,
+                        height: 4,
+                        decoration: BoxDecoration(
+                          color: const Color(0xFFD9D9D9),
+                          borderRadius: BorderRadius.circular(999),
                         ),
                       ),
-                    );
-                  },
-                ),
+                    ),
+                    const SizedBox(height: 14),
+                    Text(
+                      titulo,
+                      style: const TextStyle(
+                        fontFamily: 'Montserrat',
+                        fontWeight: FontWeight.w700,
+                        fontSize: 16,
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                  ],
+                  const Text(
+                    'Saldo atual de cada conta',
+                    style: TextStyle(
+                      fontFamily: 'Montserrat',
+                      fontSize: 12,
+                      color: Color(0xFF8A8A8A),
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  ConstrainedBox(
+                    constraints: BoxConstraints(
+                      maxHeight: MediaQuery.sizeOf(sheet).height *
+                          (embeddedInDialog ? 0.5 : 0.55),
+                    ),
+                    child: ListView.separated(
+                      shrinkWrap: true,
+                      itemCount: contas.length,
+                      separatorBuilder: (_, __) => const SizedBox(height: 8),
+                      itemBuilder: (_, index) {
+                        final conta = contas[index];
+                        final marcada = selecionada?.id == conta.id;
+                        final saldoNegativo = conta.saldo < 0;
+                        return Material(
+                          color: marcada ? const Color(0xFFE7F6EC) : Colors.white,
+                          borderRadius: BorderRadius.circular(12),
+                          child: InkWell(
+                            onTap: () => Navigator.pop(sheet, conta),
+                            borderRadius: BorderRadius.circular(12),
+                            child: Container(
+                              width: double.infinity,
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 14,
+                                vertical: 12,
+                              ),
+                              decoration: BoxDecoration(
+                                borderRadius: BorderRadius.circular(12),
+                                border: Border.all(
+                                  color: marcada
+                                      ? MyColors.colorPrimary
+                                      : const Color(0xFFE6E6E6),
+                                ),
+                              ),
+                              child: Row(
+                                children: [
+                                  Container(
+                                    width: 40,
+                                    height: 40,
+                                    decoration: BoxDecoration(
+                                      color: marcada
+                                          ? const Color(0xFFD7F0E0)
+                                          : const Color(0xFFF3F3F3),
+                                      borderRadius: BorderRadius.circular(10),
+                                    ),
+                                    child: Icon(
+                                      conta.tipo.toLowerCase().contains('caixa')
+                                          ? Icons.payments_outlined
+                                          : Icons.account_balance_outlined,
+                                      size: 20,
+                                      color: MyColors.colorPrimary,
+                                    ),
+                                  ),
+                                  const SizedBox(width: 12),
+                                  Expanded(
+                                    child: Column(
+                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      children: [
+                                        Text(
+                                          conta.nome,
+                                          style: const TextStyle(
+                                            fontFamily: 'Montserrat',
+                                            fontWeight: FontWeight.w700,
+                                            fontSize: 14,
+                                          ),
+                                        ),
+                                        Text(
+                                          conta.tipo,
+                                          style: const TextStyle(
+                                            fontFamily: 'Montserrat',
+                                            fontSize: 11,
+                                            color: Color(0xFF8A8A8A),
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                  Text(
+                                    reais(conta.saldo),
+                                    style: TextStyle(
+                                      fontFamily: 'Montserrat',
+                                      fontWeight: FontWeight.w800,
+                                      fontSize: 14,
+                                      color: saldoNegativo
+                                          ? const Color(0xFFC62828)
+                                          : MyColors.colorPrimary,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+                        );
+                      },
+                    ),
+                  ),
+                ],
               ),
-            ],
-          ),
-        ),
+            ),
+          );
+        },
       );
     },
   );

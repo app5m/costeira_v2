@@ -622,7 +622,7 @@ class _DashboardWebPageState extends State<DashboardWebPage> {
     final quickActions = Modular.get<AppMenusController>().dashboardMenu;
 
     return ColoredBox(
-      color: const Color(0xFFF4F2EB),
+      color: MyColors.surface,
       child: Stack(
         children: [
           Column(
@@ -857,8 +857,8 @@ class _QuickActionsStrip extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.fromLTRB(12, 10, 12, 10),
       decoration: const BoxDecoration(
-        color: Color(0xFFFAF9F5),
-        border: Border(top: BorderSide(color: Color(0xFFD9DDD3))),
+        color: MyColors.card,
+        border: Border(top: BorderSide(color: MyColors.surfaceBorder)),
       ),
       child: LayoutBuilder(
         builder: (context, constraints) {
@@ -1242,7 +1242,7 @@ class _SurfaceCard extends StatelessWidget {
       constraints: BoxConstraints(minHeight: minHeight ?? 0),
       padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
-        color: const Color(0xFFFAF9F5),
+        color: MyColors.card,
         borderRadius: BorderRadius.circular(12),
         border: Border.all(color: const Color(0xFFD9DDD3)),
       ),
@@ -1354,7 +1354,7 @@ class _DashboardActionTile extends StatelessWidget {
     if (item.children.isNotEmpty) {
       return Container(
         decoration: BoxDecoration(
-          color: const Color(0xFFFAF9F5),
+          color: MyColors.card,
           borderRadius: BorderRadius.circular(12),
           border: Border.all(color: const Color(0xFFE1E2DC)),
         ),
@@ -1399,7 +1399,7 @@ class _DashboardActionTile extends StatelessWidget {
       );
     }
     return Material(
-      color: const Color(0xFFFAF9F5),
+      color: MyColors.card,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(12),
         side: const BorderSide(color: Color(0xFFE1E2DC)),

@@ -186,6 +186,16 @@ bool _registroFinanceiro(Map map) {
   return id != null && id.toString().trim().isNotEmpty;
 }
 
+/// Corrige acentos ausentes em nomes vindos da API (ex.: "nao" → "não").
+String _nomeFinanceiroExibicao(String nome) {
+  return nome.replaceAllMapped(RegExp(r'\b[Nn][Aa][Oo]\b'), (match) {
+    final palavra = match[0]!;
+    if (palavra == palavra.toUpperCase()) return 'NÃO';
+    if (palavra.startsWith('N')) return 'Não';
+    return 'não';
+  });
+}
+
 /// Rubricas sistêmicas do fluxo de parceria (não entram como despesa operacional).
 bool rubricaParceriaSistema(int categoriaId) =>
     categoriaId == 7 || categoriaId == 50 || categoriaId == 51 || categoriaId == 52;
@@ -820,11 +830,52 @@ class FinanceiroLoja extends ChangeNotifier {
   String get entradasTexto => fluxo['indicadores']?['total_entradas_string']?.toString() ?? r'R$ 0,00';
   String get saidasTexto => fluxo['indicadores']?['total_saidas_string']?.toString() ?? r'R$ 0,00';
 
-  List<double> get barrasFluxo {
+  List<double> get barrasFluxo => _serieFluxo('entradas');
+
+  List<double> get barrasSaidasFluxo => _serieFluxo('saidas');
+
+  List<String> get rotulosFluxo {
+    final grafico = fluxo['grafico'];
+    if (grafico is! Map) return const [];
+    final mapa = Map<String, dynamic>.from(grafico);
+    final bruto =
+        mapa['categorias'] ??
+        mapa['labels'] ??
+        mapa['rotulos'] ??
+        mapa['meses'];
+    if (bruto is List && bruto.isNotEmpty) {
+      return [for (final item in bruto) item.toString()];
+    }
+    final n = barrasFluxo.length;
+    if (n == 0) return const [];
+    const meses = [
+      'Jan',
+      'Fev',
+      'Mar',
+      'Abr',
+      'Mai',
+      'Jun',
+      'Jul',
+      'Ago',
+      'Set',
+      'Out',
+      'Nov',
+      'Dez',
+    ];
+    final inicio = anoAgricola?.dataIn.month ?? 7;
+    return [
+      for (var i = 0; i < n; i++) meses[(inicio - 1 + i) % 12],
+    ];
+  }
+
+  List<double> _serieFluxo(String chave) {
     final series = (fluxo['grafico']?['series'] as List?) ?? const [];
-    final entradas = series.cast<Map?>().whereType<Map>().where((s) => s['chave'] == 'entradas');
-    if (entradas.isEmpty) return const [];
-    final dados = (entradas.first['dados'] as List?) ?? const [];
+    final alvo = series
+        .cast<Map?>()
+        .whereType<Map>()
+        .where((s) => s['chave']?.toString() == chave);
+    if (alvo.isEmpty) return const [];
+    final dados = (alvo.first['dados'] as List?) ?? const [];
     return [
       for (final item in dados) double.tryParse(item.toString()) ?? 0,
     ];
@@ -865,7 +916,7 @@ class FinanceiroLoja extends ChangeNotifier {
         for (final item in pacote[0] as List<Map<String, dynamic>>)
           ClassificacaoFin(
             id: int.tryParse(item['id'].toString()) ?? 0,
-            nome: item['nome']?.toString() ?? '',
+            nome: _nomeFinanceiroExibicao(item['nome']?.toString() ?? ''),
             tipo: item['tipo']?.toString() ?? '',
             exigeCentro: item['exige_centro'].toString() == '1',
             manual: item['manual_etapa2'].toString() == '1',
@@ -877,7 +928,7 @@ class FinanceiroLoja extends ChangeNotifier {
           RubricaFin(
             id: int.tryParse(item['id'].toString()) ?? 0,
             classificacaoId: int.tryParse(item['classificacao_id'].toString()) ?? 0,
-            nome: item['nome']?.toString() ?? '',
+            nome: _nomeFinanceiroExibicao(item['nome']?.toString() ?? ''),
           ),
       ];
       centros = [

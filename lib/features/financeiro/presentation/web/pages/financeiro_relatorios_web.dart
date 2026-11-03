@@ -1,9 +1,8 @@
-import 'dart:convert';
-
 import 'package:costeira/core/api/api_client.dart';
 import 'package:costeira/core/api/api_exception.dart';
 import 'package:costeira/core/components/app_snack.dart';
 import 'package:costeira/features/financeiro/domain/financeiro_mock.dart';
+import 'package:costeira/features/financeiro/presentation/pages/relatorio_detalhe_page.dart';
 import 'package:costeira/features/financeiro/presentation/web/financeiro_web_export.dart';
 import 'package:costeira/features/financeiro/presentation/web/widgets/financeiro_web_ui.dart';
 import 'package:costeira/features/financeiro/presentation/widgets/financeiro_ui.dart';
@@ -182,6 +181,7 @@ class _FinanceiroRelatorioDetalheWebState
   bool _carregando = true;
   bool _exportando = false;
   String? _erro;
+  String _dre = 'livro_caixa';
 
   @override
   void initState() {
@@ -253,43 +253,6 @@ class _FinanceiroRelatorioDetalheWebState
     _ => 'Relatório',
   };
 
-  List<Widget> _indicadores() {
-    final ind = _dados['indicadores'];
-    if (ind is! Map) return const [];
-    final mapa = Map<String, dynamic>.from(ind);
-    return [
-      LayoutBuilder(
-        builder: (context, constraints) {
-          final columns = constraints.maxWidth >= 900
-              ? 4
-              : (constraints.maxWidth >= 620 ? 2 : 1);
-          final gap = 12.0;
-          final width = (constraints.maxWidth - gap * (columns - 1)) / columns;
-          return Wrap(
-            spacing: gap,
-            runSpacing: gap,
-            children: [
-              for (final entry in mapa.entries)
-                if (entry.key.endsWith('_string') ||
-                    entry.value is String ||
-                    entry.value is num)
-                  SizedBox(
-                    width: width,
-                    child: FinanceiroWebMetricCard(
-                      label: entry.key
-                          .replaceAll('_string', '')
-                          .replaceAll('_', ' '),
-                      value: '${entry.value}',
-                    ),
-                  ),
-            ],
-          );
-        },
-      ),
-      const SizedBox(height: 16),
-    ];
-  }
-
   @override
   Widget build(BuildContext context) {
     final padding = MediaQuery.sizeOf(context).width < 760 ? 16.0 : 28.0;
@@ -342,19 +305,15 @@ class _FinanceiroRelatorioDetalheWebState
               ],
               const ContextoFinanceiroFiltros(),
               const SizedBox(height: 16),
-              ..._indicadores(),
-              FinanceiroWebPanel(
-                child: SelectableText(
-                  _dados.isEmpty
-                      ? 'Sem dados para o período.'
-                      : const JsonEncoder.withIndent('  ').convert(_dados),
-                  style: const TextStyle(
-                    fontFamily: 'Montserrat',
-                    fontSize: 12,
-                    height: 1.45,
-                  ),
+              if (_dados.isEmpty)
+                const FinanceiroWebEmpty(message: 'Sem dados para o período.')
+              else
+                FinanceiroRelatorioConteudo(
+                  id: widget.id,
+                  mapa: _dados,
+                  dreBloco: _dre,
+                  aoEscolherDre: (valor) => setState(() => _dre = valor),
                 ),
-              ),
             ],
           );
 

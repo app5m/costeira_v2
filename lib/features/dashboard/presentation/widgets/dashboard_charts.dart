@@ -735,7 +735,7 @@ class _ChartCard extends StatelessWidget {
       width: double.infinity,
       padding: const EdgeInsets.fromLTRB(14, 14, 14, 16),
       decoration: BoxDecoration(
-        color: const Color(0xFFFAF9F5),
+        color: MyColors.card,
         borderRadius: BorderRadius.circular(12),
         border: Border.all(color: const Color(0xFFD9DDD3)),
       ),

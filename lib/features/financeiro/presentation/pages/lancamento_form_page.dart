@@ -1,4 +1,5 @@
 import 'package:costeira/core/api/api_exception.dart';
+import 'package:costeira/core/components/adaptive_selection_modal.dart';
 import 'package:costeira/core/components/app_snack.dart';
 import 'package:costeira/core/components/form_accordion.dart';
 import 'package:costeira/core/config/ws_constantes.dart';
@@ -19,6 +20,7 @@ import 'package:costeira/features/financeiro/presentation/pages/contas_page.dart
 import 'package:costeira/features/financeiro/presentation/pages/lancamento_animais_page.dart';
 import 'package:costeira/features/financeiro/presentation/widgets/financeiro_ui.dart';
 import 'package:costeira/theme/colors.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_modular/flutter_modular.dart';
 import 'package:mask_text_input_formatter/mask_text_input_formatter.dart';
@@ -396,9 +398,24 @@ class _LancamentoFormPageState extends State<LancamentoFormPage> {
   }
 
   Future<void> _escolherAnimais() async {
-    final escolhidos = await Navigator.of(context).push<List<AnimalEntity>>(
-      MaterialPageRoute(builder: (_) => LancamentoAnimaisPage(selecionados: [for (final item in _animais) item.animal])),
-    );
+    final selecionados = [for (final item in _animais) item.animal];
+    final List<AnimalEntity>? escolhidos;
+    if (kIsWeb) {
+      escolhidos = await showAdaptiveSelectionModal<List<AnimalEntity>>(
+        context: context,
+        title: 'Selecionar animais',
+        builder: (embeddedInDialog) => LancamentoAnimaisPage(
+          selecionados: selecionados,
+          embeddedInDialog: embeddedInDialog,
+        ),
+      );
+    } else {
+      escolhidos = await Navigator.of(context).push<List<AnimalEntity>>(
+        MaterialPageRoute(
+          builder: (_) => LancamentoAnimaisPage(selecionados: selecionados),
+        ),
+      );
+    }
     if (escolhidos == null || !mounted) return;
     final anteriores = {for (final item in _animais) item.animal.id: item};
     final proximos = <_AnimalVinculo>[];
@@ -565,6 +582,15 @@ class _LancamentoFormPageState extends State<LancamentoFormPage> {
       return;
     }
     if (!mounted) return;
+    final editando = widget.item != null;
+    final mensagem = rascunho
+        ? 'Rascunho salvo.'
+        : editando
+            ? 'Lançamento atualizado.'
+            : (_pago
+                ? 'Lançamento adicionado com baixa registrada.'
+                : 'Lançamento adicionado.');
+    AppSnackBar.show(context: context, message: mensagem, isError: false);
     widget.aoFechar();
   }
 
@@ -785,14 +811,15 @@ class _LancamentoFormPageState extends State<LancamentoFormPage> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 if (partes.isEmpty)
-                  const Padding(
-                    padding: EdgeInsets.only(bottom: 8),
-                    child: Text(
-                      'Nenhum fornecedor ou comprador vinculado. Cadastre um para este lançamento.',
-                      style: TextStyle(fontFamily: 'Montserrat', fontSize: 13, color: Color(0xFF8A8A8A)),
-                    ),
+                  EstadoAcaoFinanceiro(
+                    icone: Icons.handshake_outlined,
+                    mensagem:
+                        'Nenhum fornecedor ou comprador vinculado. Cadastre um para este lançamento.',
+                    rotuloBotao: 'Cadastrar fornecedor ou comprador',
+                    botaoPrimario: true,
+                    onPressed: () => _modalNovaParte(loja),
                   )
-                else
+                else ...[
                   for (final parte in partes)
                     OpcaoCartaoFinanceiro(
                       titulo: parte.nome,
@@ -805,12 +832,6 @@ class _LancamentoFormPageState extends State<LancamentoFormPage> {
                       selecionado: _parteId == parte.id,
                       aoToque: () => setState(() => _parteId = parte.id),
                     ),
-                if (partes.isEmpty)
-                  BotaoPrimarioFinanceiro(
-                    rotulo: 'Cadastrar fornecedor ou comprador',
-                    onPressed: () => _modalNovaParte(loja),
-                  )
-                else
                   OutlinedButton.icon(
                     onPressed: () => _modalNovaParte(loja),
                     style: OutlinedButton.styleFrom(
@@ -821,9 +842,14 @@ class _LancamentoFormPageState extends State<LancamentoFormPage> {
                     icon: const Icon(Icons.add, color: MyColors.colorPrimary, size: 18),
                     label: const Text(
                       'Adicionar outro',
-                      style: TextStyle(fontFamily: 'Montserrat', fontWeight: FontWeight.w600, color: MyColors.colorPrimary),
+                      style: TextStyle(
+                        fontFamily: 'Montserrat',
+                        fontWeight: FontWeight.w600,
+                        color: MyColors.colorPrimary,
+                      ),
                     ),
                   ),
+                ],
               ],
             ),
           ),
@@ -865,18 +891,15 @@ class _LancamentoFormPageState extends State<LancamentoFormPage> {
                   onChanged: (valor) => setState(() => _pago = valor),
                 ),
                 if (_pago) ...[
-                  if (contasAtivas.isEmpty) ...[
-                    const Text(
-                      'Nenhuma conta ativa nesta fazenda.',
-                      style: TextStyle(fontFamily: 'Montserrat', fontSize: 13, color: Color(0xFF8A8A8A)),
-                    ),
-                    const SizedBox(height: 8),
-                    FilledButton(
+                  if (contasAtivas.isEmpty)
+                    EstadoAcaoFinanceiro(
+                      icone: Icons.account_balance_outlined,
+                      mensagem: 'Nenhuma conta ativa nesta fazenda.',
+                      rotuloBotao: 'Adicionar conta',
+                      botaoPrimario: true,
                       onPressed: () => _modalNovaConta(loja),
-                      style: FilledButton.styleFrom(backgroundColor: MyColors.colorPrimary),
-                      child: const Text('Adicionar conta', style: TextStyle(fontFamily: 'Montserrat')),
-                    ),
-                  ] else ...[
+                    )
+                  else ...[
                     SeletorContaFinanceiro(
                       contas: contasAtivas,
                       selecionada: contasAtivas.where((c) => c.id == _contaId).firstOrNull,
@@ -1212,6 +1235,10 @@ class _LancamentoFormPageState extends State<LancamentoFormPage> {
   Future<void> _modalNovaParte(FinanceiroLoja loja) async {
     final nome = TextEditingController();
     final celular = TextEditingController();
+    final mascaraCelular = MaskTextInputFormatter(
+      mask: '(##) #####-####',
+      filter: {'#': RegExp(r'\d')},
+    );
     const motivoFixo = 'Vinculação no lançamento';
     var papel = _tipoApi == 'recebimento' ? 'comprador' : 'fornecedor';
     var modoNovo = true;
@@ -1253,26 +1280,39 @@ class _LancamentoFormPageState extends State<LancamentoFormPage> {
       }
     }
 
-    final ok = await showModalBottomSheet<bool>(
+    final ok = await showAdaptiveSelectionModal<bool>(
       context: context,
-      isScrollControlled: true,
-      showDragHandle: true,
-      builder: (sheet) {
+      title: 'Fornecedor ou comprador',
+      builder: (embeddedInDialog) {
         return StatefulBuilder(
-          builder: (sheet, setSheet) {
+          builder: (modal, setSheet) {
             if (!iniciouCarga) {
               iniciouCarga = true;
               WidgetsBinding.instance.addPostFrameCallback((_) => carregarCadastro(setSheet));
             }
             return Padding(
-              padding: EdgeInsets.fromLTRB(16, 12, 16, 16 + MediaQuery.of(sheet).viewInsets.bottom),
+              padding: EdgeInsets.fromLTRB(
+                16,
+                embeddedInDialog ? 8 : 12,
+                16,
+                16 + MediaQuery.of(modal).viewInsets.bottom,
+              ),
               child: SingleChildScrollView(
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Text('Fornecedor ou comprador', style: TextStyle(fontFamily: 'Montserrat', fontWeight: FontWeight.w700, fontSize: 16)),
-                    const SizedBox(height: 16),
+                    if (!embeddedInDialog) ...[
+                      const Text(
+                        'Fornecedor ou comprador',
+                        style: TextStyle(
+                          fontFamily: 'Montserrat',
+                          fontWeight: FontWeight.w700,
+                          fontSize: 16,
+                        ),
+                      ),
+                      const SizedBox(height: 16),
+                    ],
                     if (erroSalvar != null) ...[
                       Container(
                         width: double.infinity,
@@ -1290,7 +1330,12 @@ class _LancamentoFormPageState extends State<LancamentoFormPage> {
                             Expanded(
                               child: Text(
                                 erroSalvar!,
-                                style: const TextStyle(fontFamily: 'Montserrat', fontSize: 13, color: Color(0xFFC62828), fontWeight: FontWeight.w600),
+                                style: const TextStyle(
+                                  fontFamily: 'Montserrat',
+                                  fontSize: 13,
+                                  color: Color(0xFFC62828),
+                                  fontWeight: FontWeight.w600,
+                                ),
                               ),
                             ),
                           ],
@@ -1331,11 +1376,22 @@ class _LancamentoFormPageState extends State<LancamentoFormPage> {
                       )
                     else if (!modoNovo) ...[
                       if (erroLista != null)
-                        Text(erroLista!, style: const TextStyle(fontFamily: 'Montserrat', color: Color(0xFFC62828), fontSize: 12))
+                        Text(
+                          erroLista!,
+                          style: const TextStyle(
+                            fontFamily: 'Montserrat',
+                            color: Color(0xFFC62828),
+                            fontSize: 12,
+                          ),
+                        )
                       else if (parceiros.isEmpty)
                         const Text(
                           'Nenhum cadastro nesse papel. Use Cadastrar novo.',
-                          style: TextStyle(fontFamily: 'Montserrat', fontSize: 13, color: Color(0xFF8A8A8A)),
+                          style: TextStyle(
+                            fontFamily: 'Montserrat',
+                            fontSize: 13,
+                            color: Color(0xFF8A8A8A),
+                          ),
                         )
                       else
                         DropdownButtonFormField<int>(
@@ -1344,7 +1400,10 @@ class _LancamentoFormPageState extends State<LancamentoFormPage> {
                           decoration: decoracaoCampo('Selecione no cadastro'),
                           items: [
                             for (final item in parceiros)
-                              DropdownMenuItem(value: item.id, child: Text(item.nome, style: _estiloCampo)),
+                              DropdownMenuItem(
+                                value: item.id,
+                                child: Text(item.nome, style: _estiloCampo),
+                              ),
                           ],
                           onChanged: (valor) => setSheet(() {
                             existenteId = valor;
@@ -1366,6 +1425,7 @@ class _LancamentoFormPageState extends State<LancamentoFormPage> {
                         child: TextField(
                           controller: celular,
                           keyboardType: TextInputType.phone,
+                          inputFormatters: [mascaraCelular],
                           decoration: decoracaoCampo('(00) 00000-0000'),
                           onChanged: (_) => setSheet(() => erroSalvar = null),
                         ),
@@ -1395,7 +1455,9 @@ class _LancamentoFormPageState extends State<LancamentoFormPage> {
                                 if (farmId == null) throw ApiException('Selecione uma fazenda.');
                                 var cadastroId = existenteId;
                                 if (modoNovo) {
-                                  final kind = papel == 'comprador' ? ParceiroKind.comprador : ParceiroKind.fornecedor;
+                                  final kind = papel == 'comprador'
+                                      ? ParceiroKind.comprador
+                                      : ParceiroKind.fornecedor;
                                   final criado = await Modular.get<CreateParceiroUsecase>()(
                                     ParceiroUpsertEntity(
                                       kind: kind,
@@ -1404,7 +1466,7 @@ class _LancamentoFormPageState extends State<LancamentoFormPage> {
                                       tipoPessoa: WSConstantes.tipoPessoaFisica,
                                       nome: nome.text.trim(),
                                       email: '',
-                                      celular: celular.text.trim(),
+                                      celular: mascaraCelular.getUnmaskedText(),
                                       documento: '',
                                       endereco: '-',
                                       numero: 'S/N',
@@ -1423,10 +1485,19 @@ class _LancamentoFormPageState extends State<LancamentoFormPage> {
                                         nome: nome.text.trim(),
                                       ),
                                     );
-                                    cadastroId = lista.data.where((p) => p.nome.trim().toLowerCase() == nome.text.trim().toLowerCase()).firstOrNull?.id;
+                                    cadastroId = lista.data
+                                        .where(
+                                          (p) =>
+                                              p.nome.trim().toLowerCase() ==
+                                              nome.text.trim().toLowerCase(),
+                                        )
+                                        .firstOrNull
+                                        ?.id;
                                   }
                                   if (cadastroId == null || cadastroId <= 0) {
-                                    throw ApiException('Cadastro criado, mas o id não voltou. Abra de novo e use Já cadastrado.');
+                                    throw ApiException(
+                                      'Cadastro criado, mas o id não voltou. Abra de novo e use Já cadastrado.',
+                                    );
                                   }
                                 }
                                 final parteId = await loja.vincularParte(
@@ -1435,11 +1506,15 @@ class _LancamentoFormPageState extends State<LancamentoFormPage> {
                                   compradorId: papel == 'comprador' ? cadastroId : null,
                                   motivo: motivoFixo,
                                 );
-                                if (!sheet.mounted) return;
-                                Navigator.pop(sheet, true);
+                                if (!modal.mounted) return;
+                                Navigator.pop(modal, true);
                                 if (!mounted) return;
                                 setState(() => _parteId = parteId);
-                                AppSnackBar.show(context: context, message: 'Parte vinculada.', isError: false);
+                                AppSnackBar.show(
+                                  context: context,
+                                  message: 'Parte vinculada.',
+                                  isError: false,
+                                );
                               } on ApiException catch (error) {
                                 setSheet(() {
                                   salvando = false;
@@ -1452,12 +1527,18 @@ class _LancamentoFormPageState extends State<LancamentoFormPage> {
                                 });
                               }
                             },
-                      style: FilledButton.styleFrom(backgroundColor: MyColors.colorPrimary, minimumSize: const Size.fromHeight(48)),
+                      style: FilledButton.styleFrom(
+                        backgroundColor: MyColors.colorPrimary,
+                        minimumSize: const Size.fromHeight(48),
+                      ),
                       child: salvando
                           ? const SizedBox(
                               width: 22,
                               height: 22,
-                              child: CircularProgressIndicator(strokeWidth: 2.4, color: Colors.white),
+                              child: CircularProgressIndicator(
+                                strokeWidth: 2.4,
+                                color: Colors.white,
+                              ),
                             )
                           : const Text('Salvar', style: TextStyle(fontFamily: 'Montserrat')),
                     ),
@@ -1488,27 +1569,46 @@ class _LancamentoFormPageState extends State<LancamentoFormPage> {
     var positivo = true;
     ContaMock? criada;
 
-    final ok = await showModalBottomSheet<bool>(
+    final ok = await showAdaptiveSelectionModal<bool>(
       context: context,
-      isScrollControlled: true,
-      showDragHandle: true,
-      builder: (sheet) {
+      title: 'Adicionar conta',
+      builder: (embeddedInDialog) {
         return StatefulBuilder(
-          builder: (sheet, setSheet) {
+          builder: (modal, setSheet) {
+            final tituloEtapa = etapa == 0
+                ? 'Adicionar conta'
+                : (etapa == 1 ? 'Conta criada' : 'Saldo inicial');
             return Padding(
-              padding: EdgeInsets.fromLTRB(16, 0, 16, 16 + MediaQuery.of(sheet).viewInsets.bottom),
+              padding: EdgeInsets.fromLTRB(
+                16,
+                embeddedInDialog ? 8 : 0,
+                16,
+                16 + MediaQuery.of(modal).viewInsets.bottom,
+              ),
               child: SingleChildScrollView(
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(
-                      etapa == 0 ? 'Adicionar conta' : (etapa == 1 ? 'Conta criada' : 'Saldo inicial'),
-                      style: const TextStyle(fontFamily: 'Montserrat', fontWeight: FontWeight.w700, fontSize: 16),
-                    ),
-                    const SizedBox(height: 12),
+                    if (!embeddedInDialog || etapa != 0) ...[
+                      Text(
+                        tituloEtapa,
+                        style: const TextStyle(
+                          fontFamily: 'Montserrat',
+                          fontWeight: FontWeight.w700,
+                          fontSize: 16,
+                        ),
+                      ),
+                      const SizedBox(height: 12),
+                    ],
                     if (etapa == 0) ...[
-                      CampoFinanceiro(rotulo: 'NOME', child: TextField(controller: nome, decoration: decoracaoCampo('Banco principal'))),
+                      CampoFinanceiro(
+                        rotulo: 'NOME',
+                        child: TextField(
+                          controller: nome,
+                          decoration: decoracaoCampo('Banco principal'),
+                        ),
+                      ),
                       const SizedBox(height: 12),
                       const SecaoRotulo('TIPO'),
                       const SizedBox(height: 6),
@@ -1520,10 +1620,20 @@ class _LancamentoFormPageState extends State<LancamentoFormPage> {
                       const SizedBox(height: 8),
                       const Text(
                         'Escolha um nome para identificar onde o dinheiro entra e sai.',
-                        style: TextStyle(fontFamily: 'Montserrat', fontSize: 12, color: Color(0xFF8A8A8A)),
+                        style: TextStyle(
+                          fontFamily: 'Montserrat',
+                          fontSize: 12,
+                          color: Color(0xFF8A8A8A),
+                        ),
                       ),
                       const SizedBox(height: 12),
-                      CampoFinanceiro(rotulo: 'MOTIVO', child: TextField(controller: motivo, decoration: decoracaoCampo(''))),
+                      CampoFinanceiro(
+                        rotulo: 'MOTIVO',
+                        child: TextField(
+                          controller: motivo,
+                          decoration: decoracaoCampo(''),
+                        ),
+                      ),
                       const SizedBox(height: 16),
                       BotaoPrimarioFinanceiro(
                         rotulo: 'Salvar conta',
@@ -1535,11 +1645,15 @@ class _LancamentoFormPageState extends State<LancamentoFormPage> {
                             final id = await loja.salvarConta(
                               nome: nome.text.trim(),
                               tipo: tipo,
-                              motivo: motivo.text.trim().isEmpty ? 'Conta criada no lançamento' : motivo.text.trim(),
+                              motivo: motivo.text.trim().isEmpty
+                                  ? 'Conta criada no lançamento'
+                                  : motivo.text.trim(),
                             );
                             final conta = loja.contas.where((c) => c.id == id).firstOrNull ??
                                 loja.contas.where((c) => c.nome == nome.text.trim()).firstOrNull;
-                            if (conta == null) throw ApiException('Conta criada, mas não voltou na lista.');
+                            if (conta == null) {
+                              throw ApiException('Conta criada, mas não voltou na lista.');
+                            }
                             setSheet(() {
                               criada = conta;
                               etapa = 1;
@@ -1547,8 +1661,8 @@ class _LancamentoFormPageState extends State<LancamentoFormPage> {
                             });
                           } on ApiException catch (error) {
                             setSheet(() => salvando = false);
-                            if (!sheet.mounted) return;
-                            AppSnackBar.show(context: sheet, message: error.message);
+                            if (!modal.mounted) return;
+                            AppSnackBar.show(context: modal, message: error.message);
                           }
                         },
                       ),
@@ -1556,7 +1670,7 @@ class _LancamentoFormPageState extends State<LancamentoFormPage> {
                       ContaPosCriacao(
                         nome: criada!.nome,
                         aoInformarSaldo: () => setSheet(() => etapa = 2),
-                        aoSaldoZero: () => Navigator.pop(sheet, true),
+                        aoSaldoZero: () => Navigator.pop(modal, true),
                       ),
                     ] else if (criada != null) ...[
                       CampoFinanceiro(
@@ -1574,7 +1688,8 @@ class _LancamentoFormPageState extends State<LancamentoFormPage> {
                       GrupoChips(
                         opcoes: const ['Positivo', 'Negativo'],
                         selecionado: positivo ? 'Positivo' : 'Negativo',
-                        aoEscolher: (valor) => setSheet(() => positivo = valor == 'Positivo'),
+                        aoEscolher: (valor) =>
+                            setSheet(() => positivo = valor == 'Positivo'),
                       ),
                       const SizedBox(height: 12),
                       CampoFinanceiro(
@@ -1587,7 +1702,13 @@ class _LancamentoFormPageState extends State<LancamentoFormPage> {
                         ),
                       ),
                       const SizedBox(height: 12),
-                      CampoFinanceiro(rotulo: 'DOCUMENTO (OPCIONAL)', child: TextField(controller: docSaldo, decoration: decoracaoCampo(''))),
+                      CampoFinanceiro(
+                        rotulo: 'DOCUMENTO (OPCIONAL)',
+                        child: TextField(
+                          controller: docSaldo,
+                          decoration: decoracaoCampo(''),
+                        ),
+                      ),
                       const SizedBox(height: 16),
                       BotaoPrimarioFinanceiro(
                         rotulo: 'Registrar saldo inicial',
@@ -1599,16 +1720,19 @@ class _LancamentoFormPageState extends State<LancamentoFormPage> {
                               contaId: criada!.id,
                               data: dataSaldo.text.trim(),
                               positivo: positivo,
-                              valor: (BrazilianCurrency.parse(valorSaldo.text) ?? 0).toStringAsFixed(2),
-                              documento: docSaldo.text.trim().isEmpty ? null : docSaldo.text.trim(),
+                              valor: (BrazilianCurrency.parse(valorSaldo.text) ?? 0)
+                                  .toStringAsFixed(2),
+                              documento: docSaldo.text.trim().isEmpty
+                                  ? null
+                                  : docSaldo.text.trim(),
                               motivo: motivoSaldoFixo,
                             );
-                            if (!sheet.mounted) return;
-                            Navigator.pop(sheet, true);
+                            if (!modal.mounted) return;
+                            Navigator.pop(modal, true);
                           } on ApiException catch (error) {
                             setSheet(() => salvando = false);
-                            if (!sheet.mounted) return;
-                            AppSnackBar.show(context: sheet, message: error.message);
+                            if (!modal.mounted) return;
+                            AppSnackBar.show(context: modal, message: error.message);
                           }
                         },
                       ),
@@ -1654,17 +1778,14 @@ class _LancamentoFormPageState extends State<LancamentoFormPage> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text(
-            'Identifique os animais relacionados a este lançamento.',
-            style: TextStyle(fontFamily: 'Montserrat', fontSize: 12, color: Color(0xFF8A8A8A)),
-          ),
-          if (_animais.isEmpty) ...[
-            const SizedBox(height: 8),
-            OutlinedButton(
+          if (_animais.isEmpty)
+            EstadoAcaoFinanceiro(
+              icone: Icons.pets_outlined,
+              mensagem: 'Identifique os animais relacionados a este lançamento.',
+              rotuloBotao: 'Selecionar animais',
               onPressed: _escolherAnimais,
-              child: const Text('Selecionar animais', style: TextStyle(fontFamily: 'Montserrat')),
-            ),
-          ] else ...[
+            )
+          else ...[
             RadioListTile<bool>(
               contentPadding: EdgeInsets.zero,
               value: true,

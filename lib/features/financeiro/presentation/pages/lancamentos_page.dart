@@ -1,4 +1,5 @@
 import 'package:costeira/core/api/api_exception.dart';
+import 'package:costeira/core/components/adaptive_selection_modal.dart';
 import 'package:costeira/core/components/app_snack.dart';
 import 'package:costeira/core/components/custom_button.dart';
 import 'package:costeira/core/input_formatters/brazilian_currency_input_formatter.dart';
@@ -570,33 +571,44 @@ class LancamentoDetalhePage extends StatelessWidget {
     var salvando = false;
 
     try {
-      await showModalBottomSheet<void>(
+      await showAdaptiveSelectionModal<void>(
         context: context,
-        isScrollControlled: true,
-        showDragHandle: true,
-        isDismissible: false,
-        enableDrag: false,
-        backgroundColor: Colors.white,
-        shape: const RoundedRectangleBorder(
-          borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
-        ),
-        builder: (sheet) {
+        title: titulo,
+        builder: (embeddedInDialog) {
           return StatefulBuilder(
-            builder: (sheet, setSheet) {
+            builder: (modal, setSheet) {
               return PopScope(
                 canPop: !salvando,
                 child: Padding(
-                  padding: EdgeInsets.fromLTRB(20, 8, 20, 16 + MediaQuery.of(sheet).viewInsets.bottom),
+                  padding: EdgeInsets.fromLTRB(
+                    20,
+                    embeddedInDialog ? 8 : 8,
+                    20,
+                    16 + MediaQuery.of(modal).viewInsets.bottom,
+                  ),
                   child: SingleChildScrollView(
                     child: Column(
                       mainAxisSize: MainAxisSize.min,
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text(titulo, style: const TextStyle(fontFamily: 'Montserrat', fontWeight: FontWeight.w700, fontSize: 16)),
-                        const SizedBox(height: 6),
+                        if (!embeddedInDialog) ...[
+                          Text(
+                            titulo,
+                            style: const TextStyle(
+                              fontFamily: 'Montserrat',
+                              fontWeight: FontWeight.w700,
+                              fontSize: 16,
+                            ),
+                          ),
+                          const SizedBox(height: 6),
+                        ],
                         const Text(
                           'Informe a data e o motivo do estorno.',
-                          style: TextStyle(fontFamily: 'Montserrat', fontSize: 13, color: Color(0xFF8692A8)),
+                          style: TextStyle(
+                            fontFamily: 'Montserrat',
+                            fontSize: 13,
+                            color: Color(0xFF8692A8),
+                          ),
                         ),
                         const SizedBox(height: 14),
                         CampoFinanceiro(
@@ -620,7 +632,14 @@ class LancamentoDetalhePage extends StatelessWidget {
                         ),
                         if (erroLocal != null) ...[
                           const SizedBox(height: 10),
-                          Text(erroLocal!, style: const TextStyle(fontFamily: 'Montserrat', fontSize: 12, color: Color(0xFFC62828))),
+                          Text(
+                            erroLocal!,
+                            style: const TextStyle(
+                              fontFamily: 'Montserrat',
+                              fontSize: 12,
+                              color: Color(0xFFC62828),
+                            ),
+                          ),
                         ],
                         const SizedBox(height: 16),
                         BotaoPrimarioFinanceiro(
@@ -645,8 +664,8 @@ class LancamentoDetalhePage extends StatelessWidget {
                                 data: dataCtrl.text.trim(),
                                 motivo: motivoCtrl.text.trim(),
                               );
-                              if (!sheet.mounted) return;
-                              Navigator.pop(sheet);
+                              if (!modal.mounted) return;
+                              Navigator.pop(modal);
                             } on ApiException catch (error) {
                               setSheet(() {
                                 salvando = false;
@@ -660,9 +679,18 @@ class LancamentoDetalhePage extends StatelessWidget {
                             }
                           },
                         ),
-                        TextButton(
-                          onPressed: salvando ? null : () => Navigator.pop(sheet),
-                          child: const Text('Cancelar', style: TextStyle(fontFamily: 'Montserrat', color: Color(0xFF313131))),
+                        const SizedBox(height: 12),
+                        Center(
+                          child: TextButton(
+                            onPressed: salvando ? null : () => Navigator.pop(modal),
+                            child: const Text(
+                              'Cancelar',
+                              style: TextStyle(
+                                fontFamily: 'Montserrat',
+                                color: Color(0xFF313131),
+                              ),
+                            ),
+                          ),
                         ),
                       ],
                     ),

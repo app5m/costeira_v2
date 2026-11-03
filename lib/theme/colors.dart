@@ -16,4 +16,13 @@ class MyColors {
   static const Color colorBtnNo = Color(0xFFFE4140);
   static const Color colorCard = Color(0xFF02f35b);
   static const Color colorDestaque = Color(0xFFFF6400);
+
+  /// Fundo de páginas web (surface).
+  static const Color surface = Color(0xFFF5F5F5);
+
+  /// Borda padrão de cards sobre [surface].
+  static const Color surfaceBorder = Color(0xFFE7E4DD);
+
+  /// Card padrão: branco sobre [surface].
+  static const Color card = Color(0xFFFFFFFF);
 }

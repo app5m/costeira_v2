@@ -4,9 +4,9 @@ import 'package:costeira/theme/colors.dart';
 import 'package:flutter/material.dart';
 import 'package:lucide_icons/lucide_icons.dart';
 
-const financeiroWebFundo = Color(0xFFF6F4EE);
-const financeiroWebBorda = Color(0xFFE7E4DD);
-const financeiroWebCard = Color(0xFFFAF9F5);
+const financeiroWebFundo = MyColors.surface;
+const financeiroWebBorda = MyColors.surfaceBorder;
+const financeiroWebCard = MyColors.card;
 
 class FinanceiroWebMetricCard extends StatelessWidget {
   const FinanceiroWebMetricCard({
@@ -27,7 +27,7 @@ class FinanceiroWebMetricCard extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.fromLTRB(16, 14, 16, 14),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: MyColors.card,
         borderRadius: BorderRadius.circular(12),
         border: Border.all(color: financeiroWebBorda),
       ),
@@ -269,7 +269,7 @@ class FinanceiroWebPanel extends StatelessWidget {
       width: double.infinity,
       padding: padding,
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: MyColors.card,
         borderRadius: BorderRadius.circular(12),
         border: Border.all(color: financeiroWebBorda),
       ),

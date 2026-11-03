@@ -209,6 +209,18 @@ class _FinanceiroWebShellState extends State<FinanceiroWebShell> {
                   child: pagina,
                 );
               }
+              if (_passo == _PassoWeb.conta ||
+                  _passo == _PassoWeb.detalhe ||
+                  _passo == _PassoWeb.saldo) {
+                return WebPageDialog(
+                  title: _tituloPasso(),
+                  width: 820,
+                  minHeight: 640,
+                  maxHeight: 900,
+                  preferredHeight: 780,
+                  child: pagina,
+                );
+              }
               return WebPageDialog(
                 title: _tituloPasso(),
                 width: 820,
@@ -342,7 +354,7 @@ class _FinanceiroWebShellState extends State<FinanceiroWebShell> {
 
   Widget _topBar({required bool showMenu}) {
     return ColoredBox(
-      color: const Color(0xFFFAF9F5),
+      color: MyColors.card,
       child: SizedBox(
         height: 64,
         child: LayoutBuilder(
@@ -473,7 +485,7 @@ class _FinanceiroWebShellState extends State<FinanceiroWebShell> {
       (FinanceiroWebAba.contas, 'Contas', LucideIcons.landmark),
     ];
     return ColoredBox(
-      color: const Color(0xFFF3F1E9),
+      color: MyColors.card,
       child: ListView(
         padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 10),
         children: [

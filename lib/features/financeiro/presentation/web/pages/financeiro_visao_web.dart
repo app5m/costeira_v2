@@ -1,7 +1,10 @@
+import 'dart:math' as math;
+
 import 'package:costeira/features/financeiro/domain/financeiro_mock.dart';
 import 'package:costeira/features/financeiro/presentation/web/widgets/financeiro_web_ui.dart';
 import 'package:costeira/features/financeiro/presentation/widgets/financeiro_ui.dart';
 import 'package:costeira/theme/colors.dart';
+import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
 
 class FinanceiroVisaoWeb extends StatelessWidget {
@@ -20,7 +23,6 @@ class FinanceiroVisaoWeb extends StatelessWidget {
   Widget build(BuildContext context) {
     final loja = FinanceiroEscopo.of(context);
     final recentes = loja.lancamentos.take(8).toList();
-    final wide = MediaQuery.sizeOf(context).width >= 980;
     final padding = MediaQuery.sizeOf(context).width < 760 ? 16.0 : 28.0;
 
     if (loja.carregando && loja.lancamentos.isEmpty) {
@@ -48,7 +50,7 @@ class FinanceiroVisaoWeb extends StatelessWidget {
             final columns = constraints.maxWidth >= 980
                 ? 5
                 : (constraints.maxWidth >= 720 ? 3 : 2);
-            final gap = 12.0;
+            const gap = 12.0;
             final width =
                 (constraints.maxWidth - gap * (columns - 1)) / columns;
             return Wrap(
@@ -97,29 +99,14 @@ class FinanceiroVisaoWeb extends StatelessWidget {
           },
         ),
         const SizedBox(height: 16),
-        if (wide)
-          IntrinsicHeight(
-            child: Row(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                Expanded(flex: 5, child: _fluxo(loja)),
-                const SizedBox(width: 12),
-                Expanded(flex: 4, child: _recentes(recentes, loja.carregando)),
-              ],
-            ),
-          )
-        else ...[
-          _fluxo(loja),
-          const SizedBox(height: 12),
-          _recentes(recentes, loja.carregando),
-        ],
+        _fluxo(loja),
+        const SizedBox(height: 12),
+        _recentes(recentes, loja.carregando),
       ],
     );
   }
 
   Widget _fluxo(FinanceiroLoja loja) {
-    final barras = loja.barrasFluxo.isEmpty ? const [0.0] : loja.barrasFluxo;
-    final topo = barras.reduce((a, b) => a > b ? a : b);
     return FinanceiroWebPanel(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -131,32 +118,28 @@ class FinanceiroVisaoWeb extends StatelessWidget {
               child: const Text('Ver extrato'),
             ),
           ),
-          const SizedBox(height: 16),
-          SizedBox(
-            height: 140,
-            child: Row(
-              crossAxisAlignment: CrossAxisAlignment.end,
-              children: [
-                for (final v in barras)
-                  Expanded(
-                    child: Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 3),
-                      child: Align(
-                        alignment: Alignment.bottomCenter,
-                        child: Container(
-                          height: topo == 0 ? 4 : (v / topo) * 140,
-                          decoration: BoxDecoration(
-                            color: MyColors.colorPrimary.withValues(
-                              alpha: 0.85,
-                            ),
-                            borderRadius: BorderRadius.circular(4),
-                          ),
-                        ),
-                      ),
-                    ),
-                  ),
-              ],
+          const SizedBox(height: 4),
+          const Text(
+            'Entradas e saídas no período',
+            style: TextStyle(
+              fontFamily: 'Montserrat',
+              fontSize: 12,
+              color: Color(0xFF8A8A8A),
             ),
+          ),
+          const SizedBox(height: 16),
+          _FluxoCaixaChart(
+            entradas: loja.barrasFluxo,
+            saidas: loja.barrasSaidasFluxo,
+            rotulos: loja.rotulosFluxo,
+          ),
+          const SizedBox(height: 14),
+          const Row(
+            children: [
+              _Legenda(cor: MyColors.colorPrimary, rotulo: 'Entradas'),
+              SizedBox(width: 16),
+              _Legenda(cor: Color(0xFFC45C4A), rotulo: 'Saídas'),
+            ],
           ),
           const SizedBox(height: 16),
           Align(
@@ -253,6 +236,223 @@ class FinanceiroVisaoWeb extends StatelessWidget {
             ],
         ],
       ),
+    );
+  }
+}
+
+class _FluxoCaixaChart extends StatelessWidget {
+  const _FluxoCaixaChart({
+    required this.entradas,
+    required this.saidas,
+    required this.rotulos,
+  });
+
+  final List<double> entradas;
+  final List<double> saidas;
+  final List<String> rotulos;
+
+  int get _len => math.max(entradas.length, math.max(saidas.length, 1));
+
+  bool get _temDados {
+    for (final v in entradas) {
+      if (v > 0) return true;
+    }
+    for (final v in saidas) {
+      if (v > 0) return true;
+    }
+    return false;
+  }
+
+  double get _maxY {
+    var max = 0.0;
+    for (final v in entradas) {
+      max = math.max(max, v);
+    }
+    for (final v in saidas) {
+      max = math.max(max, v);
+    }
+    if (max <= 0) return 4;
+    return max * 1.2;
+  }
+
+  String _rotulo(int index) {
+    if (index >= 0 && index < rotulos.length) return rotulos[index];
+    return '${index + 1}';
+  }
+
+  String _fmt(double value) {
+    if (value >= 1000000) return '${(value / 1000000).toStringAsFixed(1)}M';
+    if (value >= 1000) return '${(value / 1000).toStringAsFixed(value >= 10000 ? 0 : 1)}k';
+    return value.toStringAsFixed(value == value.roundToDouble() ? 0 : 1);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    if (!_temDados) {
+      return const SizedBox(
+        height: 220,
+        child: FinanceiroWebEmpty(
+          message: 'Sem movimento de caixa no período.',
+        ),
+      );
+    }
+
+    final maxY = _maxY;
+    final interval = maxY / 4;
+    final count = _len;
+    final showSaidas = saidas.any((v) => v > 0);
+    final barWidth = count > 10 ? 6.0 : (count > 6 ? 8.0 : 11.0);
+
+    return SizedBox(
+      height: 220,
+      child: BarChart(
+        BarChartData(
+          maxY: maxY,
+          minY: 0,
+          alignment: BarChartAlignment.spaceAround,
+          groupsSpace: 10,
+          gridData: FlGridData(
+            show: true,
+            drawVerticalLine: false,
+            horizontalInterval: interval,
+            getDrawingHorizontalLine: (_) => const FlLine(
+              color: Color(0xFFE8E4D9),
+              strokeWidth: 1,
+            ),
+          ),
+          borderData: FlBorderData(show: false),
+          titlesData: FlTitlesData(
+            topTitles: const AxisTitles(),
+            rightTitles: const AxisTitles(),
+            leftTitles: AxisTitles(
+              sideTitles: SideTitles(
+                showTitles: true,
+                reservedSize: 40,
+                interval: interval,
+                getTitlesWidget: (value, _) {
+                  if (value < 0 || value > maxY * 1.01) {
+                    return const SizedBox.shrink();
+                  }
+                  return Text(
+                    _fmt(value),
+                    style: const TextStyle(
+                      fontFamily: 'Montserrat',
+                      fontSize: 10,
+                      color: Color(0xFF8A8A8A),
+                    ),
+                  );
+                },
+              ),
+            ),
+            bottomTitles: AxisTitles(
+              sideTitles: SideTitles(
+                showTitles: true,
+                reservedSize: 24,
+                getTitlesWidget: (value, _) {
+                  final index = value.toInt();
+                  if (index < 0 || index >= count) {
+                    return const SizedBox.shrink();
+                  }
+                  // Evita poluir o eixo com muitos rótulos.
+                  final step = count > 12 ? 2 : 1;
+                  if (index % step != 0 && index != count - 1) {
+                    return const SizedBox.shrink();
+                  }
+                  return Padding(
+                    padding: const EdgeInsets.only(top: 4),
+                    child: Text(
+                      _rotulo(index),
+                      style: const TextStyle(
+                        fontFamily: 'Montserrat',
+                        fontSize: 10,
+                        fontWeight: FontWeight.w600,
+                        color: Color(0xFF6B6B6B),
+                      ),
+                    ),
+                  );
+                },
+              ),
+            ),
+          ),
+          barTouchData: BarTouchData(
+            touchTooltipData: BarTouchTooltipData(
+              getTooltipColor: (_) => const Color(0xFF1F3D2A),
+              getTooltipItem: (group, _, rod, rodIndex) {
+                final label = rodIndex == 0 ? 'Entradas' : 'Saídas';
+                return BarTooltipItem(
+                  '${_rotulo(group.x)}\n$label ${financeiroWebReais(rod.toY)}',
+                  const TextStyle(
+                    color: Colors.white,
+                    fontFamily: 'Montserrat',
+                    fontSize: 11,
+                    fontWeight: FontWeight.w600,
+                  ),
+                );
+              },
+            ),
+          ),
+          barGroups: [
+            for (var i = 0; i < count; i++)
+              BarChartGroupData(
+                x: i,
+                barsSpace: 3,
+                barRods: [
+                  BarChartRodData(
+                    toY: i < entradas.length ? entradas[i] : 0,
+                    width: barWidth,
+                    borderRadius: const BorderRadius.vertical(
+                      top: Radius.circular(5),
+                    ),
+                    color: MyColors.colorPrimary,
+                  ),
+                  if (showSaidas)
+                    BarChartRodData(
+                      toY: i < saidas.length ? saidas[i] : 0,
+                      width: barWidth,
+                      borderRadius: const BorderRadius.vertical(
+                        top: Radius.circular(5),
+                      ),
+                      color: const Color(0xFFC45C4A),
+                    ),
+                ],
+              ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _Legenda extends StatelessWidget {
+  const _Legenda({required this.cor, required this.rotulo});
+
+  final Color cor;
+  final String rotulo;
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Container(
+          width: 10,
+          height: 10,
+          decoration: BoxDecoration(
+            color: cor,
+            borderRadius: BorderRadius.circular(3),
+          ),
+        ),
+        const SizedBox(width: 6),
+        Text(
+          rotulo,
+          style: const TextStyle(
+            fontFamily: 'Montserrat',
+            fontSize: 11,
+            fontWeight: FontWeight.w600,
+            color: Color(0xFF6B6B6B),
+          ),
+        ),
+      ],
     );
   }
 }

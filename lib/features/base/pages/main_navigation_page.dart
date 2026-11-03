@@ -382,7 +382,7 @@ class _MainNavigationPageState extends State<MainNavigationPage>
     return Scaffold(
       key: _scaffoldKey,
       backgroundColor: current.slug == MenuSlug.dashboard
-          ? const Color(0xFFF6F4EE)
+          ? MyColors.surface
           : Colors.white,
       endDrawer: _movementsDrawer(),
       appBar: AppBar(
@@ -476,14 +476,14 @@ class _MainNavigationPageState extends State<MainNavigationPage>
         if (_webFinanceiroAtivo) {
           return Scaffold(
             key: _scaffoldKey,
-            backgroundColor: const Color(0xFFF6F4EE),
+            backgroundColor: MyColors.surface,
             body: _webContent(tabs, hasTabs: hasTabs),
           );
         }
         return Scaffold(
           key: _scaffoldKey,
           backgroundColor: current?.slug == MenuSlug.dashboard
-              ? const Color(0xFFF6F4EE)
+              ? MyColors.surface
               : Colors.white,
           drawer: useSidebar
               ? null
@@ -877,7 +877,7 @@ class _MainNavigationPageState extends State<MainNavigationPage>
   Widget _emptyNavScaffold() {
     return Scaffold(
       key: _scaffoldKey,
-      backgroundColor: const Color(0xFFF6F4EE),
+      backgroundColor: MyColors.surface,
       endDrawer: _movementsDrawer(),
       appBar: AppBar(
         backgroundColor: MyColors.colorPrimary,
@@ -1131,7 +1131,7 @@ class _WebTopBar extends StatelessWidget {
         );
 
         return Material(
-          color: const Color(0xFFFAF9F5),
+          color: MyColors.card,
           elevation: 0,
           child: Container(
             height: hasControls && !inline ? 112 : 64,
@@ -1264,7 +1264,7 @@ class _WebSidebar extends StatelessWidget {
           ];
 
     return ColoredBox(
-      color: const Color(0xFFF3F1E9),
+      color: MyColors.card,
       child: SafeArea(
         child: DecoratedBox(
           decoration: const BoxDecoration(
@@ -1726,7 +1726,7 @@ class _MovementsDrawer extends StatelessWidget {
     final width = MediaQuery.sizeOf(context).width;
     return Drawer(
       width: width > 420 ? 360 : width * 0.86,
-      backgroundColor: const Color(0xFFF6F4EE),
+      backgroundColor: MyColors.surface,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.horizontal(left: Radius.circular(28)),
       ),
