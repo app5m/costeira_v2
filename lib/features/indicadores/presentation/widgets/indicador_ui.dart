@@ -80,8 +80,14 @@ class CartaoIndicador extends StatelessWidget {
       unidadePadrao: unidadePadrao,
       inteiro: inteiro,
     );
-    final numero = partes?.numero ?? valor ?? '—';
-    final unidadeLinha = partes?.unidade ?? unidade;
+    final bruto = (partes?.numero ?? valor ?? '').trim();
+    final vazio = bruto.isEmpty ||
+        bruto == '—' ||
+        bruto.toLowerCase() == 'null' ||
+        (medicao != null && !medicao!.temValor && (valor == null || valor!.trim().isEmpty));
+    final numero = vazio ? '—' : bruto;
+    // Sem unidade se valor ausente (evita "%" / "R$" sozinhos).
+    final unidadeLinha = vazio ? null : (partes?.unidade ?? unidade);
     final temAjuda = ajuda != null && ajuda!.trim().isNotEmpty;
     final legendaCurta = !temAjuda && legenda != null && legenda!.isNotEmpty;
     return Container(
@@ -135,9 +141,23 @@ class CartaoIndicador extends StatelessWidget {
             child: _ValorComUnidade(
               numero: numero,
               unidade: unidadeLinha,
+              vazio: vazio,
             ),
           ),
-          if (legendaCurta) ...[
+          if (vazio) ...[
+            const SizedBox(height: 4),
+            const Text(
+              'Sem dados',
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: TextStyle(
+                fontFamily: 'Montserrat',
+                fontSize: 10,
+                fontWeight: FontWeight.w500,
+                color: Color(0xFFB0B0B0),
+              ),
+            ),
+          ] else if (legendaCurta) ...[
             const SizedBox(height: 4),
             Text(
               legenda!,
@@ -160,16 +180,29 @@ class CartaoIndicador extends StatelessWidget {
 /// Valor + unidade na mesma linha.
 /// `R$` / `$` à esquerda; `%` e demais à direita, menores.
 class _ValorComUnidade extends StatelessWidget {
-  const _ValorComUnidade({required this.numero, this.unidade});
+  const _ValorComUnidade({
+    required this.numero,
+    this.unidade,
+    this.vazio = false,
+  });
 
   final String numero;
   final String? unidade;
+  final bool vazio;
 
   static const _numeroStyle = TextStyle(
     fontFamily: 'Montserrat',
     fontSize: 22,
     fontWeight: FontWeight.w800,
     color: Color(0xFF1F3D2A),
+    height: 1,
+  );
+
+  static const _numeroVazioStyle = TextStyle(
+    fontFamily: 'Montserrat',
+    fontSize: 22,
+    fontWeight: FontWeight.w700,
+    color: Color(0xFFB0B0B0),
     height: 1,
   );
 
@@ -188,12 +221,13 @@ class _ValorComUnidade extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final u = (unidade ?? '').trim();
+    final styleNumero = vazio ? _numeroVazioStyle : _numeroStyle;
+    final u = vazio ? '' : (unidade ?? '').trim();
     if (u.isEmpty) {
-      return Text(numero, maxLines: 1, softWrap: false, style: _numeroStyle);
+      return Text(numero, maxLines: 1, softWrap: false, style: styleNumero);
     }
     final unidadeWidget = Text(u, maxLines: 1, softWrap: false, style: _unidadeStyle);
-    final numeroWidget = Text(numero, maxLines: 1, softWrap: false, style: _numeroStyle);
+    final numeroWidget = Text(numero, maxLines: 1, softWrap: false, style: styleNumero);
     return Row(
       mainAxisSize: MainAxisSize.min,
       crossAxisAlignment: CrossAxisAlignment.baseline,

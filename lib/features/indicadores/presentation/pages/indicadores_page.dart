@@ -1376,13 +1376,17 @@ String _textoCampoRepro(dynamic valor) {
     return valor ? 'Sim' : 'Não';
   }
   if (valor is Map) {
-    return IndicadorValor.de(valor).exibir();
+    final medicao = IndicadorValor.de(valor);
+    return medicao.temValor ? medicao.exibir() : '—';
   }
   if (valor is List) {
     return valor.isEmpty ? '—' : '${valor.length}';
   }
   final texto = valor.toString().trim();
-  return texto.isEmpty ? '—' : texto;
+  if (texto.isEmpty || texto.toLowerCase() == 'null') {
+    return '—';
+  }
+  return texto;
 }
 
 String _rotuloCampoRepro(String chave) {
@@ -1746,12 +1750,18 @@ String _textoValorFin(dynamic valor) {
     return '—';
   }
   if (valor is Map) {
-    return IndicadorValor.de(valor).exibir(unidadePadrao: 'R\$');
+    final medicao = IndicadorValor.de(valor);
+    return medicao.temValor
+        ? medicao.exibir(unidadePadrao: 'R\$')
+        : '—';
   }
   final numero = numeroIndicador(valor);
   if (numero == null) {
     final texto = valor.toString().trim();
-    return texto.isEmpty ? '—' : texto;
+    if (texto.isEmpty || texto.toLowerCase() == 'null') {
+      return '—';
+    }
+    return texto;
   }
   return IndicadorValor(qtd: numero, unidade: 'R\$').exibir(unidadePadrao: 'R\$');
 }

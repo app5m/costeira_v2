@@ -106,17 +106,37 @@ class CartaoKpiRelatorio extends StatelessWidget {
             ),
           ),
           const Spacer(),
-          Text(
-            valor.disponivel ? valor.exibicao : '—',
-            maxLines: 2,
-            overflow: TextOverflow.ellipsis,
-            style: const TextStyle(
-              fontFamily: 'Montserrat',
-              fontSize: 18,
-              fontWeight: FontWeight.w700,
-              color: RelatorioCores.verde,
+          FittedBox(
+            fit: BoxFit.scaleDown,
+            alignment: Alignment.centerLeft,
+            child: Text(
+              valor.disponivel ? valor.exibicao : '—',
+              maxLines: 1,
+              softWrap: false,
+              style: TextStyle(
+                fontFamily: 'Montserrat',
+                fontSize: 18,
+                fontWeight: FontWeight.w700,
+                color: valor.disponivel
+                    ? RelatorioCores.verde
+                    : const Color(0xFFB0B0B0),
+              ),
             ),
           ),
+          if (!valor.disponivel) ...[
+            const SizedBox(height: 2),
+            const Text(
+              'Sem dados',
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: TextStyle(
+                fontFamily: 'Montserrat',
+                fontSize: 10,
+                fontWeight: FontWeight.w500,
+                color: Color(0xFFB0B0B0),
+              ),
+            ),
+          ],
         ],
       ),
     );
