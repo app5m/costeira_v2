@@ -197,4 +197,91 @@ void main() {
     expect(lista.reproducaoMeta.pendencias.first['brinco'], '0010');
     expect(lista.reproducaoMeta.limitacoes, hasLength(1));
   });
+
+  test('parser lê financeiro com texto, formula e avisos', () {
+    final lista = IndicadoresResponseModel.fromJson({
+      'status': '01',
+      'data': {
+        'financeiro': {
+          'custo_por_cabeca': {
+            'indicadores': {
+              'desembolso_cabeca_mes': {
+                'qtd': 14.611,
+                'string': 'R\$',
+                'texto': 'R\$ 14.611',
+              },
+              'custo_producao_cabeca': {
+                'qtd': 60,
+                'string': 'R\$',
+                'texto': 'R\$ 60.000',
+              },
+              'rebanho_medio': {
+                'qtd': 1.2,
+                'string': 'cab',
+                'texto': '1.200 cab',
+              },
+            },
+            'graficos': {
+              'desembolso_cabeca_mes': [
+                {'mes': '2026-10', 'nome_mes': 'Out', 'valor': 11.976},
+              ],
+            },
+            'detalhamento': [
+              {
+                'id': 38,
+                'descricao': 'Despesa teste',
+                'valor': 20,
+                'classificacao': 'custo_fixo',
+              },
+            ],
+            'calculo': '(CF + CV) / rebanho medio / (dias / 30.44)',
+            'disponivel': true,
+            'avisos': [],
+          },
+          'percentual_custo_fixo': {
+            'indicadores': {
+              'percentual_custo_fixo': {
+                'qtd': 27.778,
+                'string': '%',
+                'texto': '27.778%',
+              },
+              'custo_fixo': {'qtd': 20, 'string': 'R\$', 'texto': 'R\$ 20.000'},
+              'custo_total': {'qtd': 72, 'string': 'R\$', 'texto': 'R\$ 72.000'},
+            },
+            'graficos': [],
+            'detalhamento': [],
+            'calculo': 'CF / (CF + CV) * 100',
+            'disponivel': true,
+            'avisos': [],
+          },
+          'custo_por_kg_produzido': {
+            'indicadores': {
+              'custo_kg': {'qtd': null, 'string': 'R\$', 'texto': null},
+            },
+            'disponivel': false,
+            'avisos': ['Producao de kg ausente, zero ou negativa.'],
+            'calculo': '(CF + CV) / kg produzidos',
+          },
+          'metadados': {
+            'disponivel': true,
+            'avaliacao_economica_disponivel': false,
+            'avisos': [],
+            'base_custos': 'competencia',
+          },
+        },
+      },
+    });
+
+    expect(lista.custoPorCabeca.valor('desembolso_cabeca_mes').exibir(), 'R\$ 14.611');
+    expect(lista.custoPorCabeca.formula, contains('rebanho medio'));
+    expect(lista.custoPorCabeca.disponivel, isTrue);
+    expect(lista.custoPorCabeca.serie('desembolso_cabeca_mes').first['valor'], 11.976);
+    expect(lista.custoPorCabeca.detalhamento.first['descricao'], 'Despesa teste');
+    expect(lista.percentualCustoFixo.valor('percentual_custo_fixo').exibir(), '27.778%');
+    expect(lista.custoPorKgProduzido.disponivel, isFalse);
+    expect(lista.custoPorKgProduzido.avisos, hasLength(1));
+    expect(lista.custoPorKgProduzido.temAvisoFinanceiro, isTrue);
+    expect(lista.financeiroMeta.avaliacaoEconomicaDisponivel, isFalse);
+    expect(lista.financeiroMeta.baseCustos, 'competencia');
+  });
 }

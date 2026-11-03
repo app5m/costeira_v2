@@ -41,6 +41,12 @@ class IndicadorValor {
 
   static const vazio = IndicadorValor();
 
+  bool get temValor {
+    final pronto = texto?.trim();
+    if (pronto != null && pronto.isNotEmpty) return true;
+    return qtd != null;
+  }
+
   factory IndicadorValor.de(dynamic raw) {
     if (raw is! Map) {
       return IndicadorValor(qtd: numeroIndicador(raw));

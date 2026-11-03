@@ -24,6 +24,13 @@ enum IndicadorId {
   intervaloEntrePartos,
   histogramaParicao,
   merma,
+  custoPorCabeca,
+  custoPorKgProduzido,
+  resultadoPorHectare,
+  margemLiquida,
+  percentualCustoFixo,
+  percentualCustoVariavel,
+  resultadoPatrimonio,
 }
 
 class IndicadorModulo {
@@ -84,9 +91,17 @@ const indicadoresModulos = [
   ),
   IndicadorModulo(
     titulo: 'Financeiro',
-    subtitulo: 'Em desenvolvimento',
-    aberto: false,
-    itens: [],
+    subtitulo: 'Custos, margem e resultado',
+    aberto: true,
+    itens: [
+      (IndicadorId.custoPorCabeca, 'Custo por cabeça'),
+      (IndicadorId.custoPorKgProduzido, 'Custo por kg produzido'),
+      (IndicadorId.resultadoPorHectare, 'Resultado por hectare'),
+      (IndicadorId.margemLiquida, 'Margem líquida'),
+      (IndicadorId.percentualCustoFixo, '% Custo fixo'),
+      (IndicadorId.percentualCustoVariavel, '% Custo variável'),
+      (IndicadorId.resultadoPatrimonio, 'Resultado sobre patrimônio'),
+    ],
   ),
 ];
 
@@ -132,6 +147,20 @@ String tituloIndicador(IndicadorId id) {
       return 'Histograma de parição';
     case IndicadorId.merma:
       return 'Merma';
+    case IndicadorId.custoPorCabeca:
+      return 'Custo por cabeça';
+    case IndicadorId.custoPorKgProduzido:
+      return 'Custo por kg produzido';
+    case IndicadorId.resultadoPorHectare:
+      return 'Resultado por hectare';
+    case IndicadorId.margemLiquida:
+      return 'Margem líquida';
+    case IndicadorId.percentualCustoFixo:
+      return '% Custo fixo';
+    case IndicadorId.percentualCustoVariavel:
+      return '% Custo variável';
+    case IndicadorId.resultadoPatrimonio:
+      return 'Resultado sobre patrimônio';
   }
 }
 
@@ -223,6 +252,20 @@ List<Widget> conteudoIndicador(IndicadorId id, IndicadoresLista lista) {
         unidade: '%',
         legenda: 'Perdas ÷ diagnosticadas prenhas',
       );
+    case IndicadorId.custoPorCabeca:
+      return _finCustoCabeca(lista);
+    case IndicadorId.custoPorKgProduzido:
+      return _finCustoKg(lista);
+    case IndicadorId.resultadoPorHectare:
+      return _finResultadoHa(lista);
+    case IndicadorId.margemLiquida:
+      return _finMargemLiquida(lista);
+    case IndicadorId.percentualCustoFixo:
+      return _finPctFixo(lista);
+    case IndicadorId.percentualCustoVariavel:
+      return _finPctVariavel(lista);
+    case IndicadorId.resultadoPatrimonio:
+      return _finPatrimonio(lista);
   }
 }
 
@@ -1159,13 +1202,17 @@ String _textoCampoRepro(dynamic valor) {
     return valor ? 'Sim' : 'Não';
   }
   if (valor is Map) {
-    return IndicadorValor.de(valor).exibir();
+    final medicao = IndicadorValor.de(valor);
+    return medicao.temValor ? medicao.exibir() : '—';
   }
   if (valor is List) {
     return valor.isEmpty ? '—' : '${valor.length}';
   }
   final texto = valor.toString().trim();
-  return texto.isEmpty ? '—' : texto;
+  if (texto.isEmpty || texto.toLowerCase() == 'null') {
+    return '—';
+  }
+  return texto;
 }
 
 String _rotuloCampoRepro(String chave) {
@@ -1213,4 +1260,330 @@ String _rotuloMesRepro(String? mes) {
     return nomes[match.group(2)!] ?? match.group(2)!;
   }
   return texto;
+}
+
+List<Widget> _finCustoCabeca(IndicadoresLista lista) {
+  final bloco = lista.custoPorCabeca;
+  return _finBloco(
+    bloco: bloco,
+    cartoes: [
+      CartaoIndicador(
+        medicao: bloco.valor('desembolso_cabeca_mes'),
+        unidadePadrao: 'R\$',
+        titulo: 'Desembolso por cabeça / mês',
+        ajuda: '(CF + CV) ÷ rebanho médio ÷ meses',
+      ),
+      CartaoIndicador(
+        medicao: bloco.valor('custo_producao_cabeca'),
+        unidadePadrao: 'R\$',
+        titulo: 'Custo de produção / cabeça',
+        ajuda: '(CF + CV + Investimento) ÷ rebanho médio',
+      ),
+      CartaoIndicador(
+        medicao: bloco.valor('rebanho_medio'),
+        unidadePadrao: 'cab',
+        titulo: 'Rebanho médio',
+      ),
+    ],
+    tituloGrafico: 'Desembolso por cabeça / mês',
+    chaveSerie: 'desembolso_cabeca_mes',
+    chaveValorSerie: 'valor',
+  );
+}
+
+List<Widget> _finCustoKg(IndicadoresLista lista) {
+  final bloco = lista.custoPorKgProduzido;
+  return _finBloco(
+    bloco: bloco,
+    cartoes: [
+      CartaoIndicador(
+        medicao: bloco.valor('custo_kg'),
+        unidadePadrao: 'R\$',
+        titulo: 'Custo por kg produzido',
+        ajuda:
+            '(CF + CV) ÷ kg produzidos; exclui compra de animais, juros e investimentos',
+      ),
+      CartaoIndicador(
+        medicao: bloco.valor('kg_produzido'),
+        unidadePadrao: 'kg',
+        titulo: 'Kg produzidos',
+      ),
+      CartaoIndicador(
+        medicao: bloco.valor('custo_producao'),
+        unidadePadrao: 'R\$',
+        titulo: 'Custo de produção',
+        ajuda: 'CF + CV',
+      ),
+    ],
+    tituloGrafico: 'Custo por kg produzido',
+    chaveSerie: 'custo_kg',
+    chaveValorSerie: 'valor',
+  );
+}
+
+List<Widget> _finResultadoHa(IndicadoresLista lista) {
+  final bloco = lista.resultadoOperacaoHectare;
+  return _finBloco(
+    bloco: bloco,
+    cartoes: [
+      CartaoIndicador(
+        medicao: bloco.valor('resultado_hectare'),
+        unidadePadrao: 'R\$',
+        titulo: 'Resultado por hectare',
+        ajuda: 'Resultado da operação ÷ área pastoril média',
+      ),
+      CartaoIndicador(
+        medicao: bloco.valor('resultado_operacao'),
+        unidadePadrao: 'R\$',
+        titulo: 'Resultado do período',
+      ),
+      CartaoIndicador(
+        medicao: bloco.valor('area_media'),
+        unidadePadrao: 'ha',
+        titulo: 'Área',
+      ),
+    ],
+  );
+}
+
+List<Widget> _finMargemLiquida(IndicadoresLista lista) {
+  final bloco = lista.resultadoOperacao;
+  final resultado = bloco.valor('resultado_operacao');
+  final receita = bloco.valor('valor_producao');
+  final margem = _margemLiquidaPct(resultado, receita);
+  return _finBloco(
+    bloco: bloco,
+    cartoes: [
+      CartaoIndicador(
+        medicao: margem,
+        unidadePadrao: '%',
+        titulo: 'Margem líquida',
+        ajuda: 'Resultado ÷ receita (valor da produção)',
+      ),
+      CartaoIndicador(
+        medicao: receita,
+        unidadePadrao: 'R\$',
+        titulo: 'Receita',
+        ajuda: 'Valor da produção no período',
+      ),
+      CartaoIndicador(
+        medicao: resultado,
+        unidadePadrao: 'R\$',
+        titulo: 'Resultado',
+      ),
+    ],
+  );
+}
+
+List<Widget> _finPctFixo(IndicadoresLista lista) {
+  final bloco = lista.percentualCustoFixo;
+  return _finBloco(
+    bloco: bloco,
+    cartoes: [
+      CartaoIndicador(
+        medicao: bloco.valor('percentual_custo_fixo'),
+        unidadePadrao: '%',
+        titulo: '% Custo fixo',
+        ajuda: 'CF ÷ (CF + CV) × 100',
+      ),
+      CartaoIndicador(
+        medicao: bloco.valor('custo_fixo'),
+        unidadePadrao: 'R\$',
+        titulo: 'Custo fixo',
+      ),
+      CartaoIndicador(
+        medicao: bloco.valor('custo_total'),
+        unidadePadrao: 'R\$',
+        titulo: 'Custo total',
+      ),
+    ],
+  );
+}
+
+List<Widget> _finPctVariavel(IndicadoresLista lista) {
+  final bloco = lista.percentualCustoVariavel;
+  return _finBloco(
+    bloco: bloco,
+    cartoes: [
+      CartaoIndicador(
+        medicao: bloco.valor('percentual_custo_variavel'),
+        unidadePadrao: '%',
+        titulo: '% Custo variável',
+        ajuda: 'CV ÷ (CF + CV) × 100',
+      ),
+      CartaoIndicador(
+        medicao: bloco.valor('custo_variavel'),
+        unidadePadrao: 'R\$',
+        titulo: 'Custo variável',
+      ),
+      CartaoIndicador(
+        medicao: bloco.valor('custo_total'),
+        unidadePadrao: 'R\$',
+        titulo: 'Custo total',
+      ),
+    ],
+  );
+}
+
+List<Widget> _finPatrimonio(IndicadoresLista lista) {
+  final bloco = lista.resultadoPatrimonio;
+  return _finBloco(
+    bloco: bloco,
+    cartoes: [
+      CartaoIndicador(
+        medicao: bloco.valor('resultado_patrimonio'),
+        unidadePadrao: '%',
+        titulo: 'Resultado sobre patrimônio',
+        ajuda: 'Resultado ÷ (terra + rebanho + máquinas)',
+      ),
+      CartaoIndicador(
+        medicao: bloco.valor('patrimonio_total'),
+        unidadePadrao: 'R\$',
+        titulo: 'Patrimônio total',
+        ajuda: 'Terra + rebanho + máquinas',
+      ),
+      CartaoIndicador(
+        medicao: bloco.valor('resultado_periodo'),
+        unidadePadrao: 'R\$',
+        titulo: 'Resultado do período',
+      ),
+    ],
+  );
+}
+
+IndicadorValor _margemLiquidaPct(
+  IndicadorValor resultado,
+  IndicadorValor receita,
+) {
+  final r = resultado.qtd;
+  final v = receita.qtd;
+  if (r == null || v == null || v == 0) {
+    return IndicadorValor.vazio;
+  }
+  final pct = (r / v) * 100;
+  return IndicadorValor(
+    qtd: pct,
+    unidade: '%',
+    texto: '${formatarNumero(pct, casas: 1, fixo: true)}%',
+  );
+}
+
+List<Widget> _finBloco({
+  required IndicadorBloco bloco,
+  required List<CartaoIndicador> cartoes,
+  String? tituloGrafico,
+  String? chaveSerie,
+  String chaveValorSerie = 'valor',
+}) {
+  final serie = (chaveSerie == null || chaveSerie.isEmpty)
+      ? const <Map<String, dynamic>>[]
+      : bloco.serie(chaveSerie);
+  final listaDetalhe = _listaDetalhamentoFin(bloco);
+  return [
+    ..._avisosFinanceiro(bloco),
+    GradeCartoes(cartoes: cartoes),
+    if (bloco.formula != null && bloco.formula!.isNotEmpty) ...[
+      const SizedBox(height: 12),
+      CaixaNota(titulo: 'Como foi calculado', texto: bloco.formula!),
+    ],
+    if (tituloGrafico != null && serie.isNotEmpty) ...[
+      const SizedBox(height: 12),
+      GraficoIndicador(
+        titulo: tituloGrafico,
+        pontos: [
+          for (final item in serie)
+            PontoSerie(
+              item['nome_mes']?.toString() ??
+                  _rotuloMesRepro(item['mes']?.toString()),
+              numeroIndicador(item[chaveValorSerie]),
+            ),
+        ],
+      ),
+    ],
+    if (listaDetalhe.isNotEmpty) ...[
+      const SizedBox(height: 12),
+      ListaCardsIndicador(titulo: 'Detalhamento', itens: listaDetalhe),
+    ],
+  ];
+}
+
+List<Widget> _avisosFinanceiro(IndicadorBloco bloco) {
+  if (!bloco.temAvisoFinanceiro) {
+    return const [];
+  }
+  final linhas = <String>[
+    if (!bloco.disponivel)
+      'Indicador indisponível para o período/filtros atuais.',
+    ...bloco.avisos,
+  ];
+  if (linhas.isEmpty) {
+    return const [];
+  }
+  return [
+    CaixaNota(titulo: 'Atenção', compacta: true, texto: linhas.join('\n')),
+    const SizedBox(height: 12),
+  ];
+}
+
+List<ItemCardIndicador> _listaDetalhamentoFin(IndicadorBloco bloco) {
+  final linhas = bloco.detalhamento;
+  if (linhas.isEmpty) {
+    return const [];
+  }
+  return [
+    for (final item in linhas)
+      ItemCardIndicador(
+        titulo: _tituloLinhaFin(item),
+        campos: [
+          if ((item['data']?.toString() ?? '').trim().isNotEmpty)
+            CampoCardIndicador('Data', item['data'].toString()),
+          if ((item['classificacao']?.toString() ?? '').trim().isNotEmpty)
+            CampoCardIndicador(
+              'Classificação',
+              item['classificacao'].toString().replaceAll('_', ' '),
+            ),
+          if ((item['direcao']?.toString() ?? '').trim().isNotEmpty)
+            CampoCardIndicador('Direção', item['direcao'].toString()),
+          if ((item['natureza']?.toString() ?? '').trim().isNotEmpty)
+            CampoCardIndicador('Natureza', item['natureza'].toString()),
+          CampoCardIndicador('Valor', _textoValorFin(item['valor'])),
+          if (item['estorno'] == true)
+            const CampoCardIndicador('Estorno', 'Sim'),
+        ],
+      ),
+  ];
+}
+
+String _tituloLinhaFin(Map<String, dynamic> item) {
+  final descricao = item['descricao']?.toString().trim();
+  if (descricao != null && descricao.isNotEmpty) {
+    return descricao;
+  }
+  final id = item['id'];
+  if (id != null) {
+    return 'Lançamento #$id';
+  }
+  return 'Registro';
+}
+
+String _textoValorFin(dynamic valor) {
+  if (valor == null) {
+    return '—';
+  }
+  if (valor is Map) {
+    final medicao = IndicadorValor.de(valor);
+    return medicao.temValor ? medicao.exibir(unidadePadrao: 'R\$') : '—';
+  }
+  final numero = numeroIndicador(valor);
+  if (numero == null) {
+    final texto = valor.toString().trim();
+    if (texto.isEmpty || texto.toLowerCase() == 'null') {
+      return '—';
+    }
+    return texto;
+  }
+  return IndicadorValor(
+    qtd: numero,
+    unidade: 'R\$',
+  ).exibir(unidadePadrao: 'R\$');
 }

@@ -76,6 +76,33 @@ class IndicadorBloco {
 
   Map<String, dynamic> get calculo => _mapa(indicadores['calculo']);
 
+  /// Fórmula no root do bloco financeiro (`calculo` string).
+  String? get formula {
+    final valor = raw['calculo'];
+    if (valor is! String) return null;
+    final texto = valor.trim();
+    return texto.isEmpty ? null : texto;
+  }
+
+  bool get disponivel {
+    final valor = raw['disponivel'];
+    if (valor == null) return true;
+    if (valor is bool) return valor;
+    final texto = valor.toString().trim().toLowerCase();
+    return texto != 'false' && texto != '0';
+  }
+
+  List<String> get avisos {
+    final valor = raw['avisos'];
+    if (valor is! List) return const [];
+    return [
+      for (final item in valor)
+        if (item != null && item.toString().trim().isNotEmpty) item.toString().trim(),
+    ];
+  }
+
+  bool get temAvisoFinanceiro => !disponivel || avisos.isNotEmpty;
+
   List<Map<String, dynamic>> serie(String chave) => _lista(graficos[chave]);
 
   int? get mesesEstoqueMedio =>
@@ -96,6 +123,27 @@ class ReproducaoMetadados {
   static const vazio = ReproducaoMetadados();
 
   bool get temAviso => parcial || pendencias.isNotEmpty || limitacoes.isNotEmpty;
+}
+
+class FinanceiroMetadados {
+  const FinanceiroMetadados({
+    this.disponivel = true,
+    this.avaliacaoEconomicaDisponivel = true,
+    this.avisos = const [],
+    this.baseCustos,
+    this.baseCaixa,
+  });
+
+  final bool disponivel;
+  final bool avaliacaoEconomicaDisponivel;
+  final List<String> avisos;
+  final String? baseCustos;
+  final String? baseCaixa;
+
+  static const vazio = FinanceiroMetadados();
+
+  bool get temAviso =>
+      !disponivel || !avaliacaoEconomicaDisponivel || avisos.isNotEmpty;
 }
 
 class IndicadoresLista {
@@ -121,6 +169,14 @@ class IndicadoresLista {
     this.histogramaParicao = IndicadorBloco.vazio,
     this.merma = IndicadorBloco.vazio,
     this.reproducaoMeta = ReproducaoMetadados.vazio,
+    this.custoPorCabeca = IndicadorBloco.vazio,
+    this.custoPorKgProduzido = IndicadorBloco.vazio,
+    this.resultadoOperacaoHectare = IndicadorBloco.vazio,
+    this.resultadoOperacao = IndicadorBloco.vazio,
+    this.percentualCustoFixo = IndicadorBloco.vazio,
+    this.percentualCustoVariavel = IndicadorBloco.vazio,
+    this.resultadoPatrimonio = IndicadorBloco.vazio,
+    this.financeiroMeta = FinanceiroMetadados.vazio,
   });
 
   final PeriodoIndicadores periodo;
@@ -144,6 +200,14 @@ class IndicadoresLista {
   final IndicadorBloco histogramaParicao;
   final IndicadorBloco merma;
   final ReproducaoMetadados reproducaoMeta;
+  final IndicadorBloco custoPorCabeca;
+  final IndicadorBloco custoPorKgProduzido;
+  final IndicadorBloco resultadoOperacaoHectare;
+  final IndicadorBloco resultadoOperacao;
+  final IndicadorBloco percentualCustoFixo;
+  final IndicadorBloco percentualCustoVariavel;
+  final IndicadorBloco resultadoPatrimonio;
+  final FinanceiroMetadados financeiroMeta;
 
   static const vazia = IndicadoresLista(
     periodo: PeriodoIndicadores(),

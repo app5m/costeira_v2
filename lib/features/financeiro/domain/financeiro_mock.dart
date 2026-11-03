@@ -139,6 +139,7 @@ class ClassificacaoFin {
     required this.tipo,
     required this.exigeCentro,
     required this.manual,
+    this.codigo = '',
   });
 
   final int id;
@@ -146,6 +147,9 @@ class ClassificacaoFin {
   final String tipo;
   final bool exigeCentro;
   final bool manual;
+  final String codigo;
+
+  bool get ehCapex => codigo == 'capex' || id == 7;
 }
 
 class RubricaFin {
@@ -865,6 +869,7 @@ class FinanceiroLoja extends ChangeNotifier {
             tipo: item['tipo']?.toString() ?? '',
             exigeCentro: item['exige_centro'].toString() == '1',
             manual: item['manual_etapa2'].toString() == '1',
+            codigo: item['codigo']?.toString() ?? '',
           ),
       ];
       rubricas = [
@@ -927,6 +932,7 @@ class FinanceiroLoja extends ChangeNotifier {
     String? quantidade,
     String? unidade,
     List<Map<String, dynamic>> rateios = const [],
+    List<Map<String, dynamic>>? bens,
     List<Map<String, dynamic>>? animais,
     bool pago = false,
     int? contaId,
@@ -949,6 +955,7 @@ class FinanceiroLoja extends ChangeNotifier {
         'quantidade': quantidade,
         'unidade': unidade,
         'rateios': rateios,
+        if (bens != null) 'bens': bens,
         'animais': animais,
       },
       chave: chaveCriar,
@@ -1606,13 +1613,15 @@ class FinanceiroLoja extends ChangeNotifier {
           return n.contains('outras') || n.contains('ajuste') || n.contains('financeira');
         }).firstOrNull ??
         rubs.first;
-    int? centroId;
-    if (escolhida.exigeCentro) {
-      if (centros.isEmpty) {
-        throw ApiException('Cadastre um centro de custo antes do ajuste.');
-      }
-      centroId = centros.first.id;
+    // API: centro_id OU rateios (nunca os dois). Centro único basta.
+    if (centros.isEmpty) {
+      throw ApiException('Cadastre um centro de custo antes do ajuste.');
     }
+    final centro = centros.where((c) {
+          final n = c.nome.toLowerCase();
+          return n == 'geral' || n.contains('geral');
+        }).firstOrNull ??
+        centros.first;
     final doc = (documento ?? '').trim().isEmpty
         ? (entrada ? 'AJUSTE-ENTRADA' : 'AJUSTE-SAIDA')
         : documento!.trim();
@@ -1623,7 +1632,7 @@ class FinanceiroLoja extends ChangeNotifier {
       rascunho: false,
       classificacaoId: escolhida.id,
       categoriaId: rubrica.id,
-      centroId: centroId,
+      centroId: centro.id,
       competencia: data,
       vencimento: data,
       descricao: desc,

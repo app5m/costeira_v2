@@ -57,6 +57,21 @@ class _AnimalVinculo {
   void dispose() => valor.dispose();
 }
 
+class _BemCampo {
+  _BemCampo({String descricao = '', String valor = ''}) {
+    this.descricao.text = descricao;
+    this.valor.text = valor.isEmpty ? BrazilianCurrency.format(0) : valor;
+  }
+
+  final descricao = TextEditingController();
+  final valor = TextEditingController();
+
+  void dispose() {
+    descricao.dispose();
+    valor.dispose();
+  }
+}
+
 class _LancamentoFormPageState extends State<LancamentoFormPage> {
   String? _tipo;
   int? _classificacaoId;
@@ -77,6 +92,7 @@ class _LancamentoFormPageState extends State<LancamentoFormPage> {
   final _unidade = TextEditingController();
   final _documento = TextEditingController();
   final List<_RateioCampo> _rateios = [];
+  final List<_BemCampo> _bens = [];
   final List<_AnimalVinculo> _animais = [];
   bool _dividirIgual = true;
   int? _centroAnimais;
@@ -186,6 +202,9 @@ class _LancamentoFormPageState extends State<LancamentoFormPage> {
     for (final item in _rateios) {
       item.dispose();
     }
+    for (final item in _bens) {
+      item.dispose();
+    }
     for (final item in _animais) {
       item.dispose();
     }
@@ -203,6 +222,45 @@ class _LancamentoFormPageState extends State<LancamentoFormPage> {
 
   double get _valorNumero => BrazilianCurrency.parse(_valor.text) ?? 0;
 
+  ClassificacaoFin? _classificacaoAtual(FinanceiroLoja loja) =>
+      loja.classificacoes.where((c) => c.id == _classificacaoId).firstOrNull;
+
+  bool _ehCapex(FinanceiroLoja loja) => _classificacaoAtual(loja)?.ehCapex == true;
+
+  double get _somaBens {
+    var soma = 0.0;
+    for (final item in _bens) {
+      soma += BrazilianCurrency.parse(item.valor.text) ?? 0;
+    }
+    return soma;
+  }
+
+  bool get _bensCompletos {
+    if (_bens.isEmpty) return false;
+    for (final item in _bens) {
+      if (item.descricao.text.trim().isEmpty) return false;
+      if ((BrazilianCurrency.parse(item.valor.text) ?? 0) <= 0) return false;
+    }
+    return (_somaBens - _valorNumero).abs() <= 0.05;
+  }
+
+  String? _erroBens(FinanceiroLoja loja) {
+    if (!_ehCapex(loja)) return null;
+    if (_bens.isEmpty) return 'Informe pelo menos um bem.';
+    for (final item in _bens) {
+      if (item.descricao.text.trim().isEmpty) {
+        return 'Informe a descrição de cada bem.';
+      }
+      if ((BrazilianCurrency.parse(item.valor.text) ?? 0) <= 0) {
+        return 'Informe o valor inicial de cada bem.';
+      }
+    }
+    if ((_somaBens - _valorNumero).abs() > 0.05) {
+      return 'A soma dos bens precisa fechar o valor do lançamento.';
+    }
+    return null;
+  }
+
   bool get _podeSalvar {
     if (_salvando || _salvandoRascunho) return false;
     if (_tipoApi == null || _classificacaoId == null || _rubricaId == null) return false;
@@ -210,7 +268,7 @@ class _LancamentoFormPageState extends State<LancamentoFormPage> {
     if (_erroCompetencia() != null) return false;
     if (_valorNumero <= 0) return false;
     final loja = FinanceiroEscopo.of(context);
-    final classificacao = loja.classificacoes.where((c) => c.id == _classificacaoId).firstOrNull;
+    final classificacao = _classificacaoAtual(loja);
     if (classificacao?.exigeCentro == true) {
       if (_distribuir) {
         if (_rateios.isEmpty || (_somaPercentualRateio - 100).abs() > 0.05) return false;
@@ -218,6 +276,7 @@ class _LancamentoFormPageState extends State<LancamentoFormPage> {
         return false;
       }
     }
+    if (classificacao?.ehCapex == true && !_bensCompletos) return false;
     if (_pago && _contaId == null) return false;
     if (_erroAnimais() != null) return false;
     return true;
@@ -228,6 +287,25 @@ class _LancamentoFormPageState extends State<LancamentoFormPage> {
       item.dispose();
     }
     _rateios.clear();
+  }
+
+  void _limparBens() {
+    for (final item in _bens) {
+      item.dispose();
+    }
+    _bens.clear();
+  }
+
+  void _adicionarBem() {
+    setState(() {
+      _bens.add(_BemCampo());
+    });
+  }
+
+  void _removerBem(int index) {
+    setState(() {
+      _bens.removeAt(index).dispose();
+    });
   }
 
   void _adicionarRateio(FinanceiroLoja loja) {
@@ -384,6 +462,22 @@ class _LancamentoFormPageState extends State<LancamentoFormPage> {
       AppSnackBar.show(context: context, message: 'Selecione o centro de custo.');
       return;
     }
+    final erroBens = _erroBens(loja);
+    if (erroBens != null) {
+      setState(() => _aberto = 'bens');
+      AppSnackBar.show(context: context, message: erroBens);
+      return;
+    }
+    final bens = classificacao.ehCapex
+        ? [
+            for (final item in _bens)
+              {
+                'descricao': item.descricao.text.trim(),
+                'valor_inicial':
+                    (BrazilianCurrency.parse(item.valor.text) ?? 0).toStringAsFixed(2),
+              },
+          ]
+        : null;
     ContaMock? conta;
     for (final item in loja.contas) {
       if (item.id == _contaId) conta = item;
@@ -439,6 +533,7 @@ class _LancamentoFormPageState extends State<LancamentoFormPage> {
         quantidade: _quantidade.text.trim().isEmpty ? null : _quantidade.text.trim(),
         unidade: _unidade.text.trim().isEmpty ? null : _unidade.text.trim(),
         rateios: rateios,
+        bens: bens,
         animais: animais,
         pago: _pago,
         contaId: conta?.id,
@@ -452,6 +547,8 @@ class _LancamentoFormPageState extends State<LancamentoFormPage> {
         _salvandoRascunho = false;
         if (msg.toLowerCase().contains('competencia') || msg.toLowerCase().contains('competência')) {
           _aberto = 'dados';
+        } else if (msg.toLowerCase().contains('bem')) {
+          _aberto = 'bens';
         } else if (msg.toLowerCase().contains('percentual') || msg.toLowerCase().contains('centro')) {
           _aberto = 'alocacao';
         }
@@ -521,6 +618,7 @@ class _LancamentoFormPageState extends State<LancamentoFormPage> {
                             _tipo = tipo.rotulo;
                             _classificacaoId = null;
                             _rubricaId = null;
+                            _limparBens();
                             _aberto = 'categoria';
                           }),
                   ),
@@ -563,6 +661,10 @@ class _LancamentoFormPageState extends State<LancamentoFormPage> {
                           _distribuir = false;
                           _centroId = null;
                           _limparRateios();
+                          _limparBens();
+                          if (item.ehCapex) {
+                            _bens.add(_BemCampo());
+                          }
                           _aberto = 'rubrica';
                         });
                       },
@@ -725,6 +827,15 @@ class _LancamentoFormPageState extends State<LancamentoFormPage> {
               ],
             ),
           ),
+          if (classificacao?.ehCapex == true)
+            _accordion(
+              id: 'bens',
+              titulo: _bens.isEmpty
+                  ? 'Bens'
+                  : 'Bens · ${_bens.length} ${_bens.length == 1 ? 'item' : 'itens'}',
+              completo: _bensCompletos,
+              child: _secaoBens(),
+            ),
           if (_classificacaoId != null)
             _accordion(
               id: 'alocacao',
@@ -792,6 +903,104 @@ class _LancamentoFormPageState extends State<LancamentoFormPage> {
           ),
         ],
       ),
+    );
+  }
+
+  Widget _secaoBens() {
+    final soma = _somaBens;
+    final totalOk = _bens.isNotEmpty && (_somaBens - _valorNumero).abs() <= 0.05;
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const Text(
+          'Investimento em bem permanente exige ao menos um bem. A soma dos valores deve fechar o lançamento.',
+          style: TextStyle(fontFamily: 'Montserrat', fontSize: 12, color: Color(0xFF8A8A8A), height: 1.35),
+        ),
+        const SizedBox(height: 12),
+        for (var i = 0; i < _bens.length; i++) ...[
+          Container(
+            margin: const EdgeInsets.only(bottom: 10),
+            padding: const EdgeInsets.all(12),
+            decoration: BoxDecoration(
+              color: const Color(0xFFF8F7F3),
+              borderRadius: BorderRadius.circular(14),
+              border: Border.all(color: const Color(0xFFE8E4DA)),
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    Expanded(
+                      child: Text(
+                        'Bem ${i + 1}',
+                        style: const TextStyle(
+                          fontFamily: 'Montserrat',
+                          fontSize: 11,
+                          fontWeight: FontWeight.w700,
+                          color: Color(0xFF6B6B6B),
+                          letterSpacing: 0.3,
+                        ),
+                      ),
+                    ),
+                    if (_bens.length > 1)
+                      IconButton(
+                        onPressed: () => _removerBem(i),
+                        icon: const Icon(Icons.delete_outline, size: 18, color: Color(0xFF8A8A8A)),
+                        visualDensity: VisualDensity.compact,
+                      ),
+                  ],
+                ),
+                CampoFinanceiro(
+                  rotulo: 'DESCRIÇÃO',
+                  child: TextField(
+                    controller: _bens[i].descricao,
+                    style: _estiloCampo,
+                    decoration: decoracaoCampo('Ex: Trator / implemento'),
+                    onChanged: (_) => setState(() {}),
+                  ),
+                ),
+                const SizedBox(height: 10),
+                CampoFinanceiro(
+                  rotulo: 'VALOR INICIAL',
+                  child: TextField(
+                    controller: _bens[i].valor,
+                    style: _estiloCampo,
+                    keyboardType: tecladoMoeda,
+                    inputFormatters: const [mascaraMoeda],
+                    decoration: decoracaoCampo(r'R$ 0,00'),
+                    onChanged: (_) => setState(() {}),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+        OutlinedButton.icon(
+          onPressed: _adicionarBem,
+          style: OutlinedButton.styleFrom(
+            minimumSize: const Size.fromHeight(46),
+            side: const BorderSide(color: MyColors.colorPrimary),
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+          ),
+          icon: const Icon(Icons.add, color: MyColors.colorPrimary, size: 18),
+          label: const Text(
+            'Adicionar bem',
+            style: TextStyle(fontFamily: 'Montserrat', fontWeight: FontWeight.w600, color: MyColors.colorPrimary),
+          ),
+        ),
+        const SizedBox(height: 8),
+        Text(
+          'Soma: ${BrazilianCurrency.format(soma)} · Lançamento: ${BrazilianCurrency.format(_valorNumero)}'
+          '${totalOk ? '' : ' · falta fechar'}',
+          style: TextStyle(
+            fontFamily: 'Montserrat',
+            fontSize: 12,
+            fontWeight: FontWeight.w600,
+            color: totalOk ? MyColors.colorPrimary : const Color(0xFFC62828),
+          ),
+        ),
+      ],
     );
   }
 

@@ -617,6 +617,14 @@ IconData _iconeIndicador(IndicadorId id) {
     case IndicadorId.histogramaParicao:
     case IndicadorId.merma:
       return LucideIcons.heartPulse;
+    case IndicadorId.custoPorCabeca:
+    case IndicadorId.custoPorKgProduzido:
+    case IndicadorId.resultadoPorHectare:
+    case IndicadorId.margemLiquida:
+    case IndicadorId.percentualCustoFixo:
+    case IndicadorId.percentualCustoVariavel:
+    case IndicadorId.resultadoPatrimonio:
+      return LucideIcons.wallet;
   }
 }
 
@@ -662,5 +670,19 @@ String _descricaoIndicador(IndicadorId id) {
       return 'Distribuição dos nascimentos por mês';
     case IndicadorId.merma:
       return 'Perdas entre nascimento e desmame';
+    case IndicadorId.custoPorCabeca:
+      return 'Custos distribuídos pelo rebanho médio';
+    case IndicadorId.custoPorKgProduzido:
+      return 'Custo total por quilo produzido';
+    case IndicadorId.resultadoPorHectare:
+      return 'Resultado da operação por área utilizada';
+    case IndicadorId.margemLiquida:
+      return 'Resultado líquido sobre a receita';
+    case IndicadorId.percentualCustoFixo:
+      return 'Participação dos custos fixos no total';
+    case IndicadorId.percentualCustoVariavel:
+      return 'Participação dos custos variáveis no total';
+    case IndicadorId.resultadoPatrimonio:
+      return 'Retorno obtido sobre o patrimônio';
   }
 }

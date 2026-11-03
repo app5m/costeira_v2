@@ -17,6 +17,9 @@ class IndicadoresResponseModel {
     final reproducao = data['reproducao'] is Map
         ? Map<String, dynamic>.from(data['reproducao'] as Map)
         : <String, dynamic>{};
+    final financeiro = data['financeiro'] is Map
+        ? Map<String, dynamic>.from(data['financeiro'] as Map)
+        : <String, dynamic>{};
     final periodo = data['periodo'] is Map
         ? Map<String, dynamic>.from(data['periodo'] as Map)
         : <String, dynamic>{};
@@ -48,6 +51,14 @@ class IndicadoresResponseModel {
       histogramaParicao: _bloco(reproducao['histograma_paricao']),
       merma: _bloco(reproducao['merma']),
       reproducaoMeta: _metaReproducao(reproducao['metadados']),
+      custoPorCabeca: _bloco(financeiro['custo_por_cabeca']),
+      custoPorKgProduzido: _bloco(financeiro['custo_por_kg_produzido']),
+      resultadoOperacaoHectare: _bloco(financeiro['resultado_operacao_hectare']),
+      resultadoOperacao: _bloco(financeiro['resultado_operacao']),
+      percentualCustoFixo: _bloco(financeiro['percentual_custo_fixo']),
+      percentualCustoVariavel: _bloco(financeiro['percentual_custo_variavel']),
+      resultadoPatrimonio: _bloco(financeiro['resultado_patrimonio']),
+      financeiroMeta: _metaFinanceiro(financeiro['metadados']),
     );
   }
 
@@ -83,6 +94,31 @@ class IndicadoresResponseModel {
       parcial: parcial,
       pendencias: pendencias,
       limitacoes: limitacoes,
+    );
+  }
+
+  static FinanceiroMetadados _metaFinanceiro(dynamic raw) {
+    if (raw is! Map) {
+      return FinanceiroMetadados.vazio;
+    }
+    final mapa = Map<String, dynamic>.from(raw);
+    final avisos = mapa['avisos'] is List
+        ? [
+            for (final item in mapa['avisos'] as List)
+              if (item != null && item.toString().trim().isNotEmpty) item.toString().trim(),
+          ]
+        : const <String>[];
+    final disponivel = mapa['disponivel'] != false && mapa['disponivel']?.toString() != '0';
+    final avaliacao = mapa['avaliacao_economica_disponivel'] != false &&
+        mapa['avaliacao_economica_disponivel']?.toString() != '0';
+    final baseCustos = mapa['base_custos']?.toString().trim();
+    final baseCaixa = mapa['base_caixa']?.toString().trim();
+    return FinanceiroMetadados(
+      disponivel: disponivel,
+      avaliacaoEconomicaDisponivel: avaliacao,
+      avisos: avisos,
+      baseCustos: (baseCustos == null || baseCustos.isEmpty) ? null : baseCustos,
+      baseCaixa: (baseCaixa == null || baseCaixa.isEmpty) ? null : baseCaixa,
     );
   }
 }

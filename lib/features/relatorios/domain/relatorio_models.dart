@@ -7,11 +7,15 @@ class RelatorioValor {
   final String unidade;
   final String texto;
 
-  bool get disponivel => qtd != null || texto.trim().isNotEmpty;
+  bool get disponivel {
+    final t = texto.trim();
+    if (t.isNotEmpty && t.toLowerCase() != 'null') return true;
+    return qtd != null;
+  }
 
   String get exibicao {
     final t = texto.trim();
-    if (t.isNotEmpty) return t;
+    if (t.isNotEmpty && t.toLowerCase() != 'null') return t;
     if (qtd == null) return '—';
     final n = qtd!;
     final numero = n == n.roundToDouble()
@@ -23,10 +27,12 @@ class RelatorioValor {
 
   factory RelatorioValor.de(dynamic raw) {
     if (raw is! Map) return const RelatorioValor();
+    final textoBruto = raw['texto']?.toString() ?? '';
+    final texto = textoBruto.trim().toLowerCase() == 'null' ? '' : textoBruto;
     return RelatorioValor(
       qtd: num.tryParse(raw['qtd']?.toString() ?? ''),
       unidade: raw['string']?.toString() ?? '',
-      texto: raw['texto']?.toString() ?? '',
+      texto: texto,
     );
   }
 }
