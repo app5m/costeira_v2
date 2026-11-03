@@ -129,32 +129,14 @@ class CartaoIndicador extends StatelessWidget {
             ],
           ),
           const SizedBox(height: 8),
-          Text(
-            numero,
-            maxLines: 2,
-            overflow: TextOverflow.ellipsis,
-            style: const TextStyle(
-              fontFamily: 'Montserrat',
-              fontSize: 26,
-              fontWeight: FontWeight.w800,
-              color: Color(0xFF1F3D2A),
-              height: 1,
+          FittedBox(
+            fit: BoxFit.scaleDown,
+            alignment: Alignment.centerLeft,
+            child: _ValorComUnidade(
+              numero: numero,
+              unidade: unidadeLinha,
             ),
           ),
-          if (unidadeLinha != null && unidadeLinha.isNotEmpty) ...[
-            const SizedBox(height: 4),
-            Text(
-              unidadeLinha,
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-              style: const TextStyle(
-                fontFamily: 'Montserrat',
-                fontSize: 11,
-                fontWeight: FontWeight.w600,
-                color: MyColors.colorPrimary,
-              ),
-            ),
-          ],
           if (legendaCurta) ...[
             const SizedBox(height: 4),
             Text(
@@ -171,6 +153,58 @@ class CartaoIndicador extends StatelessWidget {
           ],
         ],
       ),
+    );
+  }
+}
+
+/// Valor + unidade na mesma linha.
+/// `R$` / `$` à esquerda; `%` e demais à direita, menores.
+class _ValorComUnidade extends StatelessWidget {
+  const _ValorComUnidade({required this.numero, this.unidade});
+
+  final String numero;
+  final String? unidade;
+
+  static const _numeroStyle = TextStyle(
+    fontFamily: 'Montserrat',
+    fontSize: 22,
+    fontWeight: FontWeight.w800,
+    color: Color(0xFF1F3D2A),
+    height: 1,
+  );
+
+  static const _unidadeStyle = TextStyle(
+    fontFamily: 'Montserrat',
+    fontSize: 13,
+    fontWeight: FontWeight.w700,
+    color: MyColors.colorPrimary,
+    height: 1,
+  );
+
+  bool get _prefixo {
+    final u = (unidade ?? '').trim().toLowerCase();
+    return u == r'r$' || u == r'$' || u.startsWith(r'r$');
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final u = (unidade ?? '').trim();
+    if (u.isEmpty) {
+      return Text(numero, maxLines: 1, softWrap: false, style: _numeroStyle);
+    }
+    final unidadeWidget = Text(u, maxLines: 1, softWrap: false, style: _unidadeStyle);
+    final numeroWidget = Text(numero, maxLines: 1, softWrap: false, style: _numeroStyle);
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      crossAxisAlignment: CrossAxisAlignment.baseline,
+      textBaseline: TextBaseline.alphabetic,
+      children: _prefixo
+          ? [unidadeWidget, const SizedBox(width: 4), numeroWidget]
+          : [
+              numeroWidget,
+              SizedBox(width: u == '%' ? 1 : 4),
+              unidadeWidget,
+            ],
     );
   }
 }
