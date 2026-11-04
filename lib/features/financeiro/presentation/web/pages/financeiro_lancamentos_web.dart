@@ -3,6 +3,7 @@ import 'package:costeira/features/financeiro/presentation/web/widgets/financeiro
 import 'package:costeira/features/financeiro/presentation/widgets/financeiro_ui.dart';
 import 'package:costeira/theme/colors.dart';
 import 'package:flutter/material.dart';
+import 'package:lucide_icons/lucide_icons.dart';
 
 class FinanceiroLancamentosWeb extends StatefulWidget {
   const FinanceiroLancamentosWeb({
@@ -60,25 +61,62 @@ class _FinanceiroLancamentosWebState extends State<FinanceiroLancamentosWeb> {
           child: ListView(
             padding: EdgeInsets.fromLTRB(padding, 20, padding, 32),
             children: [
-              Row(
-                children: [
-                  Expanded(
+              LayoutBuilder(
+                builder: (context, constraints) {
+                  final estreito = constraints.maxWidth < 720;
+                  final busca = ConstrainedBox(
+                    constraints: BoxConstraints(
+                      maxWidth: estreito ? constraints.maxWidth : 320,
+                    ),
                     child: TextField(
                       onChanged: (v) => setState(() => _busca = v),
                       style: const TextStyle(
                         fontFamily: 'Montserrat',
                         fontSize: 13,
                       ),
-                      decoration: decoracaoCampo('Buscar descrição ou documento'),
+                      decoration: decoracaoCampo(
+                        'Buscar descrição ou documento',
+                      ).copyWith(
+                        isDense: true,
+                        prefixIcon: const Icon(
+                          LucideIcons.search,
+                          size: 16,
+                          color: Color(0xFF8A8A8A),
+                        ),
+                        prefixIconConstraints: const BoxConstraints(
+                          minWidth: 40,
+                          minHeight: 40,
+                        ),
+                        contentPadding: const EdgeInsets.symmetric(
+                          horizontal: 12,
+                          vertical: 10,
+                        ),
+                      ),
                     ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 12),
-              GrupoChips(
-                opcoes: const ['Todos', 'A pagar', 'A receber'],
-                selecionado: _filtro,
-                aoEscolher: (v) => setState(() => _filtro = v),
+                  );
+                  final chips = GrupoChips(
+                    opcoes: const ['Todos', 'A pagar', 'A receber'],
+                    selecionado: _filtro,
+                    aoEscolher: (v) => setState(() => _filtro = v),
+                  );
+                  if (estreito) {
+                    return Column(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: [
+                        busca,
+                        const SizedBox(height: 12),
+                        chips,
+                      ],
+                    );
+                  }
+                  return Row(
+                    children: [
+                      busca,
+                      const SizedBox(width: 16),
+                      Expanded(child: chips),
+                    ],
+                  );
+                },
               ),
               const SizedBox(height: 16),
               Row(

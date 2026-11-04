@@ -533,21 +533,28 @@ class _ContaFormPageState extends State<ContaFormPage> {
           ? null
           : RodapeAcoesFinanceiro(
               filhos: [
-                BotaoPrimarioFinanceiro(
-                  rotulo: widget.conta == null ? 'Salvar conta' : 'Salvar alterações',
-                  carregando: _salvando,
-                  onPressed: _salvar,
-                ),
-                TextButton(
+                OutlinedButton(
                   onPressed: _salvando ? null : widget.aoVoltar,
+                  style: OutlinedButton.styleFrom(
+                    minimumSize: const Size.fromHeight(50),
+                    foregroundColor: MyColors.colorBtnNo,
+                    side: const BorderSide(color: Color(0xFFE0B4B4)),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                  ),
                   child: const Text(
                     'Cancelar',
                     style: TextStyle(
                       fontFamily: 'Montserrat',
                       fontWeight: FontWeight.w600,
-                      color: MyColors.colorBtnNo,
                     ),
                   ),
+                ),
+                BotaoPrimarioFinanceiro(
+                  rotulo: widget.conta == null ? 'Salvar conta' : 'Salvar alterações',
+                  carregando: _salvando,
+                  onPressed: _salvar,
                 ),
               ],
             ),

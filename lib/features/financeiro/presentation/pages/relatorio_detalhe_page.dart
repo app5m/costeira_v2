@@ -1,9 +1,12 @@
+import 'dart:math' as math;
+
 import 'package:costeira/core/api/api_exception.dart';
 import 'package:costeira/core/components/app_snack.dart';
 import 'package:costeira/features/financeiro/domain/financeiro_mock.dart';
 import 'package:costeira/features/financeiro/infra/financeiro_api.dart';
 import 'package:costeira/features/financeiro/presentation/widgets/financeiro_ui.dart';
 import 'package:costeira/theme/colors.dart';
+import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
 import 'package:mask_text_input_formatter/mask_text_input_formatter.dart';
 import 'package:share_plus/share_plus.dart';
@@ -173,8 +176,6 @@ class _RelatorioDetalhePageState extends State<RelatorioDetalhePage> {
       if (mounted) setState(() => _exportando = false);
     }
   }
-
-  List<double> get _barrasFluxo => barrasFluxoRelatorio(_mapa);
 
   Future<void> _abrirFiltros() async {
     final loja = FinanceiroEscopo.of(context);
@@ -428,7 +429,7 @@ class FinanceiroRelatorioConteudo extends StatelessWidget {
   Widget build(BuildContext context) {
     return switch (id) {
       'extrato' => _Extrato(mapa: mapa),
-      'fluxo' => _Fluxo(mapa: mapa, barras: barrasFluxoRelatorio(mapa)),
+      'fluxo' => _Fluxo(mapa: mapa),
       'dre' => _Dre(
           mapa: mapa,
           bloco: dreBloco,
@@ -440,14 +441,65 @@ class FinanceiroRelatorioConteudo extends StatelessWidget {
 }
 
 List<double> barrasFluxoRelatorio(Map<String, dynamic> mapa) {
+  return _serieFluxoRelatorio(mapa, 'entradas');
+}
+
+List<double> _serieFluxoRelatorio(Map<String, dynamic> mapa, String chave) {
   final series = (mapa['grafico']?['series'] as List?) ?? const [];
-  final entradas =
-      series.cast<Map?>().whereType<Map>().where((s) => s['chave'] == 'entradas');
-  if (entradas.isEmpty) return const [];
-  final dados = (entradas.first['dados'] as List?) ?? const [];
+  final alvo = series
+      .cast<Map?>()
+      .whereType<Map>()
+      .where((s) => s['chave']?.toString() == chave);
+  if (alvo.isEmpty) return const [];
+  final dados = (alvo.first['dados'] as List?) ?? const [];
   return [
-    for (final item in dados) double.tryParse(item.toString()) ?? 0,
+    for (final item in dados) (double.tryParse(item.toString()) ?? 0).abs(),
   ];
+}
+
+List<String> _rotulosFluxoRelatorio(Map<String, dynamic> mapa) {
+  final grafico = mapa['grafico'];
+  if (grafico is! Map) return const [];
+  final bruto =
+      grafico['labels'] ??
+      grafico['categorias'] ??
+      grafico['rotulos'] ??
+      grafico['meses'];
+  if (bruto is! List || bruto.isEmpty) return const [];
+  return [for (final item in bruto) _rotuloMesCurto(item.toString())];
+}
+
+String _rotuloMesCurto(String bruto) {
+  final texto = bruto.trim();
+  final iso = RegExp(r'^(\d{4})-(\d{2})$').firstMatch(texto);
+  if (iso != null) {
+    const meses = [
+      'Jan',
+      'Fev',
+      'Mar',
+      'Abr',
+      'Mai',
+      'Jun',
+      'Jul',
+      'Ago',
+      'Set',
+      'Out',
+      'Nov',
+      'Dez',
+    ];
+    final mes = int.tryParse(iso.group(2)!) ?? 1;
+    return meses[(mes - 1).clamp(0, 11)];
+  }
+  final limpo = texto
+      .replaceAll(RegExp(r'\s+de\s+\d{4}$', caseSensitive: false), '')
+      .replaceAll('.', '')
+      .trim();
+  if (limpo.length <= 3) {
+    return limpo.isEmpty
+        ? texto
+        : '${limpo[0].toUpperCase()}${limpo.substring(1).toLowerCase()}';
+  }
+  return '${limpo[0].toUpperCase()}${limpo.substring(1, 3).toLowerCase()}';
 }
 
 class _Extrato extends StatelessWidget {
@@ -526,17 +578,17 @@ class _Extrato extends StatelessWidget {
 }
 
 class _Fluxo extends StatelessWidget {
-  const _Fluxo({required this.mapa, required this.barras});
+  const _Fluxo({required this.mapa});
 
   final Map<String, dynamic> mapa;
-  final List<double> barras;
 
   @override
   Widget build(BuildContext context) {
     final indicadores = _mapa(mapa['indicadores']);
     final meses = _linhas(mapa['lista']);
-    final grafico = barras.isEmpty ? const [0.0] : barras;
-    final topo = grafico.reduce((a, b) => a > b ? a : b);
+    final entradas = barrasFluxoRelatorio(mapa);
+    final saidas = _serieFluxoRelatorio(mapa, 'saidas');
+    final rotulos = _rotulosFluxoRelatorio(mapa);
     return Column(
       children: [
         Row(
@@ -553,31 +605,32 @@ class _Fluxo extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const Text('Entradas no ano', style: TextStyle(fontFamily: 'Montserrat', fontWeight: FontWeight.w700)),
-              const SizedBox(height: 12),
-              SizedBox(
-                height: 88,
-                child: Row(
-                  crossAxisAlignment: CrossAxisAlignment.end,
-                  children: [
-                    for (final valor in grafico)
-                      Expanded(
-                        child: Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 2),
-                          child: Align(
-                            alignment: Alignment.bottomCenter,
-                            child: Container(
-                              height: topo == 0 ? 4 : (valor / topo) * 88,
-                              decoration: BoxDecoration(
-                                color: MyColors.colorPrimary.withValues(alpha: 0.85),
-                                borderRadius: BorderRadius.circular(4),
-                              ),
-                            ),
-                          ),
-                        ),
-                      ),
-                  ],
+              const Text(
+                'Movimento no ano',
+                style: TextStyle(fontFamily: 'Montserrat', fontWeight: FontWeight.w700),
+              ),
+              const SizedBox(height: 4),
+              const Text(
+                'Entradas e saídas por mês',
+                style: TextStyle(
+                  fontFamily: 'Montserrat',
+                  fontSize: 12,
+                  color: Color(0xFF8A8A8A),
                 ),
+              ),
+              const SizedBox(height: 14),
+              _GraficoFluxoAno(
+                entradas: entradas,
+                saidas: saidas,
+                rotulos: rotulos,
+              ),
+              const SizedBox(height: 12),
+              const Row(
+                children: [
+                  _LegendaFluxo(cor: MyColors.colorPrimary, rotulo: 'Entradas'),
+                  SizedBox(width: 16),
+                  _LegendaFluxo(cor: Color(0xFFC45C4A), rotulo: 'Saídas'),
+                ],
               ),
             ],
           ),
@@ -604,6 +657,243 @@ class _Fluxo extends StatelessWidget {
             ),
             const SizedBox(height: 8),
           ],
+      ],
+    );
+  }
+}
+
+class _GraficoFluxoAno extends StatelessWidget {
+  const _GraficoFluxoAno({
+    required this.entradas,
+    required this.saidas,
+    required this.rotulos,
+  });
+
+  final List<double> entradas;
+  final List<double> saidas;
+  final List<String> rotulos;
+
+  int get _len => math.max(entradas.length, math.max(saidas.length, 1));
+
+  bool get _temDados {
+    for (final v in entradas) {
+      if (v > 0) return true;
+    }
+    for (final v in saidas) {
+      if (v > 0) return true;
+    }
+    return false;
+  }
+
+  double get _maxY {
+    var max = 0.0;
+    for (final v in entradas) {
+      max = math.max(max, v);
+    }
+    for (final v in saidas) {
+      max = math.max(max, v);
+    }
+    if (max <= 0) return 4;
+    return max * 1.15;
+  }
+
+  String _rotulo(int index) {
+    if (index >= 0 && index < rotulos.length) return rotulos[index];
+    return '${index + 1}';
+  }
+
+  String _fmtEixo(double value) {
+    if (value >= 1000000) {
+      return '${(value / 1000000).toStringAsFixed(1)}M';
+    }
+    if (value >= 1000) {
+      return '${(value / 1000).toStringAsFixed(value >= 10000 ? 0 : 1)}k';
+    }
+    return value.toStringAsFixed(value == value.roundToDouble() ? 0 : 1);
+  }
+
+  String _fmtValor(double value) {
+    final texto = value.toStringAsFixed(2).replaceAll('.', ',');
+    final partes = texto.split(',');
+    final inteiro = partes[0].replaceAllMapped(
+      RegExp(r'(\d)(?=(\d{3})+(?!\d))'),
+      (m) => '${m[1]}.',
+    );
+    return 'R\$ $inteiro,${partes[1]}';
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    if (!_temDados) {
+      return const SizedBox(
+        height: 120,
+        child: Center(
+          child: Text(
+            'Sem movimento no período.',
+            style: TextStyle(
+              fontFamily: 'Montserrat',
+              fontSize: 12,
+              color: Color(0xFF8A8A8A),
+            ),
+          ),
+        ),
+      );
+    }
+
+    final maxY = _maxY;
+    final interval = maxY / 4;
+    final count = _len;
+    final showSaidas = saidas.any((v) => v > 0);
+    final barWidth = count > 10 ? 5.0 : (count > 6 ? 7.0 : 10.0);
+
+    return SizedBox(
+      height: 200,
+      child: BarChart(
+        BarChartData(
+          maxY: maxY,
+          minY: 0,
+          alignment: BarChartAlignment.spaceAround,
+          groupsSpace: 8,
+          gridData: FlGridData(
+            show: true,
+            drawVerticalLine: false,
+            horizontalInterval: interval,
+            getDrawingHorizontalLine: (_) => const FlLine(
+              color: Color(0xFFE8E4D9),
+              strokeWidth: 1,
+            ),
+          ),
+          borderData: FlBorderData(show: false),
+          titlesData: FlTitlesData(
+            topTitles: const AxisTitles(),
+            rightTitles: const AxisTitles(),
+            leftTitles: AxisTitles(
+              sideTitles: SideTitles(
+                showTitles: true,
+                reservedSize: 36,
+                interval: interval,
+                getTitlesWidget: (value, _) {
+                  if (value < 0 || value > maxY * 1.01) {
+                    return const SizedBox.shrink();
+                  }
+                  return Text(
+                    _fmtEixo(value),
+                    style: const TextStyle(
+                      fontFamily: 'Montserrat',
+                      fontSize: 10,
+                      color: Color(0xFF8A8A8A),
+                    ),
+                  );
+                },
+              ),
+            ),
+            bottomTitles: AxisTitles(
+              sideTitles: SideTitles(
+                showTitles: true,
+                reservedSize: 22,
+                getTitlesWidget: (value, _) {
+                  final index = value.toInt();
+                  if (index < 0 || index >= count) {
+                    return const SizedBox.shrink();
+                  }
+                  final step = count > 12 ? 2 : 1;
+                  if (index % step != 0 && index != count - 1) {
+                    return const SizedBox.shrink();
+                  }
+                  return Padding(
+                    padding: const EdgeInsets.only(top: 4),
+                    child: Text(
+                      _rotulo(index),
+                      style: const TextStyle(
+                        fontFamily: 'Montserrat',
+                        fontSize: 10,
+                        fontWeight: FontWeight.w600,
+                        color: Color(0xFF6B6B6B),
+                      ),
+                    ),
+                  );
+                },
+              ),
+            ),
+          ),
+          barTouchData: BarTouchData(
+            touchTooltipData: BarTouchTooltipData(
+              getTooltipColor: (_) => const Color(0xFF1F3D2A),
+              getTooltipItem: (group, _, rod, rodIndex) {
+                final label = rodIndex == 0 ? 'Entradas' : 'Saídas';
+                return BarTooltipItem(
+                  '${_rotulo(group.x)}\n$label ${_fmtValor(rod.toY)}',
+                  const TextStyle(
+                    color: Colors.white,
+                    fontFamily: 'Montserrat',
+                    fontSize: 11,
+                    fontWeight: FontWeight.w600,
+                  ),
+                );
+              },
+            ),
+          ),
+          barGroups: [
+            for (var i = 0; i < count; i++)
+              BarChartGroupData(
+                x: i,
+                barsSpace: 2,
+                barRods: [
+                  BarChartRodData(
+                    toY: i < entradas.length ? entradas[i] : 0,
+                    width: barWidth,
+                    borderRadius: const BorderRadius.vertical(
+                      top: Radius.circular(4),
+                    ),
+                    color: MyColors.colorPrimary,
+                  ),
+                  if (showSaidas)
+                    BarChartRodData(
+                      toY: i < saidas.length ? saidas[i] : 0,
+                      width: barWidth,
+                      borderRadius: const BorderRadius.vertical(
+                        top: Radius.circular(4),
+                      ),
+                      color: const Color(0xFFC45C4A),
+                    ),
+                ],
+              ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _LegendaFluxo extends StatelessWidget {
+  const _LegendaFluxo({required this.cor, required this.rotulo});
+
+  final Color cor;
+  final String rotulo;
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Container(
+          width: 10,
+          height: 10,
+          decoration: BoxDecoration(
+            color: cor,
+            borderRadius: BorderRadius.circular(3),
+          ),
+        ),
+        const SizedBox(width: 6),
+        Text(
+          rotulo,
+          style: const TextStyle(
+            fontFamily: 'Montserrat',
+            fontSize: 11,
+            fontWeight: FontWeight.w600,
+            color: Color(0xFF6B6B6B),
+          ),
+        ),
       ],
     );
   }

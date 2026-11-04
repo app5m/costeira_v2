@@ -25,7 +25,7 @@ class ComprasWebPage extends StatefulWidget {
 }
 
 class _ComprasWebPageState extends State<ComprasWebPage>
-    with SingleTickerProviderStateMixin {
+  with SingleTickerProviderStateMixin {
   late final ComprasPageController _pageController;
   late final ComprasListPageController _listController;
   late final GetCompraChartsController _chartsController;

@@ -388,34 +388,42 @@ class LancamentoDetalhePage extends StatelessWidget {
       ),
       bottomNavigationBar: RodapeAcoesFinanceiro(
         filhos: [
-          if (atual.situacao == SituacaoLancamento.rascunho)
-            BotaoPrimarioFinanceiro(rotulo: 'Editar rascunho', onPressed: aoEditar)
-          else if (podeBaixa)
-            BotaoPrimarioFinanceiro(rotulo: 'Registrar baixa', onPressed: aoBaixa),
           if (podeEstornarAjuste)
-            TextButton(
+            OutlinedButton(
               onPressed: () => _pedirEstorno(
                 context,
                 titulo: 'Estornar ajuste de saldo',
                 motivoPadrao: 'Estorno do ajuste de saldo',
                 aoConfirmar: aoEstornar,
               ),
+              style: OutlinedButton.styleFrom(
+                minimumSize: const Size.fromHeight(50),
+                foregroundColor: const Color(0xFFC62828),
+                side: const BorderSide(color: Color(0xFFE0B4B4)),
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+              ),
               child: const Text(
-                'Estornar ajuste de saldo',
-                style: TextStyle(fontFamily: 'Montserrat', fontWeight: FontWeight.w600, color: Color(0xFFC62828)),
+                'Estornar ajuste',
+                style: TextStyle(fontFamily: 'Montserrat', fontWeight: FontWeight.w600),
               ),
             )
           else if (podeEstornarLancamento)
-            TextButton(
+            OutlinedButton(
               onPressed: () => _pedirEstorno(
                 context,
                 titulo: 'Estornar lançamento',
                 motivoPadrao: 'Estorno do lançamento',
                 aoConfirmar: aoEstornar,
               ),
+              style: OutlinedButton.styleFrom(
+                minimumSize: const Size.fromHeight(50),
+                foregroundColor: const Color(0xFFC62828),
+                side: const BorderSide(color: Color(0xFFE0B4B4)),
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+              ),
               child: const Text(
                 'Estornar lançamento',
-                style: TextStyle(fontFamily: 'Montserrat', fontWeight: FontWeight.w600, color: Color(0xFFC62828)),
+                style: TextStyle(fontFamily: 'Montserrat', fontWeight: FontWeight.w600),
               ),
             )
           else if (temBaixa && atual.estado != 'estornado')
@@ -424,7 +432,7 @@ class LancamentoDetalhePage extends StatelessWidget {
                 OutlinedButton.icon(
                   onPressed: null,
                   style: OutlinedButton.styleFrom(
-                    minimumSize: const Size.fromHeight(48),
+                    minimumSize: const Size.fromHeight(50),
                     side: const BorderSide(color: Color(0xFFF0C7C7)),
                     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                   ),
@@ -442,6 +450,10 @@ class LancamentoDetalhePage extends StatelessWidget {
                 ),
               ],
             ),
+          if (atual.situacao == SituacaoLancamento.rascunho)
+            BotaoPrimarioFinanceiro(rotulo: 'Editar rascunho', onPressed: aoEditar)
+          else if (podeBaixa)
+            BotaoPrimarioFinanceiro(rotulo: 'Registrar baixa', onPressed: aoBaixa),
         ],
       ),
     );
@@ -642,55 +654,69 @@ class LancamentoDetalhePage extends StatelessWidget {
                           ),
                         ],
                         const SizedBox(height: 16),
-                        BotaoPrimarioFinanceiro(
-                          rotulo: 'Confirmar estorno',
-                          carregando: salvando,
-                          habilitado: !salvando,
-                          onPressed: () async {
-                            if (dataCtrl.text.trim().length < 10) {
-                              setSheet(() => erroLocal = 'Informe a data.');
-                              return;
-                            }
-                            if (motivoCtrl.text.trim().isEmpty) {
-                              setSheet(() => erroLocal = 'Informe o motivo.');
-                              return;
-                            }
-                            setSheet(() {
-                              salvando = true;
-                              erroLocal = null;
-                            });
-                            try {
-                              await aoConfirmar(
-                                data: dataCtrl.text.trim(),
-                                motivo: motivoCtrl.text.trim(),
-                              );
-                              if (!modal.mounted) return;
-                              Navigator.pop(modal);
-                            } on ApiException catch (error) {
-                              setSheet(() {
-                                salvando = false;
-                                erroLocal = error.message;
-                              });
-                            } catch (error) {
-                              setSheet(() {
-                                salvando = false;
-                                erroLocal = error.toString();
-                              });
-                            }
-                          },
-                        ),
-                        const SizedBox(height: 12),
-                        Center(
-                          child: TextButton(
-                            onPressed: salvando ? null : () => Navigator.pop(modal),
-                            child: const Text(
-                              'Cancelar',
-                              style: TextStyle(
-                                fontFamily: 'Montserrat',
-                                color: Color(0xFF313131),
+                        Row(
+                          children: [
+                            Expanded(
+                              child: OutlinedButton(
+                                onPressed: salvando ? null : () => Navigator.pop(modal),
+                                style: OutlinedButton.styleFrom(
+                                  minimumSize: const Size.fromHeight(50),
+                                  foregroundColor: const Color(0xFF313131),
+                                  side: const BorderSide(color: Color(0xFFD4D9D1)),
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(12),
+                                  ),
+                                ),
+                                child: const Text(
+                                  'Cancelar',
+                                  style: TextStyle(
+                                    fontFamily: 'Montserrat',
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                ),
                               ),
                             ),
-                          ),
+                            const SizedBox(width: 12),
+                            Expanded(
+                              child: BotaoPrimarioFinanceiro(
+                                rotulo: 'Confirmar estorno',
+                                carregando: salvando,
+                                habilitado: !salvando,
+                                onPressed: () async {
+                                  if (dataCtrl.text.trim().length < 10) {
+                                    setSheet(() => erroLocal = 'Informe a data.');
+                                    return;
+                                  }
+                                  if (motivoCtrl.text.trim().isEmpty) {
+                                    setSheet(() => erroLocal = 'Informe o motivo.');
+                                    return;
+                                  }
+                                  setSheet(() {
+                                    salvando = true;
+                                    erroLocal = null;
+                                  });
+                                  try {
+                                    await aoConfirmar(
+                                      data: dataCtrl.text.trim(),
+                                      motivo: motivoCtrl.text.trim(),
+                                    );
+                                    if (!modal.mounted) return;
+                                    Navigator.pop(modal);
+                                  } on ApiException catch (error) {
+                                    setSheet(() {
+                                      salvando = false;
+                                      erroLocal = error.message;
+                                    });
+                                  } catch (error) {
+                                    setSheet(() {
+                                      salvando = false;
+                                      erroLocal = error.toString();
+                                    });
+                                  }
+                                },
+                              ),
+                            ),
+                          ],
                         ),
                       ],
                     ),
@@ -952,19 +978,42 @@ class _RegistrarBaixaPageState extends State<RegistrarBaixaPage> {
               style: TextStyle(fontFamily: 'Montserrat', fontSize: 12, color: Color(0xFF8A8A8A)),
             ),
           const SizedBox(height: 16),
-          CustomButton(
-            enabled: !_enviando &&
-                conta != null &&
-                atual.pendente > 0.001 &&
-                !saldoInsuficiente,
-            isLoading: _enviando,
-            onPressed: () => _confirmar(atual, conta),
-            text: 'Confirmar pagamento',
-            borderRadius: 12,
-          ),
-          TextButton(
-            onPressed: _enviando ? null : widget.aoVoltar,
-            child: const Text('Voltar', style: TextStyle(fontFamily: 'Montserrat')),
+          Row(
+            children: [
+              Expanded(
+                child: OutlinedButton(
+                  onPressed: _enviando ? null : widget.aoVoltar,
+                  style: OutlinedButton.styleFrom(
+                    minimumSize: const Size.fromHeight(50),
+                    foregroundColor: const Color(0xFF313131),
+                    side: const BorderSide(color: Color(0xFFD4D9D1)),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                  ),
+                  child: const Text(
+                    'Voltar',
+                    style: TextStyle(
+                      fontFamily: 'Montserrat',
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: CustomButton(
+                  enabled: !_enviando &&
+                      conta != null &&
+                      atual.pendente > 0.001 &&
+                      !saldoInsuficiente,
+                  isLoading: _enviando,
+                  onPressed: () => _confirmar(atual, conta),
+                  text: 'Confirmar pagamento',
+                  borderRadius: 12,
+                ),
+              ),
+            ],
           ),
         ],
       ),

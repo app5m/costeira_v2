@@ -843,13 +843,20 @@ IconData iconePorTextoFinanceiro(String texto) {
 }
 
 class RodapeAcoesFinanceiro extends StatelessWidget {
-  const RodapeAcoesFinanceiro({super.key, required this.filhos});
+  const RodapeAcoesFinanceiro({
+    super.key,
+    required this.filhos,
+    this.emLinha,
+  });
 
   final List<Widget> filhos;
+  /// Na web, com 2+ ações, fica lado a lado por padrão.
+  final bool? emLinha;
 
   @override
   Widget build(BuildContext context) {
     final teclado = MediaQuery.of(context).viewInsets.bottom;
+    final ladoALado = emLinha ?? (kIsWeb && filhos.length > 1);
     return Material(
       color: Colors.white,
       elevation: 10,
@@ -858,16 +865,26 @@ class RodapeAcoesFinanceiro extends StatelessWidget {
         top: false,
         child: Padding(
           padding: EdgeInsets.fromLTRB(16, 12, 16, 12 + teclado),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              for (var i = 0; i < filhos.length; i++) ...[
-                if (i > 0) const SizedBox(height: 8),
-                filhos[i],
-              ],
-            ],
-          ),
+          child: ladoALado
+              ? Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    for (var i = 0; i < filhos.length; i++) ...[
+                      if (i > 0) const SizedBox(width: 12),
+                      Expanded(child: filhos[i]),
+                    ],
+                  ],
+                )
+              : Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    for (var i = 0; i < filhos.length; i++) ...[
+                      if (i > 0) const SizedBox(height: 8),
+                      filhos[i],
+                    ],
+                  ],
+                ),
         ),
       ),
     );
