@@ -47,6 +47,9 @@ class ClimateDatasourceImpl implements ClimateDatasource {
     if (climate.appUsersId == null) {
       throw ApiException('Usuario nao autenticado para cadastrar clima.');
     }
+    if (climate.appFazendasId == null || climate.appFazendasId! <= 0) {
+      throw ApiException('Selecione uma fazenda antes de cadastrar clima.');
+    }
 
     final payload = ClimateUpsertRequestModel.create(climate).data;
     AppLogger.info('CLIMATE DATASOURCE: CREATE PAYLOAD=$payload');
@@ -81,6 +84,9 @@ class ClimateDatasourceImpl implements ClimateDatasource {
     }
     if (climate.appUsersId == null) {
       throw ApiException('Usuario nao autenticado para atualizar clima.');
+    }
+    if (climate.appFazendasId == null || climate.appFazendasId! <= 0) {
+      throw ApiException('Selecione uma fazenda antes de atualizar clima.');
     }
 
     final payload = ClimateUpsertRequestModel.update(climate).data;
@@ -191,9 +197,12 @@ class ClimateDatasourceImpl implements ClimateDatasource {
 
 Map<String, dynamic> _defaultClimateListPayload(Map<String, dynamic> payload) {
   final userId = int.tryParse(payload['app_users_id']?.toString() ?? '');
-  if (userId == null) {
+  final farmId = int.tryParse(payload['app_fazendas_id']?.toString() ?? '');
+  if (userId == null || farmId == null || farmId <= 0) {
     return <String, dynamic>{};
   }
 
-  return ClimateFilterRequestModel.fromEntity(ClimateFilterEntity(appUsersId: userId)).data;
+  return ClimateFilterRequestModel.fromEntity(
+    ClimateFilterEntity(appUsersId: userId, appFazendasId: farmId),
+  ).data;
 }

@@ -107,9 +107,13 @@ class FormDependenciesCacheService {
           );
         });
       }
-      await _safe('clima e chuva', () {
-        return _getClimatesUsecase(ClimateFilterEntity(appUsersId: userId));
-      });
+      if (farmId != null) {
+        await _safe('clima e chuva', () {
+          return _getClimatesUsecase(
+            ClimateFilterEntity(appUsersId: userId, appFazendasId: farmId),
+          );
+        });
+      }
       if (farmId != null) {
         await _safe('insumos', () {
           return _getInsumosUsecase(
@@ -171,9 +175,13 @@ class FormDependenciesCacheService {
           SanitariosFilterEntity(appUsersId: userId),
         );
       });
-      await _safe('tarefas', () {
-        return _getTasksUsecase(TaskFilterEntity(appUsersId: userId));
-      });
+      if (farmId != null) {
+        await _safe('tarefas', () {
+          return _getTasksUsecase(
+            TaskFilterEntity(appUsersId: userId, appFazendasId: farmId),
+          );
+        });
+      }
       await _safe('movimentacoes', () {
         return _getComprasUsecase(MovimentacaoFilterEntity(appUsersId: userId));
       });

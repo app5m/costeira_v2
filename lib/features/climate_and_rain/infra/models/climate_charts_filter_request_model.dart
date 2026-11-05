@@ -1,4 +1,5 @@
 import 'package:costeira/core/config/ws_constantes.dart';
+import 'package:costeira/core/storage/sub_user_payload.dart';
 import 'package:costeira/features/climate_and_rain/domain/entities/climate_charts_filter_entity.dart';
 
 class ClimateChartsFilterRequestModel {
@@ -9,9 +10,10 @@ class ClimateChartsFilterRequestModel {
   factory ClimateChartsFilterRequestModel.fromEntity(
     ClimateChartsFilterEntity filter,
   ) {
-    return ClimateChartsFilterRequestModel._({
+    return ClimateChartsFilterRequestModel._(withSubUser({
       'token': WSConstantes.token,
       'app_users_id': filter.appUsersId,
-    });
+      'app_fazendas_id': filter.appFazendasId,
+    }));
   }
 }

@@ -3,12 +3,14 @@ import 'package:costeira/core/models/api_message.dart';
 import 'package:costeira/core/storage/session_storage.dart';
 import 'package:costeira/features/climate_and_rain/domain/entities/climate_upsert_entity.dart';
 import 'package:costeira/features/climate_and_rain/domain/usecases/create_climate_usecase.dart';
+import 'package:costeira/features/fazendas/domain/usecases/resolve_current_farm_id.dart';
 import 'package:flutter/foundation.dart';
 
 class AddClimateController extends ChangeNotifier {
-  AddClimateController(this._createClimateUsecase);
+  AddClimateController(this._createClimateUsecase, this._resolveCurrentFarmId);
 
   final CreateClimateUsecase _createClimateUsecase;
+  final ResolveCurrentFarmId _resolveCurrentFarmId;
 
   bool _isLoading = false;
   String? _errorMessage;
@@ -28,9 +30,13 @@ class AddClimateController extends ChangeNotifier {
       if (_currentUserId == null) {
         throw ApiException('Usuario nao autenticado.');
       }
+      final farmId = await _farmId(_currentUserId!);
 
       final result = await _createClimateUsecase(
-        climate.copyWith(appUsersId: _currentUserId),
+        climate.copyWith(
+          appUsersId: _currentUserId,
+          appFazendasId: farmId,
+        ),
       );
       _lastResult = result;
       return result;
@@ -40,6 +46,14 @@ class AddClimateController extends ChangeNotifier {
     } finally {
       _setLoading(false);
     }
+  }
+
+  Future<int> _farmId(int userId) async {
+    final farmId = await _resolveCurrentFarmId(userId: userId);
+    if (farmId == null || farmId <= 0) {
+      throw ApiException('Selecione uma fazenda antes de cadastrar o clima.');
+    }
+    return farmId;
   }
 
   void _setLoading(bool value) {

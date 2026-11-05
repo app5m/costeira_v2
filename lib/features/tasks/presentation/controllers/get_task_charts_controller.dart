@@ -1,15 +1,20 @@
 import 'package:costeira/core/api/api_exception.dart';
 import 'package:costeira/core/storage/session_storage.dart';
 import 'package:costeira/core/utils/app_logger.dart';
+import 'package:costeira/features/fazendas/domain/usecases/resolve_current_farm_id.dart';
 import 'package:costeira/features/tasks/domain/entities/task_charts_entity.dart';
 import 'package:costeira/features/tasks/domain/entities/task_charts_filter_entity.dart';
 import 'package:costeira/features/tasks/domain/usecases/get_task_charts_usecase.dart';
 import 'package:flutter/foundation.dart';
 
 class GetTaskChartsController extends ChangeNotifier {
-  GetTaskChartsController(this._getTaskChartsUsecase);
+  GetTaskChartsController(
+    this._getTaskChartsUsecase,
+    this._resolveCurrentFarmId,
+  );
 
   final GetTaskChartsUsecase _getTaskChartsUsecase;
+  final ResolveCurrentFarmId _resolveCurrentFarmId;
 
   bool _isLoading = false;
   String? _errorMessage;
@@ -35,9 +40,11 @@ class GetTaskChartsController extends ChangeNotifier {
       if (userId <= 0) {
         throw ApiException('Usuario nao autenticado para carregar graficos.');
       }
+      final farmId = await _farmId(userId);
 
       final filter = TaskChartsFilterEntity(
         appUsersId: userId,
+        appFazendasId: farmId,
         month: nextMonth,
       );
 
@@ -77,6 +84,14 @@ class GetTaskChartsController extends ChangeNotifier {
   Future<void> nextMonth() async {
     if (_isLoading) return;
     await load(month: DateTime(_month.year, _month.month + 1));
+  }
+
+  Future<int> _farmId(int userId) async {
+    final farmId = await _resolveCurrentFarmId(userId: userId);
+    if (farmId == null || farmId <= 0) {
+      throw ApiException('Selecione uma fazenda antes de ver os graficos.');
+    }
+    return farmId;
   }
 
   void _setLoading(bool value) {
