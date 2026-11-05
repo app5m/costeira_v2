@@ -386,6 +386,44 @@ InputDecoration decoracaoCampo(String hint) {
   );
 }
 
+/// Estado vazio padronizado: ícone + mensagem, centralizados.
+class EstadoVazioFinanceiro extends StatelessWidget {
+  const EstadoVazioFinanceiro({
+    super.key,
+    required this.icone,
+    required this.mensagem,
+    this.padding = const EdgeInsets.symmetric(vertical: 32),
+  });
+
+  final IconData icone;
+  final String mensagem;
+  final EdgeInsetsGeometry padding;
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: padding,
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(icone, size: 36, color: const Color(0xFFB0B7AE)),
+          const SizedBox(height: 12),
+          Text(
+            mensagem,
+            textAlign: TextAlign.center,
+            style: const TextStyle(
+              fontFamily: 'Montserrat',
+              fontSize: 14,
+              fontWeight: FontWeight.w600,
+              color: Color(0xFF8A8A8A),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
 /// Estado vazio padronizado: ícone + mensagem + botão, centralizados.
 class EstadoAcaoFinanceiro extends StatelessWidget {
   const EstadoAcaoFinanceiro({

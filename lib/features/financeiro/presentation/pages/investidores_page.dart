@@ -3,6 +3,7 @@ import 'package:costeira/core/components/app_snack.dart';
 import 'package:costeira/features/financeiro/domain/financeiro_mock.dart';
 import 'package:costeira/features/financeiro/presentation/widgets/financeiro_ui.dart';
 import 'package:costeira/theme/colors.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:mask_text_input_formatter/mask_text_input_formatter.dart';
@@ -13,11 +14,13 @@ class InvestidoresPage extends StatefulWidget {
     required this.aoVoltar,
     required this.aoAbrir,
     required this.aoAdicionar,
+    required this.aoEditar,
   });
 
   final VoidCallback aoVoltar;
   final ValueChanged<ParteFin> aoAbrir;
   final VoidCallback aoAdicionar;
+  final ValueChanged<ParteFin> aoEditar;
 
   @override
   State<InvestidoresPage> createState() => _InvestidoresPageState();
@@ -25,12 +28,17 @@ class InvestidoresPage extends StatefulWidget {
 
 class _InvestidoresPageState extends State<InvestidoresPage> {
   final _busca = TextEditingController();
+  int? _excluindoId;
 
   @override
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      FinanceiroEscopo.of(context).carregarInvestidores();
+      final loja = FinanceiroEscopo.of(context);
+      // Evita segundo fetch/notify se o shell já preparou a lista.
+      if (loja.investidores.isEmpty && !loja.carregandoInvestidores) {
+        loja.carregarInvestidores();
+      }
     });
     _busca.addListener(() => setState(() {}));
   }
@@ -39,6 +47,142 @@ class _InvestidoresPageState extends State<InvestidoresPage> {
   void dispose() {
     _busca.dispose();
     super.dispose();
+  }
+
+  Future<void> _excluir(ParteFin investidor) async {
+    if (_excluindoId != null) return;
+    final motivo = TextEditingController();
+    final ok = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Excluir investidor?', style: TextStyle(fontFamily: 'Montserrat', fontWeight: FontWeight.w700)),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              '${investidor.nome} será removido desta fazenda.',
+              style: const TextStyle(fontFamily: 'Montserrat', fontSize: 13),
+            ),
+            const SizedBox(height: 12),
+            TextField(
+              controller: motivo,
+              decoration: const InputDecoration(labelText: 'Motivo da exclusão'),
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(context, false), child: const Text('Voltar')),
+          TextButton(
+            onPressed: () => Navigator.pop(context, true),
+            child: const Text('Excluir', style: TextStyle(color: Color(0xFFC62828))),
+          ),
+        ],
+      ),
+    );
+    final texto = motivo.text;
+    motivo.dispose();
+    if (ok != true || !mounted) return;
+    setState(() => _excluindoId = investidor.id);
+    try {
+      await FinanceiroEscopo.of(context).excluirInvestidor(
+        id: investidor.id,
+        motivo: texto.trim().isEmpty ? null : texto.trim(),
+      );
+    } on ApiException catch (error) {
+      if (!mounted) return;
+      AppSnackBar.show(context: context, message: error.message);
+    } finally {
+      if (mounted) setState(() => _excluindoId = null);
+    }
+  }
+
+  Future<void> _menuInvestidor(ParteFin item) async {
+    final escolha = await showModalBottomSheet<String>(
+      context: context,
+      backgroundColor: Colors.white,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+      ),
+      builder: (sheet) {
+        return SafeArea(
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(16, 12, 16, 16),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Center(
+                  child: Container(
+                    width: 40,
+                    height: 4,
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFD9D9D9),
+                      borderRadius: BorderRadius.circular(999),
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 14),
+                ListTile(
+                  leading: const Icon(Icons.edit_outlined, color: MyColors.colorPrimary),
+                  title: const Text('Editar investidor', style: TextStyle(fontFamily: 'Montserrat', fontWeight: FontWeight.w600)),
+                  onTap: () => Navigator.pop(sheet, 'editar'),
+                ),
+                ListTile(
+                  leading: const Icon(Icons.delete_outline, color: Color(0xFFC62828)),
+                  title: const Text(
+                    'Excluir investidor',
+                    style: TextStyle(fontFamily: 'Montserrat', fontWeight: FontWeight.w600, color: Color(0xFFC62828)),
+                  ),
+                  onTap: () => Navigator.pop(sheet, 'excluir'),
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+    if (!mounted || escolha == null) return;
+    if (escolha == 'editar') {
+      widget.aoEditar(item);
+      return;
+    }
+    if (escolha == 'excluir') await _excluir(item);
+  }
+
+  Widget _menuDoCard(ParteFin item) {
+    final ocupado = _excluindoId == item.id;
+    if (kIsWeb) {
+      return PopupMenuButton<String>(
+        enabled: !ocupado && _excluindoId == null,
+        tooltip: 'Mais opções',
+        onSelected: (escolha) {
+          if (escolha == 'editar') {
+            widget.aoEditar(item);
+          } else if (escolha == 'excluir') {
+            _excluir(item);
+          }
+        },
+        itemBuilder: (_) => const [
+          PopupMenuItem(
+            value: 'editar',
+            child: Text('Editar investidor', style: TextStyle(fontFamily: 'Montserrat')),
+          ),
+          PopupMenuItem(
+            value: 'excluir',
+            child: Text(
+              'Excluir investidor',
+              style: TextStyle(fontFamily: 'Montserrat', color: Color(0xFFC62828)),
+            ),
+          ),
+        ],
+        icon: const Icon(Icons.more_vert, color: Color(0xFF8A8A8A)),
+      );
+    }
+    return IconButton(
+      onPressed: ocupado || _excluindoId != null ? null : () => _menuInvestidor(item),
+      icon: const Icon(Icons.more_vert, color: Color(0xFF8A8A8A)),
+      tooltip: 'Mais opções',
+    );
   }
 
   @override
@@ -51,20 +195,23 @@ class _InvestidoresPageState extends State<InvestidoresPage> {
     ];
     return Scaffold(
       backgroundColor: fundoFinanceiro,
-      appBar: AppBar(
+      appBar: kIsWeb ? null : AppBar(
         backgroundColor: MyColors.colorPrimary,
         foregroundColor: Colors.white,
         title: const Text('Investidores', style: TextStyle(fontFamily: 'Montserrat', fontWeight: FontWeight.w600)),
         leading: IconButton(icon: const Icon(Icons.arrow_back), onPressed: widget.aoVoltar),
       ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: widget.aoAdicionar,
-        backgroundColor: MyColors.colorPrimary,
-        tooltip: 'Adicionar investidor',
-        child: const Icon(Icons.add),
-      ),
+      floatingActionButton: kIsWeb
+          ? null
+          : FloatingActionButton(
+              onPressed: widget.aoAdicionar,
+              backgroundColor: MyColors.colorPrimary,
+              tooltip: 'Adicionar investidor',
+              child: const Icon(Icons.add),
+            ),
       body: ListView(
-        padding: const EdgeInsets.fromLTRB(16, 12, 16, 96),
+        primary: false,
+        padding: EdgeInsets.fromLTRB(16, 12, 16, kIsWeb ? 24 : 96),
         children: [
           TextField(
             controller: _busca,
@@ -74,13 +221,9 @@ class _InvestidoresPageState extends State<InvestidoresPage> {
           if (loja.carregandoInvestidores && loja.investidores.isEmpty)
             const LoadingFinanceiro(altura: 180, rotulo: 'Carregando investidores…')
           else if (itens.isEmpty)
-            const Padding(
-              padding: EdgeInsets.symmetric(vertical: 32),
-              child: Text(
-                'Nenhum investidor cadastrado.',
-                textAlign: TextAlign.center,
-                style: TextStyle(fontFamily: 'Montserrat', color: Color(0xFF8A8A8A)),
-              ),
+            const EstadoVazioFinanceiro(
+              icone: Icons.handshake_outlined,
+              mensagem: 'Nenhum investidor cadastrado.',
             )
           else
             for (final item in itens) ...[
@@ -96,6 +239,7 @@ class _InvestidoresPageState extends State<InvestidoresPage> {
                         style: const TextStyle(fontFamily: 'Montserrat', fontWeight: FontWeight.w700),
                       ),
                     ),
+                    _menuDoCard(item),
                     const Icon(Icons.chevron_right, color: Color(0xFF8A8A8A)),
                   ],
                 ),
@@ -286,101 +430,132 @@ class _InvestidorFormPageState extends State<InvestidorFormPage> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: fundoFinanceiro,
-      appBar: AppBar(
-        backgroundColor: MyColors.colorPrimary,
-        foregroundColor: Colors.white,
-        title: Text(
-          _editando ? 'Editar investidor' : 'Adicionar investidor',
-          style: estiloTituloAppBarPilha(),
+    final horizontal = kIsWeb ? 24.0 : 16.0;
+    final campos = <Widget>[
+      CampoFinanceiro(
+        rotulo: 'NOME',
+        child: TextField(
+          controller: _nome,
+          textCapitalization: TextCapitalization.words,
+          decoration: decoracaoCampo('Nome do investidor'),
+          inputFormatters: [LengthLimitingTextInputFormatter(100)],
         ),
-        leading: IconButton(icon: const Icon(Icons.arrow_back), onPressed: widget.aoVoltar),
       ),
-      body: ListView(
-        padding: const EdgeInsets.fromLTRB(16, 16, 16, 24),
-        children: [
-          CampoFinanceiro(
-            rotulo: 'NOME',
-            child: TextField(
-              controller: _nome,
-              textCapitalization: TextCapitalization.words,
-              decoration: decoracaoCampo('Nome do investidor'),
-              inputFormatters: [LengthLimitingTextInputFormatter(100)],
+      if (!_editando) ...[
+        const SizedBox(height: 16),
+        const Text(
+          'Primeiro contrato',
+          style: TextStyle(fontFamily: 'Montserrat', fontWeight: FontWeight.w700, fontSize: 15),
+        ),
+        const SizedBox(height: 12),
+        CampoFinanceiro(
+          rotulo: 'CÓDIGO',
+          child: TextField(
+            controller: _codigo,
+            textCapitalization: TextCapitalization.characters,
+            decoration: decoracaoCampo('PAR-001'),
+          ),
+        ),
+        const SizedBox(height: 12),
+        CampoFinanceiro(
+          rotulo: 'DATA INÍCIO',
+          child: TextField(
+            controller: _inicio,
+            keyboardType: TextInputType.number,
+            inputFormatters: [_maskInicio],
+            decoration: decoracaoCampo('dd/mm/aaaa').copyWith(
+              suffixIcon: IconButton(
+                onPressed: () => _escolherData(inicio: true),
+                icon: const Icon(Icons.calendar_today_outlined, size: 18),
+              ),
             ),
           ),
-          if (!_editando) ...[
-            const SizedBox(height: 16),
-            const Text(
-              'Primeiro contrato',
-              style: TextStyle(fontFamily: 'Montserrat', fontWeight: FontWeight.w700, fontSize: 15),
-            ),
-            const SizedBox(height: 12),
-            CampoFinanceiro(
-              rotulo: 'CÓDIGO',
-              child: TextField(
-                controller: _codigo,
-                textCapitalization: TextCapitalization.characters,
-                decoration: decoracaoCampo('PAR-001'),
+        ),
+        const SizedBox(height: 12),
+        CampoFinanceiro(
+          rotulo: 'DATA FIM (OPCIONAL)',
+          child: TextField(
+            controller: _fim,
+            keyboardType: TextInputType.number,
+            inputFormatters: [_maskFim],
+            decoration: decoracaoCampo('dd/mm/aaaa').copyWith(
+              suffixIcon: IconButton(
+                onPressed: () => _escolherData(inicio: false),
+                icon: const Icon(Icons.calendar_today_outlined, size: 18),
               ),
             ),
-            const SizedBox(height: 12),
-            CampoFinanceiro(
-              rotulo: 'DATA INÍCIO',
-              child: TextField(
-                controller: _inicio,
-                keyboardType: TextInputType.number,
-                inputFormatters: [_maskInicio],
-                decoration: decoracaoCampo('dd/mm/aaaa').copyWith(
-                  suffixIcon: IconButton(
-                    onPressed: () => _escolherData(inicio: true),
-                    icon: const Icon(Icons.calendar_today_outlined, size: 18),
-                  ),
+          ),
+        ),
+        const SizedBox(height: 12),
+        Row(
+          children: [
+            Expanded(
+              child: CampoFinanceiro(
+                rotulo: '% CUSTO',
+                child: TextField(
+                  controller: _custo,
+                  keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                  inputFormatters: [mascaraPercentual],
+                  decoration: decoracaoCampo('40'),
                 ),
               ),
             ),
-            const SizedBox(height: 12),
-            CampoFinanceiro(
-              rotulo: 'DATA FIM (OPCIONAL)',
-              child: TextField(
-                controller: _fim,
-                keyboardType: TextInputType.number,
-                inputFormatters: [_maskFim],
-                decoration: decoracaoCampo('dd/mm/aaaa').copyWith(
-                  suffixIcon: IconButton(
-                    onPressed: () => _escolherData(inicio: false),
-                    icon: const Icon(Icons.calendar_today_outlined, size: 18),
-                  ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: CampoFinanceiro(
+                rotulo: '% GANHO',
+                child: TextField(
+                  controller: _ganho,
+                  keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                  inputFormatters: [mascaraPercentual],
+                  decoration: decoracaoCampo('40'),
                 ),
-              ),
-            ),
-            const SizedBox(height: 12),
-            CampoFinanceiro(
-              rotulo: '% CUSTO',
-              child: TextField(
-                controller: _custo,
-                keyboardType: const TextInputType.numberWithOptions(decimal: true),
-                inputFormatters: [mascaraPercentual],
-                decoration: decoracaoCampo('40'),
-              ),
-            ),
-            const SizedBox(height: 12),
-            CampoFinanceiro(
-              rotulo: '% GANHO',
-              child: TextField(
-                controller: _ganho,
-                keyboardType: const TextInputType.numberWithOptions(decimal: true),
-                inputFormatters: [mascaraPercentual],
-                decoration: decoracaoCampo('40'),
               ),
             ),
           ],
-          const SizedBox(height: 24),
-          BotaoPrimarioFinanceiro(
-            rotulo: _editando ? 'Salvar alterações' : 'Salvar investidor e contrato',
-            carregando: _salvando,
-            habilitado: _podeSalvar,
-            onPressed: _salvar,
+        ),
+      ],
+    ];
+
+    return Scaffold(
+      backgroundColor: kIsWeb ? Colors.white : fundoFinanceiro,
+      appBar: kIsWeb
+          ? null
+          : AppBar(
+              backgroundColor: MyColors.colorPrimary,
+              foregroundColor: Colors.white,
+              title: Text(
+                _editando ? 'Editar investidor' : 'Adicionar investidor',
+                style: estiloTituloAppBarPilha(),
+              ),
+              leading: IconButton(icon: const Icon(Icons.arrow_back), onPressed: widget.aoVoltar),
+            ),
+      body: Column(
+        children: [
+          Expanded(
+            child: ListView(
+              primary: false,
+              padding: EdgeInsets.fromLTRB(horizontal, 16, horizontal, 16),
+              children: campos,
+            ),
+          ),
+          DecoratedBox(
+            decoration: BoxDecoration(
+              color: kIsWeb ? Colors.white : fundoFinanceiro,
+              border: const Border(top: BorderSide(color: Color(0xFFE8E8E8))),
+            ),
+            child: SafeArea(
+              top: false,
+              child: Padding(
+                padding: EdgeInsets.fromLTRB(horizontal, 12, horizontal, kIsWeb ? 16 : 12),
+                child: BotaoPrimarioFinanceiro(
+                  rotulo: _editando ? 'Salvar alterações' : 'Salvar investidor e contrato',
+                  carregando: _salvando,
+                  habilitado: _podeSalvar,
+                  onPressed: _salvar,
+                ),
+              ),
+            ),
           ),
         ],
       ),
@@ -427,6 +602,15 @@ class _ContratosInvestidorPageState extends State<ContratosInvestidorPage> {
     return n == n.roundToDouble() ? '${n.toInt()}%' : '${n.toStringAsFixed(2)}%';
   }
 
+  Future<void> _aoEscolherMenu(String? escolha) async {
+    if (!mounted || escolha == null) return;
+    if (escolha == 'editar') {
+      widget.aoEditar();
+      return;
+    }
+    if (escolha == 'excluir') await _excluir();
+  }
+
   Future<void> _menuInvestidor() async {
     final escolha = await showModalBottomSheet<String>(
       context: context,
@@ -471,12 +655,7 @@ class _ContratosInvestidorPageState extends State<ContratosInvestidorPage> {
         );
       },
     );
-    if (!mounted || escolha == null) return;
-    if (escolha == 'editar') {
-      widget.aoEditar();
-      return;
-    }
-    if (escolha == 'excluir') await _excluir();
+    await _aoEscolherMenu(escolha);
   }
 
   Future<void> _excluir() async {
@@ -537,7 +716,7 @@ class _ContratosInvestidorPageState extends State<ContratosInvestidorPage> {
         widget.investidor.nome;
     return Scaffold(
       backgroundColor: fundoFinanceiro,
-      appBar: AppBar(
+      appBar: kIsWeb ? null : AppBar(
         backgroundColor: MyColors.colorPrimary,
         foregroundColor: Colors.white,
         title: Text(
@@ -553,17 +732,20 @@ class _ContratosInvestidorPageState extends State<ContratosInvestidorPage> {
           ),
         ],
       ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: widget.aoAdicionar,
-        backgroundColor: MyColors.colorPrimary,
-        tooltip: 'Adicionar contrato',
-        child: const Icon(Icons.add),
-      ),
+      floatingActionButton: kIsWeb
+          ? null
+          : FloatingActionButton(
+              onPressed: widget.aoAdicionar,
+              backgroundColor: MyColors.colorPrimary,
+              tooltip: 'Adicionar contrato',
+              child: const Icon(Icons.add),
+            ),
       body: ListView(
-        padding: const EdgeInsets.fromLTRB(16, 12, 16, 96),
+        primary: false,
+        padding: EdgeInsets.fromLTRB(16, 12, 16, kIsWeb ? 24 : 96),
         children: [
           Text(
-            'Contratos',
+            kIsWeb ? 'Contratos de $nome' : 'Contratos',
             style: const TextStyle(fontFamily: 'Montserrat', fontWeight: FontWeight.w700, fontSize: 15),
           ),
           const SizedBox(height: 12),
@@ -590,13 +772,9 @@ class _ContratosInvestidorPageState extends State<ContratosInvestidorPage> {
               ),
             )
           else if (itens.isEmpty)
-            const Padding(
-              padding: EdgeInsets.symmetric(vertical: 32),
-              child: Text(
-                'Nenhum contrato neste investidor.',
-                textAlign: TextAlign.center,
-                style: TextStyle(fontFamily: 'Montserrat', color: Color(0xFF8A8A8A)),
-              ),
+            const EstadoVazioFinanceiro(
+              icone: Icons.description_outlined,
+              mensagem: 'Nenhum contrato neste investidor.',
             )
           else
             for (final item in itens) ...[
@@ -812,94 +990,118 @@ class _ContratoFormPageState extends State<ContratoFormPage> {
 
   @override
   Widget build(BuildContext context) {
+    final horizontal = kIsWeb ? 24.0 : 16.0;
     return Scaffold(
-      backgroundColor: fundoFinanceiro,
-      appBar: AppBar(
-        backgroundColor: MyColors.colorPrimary,
-        foregroundColor: Colors.white,
-        title: const Text('Adicionar contrato', style: TextStyle(fontFamily: 'Montserrat', fontWeight: FontWeight.w600)),
-        leading: IconButton(icon: const Icon(Icons.arrow_back), onPressed: widget.aoVoltar),
-      ),
-      body: ListView(
-        padding: const EdgeInsets.fromLTRB(16, 16, 16, 24),
+      backgroundColor: kIsWeb ? Colors.white : fundoFinanceiro,
+      appBar: kIsWeb
+          ? null
+          : AppBar(
+              backgroundColor: MyColors.colorPrimary,
+              foregroundColor: Colors.white,
+              title: const Text(
+                'Adicionar contrato',
+                style: TextStyle(fontFamily: 'Montserrat', fontWeight: FontWeight.w600),
+              ),
+              leading: IconButton(icon: const Icon(Icons.arrow_back), onPressed: widget.aoVoltar),
+            ),
+      body: Column(
         children: [
-          Text(
-            'Investidor: ${widget.investidor.nome}',
-            style: const TextStyle(fontFamily: 'Montserrat', fontSize: 13, color: Color(0xFF8A8A8A)),
-          ),
-          const SizedBox(height: 16),
-          CampoFinanceiro(
-            rotulo: 'CÓDIGO',
-            child: TextField(
-              controller: _codigo,
-              textCapitalization: TextCapitalization.characters,
-              decoration: decoracaoCampo('PAR-001'),
-            ),
-          ),
-          const SizedBox(height: 12),
-          CampoFinanceiro(
-            rotulo: 'DATA INÍCIO',
-            child: TextField(
-              controller: _inicio,
-              keyboardType: TextInputType.number,
-              inputFormatters: [_maskInicio],
-              decoration: decoracaoCampo('dd/mm/aaaa').copyWith(
-                suffixIcon: IconButton(
-                  onPressed: () => _escolherData(inicio: true),
-                  icon: const Icon(Icons.calendar_today_outlined, size: 18),
+          Expanded(
+            child: ListView(
+              primary: false,
+              padding: EdgeInsets.fromLTRB(horizontal, 16, horizontal, 16),
+              children: [
+                Text(
+                  'Investidor: ${widget.investidor.nome}',
+                  style: const TextStyle(fontFamily: 'Montserrat', fontSize: 13, color: Color(0xFF8A8A8A)),
                 ),
-              ),
-            ),
-          ),
-          const SizedBox(height: 12),
-          CampoFinanceiro(
-            rotulo: 'DATA FIM (OPCIONAL)',
-            child: TextField(
-              controller: _fim,
-              keyboardType: TextInputType.number,
-              inputFormatters: [_maskFim],
-              decoration: decoracaoCampo('dd/mm/aaaa').copyWith(
-                suffixIcon: IconButton(
-                  onPressed: () => _escolherData(inicio: false),
-                  icon: const Icon(Icons.calendar_today_outlined, size: 18),
-                ),
-              ),
-            ),
-          ),
-          const SizedBox(height: 12),
-          Row(
-            children: [
-              Expanded(
-                child: CampoFinanceiro(
-                  rotulo: '% CUSTO',
+                const SizedBox(height: 16),
+                CampoFinanceiro(
+                  rotulo: 'CÓDIGO',
                   child: TextField(
-                    controller: _custo,
-                    keyboardType: const TextInputType.numberWithOptions(decimal: true),
-                    inputFormatters: [mascaraPercentual],
-                    decoration: decoracaoCampo('40'),
+                    controller: _codigo,
+                    textCapitalization: TextCapitalization.characters,
+                    decoration: decoracaoCampo('PAR-001'),
                   ),
                 ),
-              ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: CampoFinanceiro(
-                  rotulo: '% GANHO',
+                const SizedBox(height: 12),
+                CampoFinanceiro(
+                  rotulo: 'DATA INÍCIO',
                   child: TextField(
-                    controller: _ganho,
-                    keyboardType: const TextInputType.numberWithOptions(decimal: true),
-                    inputFormatters: [mascaraPercentual],
-                    decoration: decoracaoCampo('40'),
+                    controller: _inicio,
+                    keyboardType: TextInputType.number,
+                    inputFormatters: [_maskInicio],
+                    decoration: decoracaoCampo('dd/mm/aaaa').copyWith(
+                      suffixIcon: IconButton(
+                        onPressed: () => _escolherData(inicio: true),
+                        icon: const Icon(Icons.calendar_today_outlined, size: 18),
+                      ),
+                    ),
                   ),
                 ),
-              ),
-            ],
+                const SizedBox(height: 12),
+                CampoFinanceiro(
+                  rotulo: 'DATA FIM (OPCIONAL)',
+                  child: TextField(
+                    controller: _fim,
+                    keyboardType: TextInputType.number,
+                    inputFormatters: [_maskFim],
+                    decoration: decoracaoCampo('dd/mm/aaaa').copyWith(
+                      suffixIcon: IconButton(
+                        onPressed: () => _escolherData(inicio: false),
+                        icon: const Icon(Icons.calendar_today_outlined, size: 18),
+                      ),
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 12),
+                Row(
+                  children: [
+                    Expanded(
+                      child: CampoFinanceiro(
+                        rotulo: '% CUSTO',
+                        child: TextField(
+                          controller: _custo,
+                          keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                          inputFormatters: [mascaraPercentual],
+                          decoration: decoracaoCampo('40'),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: CampoFinanceiro(
+                        rotulo: '% GANHO',
+                        child: TextField(
+                          controller: _ganho,
+                          keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                          inputFormatters: [mascaraPercentual],
+                          decoration: decoracaoCampo('40'),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
           ),
-          const SizedBox(height: 24),
-          BotaoPrimarioFinanceiro(
-            habilitado: _podeSalvar,
-            rotulo: 'Salvar contrato',
-            carregando: _salvando,
-            onPressed: _salvar,
+          DecoratedBox(
+            decoration: BoxDecoration(
+              color: kIsWeb ? Colors.white : fundoFinanceiro,
+              border: const Border(top: BorderSide(color: Color(0xFFE8E8E8))),
+            ),
+            child: SafeArea(
+              top: false,
+              child: Padding(
+                padding: EdgeInsets.fromLTRB(horizontal, 12, horizontal, kIsWeb ? 16 : 12),
+                child: BotaoPrimarioFinanceiro(
+                  habilitado: _podeSalvar,
+                  rotulo: 'Salvar contrato',
+                  carregando: _salvando,
+                  onPressed: _salvar,
+                ),
+              ),
+            ),
           ),
         ],
       ),

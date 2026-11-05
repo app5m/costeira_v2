@@ -23,12 +23,14 @@ class VendaParceriaAnimaisPage extends StatefulWidget {
     this.precoKg,
     this.modoInicial,
     this.selecionadosIniciais = const {},
+    this.embeddedInDialog = false,
   });
 
   final List<AnimalParceriaFin> animais;
   final double? precoKg;
   final ModoSelecaoAnimaisVenda? modoInicial;
   final Map<int, double> selecionadosIniciais;
+  final bool embeddedInDialog;
 
   @override
   State<VendaParceriaAnimaisPage> createState() => _VendaParceriaAnimaisPageState();
@@ -146,8 +148,8 @@ class _VendaParceriaAnimaisPageState extends State<VendaParceriaAnimaisPage> {
 
   @override
   Widget build(BuildContext context) {
-    final n = _comBrinco.length;
-    final preco = widget.precoKg;
+    final body = _buildBody(context);
+    if (widget.embeddedInDialog) return body;
 
     return Scaffold(
       backgroundColor: fundoFinanceiro,
@@ -159,200 +161,218 @@ class _VendaParceriaAnimaisPageState extends State<VendaParceriaAnimaisPage> {
           style: TextStyle(fontFamily: 'Montserrat', fontWeight: FontWeight.w600),
         ),
       ),
-      body: Column(
-        children: [
-          Expanded(
-            child: ListView(
-              padding: const EdgeInsets.fromLTRB(16, 12, 16, 24),
-              children: [
-                CartaoBranco(
-                  child: Row(
-                    children: [
-                      Container(
-                        width: 40,
-                        height: 40,
-                        decoration: BoxDecoration(
-                          color: const Color(0xFFE7F6EC),
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                        child: const Icon(Icons.pets_outlined, color: MyColors.colorPrimary, size: 20),
-                      ),
-                      const SizedBox(width: 12),
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              n == 0
-                                  ? 'Nenhum animal com brinco'
-                                  : '$n ${n == 1 ? 'animal' : 'animais'} no contrato',
-                              style: const TextStyle(
-                                fontFamily: 'Montserrat',
-                                fontWeight: FontWeight.w700,
-                                fontSize: 14,
-                              ),
-                            ),
-                            const SizedBox(height: 2),
-                            Text(
-                              preco != null && preco > 0
-                                  ? 'Preço ${reais(preco)}/kg'
-                                  : 'Informe o peso de saída de cada animal',
-                              style: const TextStyle(
-                                fontFamily: 'Montserrat',
-                                fontSize: 12,
-                                color: Color(0xFF8A8A8A),
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ],
-                  ),
+      body: body,
+    );
+  }
+
+  Widget _buildBody(BuildContext context) {
+    final n = _comBrinco.length;
+    final preco = widget.precoKg;
+    final embedded = widget.embeddedInDialog;
+    final horizontal = embedded ? 24.0 : 16.0;
+
+    final lista = ListView(
+      shrinkWrap: embedded,
+      physics: embedded ? const AlwaysScrollableScrollPhysics() : null,
+      padding: EdgeInsets.fromLTRB(horizontal, embedded ? 8 : 12, horizontal, 16),
+      children: [
+        CartaoBranco(
+          child: Row(
+            children: [
+              Container(
+                width: 40,
+                height: 40,
+                decoration: BoxDecoration(
+                  color: const Color(0xFFE7F6EC),
+                  borderRadius: BorderRadius.circular(12),
                 ),
-                const SizedBox(height: 16),
-                const Text(
-                  'Como escolher os animais?',
-                  style: TextStyle(fontFamily: 'Montserrat', fontWeight: FontWeight.w700, fontSize: 15),
-                ),
-                const SizedBox(height: 4),
-                const Text(
-                  'Selecione brincos específicos ou inclua todos do contrato.',
-                  style: TextStyle(fontFamily: 'Montserrat', fontSize: 12, color: Color(0xFF8A8A8A)),
-                ),
-                const SizedBox(height: 10),
-                OpcaoCartaoFinanceiro(
-                  titulo: 'Selecionar brincos',
-                  subtitulo: 'Marque os animais e informe o peso de saída',
-                  icone: Icons.tag_outlined,
-                  selecionado: _modo == ModoSelecaoAnimaisVenda.brincos,
-                  travado: n == 0,
-                  aoToque: () => _escolherModo(ModoSelecaoAnimaisVenda.brincos),
-                ),
-                OpcaoCartaoFinanceiro(
-                  titulo: 'Incluir todos',
-                  subtitulo: n == 0
-                      ? 'Sem animais elegíveis neste contrato'
-                      : 'Inclui $n ${n == 1 ? 'animal' : 'animais'} do contrato',
-                  icone: Icons.grid_view_rounded,
-                  selecionado: _modo == ModoSelecaoAnimaisVenda.todos,
-                  travado: n == 0,
-                  aoToque: () => _escolherModo(ModoSelecaoAnimaisVenda.todos),
-                ),
-                const SizedBox(height: 8),
-                if (n == 0)
-                  const Padding(
-                    padding: EdgeInsets.symmetric(vertical: 20),
-                    child: Text(
-                      'Cadastre entrada com brinco neste contrato para vender.',
-                      textAlign: TextAlign.center,
-                      style: TextStyle(fontFamily: 'Montserrat', color: Color(0xFF8A8A8A), fontSize: 13),
-                    ),
-                  )
-                else if (_modo == null)
-                  Padding(
-                    padding: const EdgeInsets.symmetric(vertical: 12),
-                    child: CartaoBranco(
-                      child: Column(
-                        children: [
-                          Icon(Icons.touch_app_outlined, size: 28, color: MyColors.colorPrimary.withValues(alpha: 0.7)),
-                          const SizedBox(height: 8),
-                          const Text(
-                            'Toque em uma opção acima para continuar',
-                            textAlign: TextAlign.center,
-                            style: TextStyle(
-                              fontFamily: 'Montserrat',
-                              fontSize: 13,
-                              color: Color(0xFF6B6B6B),
-                            ),
-                          ),
-                        ],
+                child: const Icon(Icons.pets_outlined, color: MyColors.colorPrimary, size: 20),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      n == 0
+                          ? 'Nenhum animal com brinco'
+                          : '$n ${n == 1 ? 'animal' : 'animais'} no contrato',
+                      style: const TextStyle(
+                        fontFamily: 'Montserrat',
+                        fontWeight: FontWeight.w700,
+                        fontSize: 14,
                       ),
                     ),
-                  )
-                else if (_modo == ModoSelecaoAnimaisVenda.todos) ...[
-                  IndicadorFaixaFinanceiro(
-                    rotulo: 'Animais na venda',
-                    valor: '$n',
-                    fundo: const Color(0xFFE7F6EC),
-                    letra: const Color(0xFF2E7D32),
-                  ),
-                  const SizedBox(height: 10),
-                  for (final animal in _comBrinco) ...[
-                    _LinhaPesoVenda(
-                      animal: animal,
-                      marcado: true,
-                      controller: _pesos[animal.appAnimaisId!]!,
-                      mostrarCheckbox: false,
-                      onToggle: (_) {},
-                      onPeso: (_) => setState(() {}),
+                    const SizedBox(height: 2),
+                    Text(
+                      preco != null && preco > 0
+                          ? 'Preço ${reais(preco)}/kg'
+                          : 'Informe o peso de saída de cada animal',
+                      style: const TextStyle(
+                        fontFamily: 'Montserrat',
+                        fontSize: 12,
+                        color: Color(0xFF8A8A8A),
+                      ),
                     ),
-                    const SizedBox(height: 6),
                   ],
-                ] else if (_modo == ModoSelecaoAnimaisVenda.brincos) ...[
-                  TextField(
-                    controller: _busca,
-                    decoration: decoracaoCampo('Filtrar por brinco'),
-                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+        const SizedBox(height: 16),
+        const Text(
+          'Como escolher os animais?',
+          style: TextStyle(fontFamily: 'Montserrat', fontWeight: FontWeight.w700, fontSize: 15),
+        ),
+        const SizedBox(height: 4),
+        const Text(
+          'Selecione brincos específicos ou inclua todos do contrato.',
+          style: TextStyle(fontFamily: 'Montserrat', fontSize: 12, color: Color(0xFF8A8A8A)),
+        ),
+        const SizedBox(height: 10),
+        OpcaoCartaoFinanceiro(
+          titulo: 'Selecionar brincos',
+          subtitulo: 'Marque os animais e informe o peso de saída',
+          icone: Icons.tag_outlined,
+          selecionado: _modo == ModoSelecaoAnimaisVenda.brincos,
+          travado: n == 0,
+          aoToque: () => _escolherModo(ModoSelecaoAnimaisVenda.brincos),
+        ),
+        OpcaoCartaoFinanceiro(
+          titulo: 'Incluir todos',
+          subtitulo: n == 0
+              ? 'Sem animais elegíveis neste contrato'
+              : 'Inclui $n ${n == 1 ? 'animal' : 'animais'} do contrato',
+          icone: Icons.grid_view_rounded,
+          selecionado: _modo == ModoSelecaoAnimaisVenda.todos,
+          travado: n == 0,
+          aoToque: () => _escolherModo(ModoSelecaoAnimaisVenda.todos),
+        ),
+        const SizedBox(height: 8),
+        if (n == 0)
+          const Padding(
+            padding: EdgeInsets.symmetric(vertical: 20),
+            child: Text(
+              'Cadastre entrada com brinco neste contrato para vender.',
+              textAlign: TextAlign.center,
+              style: TextStyle(fontFamily: 'Montserrat', color: Color(0xFF8A8A8A), fontSize: 13),
+            ),
+          )
+        else if (_modo == null)
+          Padding(
+            padding: const EdgeInsets.symmetric(vertical: 12),
+            child: CartaoBranco(
+              child: Column(
+                children: [
+                  Icon(Icons.touch_app_outlined, size: 28, color: MyColors.colorPrimary.withValues(alpha: 0.7)),
                   const SizedBox(height: 8),
-                  Text(
-                    _marcados.isEmpty
-                        ? 'Nenhum selecionado'
-                        : (_marcados.length == 1
-                            ? '1 selecionado'
-                            : '${_marcados.length} selecionados'),
-                    style: const TextStyle(
+                  const Text(
+                    'Toque em uma opção acima para continuar',
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
                       fontFamily: 'Montserrat',
-                      fontWeight: FontWeight.w700,
-                      color: MyColors.colorPrimary,
                       fontSize: 13,
+                      color: Color(0xFF6B6B6B),
                     ),
                   ),
-                  const SizedBox(height: 8),
-                  if (_filtrados.isEmpty)
-                    const Padding(
-                      padding: EdgeInsets.symmetric(vertical: 24),
-                      child: Text(
-                        'Nenhum animal encontrado.',
-                        textAlign: TextAlign.center,
-                        style: TextStyle(fontFamily: 'Montserrat', color: Color(0xFF8A8A8A)),
-                      ),
-                    )
-                  else
-                    for (final animal in _filtrados) ...[
-                      _LinhaPesoVenda(
-                        animal: animal,
-                        marcado: _marcados.contains(animal.appAnimaisId),
-                        controller: _pesos[animal.appAnimaisId!]!,
-                        mostrarCheckbox: true,
-                        onToggle: (v) => setState(() {
-                          final id = animal.appAnimaisId!;
-                          if (v) {
-                            _marcados.add(id);
-                          } else {
-                            _marcados.remove(id);
-                          }
-                        }),
-                        onPeso: (_) => setState(() {}),
-                      ),
-                      const SizedBox(height: 6),
-                    ],
                 ],
-              ],
-            ),
-          ),
-          SafeArea(
-            top: false,
-            child: Padding(
-              padding: const EdgeInsets.fromLTRB(16, 8, 16, 12),
-              child: BotaoPrimarioFinanceiro(
-                rotulo: _rotuloConfirmar,
-                habilitado: _podeConfirmar,
-                onPressed: _confirmar,
               ),
             ),
+          )
+        else if (_modo == ModoSelecaoAnimaisVenda.todos) ...[
+          IndicadorFaixaFinanceiro(
+            rotulo: 'Animais na venda',
+            valor: '$n',
+            fundo: const Color(0xFFE7F6EC),
+            letra: const Color(0xFF2E7D32),
           ),
+          const SizedBox(height: 10),
+          for (final animal in _comBrinco) ...[
+            _LinhaPesoVenda(
+              animal: animal,
+              marcado: true,
+              controller: _pesos[animal.appAnimaisId!]!,
+              mostrarCheckbox: false,
+              onToggle: (_) {},
+              onPeso: (_) => setState(() {}),
+            ),
+            const SizedBox(height: 6),
+          ],
+        ] else if (_modo == ModoSelecaoAnimaisVenda.brincos) ...[
+          TextField(
+            controller: _busca,
+            decoration: decoracaoCampo('Filtrar por brinco'),
+          ),
+          const SizedBox(height: 8),
+          Text(
+            _marcados.isEmpty
+                ? 'Nenhum selecionado'
+                : (_marcados.length == 1
+                    ? '1 selecionado'
+                    : '${_marcados.length} selecionados'),
+            style: const TextStyle(
+              fontFamily: 'Montserrat',
+              fontWeight: FontWeight.w700,
+              color: MyColors.colorPrimary,
+              fontSize: 13,
+            ),
+          ),
+          const SizedBox(height: 8),
+          if (_filtrados.isEmpty)
+            const Padding(
+              padding: EdgeInsets.symmetric(vertical: 24),
+              child: Text(
+                'Nenhum animal encontrado.',
+                textAlign: TextAlign.center,
+                style: TextStyle(fontFamily: 'Montserrat', color: Color(0xFF8A8A8A)),
+              ),
+            )
+          else
+            for (final animal in _filtrados) ...[
+              _LinhaPesoVenda(
+                animal: animal,
+                marcado: _marcados.contains(animal.appAnimaisId),
+                controller: _pesos[animal.appAnimaisId!]!,
+                mostrarCheckbox: true,
+                onToggle: (v) => setState(() {
+                  final id = animal.appAnimaisId!;
+                  if (v) {
+                    _marcados.add(id);
+                  } else {
+                    _marcados.remove(id);
+                  }
+                }),
+                onPeso: (_) => setState(() {}),
+              ),
+              const SizedBox(height: 6),
+            ],
         ],
-      ),
+      ],
+    );
+
+    return Column(
+      mainAxisSize: embedded ? MainAxisSize.min : MainAxisSize.max,
+      children: [
+        if (embedded)
+          ConstrainedBox(
+            constraints: const BoxConstraints(maxHeight: 480),
+            child: SizedBox(width: double.infinity, child: lista),
+          )
+        else
+          Expanded(child: lista),
+        SafeArea(
+          top: false,
+          child: Padding(
+            padding: EdgeInsets.fromLTRB(horizontal, 8, horizontal, embedded ? 20 : 12),
+            child: BotaoPrimarioFinanceiro(
+              rotulo: _rotuloConfirmar,
+              habilitado: _podeConfirmar,
+              onPressed: _confirmar,
+            ),
+          ),
+        ),
+      ],
     );
   }
 }

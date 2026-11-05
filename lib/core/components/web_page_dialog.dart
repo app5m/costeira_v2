@@ -18,6 +18,9 @@ class WebPageDialog extends StatefulWidget {
     this.preferredHeight,
     this.sizeMode = WebDialogSizeMode.constrained,
     this.footer,
+    this.headerActions,
+    this.onBack,
+    this.stripAppBar = true,
   });
 
   final String title;
@@ -28,6 +31,12 @@ class WebPageDialog extends StatefulWidget {
   final double? preferredHeight;
   final WebDialogSizeMode sizeMode;
   final Widget? footer;
+  final Widget? headerActions;
+  final VoidCallback? onBack;
+
+  /// When true (default), shifts the child up to hide a mobile [AppBar].
+  /// Set false when the child already omits the AppBar (avoids flicker).
+  final bool stripAppBar;
 
   @override
   State<WebPageDialog> createState() => _WebPageDialogState();
@@ -107,12 +116,16 @@ class _WebPageDialogState extends State<WebPageDialog> {
       preferredHeight: widget.preferredHeight ?? _measuredHeight,
       sizeMode: WebDialogSizeMode.constrained,
       footer: widget.footer,
+      headerActions: widget.headerActions,
+      onBack: widget.onBack,
       child: NotificationListener<ScrollMetricsNotification>(
         onNotification: (_) {
           _scheduleMeasurement();
           return false;
         },
-        child: _EmbeddedPageBody(key: _hostKey, child: widget.child),
+        child: widget.stripAppBar
+            ? _EmbeddedPageBody(key: _hostKey, child: widget.child)
+            : KeyedSubtree(key: _hostKey, child: widget.child),
       ),
     );
   }

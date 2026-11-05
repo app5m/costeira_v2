@@ -1,6 +1,7 @@
 import 'package:costeira/features/financeiro/domain/financeiro_mock.dart';
 import 'package:costeira/features/financeiro/presentation/widgets/financeiro_ui.dart';
 import 'package:costeira/theme/colors.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
 enum _FiltroVenda { todas, pendentes, acertadas }
@@ -80,20 +81,23 @@ class _VendasParceriaPageState extends State<VendasParceriaPage> {
 
     return Scaffold(
       backgroundColor: fundoFinanceiro,
-      appBar: AppBar(
+      appBar: kIsWeb ? null : AppBar(
         backgroundColor: MyColors.colorPrimary,
         foregroundColor: Colors.white,
         title: const Text('Vendas', style: TextStyle(fontFamily: 'Montserrat', fontWeight: FontWeight.w600)),
         leading: IconButton(icon: const Icon(Icons.arrow_back), onPressed: widget.aoVoltar),
       ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: widget.aoRegistrar,
-        backgroundColor: MyColors.colorPrimary,
-        tooltip: 'Registrar venda',
-        child: const Icon(Icons.add),
-      ),
+      floatingActionButton: kIsWeb
+          ? null
+          : FloatingActionButton(
+              onPressed: widget.aoRegistrar,
+              backgroundColor: MyColors.colorPrimary,
+              tooltip: 'Registrar venda',
+              child: const Icon(Icons.add),
+            ),
       body: ListView(
-        padding: const EdgeInsets.fromLTRB(16, 12, 16, 96),
+        primary: false,
+        padding: EdgeInsets.fromLTRB(16, 12, 16, kIsWeb ? 24 : 96),
         children: [
           GrupoChips(
             opcoes: const ['Todas', 'Sem acerto', 'Acertadas'],
@@ -114,13 +118,9 @@ class _VendasParceriaPageState extends State<VendasParceriaPage> {
           if (loja.carregandoParcerias && parceria == null)
             const LoadingFinanceiro(altura: 160, rotulo: 'Carregando vendas…')
           else if (filtradas.isEmpty)
-            const Padding(
-              padding: EdgeInsets.symmetric(vertical: 32),
-              child: Text(
-                'Nenhuma venda neste filtro.',
-                textAlign: TextAlign.center,
-                style: TextStyle(fontFamily: 'Montserrat', color: Color(0xFF8A8A8A)),
-              ),
+            const EstadoVazioFinanceiro(
+              icone: Icons.sell_outlined,
+              mensagem: 'Nenhuma venda neste filtro.',
             )
           else
             for (final item in filtradas) ...[

@@ -968,8 +968,6 @@ class _MainNavigationPageState extends State<MainNavigationPage>
                 onOpenPluviosidade: _openWebPluviosidade,
                 onOpenIndicadores: _openWebIndicadores,
                 onOpenFinanceiro: () => _openWebFinanceiro(),
-                onOpenInvestidores: () =>
-                    _openWebFinanceiro(abrirInvestidores: true),
               )
             : Menu(key: chave),
       _ => ModulePlaceholderPage(

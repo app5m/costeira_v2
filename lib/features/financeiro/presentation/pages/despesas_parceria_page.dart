@@ -1,6 +1,7 @@
 import 'package:costeira/features/financeiro/domain/financeiro_mock.dart';
 import 'package:costeira/features/financeiro/presentation/widgets/financeiro_ui.dart';
 import 'package:costeira/theme/colors.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
 enum _FiltroDespesa { todas, pendentes, pagas }
@@ -51,20 +52,23 @@ class _DespesasParceriaPageState extends State<DespesasParceriaPage> {
 
     return Scaffold(
       backgroundColor: fundoFinanceiro,
-      appBar: AppBar(
+      appBar: kIsWeb ? null : AppBar(
         backgroundColor: MyColors.colorPrimary,
         foregroundColor: Colors.white,
         title: const Text('Despesas', style: TextStyle(fontFamily: 'Montserrat', fontWeight: FontWeight.w600)),
         leading: IconButton(icon: const Icon(Icons.arrow_back), onPressed: widget.aoVoltar),
       ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: widget.aoAdicionar,
-        backgroundColor: MyColors.colorPrimary,
-        tooltip: 'Adicionar despesa',
-        child: const Icon(Icons.add),
-      ),
+      floatingActionButton: kIsWeb
+          ? null
+          : FloatingActionButton(
+              onPressed: widget.aoAdicionar,
+              backgroundColor: MyColors.colorPrimary,
+              tooltip: 'Adicionar despesa',
+              child: const Icon(Icons.add),
+            ),
       body: ListView(
-        padding: const EdgeInsets.fromLTRB(16, 12, 16, 96),
+        primary: false,
+        padding: EdgeInsets.fromLTRB(16, 12, 16, kIsWeb ? 24 : 96),
         children: [
           if (parceria != null) ...[
             Row(
@@ -109,13 +113,9 @@ class _DespesasParceriaPageState extends State<DespesasParceriaPage> {
           if (loja.carregandoParcerias && parceria == null)
             const LoadingFinanceiro(altura: 160, rotulo: 'Carregando despesas…')
           else if (filtradas.isEmpty)
-            const Padding(
-              padding: EdgeInsets.symmetric(vertical: 32),
-              child: Text(
-                'Nenhuma despesa neste filtro.',
-                textAlign: TextAlign.center,
-                style: TextStyle(fontFamily: 'Montserrat', color: Color(0xFF8A8A8A)),
-              ),
+            const EstadoVazioFinanceiro(
+              icone: Icons.receipt_long_outlined,
+              mensagem: 'Nenhuma despesa neste filtro.',
             )
           else
             for (final item in filtradas) ...[

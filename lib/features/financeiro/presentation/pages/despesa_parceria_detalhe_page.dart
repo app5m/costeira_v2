@@ -1,6 +1,7 @@
 import 'package:costeira/features/financeiro/domain/financeiro_mock.dart';
 import 'package:costeira/features/financeiro/presentation/widgets/financeiro_ui.dart';
 import 'package:costeira/theme/colors.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
 class DespesaParceriaDetalhePage extends StatelessWidget {
@@ -83,7 +84,7 @@ class DespesaParceriaDetalhePage extends StatelessWidget {
 
     return Scaffold(
       backgroundColor: fundoFinanceiro,
-      appBar: AppBar(
+      appBar: kIsWeb ? null : AppBar(
         backgroundColor: MyColors.colorPrimary,
         foregroundColor: Colors.white,
         title: const Text(
@@ -93,6 +94,7 @@ class DespesaParceriaDetalhePage extends StatelessWidget {
         leading: IconButton(icon: const Icon(Icons.arrow_back), onPressed: aoVoltar),
       ),
       body: ListView(
+        primary: false,
         padding: const EdgeInsets.fromLTRB(16, 16, 16, 32),
         children: [
           CartaoBranco(

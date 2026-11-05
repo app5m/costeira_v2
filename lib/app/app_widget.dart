@@ -1,6 +1,23 @@
 import 'package:costeira/theme/colors.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_modular/flutter_modular.dart';
+
+/// No web, o MaterialScrollBehavior injeta Scrollbar no PrimaryScrollController.
+/// ListViews com `primary: false` (diálogos aninhados) disparam assert e flicker.
+class _AppScrollBehavior extends MaterialScrollBehavior {
+  const _AppScrollBehavior();
+
+  @override
+  Widget buildScrollbar(
+    BuildContext context,
+    Widget child,
+    ScrollableDetails details,
+  ) {
+    if (kIsWeb) return child;
+    return super.buildScrollbar(context, child, details);
+  }
+}
 
 class AppWidget extends StatelessWidget {
   const AppWidget({super.key});
@@ -10,6 +27,7 @@ class AppWidget extends StatelessWidget {
     return MaterialApp.router(
       debugShowCheckedModeBanner: false,
       title: 'Costeira',
+      scrollBehavior: const _AppScrollBehavior(),
       theme: ThemeData(
         useMaterial3: true,
         colorScheme: ColorScheme(

@@ -20,6 +20,7 @@ class WebDialogFrame extends StatelessWidget {
     this.sizeMode = WebDialogSizeMode.fitContent,
     this.footer,
     this.headerActions,
+    this.onBack,
     this.bodyPadding = EdgeInsets.zero,
     this.scrollableBody = true,
   });
@@ -33,6 +34,7 @@ class WebDialogFrame extends StatelessWidget {
   final WebDialogSizeMode sizeMode;
   final Widget? footer;
   final Widget? headerActions;
+  final VoidCallback? onBack;
   final EdgeInsetsGeometry bodyPadding;
 
   /// When true (default), fitContent wraps the body so it shrinks to content
@@ -57,54 +59,67 @@ class WebDialogFrame extends StatelessWidget {
       effectiveMaxHeight,
     );
 
+    // Web MaterialScrollBehavior paints a Scrollbar on PrimaryScrollController.
+    // Nested ListViews in dialogs often omit that controller (primary: false),
+    // which asserts and flickers on pointer scroll — disable chrome scrollbars.
     return Dialog(
       backgroundColor: Colors.white,
       insetPadding: EdgeInsets.all(inset),
       clipBehavior: Clip.antiAlias,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
-      child: Semantics(
-        label: title,
-        namesRoute: true,
-        child: sizeMode == WebDialogSizeMode.constrained
-            ? _ConstrainedShell(
-                title: title,
-                width: width,
-                height: () {
-                  if (preferredHeight != null) {
-                    final lo = minHeight < effectiveMaxHeight
-                        ? minHeight
-                        : 0.0;
-                    return preferredHeight!.clamp(lo, effectiveMaxHeight);
-                  }
-                  return effectiveMaxHeight;
-                }(),
-                footer: footer,
-                headerActions: headerActions,
-                bodyPadding: bodyPadding,
-                child: child,
-              )
-            : _FitContentShell(
-                title: title,
-                width: width,
-                minHeight: minHeight,
-                maxHeight: effectiveMaxHeight,
-                preferredHeight: usePreferred ? preferredClamped : null,
-                footer: footer,
-                headerActions: headerActions,
-                bodyPadding: bodyPadding,
-                scrollableBody: scrollableBody,
-                child: child,
-              ),
+      child: ScrollConfiguration(
+        behavior: ScrollConfiguration.of(context).copyWith(scrollbars: false),
+        child: Semantics(
+          label: title,
+          namesRoute: true,
+          child: sizeMode == WebDialogSizeMode.constrained
+              ? _ConstrainedShell(
+                  title: title,
+                  width: width,
+                  height: () {
+                    if (preferredHeight != null) {
+                      final lo = minHeight < effectiveMaxHeight
+                          ? minHeight
+                          : 0.0;
+                      return preferredHeight!.clamp(lo, effectiveMaxHeight);
+                    }
+                    return effectiveMaxHeight;
+                  }(),
+                  footer: footer,
+                  headerActions: headerActions,
+                  onBack: onBack,
+                  bodyPadding: bodyPadding,
+                  child: child,
+                )
+              : _FitContentShell(
+                  title: title,
+                  width: width,
+                  minHeight: minHeight,
+                  maxHeight: effectiveMaxHeight,
+                  preferredHeight: usePreferred ? preferredClamped : null,
+                  footer: footer,
+                  headerActions: headerActions,
+                  onBack: onBack,
+                  bodyPadding: bodyPadding,
+                  scrollableBody: scrollableBody,
+                  child: child,
+                ),
+        ),
       ),
     );
   }
 }
 
 class _DialogHeader extends StatelessWidget {
-  const _DialogHeader({required this.title, this.headerActions});
+  const _DialogHeader({
+    required this.title,
+    this.headerActions,
+    this.onBack,
+  });
 
   final String title;
   final Widget? headerActions;
+  final VoidCallback? onBack;
 
   @override
   Widget build(BuildContext context) {
@@ -114,6 +129,14 @@ class _DialogHeader extends StatelessWidget {
         padding: const EdgeInsets.symmetric(horizontal: 22),
         child: Row(
           children: [
+            if (onBack != null) ...[
+              IconButton(
+                tooltip: 'Voltar',
+                onPressed: onBack,
+                icon: const Icon(Icons.arrow_back_rounded),
+              ),
+              const SizedBox(width: 4),
+            ],
             Expanded(
               child: Text(
                 title,
@@ -153,6 +176,7 @@ class _FitContentShell extends StatelessWidget {
     this.preferredHeight,
     this.footer,
     this.headerActions,
+    this.onBack,
     this.bodyPadding = EdgeInsets.zero,
     this.scrollableBody = true,
   });
@@ -165,6 +189,7 @@ class _FitContentShell extends StatelessWidget {
   final Widget child;
   final Widget? footer;
   final Widget? headerActions;
+  final VoidCallback? onBack;
   final EdgeInsetsGeometry bodyPadding;
   final bool scrollableBody;
 
@@ -192,7 +217,11 @@ class _FitContentShell extends StatelessWidget {
         height: preferredHeight,
         child: Column(
           children: [
-            _DialogHeader(title: title, headerActions: headerActions),
+            _DialogHeader(
+              title: title,
+              headerActions: headerActions,
+              onBack: onBack,
+            ),
             const Divider(height: 1, color: Color(0xFFE7E4DD)),
             Flexible(child: body),
             if (footer != null) ...[
@@ -220,7 +249,11 @@ class _FitContentShell extends StatelessWidget {
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          _DialogHeader(title: title, headerActions: headerActions),
+          _DialogHeader(
+            title: title,
+            headerActions: headerActions,
+            onBack: onBack,
+          ),
           const Divider(height: 1, color: Color(0xFFE7E4DD)),
           ConstrainedBox(
             constraints: BoxConstraints(maxHeight: bodyMaxHeight),
@@ -244,6 +277,7 @@ class _ConstrainedShell extends StatelessWidget {
     required this.child,
     this.footer,
     this.headerActions,
+    this.onBack,
     this.bodyPadding = EdgeInsets.zero,
   });
 
@@ -253,6 +287,7 @@ class _ConstrainedShell extends StatelessWidget {
   final Widget child;
   final Widget? footer;
   final Widget? headerActions;
+  final VoidCallback? onBack;
   final EdgeInsetsGeometry bodyPadding;
 
   @override
@@ -262,7 +297,11 @@ class _ConstrainedShell extends StatelessWidget {
       height: height,
       child: Column(
         children: [
-          _DialogHeader(title: title, headerActions: headerActions),
+          _DialogHeader(
+            title: title,
+            headerActions: headerActions,
+            onBack: onBack,
+          ),
           const Divider(height: 1, color: Color(0xFFE7E4DD)),
           Expanded(
             child: Padding(

@@ -3,6 +3,7 @@ import 'package:costeira/core/components/app_snack.dart';
 import 'package:costeira/features/financeiro/domain/financeiro_mock.dart';
 import 'package:costeira/features/financeiro/presentation/widgets/financeiro_ui.dart';
 import 'package:costeira/theme/colors.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
 class ContratoDetalhePage extends StatefulWidget {
@@ -120,7 +121,7 @@ class _ContratoDetalhePageState extends State<ContratoDetalhePage> with SingleTi
 
     return Scaffold(
       backgroundColor: fundoFinanceiro,
-      appBar: AppBar(
+      appBar: kIsWeb ? null : AppBar(
         backgroundColor: MyColors.colorPrimary,
         foregroundColor: Colors.white,
         title: Text(titulo, style: const TextStyle(fontFamily: 'Montserrat', fontWeight: FontWeight.w600)),
@@ -133,19 +134,10 @@ class _ContratoDetalhePageState extends State<ContratoDetalhePage> with SingleTi
               tooltip: 'Inativar contrato',
             ),
         ],
-        bottom: TabBar(
-          controller: _tabs,
-          indicatorColor: Colors.white,
-          labelColor: Colors.white,
-          unselectedLabelColor: Colors.white70,
-          labelStyle: const TextStyle(fontFamily: 'Montserrat', fontWeight: FontWeight.w700),
-          tabs: const [
-            Tab(text: 'Entradas'),
-            Tab(text: 'Financeiro'),
-          ],
-        ),
       ),
-      floatingActionButton: _tabs.index == 0 && parceria?.ativo == true
+      floatingActionButton: !kIsWeb &&
+              _tabs.index == 0 &&
+              parceria?.ativo == true
           ? FloatingActionButton(
               onPressed: widget.aoRegistrarEntrada,
               backgroundColor: MyColors.colorPrimary,
@@ -184,6 +176,14 @@ class _ContratoDetalhePageState extends State<ContratoDetalhePage> with SingleTi
                                   rotulo: parceria.ativo ? 'Ativo' : 'Inativo',
                                   positivo: parceria.ativo,
                                 ),
+                                // Web: AppBar omitido — mesma ação do ícone de bloqueio no mobile.
+                                if (kIsWeb && parceria.ativo)
+                                  IconButton(
+                                    onPressed: _inativando ? null : () => _inativar(parceria),
+                                    icon: const Icon(Icons.block, color: Color(0xFF8A8A8A)),
+                                    tooltip: 'Inativar contrato',
+                                    visualDensity: VisualDensity.compact,
+                                  ),
                               ],
                             ),
                             const SizedBox(height: 6),
@@ -211,6 +211,28 @@ class _ContratoDetalhePageState extends State<ContratoDetalhePage> with SingleTi
                             ),
                           ],
                         ),
+                      ),
+                    ),
+                    Padding(
+                      padding: const EdgeInsets.fromLTRB(16, 12, 16, 0),
+                      child: Row(
+                        children: [
+                          Expanded(
+                            child: _AbaOpcao(
+                              label: 'Entradas',
+                              selected: _tabs.index == 0,
+                              onTap: () => _tabs.animateTo(0),
+                            ),
+                          ),
+                          const SizedBox(width: 12),
+                          Expanded(
+                            child: _AbaOpcao(
+                              label: 'Financeiro',
+                              selected: _tabs.index == 1,
+                              onTap: () => _tabs.animateTo(1),
+                            ),
+                          ),
+                        ],
                       ),
                     ),
                     Expanded(
@@ -245,6 +267,49 @@ class _ContratoDetalhePageState extends State<ContratoDetalhePage> with SingleTi
   }
 }
 
+class _AbaOpcao extends StatelessWidget {
+  const _AbaOpcao({
+    required this.label,
+    required this.selected,
+    required this.onTap,
+  });
+
+  final String label;
+  final bool selected;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    return Material(
+      color: selected ? const Color(0x1400823A) : const Color(0xFFF5F4F0),
+      borderRadius: BorderRadius.circular(8),
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(8),
+        child: Container(
+          height: 44,
+          alignment: Alignment.center,
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(8),
+            border: Border.all(
+              color: selected ? MyColors.colorPrimary : const Color(0xFFE7E4DD),
+            ),
+          ),
+          child: Text(
+            label,
+            style: TextStyle(
+              color: selected ? MyColors.colorPrimary : const Color(0xFF313131),
+              fontSize: 13,
+              fontFamily: 'Montserrat',
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
 class _AbaEntradas extends StatelessWidget {
   const _AbaEntradas({
     required this.parceria,
@@ -261,6 +326,7 @@ class _AbaEntradas extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return ListView(
+      primary: false,
       padding: const EdgeInsets.fromLTRB(16, 16, 16, 96),
       children: [
         const Text(
@@ -274,13 +340,10 @@ class _AbaEntradas extends StatelessWidget {
             child: LoadingFinanceiro(altura: 48, rotulo: 'Atualizando…'),
           ),
         if (parceria.entradas.isEmpty)
-          const Padding(
+          const EstadoVazioFinanceiro(
+            icone: Icons.inventory_2_outlined,
+            mensagem: 'Nenhuma entrada registrada.',
             padding: EdgeInsets.symmetric(vertical: 24),
-            child: Text(
-              'Nenhuma entrada registrada.',
-              textAlign: TextAlign.center,
-              style: TextStyle(fontFamily: 'Montserrat', color: Color(0xFF8A8A8A)),
-            ),
           )
         else
           for (final entrada in parceria.entradas) ...[
@@ -318,6 +381,7 @@ class _AbaFinanceiro extends StatelessWidget {
         if (t.pendente) t,
     ];
     return ListView(
+      primary: false,
       padding: const EdgeInsets.fromLTRB(16, 16, 16, 96),
       children: [
         Row(
@@ -379,13 +443,10 @@ class _AbaFinanceiro extends StatelessWidget {
             child: LoadingFinanceiro(altura: 48, rotulo: 'Atualizando…'),
           ),
         if (pendentes.isEmpty)
-          const Padding(
+          const EstadoVazioFinanceiro(
+            icone: Icons.swap_horiz_rounded,
+            mensagem: 'Nenhuma movimentação.',
             padding: EdgeInsets.symmetric(vertical: 24),
-            child: Text(
-              'Nenhuma movimentação.',
-              textAlign: TextAlign.center,
-              style: TextStyle(fontFamily: 'Montserrat', color: Color(0xFF8A8A8A)),
-            ),
           )
         else
           for (final titulo in pendentes) ...[

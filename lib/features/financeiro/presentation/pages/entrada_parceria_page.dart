@@ -3,6 +3,7 @@ import 'package:costeira/core/common/get_list/domain/entities/get_list_params_en
 import 'package:costeira/core/common/get_list/domain/entities/list_category_entity.dart';
 import 'package:costeira/core/common/get_list/domain/entities/list_subcategory_entity.dart';
 import 'package:costeira/core/common/get_list/domain/usecases/get_list_usecase.dart';
+import 'package:costeira/core/components/adaptive_selection_modal.dart';
 import 'package:costeira/core/components/app_snack.dart';
 import 'package:costeira/core/storage/session_storage.dart';
 import 'package:costeira/core/storage/sub_user_payload.dart';
@@ -11,6 +12,7 @@ import 'package:costeira/features/financeiro/domain/financeiro_mock.dart';
 import 'package:costeira/features/financeiro/presentation/pages/lancamento_animais_page.dart';
 import 'package:costeira/features/financeiro/presentation/widgets/financeiro_ui.dart';
 import 'package:costeira/theme/colors.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_modular/flutter_modular.dart';
@@ -244,19 +246,37 @@ class _EntradaParceriaPageState extends State<EntradaParceriaPage> {
 
   Future<void> _escolherExistentes() async {
     final atuais = [for (final item in _existentes) item.animal];
-    final escolhidos = await Navigator.of(context).push<List<AnimalEntity>>(
-      MaterialPageRoute(
-        builder: (_) => LancamentoAnimaisPage(
+    final List<AnimalEntity>? escolhidos;
+    if (kIsWeb) {
+      escolhidos = await showAdaptiveSelectionModal<List<AnimalEntity>>(
+        context: context,
+        title: 'Selecionar animais',
+        builder: (embeddedInDialog) => LancamentoAnimaisPage(
           selecionados: atuais,
           bloqueados: _vinculados,
           motivoBloqueio: 'Animal já vinculado a um contrato ou com patrimônio próprio.',
           ocultarBloqueados: true,
           somenteAtivos: true,
           somenteComBrinco: true,
+          embeddedInDialog: embeddedInDialog,
         ),
-      ),
-    );
+      );
+    } else {
+      escolhidos = await Navigator.of(context).push<List<AnimalEntity>>(
+        MaterialPageRoute(
+          builder: (_) => LancamentoAnimaisPage(
+            selecionados: atuais,
+            bloqueados: _vinculados,
+            motivoBloqueio: 'Animal já vinculado a um contrato ou com patrimônio próprio.',
+            ocultarBloqueados: true,
+            somenteAtivos: true,
+            somenteComBrinco: true,
+          ),
+        ),
+      );
+    }
     if (escolhidos == null || !mounted) return;
+    final selecionados = escolhidos;
     final pesos = {
       for (final item in _existentes) item.animal.id: item.peso.text,
     };
@@ -267,7 +287,7 @@ class _EntradaParceriaPageState extends State<EntradaParceriaPage> {
       _existentes
         ..clear()
         ..addAll([
-          for (final animal in escolhidos)
+          for (final animal in selecionados)
             if (!_vinculados.contains(animal.id))
               _AnimalExistenteLinha(animal)..peso.text = pesos[animal.id] ?? _pesoInicial(animal),
         ]);
@@ -303,90 +323,11 @@ class _EntradaParceriaPageState extends State<EntradaParceriaPage> {
       AppSnackBar.show(context: context, message: 'Nenhuma opção disponível para $titulo.');
       return Future.value(null);
     }
-    return showModalBottomSheet<T>(
+    return abrirOpcoesFinanceiro<T>(
       context: context,
-      backgroundColor: Colors.white,
-      isScrollControlled: true,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
-      ),
-      builder: (ctx) {
-        final maxH = MediaQuery.sizeOf(ctx).height * 0.55;
-        return SafeArea(
-          child: Padding(
-            padding: const EdgeInsets.fromLTRB(16, 12, 16, 16),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Center(
-                  child: Container(
-                    width: 40,
-                    height: 4,
-                    decoration: BoxDecoration(
-                      color: const Color(0xFFD9D9D9),
-                      borderRadius: BorderRadius.circular(999),
-                    ),
-                  ),
-                ),
-                const SizedBox(height: 14),
-                Text(
-                  titulo,
-                  style: const TextStyle(fontFamily: 'Montserrat', fontWeight: FontWeight.w700, fontSize: 16),
-                ),
-                const SizedBox(height: 12),
-                ConstrainedBox(
-                  constraints: BoxConstraints(maxHeight: maxH),
-                  child: ListView.separated(
-                    shrinkWrap: true,
-                    itemCount: opcoes.length,
-                    separatorBuilder: (_, _) => const SizedBox(height: 8),
-                    itemBuilder: (_, index) {
-                      final item = opcoes[index];
-                      final marcada = item.value == atual;
-                      return Material(
-                        color: marcada ? const Color(0xFFE7F6EC) : Colors.white,
-                        borderRadius: BorderRadius.circular(12),
-                        child: InkWell(
-                          onTap: () => Navigator.pop(ctx, item.value),
-                          borderRadius: BorderRadius.circular(12),
-                          child: Container(
-                            width: double.infinity,
-                            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
-                            decoration: BoxDecoration(
-                              borderRadius: BorderRadius.circular(12),
-                              border: Border.all(
-                                color: marcada ? MyColors.colorPrimary : const Color(0xFFE6E6E6),
-                              ),
-                            ),
-                            child: Row(
-                              children: [
-                                Expanded(
-                                  child: Text(
-                                    item.label,
-                                    style: TextStyle(
-                                      fontFamily: 'Montserrat',
-                                      fontWeight: marcada ? FontWeight.w700 : FontWeight.w600,
-                                      fontSize: 14,
-                                      color: const Color(0xFF313131),
-                                    ),
-                                  ),
-                                ),
-                                if (marcada)
-                                  const Icon(Icons.check_circle, color: MyColors.colorPrimary, size: 20),
-                              ],
-                            ),
-                          ),
-                        ),
-                      );
-                    },
-                  ),
-                ),
-              ],
-            ),
-          ),
-        );
-      },
+      titulo: titulo,
+      opcoes: opcoes,
+      atual: atual,
     );
   }
 
@@ -498,129 +439,263 @@ class _EntradaParceriaPageState extends State<EntradaParceriaPage> {
 
   @override
   Widget build(BuildContext context) {
+    final horizontal = kIsWeb ? 24.0 : 16.0;
     return Scaffold(
-      backgroundColor: fundoFinanceiro,
-      appBar: AppBar(
-        backgroundColor: MyColors.colorPrimary,
-        foregroundColor: Colors.white,
-        title: const Text('Registrar entrada', style: TextStyle(fontFamily: 'Montserrat', fontWeight: FontWeight.w600)),
-        leading: IconButton(icon: const Icon(Icons.arrow_back), onPressed: widget.aoVoltar),
-      ),
-      body: ListView(
-        padding: const EdgeInsets.fromLTRB(16, 16, 16, 24),
+      backgroundColor: kIsWeb ? Colors.white : fundoFinanceiro,
+      appBar: kIsWeb
+          ? null
+          : AppBar(
+              backgroundColor: MyColors.colorPrimary,
+              foregroundColor: Colors.white,
+              title: const Text(
+                'Registrar entrada',
+                style: TextStyle(fontFamily: 'Montserrat', fontWeight: FontWeight.w600),
+              ),
+              leading: IconButton(icon: const Icon(Icons.arrow_back), onPressed: widget.aoVoltar),
+            ),
+      body: Column(
         children: [
-          CampoFinanceiro(
-            rotulo: 'DATA',
-            child: TextField(
-              controller: _data,
-              keyboardType: TextInputType.number,
-              inputFormatters: [_maskData],
-              decoration: decoracaoCampo('dd/mm/aaaa'),
+          Expanded(
+            child: ListView(
+              primary: false,
+              padding: EdgeInsets.fromLTRB(horizontal, 12, horizontal, 16),
+              children: [
+                _cabecalhoFormulario(),
+                const SizedBox(height: 16),
+                if (_modo == _ModoEntrada.existente) ..._blocoExistente() else ..._blocoNovo(),
+              ],
             ),
           ),
-          const SizedBox(height: 14),
-          GrupoChips(
-            opcoes: const ['Existente', 'Novo'],
-            selecionado: _modo == _ModoEntrada.existente ? 'Existente' : 'Novo',
-            aoEscolher: (v) => setState(() {
-              _modo = v == 'Existente' ? _ModoEntrada.existente : _ModoEntrada.novo;
-            }),
-          ),
-          const SizedBox(height: 16),
-          if (_modo == _ModoEntrada.existente) ..._blocoExistente() else ..._blocoNovo(),
-          const SizedBox(height: 24),
-          BotaoPrimarioFinanceiro(
-            rotulo: 'Salvar entrada',
-            carregando: _salvando,
-            onPressed: _salvar,
+          DecoratedBox(
+            decoration: BoxDecoration(
+              color: kIsWeb ? Colors.white : fundoFinanceiro,
+              border: const Border(top: BorderSide(color: Color(0xFFE8E8E8))),
+            ),
+            child: SafeArea(
+              top: false,
+              child: Padding(
+                padding: EdgeInsets.fromLTRB(horizontal, 12, horizontal, kIsWeb ? 16 : 12),
+                child: BotaoPrimarioFinanceiro(
+                  rotulo: 'Salvar entrada',
+                  carregando: _salvando,
+                  onPressed: _salvar,
+                ),
+              ),
+            ),
           ),
         ],
       ),
     );
   }
 
+  Widget _cabecalhoFormulario() {
+    final dataCampo = CampoFinanceiro(
+      rotulo: 'DATA',
+      child: TextField(
+        controller: _data,
+        keyboardType: TextInputType.number,
+        inputFormatters: [_maskData],
+        decoration: decoracaoCampo('dd/mm/aaaa'),
+      ),
+    );
+    final origem = CampoFinanceiro(
+      rotulo: 'ORIGEM',
+      child: GrupoChips(
+        opcoes: const ['Existente', 'Novo'],
+        selecionado: _modo == _ModoEntrada.existente ? 'Existente' : 'Novo',
+        aoEscolher: (v) => setState(() {
+          _modo = v == 'Existente' ? _ModoEntrada.existente : _ModoEntrada.novo;
+        }),
+      ),
+    );
+
+    if (!kIsWeb) {
+      return Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          dataCampo,
+          const SizedBox(height: 14),
+          origem,
+        ],
+      );
+    }
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            SizedBox(width: 168, child: dataCampo),
+            const SizedBox(width: 20),
+            Expanded(child: origem),
+          ],
+        ),
+        const SizedBox(height: 10),
+        Text(
+          _modo == _ModoEntrada.existente
+              ? 'Vincule animais livres do rebanho a este contrato.'
+              : 'Cadastre animais novos do investidor neste contrato.',
+          style: const TextStyle(fontFamily: 'Montserrat', fontSize: 12, color: Color(0xFF8A8A8A)),
+        ),
+      ],
+    );
+  }
+
   List<Widget> _blocoExistente() {
     return [
-      OutlinedButton.icon(
-        onPressed: _escolherExistentes,
-        icon: const Icon(Icons.pets_outlined),
-        label: Text(
-          _existentes.isEmpty
-              ? 'Selecionar animais'
-              : '${_existentes.length} ${_existentes.length == 1 ? 'animal selecionado' : 'animais selecionados'}',
-          style: const TextStyle(fontFamily: 'Montserrat'),
-        ),
-        style: OutlinedButton.styleFrom(
-          foregroundColor: MyColors.colorPrimary,
-          side: const BorderSide(color: MyColors.colorPrimary),
-          minimumSize: const Size.fromHeight(48),
-        ),
-      ),
-      const SizedBox(height: 8),
-      const Text(
-        'Só aparecem animais livres do rebanho. Já em contrato ou com patrimônio próprio ficam fora. Para animal do investidor, use “Novo”.',
-        style: TextStyle(fontFamily: 'Montserrat', fontSize: 12, color: Color(0xFF8A8A8A)),
-      ),
-      const SizedBox(height: 12),
-      for (final item in _existentes) ...[
-        Material(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(12),
-          child: Container(
-            width: double.infinity,
-            padding: const EdgeInsets.fromLTRB(12, 8, 4, 8),
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(12),
-              border: Border.all(color: const Color(0xFFE6E6E6)),
+      _cardSelecaoAnimais(),
+      if (_existentes.isNotEmpty) ...[
+        const SizedBox(height: 14),
+        Row(
+          children: [
+            const Text(
+              'Animais selecionados',
+              style: TextStyle(
+                fontFamily: 'Montserrat',
+                fontWeight: FontWeight.w700,
+                fontSize: 13,
+              ),
             ),
-            child: Row(
-              children: [
-                Expanded(
-                  flex: 3,
-                  child: Text(
-                    item.animal.brinco?.trim().isNotEmpty == true
-                        ? item.animal.brinco!.trim()
-                        : 'Animal #${item.animal.id}',
-                    style: const TextStyle(
-                      fontFamily: 'Montserrat',
-                      fontWeight: FontWeight.w700,
-                      fontSize: 14,
-                    ),
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                ),
-                const SizedBox(width: 8),
-                Expanded(
-                  flex: 4,
-                  child: TextField(
-                    controller: item.peso,
-                    keyboardType: const TextInputType.numberWithOptions(decimal: true),
-                    inputFormatters: [FilteringTextInputFormatter.allow(RegExp(r'[0-9.,]'))],
-                    style: const TextStyle(fontFamily: 'Montserrat', fontSize: 14),
-                    decoration: decoracaoCampo('Peso kg').copyWith(
-                      isDense: true,
-                      contentPadding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
-                      hintText: 'kg',
-                    ),
-                  ),
-                ),
-                IconButton(
-                  visualDensity: VisualDensity.compact,
-                  padding: EdgeInsets.zero,
-                  constraints: const BoxConstraints(minWidth: 36, minHeight: 36),
-                  onPressed: () => setState(() {
-                    item.dispose();
-                    _existentes.remove(item);
-                  }),
-                  icon: const Icon(Icons.close, size: 18, color: Color(0xFF8A8A8A)),
-                ),
-              ],
+            const Spacer(),
+            Text(
+              '${_existentes.length}',
+              style: const TextStyle(
+                fontFamily: 'Montserrat',
+                fontWeight: FontWeight.w700,
+                fontSize: 13,
+                color: MyColors.colorPrimary,
+              ),
             ),
-          ),
+          ],
         ),
-        const SizedBox(height: 6),
+        const SizedBox(height: 8),
+        for (final item in _existentes) ...[
+          _linhaAnimalExistente(item),
+          const SizedBox(height: 6),
+        ],
       ],
     ];
+  }
+
+  Widget _cardSelecaoAnimais() {
+    final vazio = _existentes.isEmpty;
+    return Material(
+      color: const Color(0xFFF7FAF8),
+      borderRadius: BorderRadius.circular(14),
+      child: InkWell(
+        onTap: _escolherExistentes,
+        borderRadius: BorderRadius.circular(14),
+        child: Container(
+          width: double.infinity,
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 18),
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(14),
+            border: Border.all(
+              color: MyColors.colorPrimary.withValues(alpha: 0.35),
+              style: BorderStyle.solid,
+            ),
+          ),
+          child: Row(
+            children: [
+              Container(
+                width: 40,
+                height: 40,
+                decoration: BoxDecoration(
+                  color: MyColors.colorPrimary.withValues(alpha: 0.1),
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                child: const Icon(Icons.pets_outlined, color: MyColors.colorPrimary, size: 22),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      vazio
+                          ? 'Selecionar animais'
+                          : '${_existentes.length} ${_existentes.length == 1 ? 'animal' : 'animais'} · alterar seleção',
+                      style: const TextStyle(
+                        fontFamily: 'Montserrat',
+                        fontWeight: FontWeight.w700,
+                        fontSize: 14,
+                        color: MyColors.colorPrimary,
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                    const Text(
+                      'Só entram livres do rebanho (sem contrato e sem patrimônio próprio).',
+                      style: TextStyle(fontFamily: 'Montserrat', fontSize: 12, color: Color(0xFF8A8A8A)),
+                    ),
+                  ],
+                ),
+              ),
+              const Icon(Icons.chevron_right_rounded, color: MyColors.colorPrimary),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _linhaAnimalExistente(_AnimalExistenteLinha item) {
+    final brinco = item.animal.brinco?.trim().isNotEmpty == true
+        ? item.animal.brinco!.trim()
+        : 'Animal #${item.animal.id}';
+    return Material(
+      color: Colors.white,
+      borderRadius: BorderRadius.circular(12),
+      child: Container(
+        width: double.infinity,
+        padding: const EdgeInsets.fromLTRB(12, 8, 4, 8),
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: const Color(0xFFE6E6E6)),
+        ),
+        child: Row(
+          children: [
+            Expanded(
+              flex: 3,
+              child: Text(
+                brinco,
+                style: const TextStyle(
+                  fontFamily: 'Montserrat',
+                  fontWeight: FontWeight.w700,
+                  fontSize: 14,
+                ),
+                overflow: TextOverflow.ellipsis,
+              ),
+            ),
+            const SizedBox(width: 8),
+            SizedBox(
+              width: 110,
+              child: TextField(
+                controller: item.peso,
+                keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                inputFormatters: [FilteringTextInputFormatter.allow(RegExp(r'[0-9.,]'))],
+                style: const TextStyle(fontFamily: 'Montserrat', fontSize: 14),
+                decoration: decoracaoCampo('Peso kg').copyWith(
+                  isDense: true,
+                  contentPadding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+                  hintText: 'kg',
+                ),
+              ),
+            ),
+            IconButton(
+              visualDensity: VisualDensity.compact,
+              padding: EdgeInsets.zero,
+              constraints: const BoxConstraints(minWidth: 36, minHeight: 36),
+              onPressed: () => setState(() {
+                item.dispose();
+                _existentes.remove(item);
+              }),
+              icon: const Icon(Icons.close, size: 18, color: Color(0xFF8A8A8A)),
+            ),
+          ],
+        ),
+      ),
+    );
   }
 
   List<Widget> _blocoNovo() {
@@ -646,6 +721,29 @@ class _EntradaParceriaPageState extends State<EntradaParceriaPage> {
         ),
         const SizedBox(height: 8),
       ],
+      Row(
+        children: [
+          const Text(
+            'Novos animais',
+            style: TextStyle(
+              fontFamily: 'Montserrat',
+              fontWeight: FontWeight.w700,
+              fontSize: 13,
+            ),
+          ),
+          const Spacer(),
+          Text(
+            '${_novos.length}',
+            style: const TextStyle(
+              fontFamily: 'Montserrat',
+              fontWeight: FontWeight.w700,
+              fontSize: 13,
+              color: MyColors.colorPrimary,
+            ),
+          ),
+        ],
+      ),
+      const SizedBox(height: 8),
       for (var i = 0; i < _novos.length; i++) ...[
         Builder(
           builder: (context) {
@@ -673,14 +771,56 @@ class _EntradaParceriaPageState extends State<EntradaParceriaPage> {
                         ),
                     ],
                   ),
-                  CampoFinanceiro(
-                    rotulo: 'BRINCO',
-                    child: TextField(
-                      controller: linha.brinco,
-                      textCapitalization: TextCapitalization.characters,
-                      decoration: decoracaoCampo('Ex.: ERG1010'),
+                  if (kIsWeb)
+                    Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Expanded(
+                          flex: 3,
+                          child: CampoFinanceiro(
+                            rotulo: 'BRINCO',
+                            child: TextField(
+                              controller: linha.brinco,
+                              textCapitalization: TextCapitalization.characters,
+                              decoration: decoracaoCampo('Ex.: ERG1010'),
+                            ),
+                          ),
+                        ),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          flex: 2,
+                          child: CampoFinanceiro(
+                            rotulo: 'PESO (KG)',
+                            child: TextField(
+                              controller: linha.peso,
+                              keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                              inputFormatters: [FilteringTextInputFormatter.allow(RegExp(r'[0-9.,]'))],
+                              decoration: decoracaoCampo('0,00'),
+                            ),
+                          ),
+                        ),
+                      ],
+                    )
+                  else ...[
+                    CampoFinanceiro(
+                      rotulo: 'BRINCO',
+                      child: TextField(
+                        controller: linha.brinco,
+                        textCapitalization: TextCapitalization.characters,
+                        decoration: decoracaoCampo('Ex.: ERG1010'),
+                      ),
                     ),
-                  ),
+                    const SizedBox(height: 10),
+                    CampoFinanceiro(
+                      rotulo: 'PESO ENTRADA (KG)',
+                      child: TextField(
+                        controller: linha.peso,
+                        keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                        inputFormatters: [FilteringTextInputFormatter.allow(RegExp(r'[0-9.,]'))],
+                        decoration: decoracaoCampo('0,00'),
+                      ),
+                    ),
+                  ],
                   const SizedBox(height: 10),
                   CampoFinanceiro(
                     rotulo: 'SEXO',
@@ -702,76 +842,138 @@ class _EntradaParceriaPageState extends State<EntradaParceriaPage> {
                     ),
                   ),
                   const SizedBox(height: 10),
-                  CampoFinanceiro(
-                    rotulo: 'CATEGORIA',
-                    child: carregandoSexo
-                        ? const Padding(
-                            padding: EdgeInsets.symmetric(vertical: 12),
-                            child: LinearProgressIndicator(),
-                          )
-                        : _campoEscolha(
-                            valor: categorias
-                                    .where((c) => c.id == linha.categoriaId)
-                                    .map((c) => c.nome)
-                                    .firstOrNull ??
-                                '',
-                            placeholder: categorias.isEmpty ? 'Sem categorias' : 'Categoria',
-                            habilitado: categorias.isNotEmpty,
-                            onTap: () async {
-                              final escolhido = await _abrirOpcoes<int>(
-                                titulo: 'Categoria',
-                                atual: linha.categoriaId,
-                                opcoes: [
-                                  for (final cat in categorias) (value: cat.id, label: cat.nome),
-                                ],
-                              );
-                              if (escolhido == null || !mounted) return;
-                              setState(() {
-                                linha.categoriaId = escolhido;
-                                linha.faseId = null;
-                              });
-                            },
+                  if (kIsWeb)
+                    Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Expanded(
+                          child: CampoFinanceiro(
+                            rotulo: 'CATEGORIA',
+                            child: carregandoSexo
+                                ? const Padding(
+                                    padding: EdgeInsets.symmetric(vertical: 12),
+                                    child: LinearProgressIndicator(),
+                                  )
+                                : _campoEscolha(
+                                    valor: categorias
+                                            .where((c) => c.id == linha.categoriaId)
+                                            .map((c) => c.nome)
+                                            .firstOrNull ??
+                                        '',
+                                    placeholder: categorias.isEmpty ? 'Sem categorias' : 'Categoria',
+                                    habilitado: categorias.isNotEmpty,
+                                    onTap: () async {
+                                      final escolhido = await _abrirOpcoes<int>(
+                                        titulo: 'Categoria',
+                                        atual: linha.categoriaId,
+                                        opcoes: [
+                                          for (final cat in categorias) (value: cat.id, label: cat.nome),
+                                        ],
+                                      );
+                                      if (escolhido == null || !mounted) return;
+                                      setState(() {
+                                        linha.categoriaId = escolhido;
+                                        linha.faseId = null;
+                                      });
+                                    },
+                                  ),
                           ),
-                  ),
-                  if (!carregandoSexo && categorias.isEmpty) ...[
+                        ),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: CampoFinanceiro(
+                            rotulo: 'FASE',
+                            child: _campoEscolha(
+                              valor: fases.where((f) => f.id == linha.faseId).map((f) => f.nome).firstOrNull ?? '',
+                              placeholder: linha.categoriaId == null
+                                  ? 'Selecione a categoria'
+                                  : (fases.isEmpty ? 'Sem fases' : 'Fase'),
+                              habilitado: fases.isNotEmpty,
+                              onTap: () async {
+                                final escolhido = await _abrirOpcoes<int>(
+                                  titulo: 'Fase',
+                                  atual: linha.faseId,
+                                  opcoes: [
+                                    for (final fase in fases) (value: fase.id, label: fase.nome),
+                                  ],
+                                );
+                                if (escolhido == null || !mounted) return;
+                                setState(() => linha.faseId = escolhido);
+                              },
+                            ),
+                          ),
+                        ),
+                      ],
+                    )
+                  else ...[
+                    CampoFinanceiro(
+                      rotulo: 'CATEGORIA',
+                      child: carregandoSexo
+                          ? const Padding(
+                              padding: EdgeInsets.symmetric(vertical: 12),
+                              child: LinearProgressIndicator(),
+                            )
+                          : _campoEscolha(
+                              valor: categorias
+                                      .where((c) => c.id == linha.categoriaId)
+                                      .map((c) => c.nome)
+                                      .firstOrNull ??
+                                  '',
+                              placeholder: categorias.isEmpty ? 'Sem categorias' : 'Categoria',
+                              habilitado: categorias.isNotEmpty,
+                              onTap: () async {
+                                final escolhido = await _abrirOpcoes<int>(
+                                  titulo: 'Categoria',
+                                  atual: linha.categoriaId,
+                                  opcoes: [
+                                    for (final cat in categorias) (value: cat.id, label: cat.nome),
+                                  ],
+                                );
+                                if (escolhido == null || !mounted) return;
+                                setState(() {
+                                  linha.categoriaId = escolhido;
+                                  linha.faseId = null;
+                                });
+                              },
+                            ),
+                    ),
+                    if (!carregandoSexo && categorias.isEmpty) ...[
+                      const SizedBox(height: 6),
+                      TextButton(
+                        onPressed: () => _garantirCategorias(linha.sexo),
+                        child: const Text('Recarregar categorias', style: TextStyle(fontFamily: 'Montserrat', fontSize: 12)),
+                      ),
+                    ],
+                    const SizedBox(height: 10),
+                    CampoFinanceiro(
+                      rotulo: 'FASE',
+                      child: _campoEscolha(
+                        valor: fases.where((f) => f.id == linha.faseId).map((f) => f.nome).firstOrNull ?? '',
+                        placeholder: linha.categoriaId == null
+                            ? 'Selecione a categoria'
+                            : (fases.isEmpty ? 'Sem fases' : 'Fase'),
+                        habilitado: fases.isNotEmpty,
+                        onTap: () async {
+                          final escolhido = await _abrirOpcoes<int>(
+                            titulo: 'Fase',
+                            atual: linha.faseId,
+                            opcoes: [
+                              for (final fase in fases) (value: fase.id, label: fase.nome),
+                            ],
+                          );
+                          if (escolhido == null || !mounted) return;
+                          setState(() => linha.faseId = escolhido);
+                        },
+                      ),
+                    ),
+                  ],
+                  if (kIsWeb && !carregandoSexo && categorias.isEmpty) ...[
                     const SizedBox(height: 6),
                     TextButton(
                       onPressed: () => _garantirCategorias(linha.sexo),
                       child: const Text('Recarregar categorias', style: TextStyle(fontFamily: 'Montserrat', fontSize: 12)),
                     ),
                   ],
-                  const SizedBox(height: 10),
-                  CampoFinanceiro(
-                    rotulo: 'FASE',
-                    child: _campoEscolha(
-                      valor: fases.where((f) => f.id == linha.faseId).map((f) => f.nome).firstOrNull ?? '',
-                      placeholder: linha.categoriaId == null
-                          ? 'Selecione a categoria'
-                          : (fases.isEmpty ? 'Sem fases' : 'Fase'),
-                      habilitado: fases.isNotEmpty,
-                      onTap: () async {
-                        final escolhido = await _abrirOpcoes<int>(
-                          titulo: 'Fase',
-                          atual: linha.faseId,
-                          opcoes: [
-                            for (final fase in fases) (value: fase.id, label: fase.nome),
-                          ],
-                        );
-                        if (escolhido == null || !mounted) return;
-                        setState(() => linha.faseId = escolhido);
-                      },
-                    ),
-                  ),
-                  const SizedBox(height: 10),
-                  CampoFinanceiro(
-                    rotulo: 'PESO ENTRADA (KG)',
-                    child: TextField(
-                      controller: linha.peso,
-                      keyboardType: const TextInputType.numberWithOptions(decimal: true),
-                      inputFormatters: [FilteringTextInputFormatter.allow(RegExp(r'[0-9.,]'))],
-                      decoration: decoracaoCampo('0,00'),
-                    ),
-                  ),
                 ],
               ),
             );

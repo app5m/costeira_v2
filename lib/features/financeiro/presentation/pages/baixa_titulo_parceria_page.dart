@@ -4,6 +4,7 @@ import 'package:costeira/core/input_formatters/brazilian_currency_input_formatte
 import 'package:costeira/features/financeiro/domain/financeiro_mock.dart';
 import 'package:costeira/features/financeiro/presentation/widgets/financeiro_ui.dart';
 import 'package:costeira/theme/colors.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:mask_text_input_formatter/mask_text_input_formatter.dart';
 
@@ -109,7 +110,7 @@ class _BaixaTituloParceriaPageState extends State<BaixaTituloParceriaPage> {
     final titulo = widget.titulo;
     return Scaffold(
       backgroundColor: fundoFinanceiro,
-      appBar: AppBar(
+      appBar: kIsWeb ? null : AppBar(
         backgroundColor: MyColors.colorPrimary,
         foregroundColor: Colors.white,
         title: Text(
@@ -119,6 +120,7 @@ class _BaixaTituloParceriaPageState extends State<BaixaTituloParceriaPage> {
         leading: IconButton(icon: const Icon(Icons.arrow_back), onPressed: _enviando ? null : widget.aoVoltar),
       ),
       body: ListView(
+        primary: false,
         padding: const EdgeInsets.all(16),
         children: [
           Text(
@@ -219,13 +221,14 @@ class _FinanceiroVendaParceriaPageState extends State<FinanceiroVendaParceriaPag
 
     return Scaffold(
       backgroundColor: fundoFinanceiro,
-      appBar: AppBar(
+      appBar: kIsWeb ? null : AppBar(
         backgroundColor: MyColors.colorPrimary,
         foregroundColor: Colors.white,
         title: const Text('Financeiro da venda', style: TextStyle(fontFamily: 'Montserrat', fontWeight: FontWeight.w600)),
         leading: IconButton(icon: const Icon(Icons.arrow_back), onPressed: widget.aoVoltar),
       ),
       body: ListView(
+        primary: false,
         padding: const EdgeInsets.fromLTRB(16, 12, 16, 32),
         children: [
           if (venda != null)
@@ -257,13 +260,11 @@ class _FinanceiroVendaParceriaPageState extends State<FinanceiroVendaParceriaPag
           if (loja.carregandoParcerias && parceria == null)
             const LoadingFinanceiro(altura: 120, rotulo: 'Carregando…')
           else if (todos.isEmpty)
-            const Padding(
+            const EstadoVazioFinanceiro(
+              icone: Icons.request_quote_outlined,
+              mensagem:
+                  'Nenhum título gerado. Confirme o acerto para criar capital/ganho/reembolso.',
               padding: EdgeInsets.symmetric(vertical: 24),
-              child: Text(
-                'Nenhum título gerado. Confirme o acerto para criar capital/ganho/reembolso.',
-                textAlign: TextAlign.center,
-                style: TextStyle(fontFamily: 'Montserrat', color: Color(0xFF8A8A8A)),
-              ),
             )
           else
             for (final titulo in todos) ...[

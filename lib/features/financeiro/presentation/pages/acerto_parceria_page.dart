@@ -3,6 +3,7 @@ import 'package:costeira/core/components/app_snack.dart';
 import 'package:costeira/features/financeiro/domain/financeiro_mock.dart';
 import 'package:costeira/features/financeiro/presentation/widgets/financeiro_ui.dart';
 import 'package:costeira/theme/colors.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:mask_text_input_formatter/mask_text_input_formatter.dart';
 
@@ -242,13 +243,14 @@ class _AcertoParceriaPageState extends State<AcertoParceriaPage> {
 
     return Scaffold(
       backgroundColor: fundoFinanceiro,
-      appBar: AppBar(
+      appBar: kIsWeb ? null : AppBar(
         backgroundColor: MyColors.colorPrimary,
         foregroundColor: Colors.white,
         title: const Text('Conferir acerto', style: TextStyle(fontFamily: 'Montserrat', fontWeight: FontWeight.w600)),
         leading: IconButton(icon: const Icon(Icons.arrow_back), onPressed: _confirmando ? null : widget.aoVoltar),
       ),
       body: ListView(
+        primary: false,
         padding: const EdgeInsets.fromLTRB(16, 12, 16, 32),
         children: [
           CampoFinanceiro(

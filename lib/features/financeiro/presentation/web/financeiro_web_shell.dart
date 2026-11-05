@@ -67,18 +67,23 @@ class FinanceiroWebShell extends StatefulWidget {
     required this.onExit,
     this.abrirForm = false,
     this.abrirInvestidores = false,
+    this.comoDialogo = false,
   });
 
   final VoidCallback onExit;
   final bool abrirForm;
   final bool abrirInvestidores;
 
+  /// Abre o fluxo (ex.: Investidores) como diálogo web, no padrão do Perfil
+  /// (Fornecedores/Compradores), sem chrome do Financeiro.
+  final bool comoDialogo;
+
   @override
   State<FinanceiroWebShell> createState() => _FinanceiroWebShellState();
 }
 
 class _FinanceiroWebShellState extends State<FinanceiroWebShell> {
-  final _loja = FinanceiroLoja();
+  late final FinanceiroLoja _loja;
   final _scaffoldKey = GlobalKey<ScaffoldState>();
   final _passoTick = ValueNotifier<int>(0);
   FinanceiroWebAba _aba = FinanceiroWebAba.visao;
@@ -92,6 +97,7 @@ class _FinanceiroWebShellState extends State<FinanceiroWebShell> {
   ModoAjusteSaldo _modoSaldo = ModoAjusteSaldo.abertura;
   ParteFin? _investidor;
   ParteFin? _investidorEdicao;
+  bool _edicaoInvestidorDaLista = false;
   ParceriaFin? _parceria;
   TituloParceriaFin? _tituloParceria;
   VendaParceriaFin? _vendaParceria;
@@ -102,12 +108,20 @@ class _FinanceiroWebShellState extends State<FinanceiroWebShell> {
   @override
   void initState() {
     super.initState();
+    final soInvestidores = widget.comoDialogo && widget.abrirInvestidores;
+    _loja = FinanceiroLoja(carregarAoCriar: !soInvestidores);
+    if (soInvestidores) {
+      unawaited(_loja.prepararParaInvestidores());
+    }
     if (widget.abrirInvestidores) {
       _aba = FinanceiroWebAba.relatorios;
+      if (widget.comoDialogo) {
+        _passo = _PassoWeb.investidores;
+      }
     }
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!mounted) return;
-      if (widget.abrirInvestidores) {
+      if (widget.abrirInvestidores && !widget.comoDialogo) {
         _setPasso(_PassoWeb.investidores);
       } else if (widget.abrirForm) {
         _setPasso(_PassoWeb.form);
@@ -131,11 +145,16 @@ class _FinanceiroWebShellState extends State<FinanceiroWebShell> {
     final saindo = _passo != _PassoWeb.abas && passo == _PassoWeb.abas;
     final entrando = _passo == _PassoWeb.abas && passo != _PassoWeb.abas;
     if (_passo == passo && !entrando && !saindo) {
-      _passoTick.value++;
+      // Mesmo passo: não força rebuild (evita piscar no diálogo).
+      return;
+    }
+    if (widget.comoDialogo && passo == _PassoWeb.abas) {
+      widget.onExit();
       return;
     }
     setState(() => _passo = passo);
     _passoTick.value++;
+    if (widget.comoDialogo) return;
     if (entrando) {
       unawaited(_abrirDialogSecundario());
     } else if (saindo && _dialogAberto) {
@@ -182,6 +201,141 @@ class _FinanceiroWebShellState extends State<FinanceiroWebShell> {
     };
   }
 
+  bool get _mostraVoltarDialogo {
+    if (_passo == _PassoWeb.abas) return false;
+    if (widget.comoDialogo && _passo == _PassoWeb.investidores) return false;
+    return true;
+  }
+
+  bool get _passoInvestidores => switch (_passo) {
+    _PassoWeb.investidores ||
+    _PassoWeb.investidorForm ||
+    _PassoWeb.contratos ||
+    _PassoWeb.contratoForm ||
+    _PassoWeb.contratoDetalhe ||
+    _PassoWeb.entradaForm ||
+    _PassoWeb.despesasLista ||
+    _PassoWeb.despesaDetalhe ||
+    _PassoWeb.despesaForm ||
+    _PassoWeb.vendasLista ||
+    _PassoWeb.vendaForm ||
+    _PassoWeb.acerto ||
+    _PassoWeb.financeiroVenda ||
+    _PassoWeb.baixaTitulo =>
+      true,
+    _ => false,
+  };
+
+  void _voltarDoDialogo() {
+    switch (_passo) {
+      case _PassoWeb.investidores:
+        if (widget.comoDialogo || widget.abrirInvestidores) {
+          widget.onExit();
+          return;
+        }
+        setState(() => _aba = FinanceiroWebAba.relatorios);
+        _setPasso(_PassoWeb.abas);
+        return;
+      case _PassoWeb.investidorForm:
+        final editando = _investidorEdicao != null;
+        final daLista = _edicaoInvestidorDaLista;
+        setState(() {
+          _investidorEdicao = null;
+          _edicaoInvestidorDaLista = false;
+        });
+        _setPasso((!editando || daLista) ? _PassoWeb.investidores : _PassoWeb.contratos);
+        return;
+      case _PassoWeb.contratos:
+        _setPasso(_PassoWeb.investidores);
+        return;
+      case _PassoWeb.contratoForm:
+        _setPasso(_PassoWeb.contratos);
+        return;
+      case _PassoWeb.contratoDetalhe:
+        _setPasso(_PassoWeb.contratos);
+        return;
+      case _PassoWeb.entradaForm:
+        _setPasso(_PassoWeb.contratoDetalhe);
+        return;
+      case _PassoWeb.despesasLista:
+        _setPasso(_PassoWeb.contratoDetalhe);
+        return;
+      case _PassoWeb.despesaDetalhe:
+        _setPasso(_PassoWeb.despesasLista);
+        return;
+      case _PassoWeb.despesaForm:
+        _setPasso(_voltaDespesaForm);
+        return;
+      case _PassoWeb.vendasLista:
+        _setPasso(_PassoWeb.contratoDetalhe);
+        return;
+      case _PassoWeb.vendaForm:
+        _setPasso(_voltaVendaForm);
+        return;
+      case _PassoWeb.acerto:
+      case _PassoWeb.financeiroVenda:
+        _setPasso(_PassoWeb.vendasLista);
+        return;
+      case _PassoWeb.baixaTitulo:
+        _setPasso(switch (_voltaBaixa) {
+          _VoltaBaixaWeb.contrato => _PassoWeb.contratoDetalhe,
+          _VoltaBaixaWeb.despesas => _PassoWeb.despesasLista,
+          _VoltaBaixaWeb.despesaDetalhe => _PassoWeb.despesaDetalhe,
+          _VoltaBaixaWeb.financeiroVenda => _PassoWeb.financeiroVenda,
+        });
+        return;
+      default:
+        _setPasso(_PassoWeb.abas);
+    }
+  }
+
+  Widget? _botaoHeaderDialogo() {
+    final VoidCallback? onPressed;
+    final String? label;
+    if (_passo == _PassoWeb.investidores) {
+      label = 'Adicionar';
+      onPressed = () {
+        setState(() {
+          _investidorEdicao = null;
+          _edicaoInvestidorDaLista = false;
+        });
+        _setPasso(_PassoWeb.investidorForm);
+      };
+    } else if (_passo == _PassoWeb.contratos) {
+      label = 'Adicionar';
+      onPressed = () => _setPasso(_PassoWeb.contratoForm);
+    } else if (_passo == _PassoWeb.contratoDetalhe && _parceria?.ativo == true) {
+      label = 'Entrada';
+      onPressed = () => _setPasso(_PassoWeb.entradaForm);
+    } else if (_passo == _PassoWeb.despesasLista) {
+      label = 'Adicionar';
+      onPressed = () {
+        setState(() => _voltaDespesaForm = _PassoWeb.despesasLista);
+        _setPasso(_PassoWeb.despesaForm);
+      };
+    } else if (_passo == _PassoWeb.vendasLista) {
+      label = 'Adicionar';
+      onPressed = () {
+        setState(() => _voltaVendaForm = _PassoWeb.vendasLista);
+        _setPasso(_PassoWeb.vendaForm);
+      };
+    } else {
+      return null;
+    }
+    return ElevatedButton.icon(
+      onPressed: onPressed,
+      icon: const Icon(Icons.add_rounded, size: 18),
+      label: Text(label),
+      style: ElevatedButton.styleFrom(
+        elevation: 0,
+        minimumSize: const Size(124, 42),
+        backgroundColor: MyColors.colorPrimary,
+        foregroundColor: Colors.white,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+      ),
+    );
+  }
+
   Future<void> _abrirDialogSecundario() async {
     if (_dialogAberto || !mounted) return;
     _dialogAberto = true;
@@ -195,36 +349,53 @@ class _FinanceiroWebShellState extends State<FinanceiroWebShell> {
             animation: _passoTick,
             builder: (context, _) {
               if (_passo == _PassoWeb.abas) {
-                return const SizedBox.shrink();
+                // Mantém o diálogo montado até o pop — evita flash em branco.
+                return const SizedBox(width: 820, height: 780);
               }
               final pagina = _subfluxo();
-              if (pagina == null) return const SizedBox.shrink();
+              if (pagina == null) {
+                return const SizedBox(width: 820, height: 780);
+              }
               if (_passo == _PassoWeb.relatorio) {
                 return WebDialogFrame(
+                  key: const ValueKey('financeiro-dialog-frame'),
                   title: _tituloPasso(),
                   width: 860,
                   maxHeight: 840,
                   sizeMode: WebDialogSizeMode.constrained,
                   preferredHeight: 760,
+                  onBack: _mostraVoltarDialogo ? _voltarDoDialogo : null,
+                  headerActions: _botaoHeaderDialogo(),
                   child: pagina,
                 );
               }
-              if (_passo == _PassoWeb.conta ||
+              final detalheAlto = _passo == _PassoWeb.conta ||
                   _passo == _PassoWeb.detalhe ||
-                  _passo == _PassoWeb.saldo) {
-                return WebPageDialog(
-                  title: _tituloPasso(),
-                  width: 820,
-                  minHeight: 640,
-                  maxHeight: 900,
-                  preferredHeight: 780,
-                  child: pagina,
-                );
-              }
+                  _passo == _PassoWeb.saldo;
+              final formInvestidor = _passo == _PassoWeb.investidorForm;
+              final formInvestidorEdicao = formInvestidor && _investidorEdicao != null;
+              final formCompacto = _passo == _PassoWeb.entradaForm ||
+                  _passo == _PassoWeb.contratoForm ||
+                  formInvestidor;
+              final alturaForm = formInvestidorEdicao
+                  ? 280.0
+                  : formCompacto
+                      ? 520.0
+                      : 780.0;
               return WebPageDialog(
+                key: const ValueKey('financeiro-dialog-page'),
                 title: _tituloPasso(),
-                width: 820,
-                maxHeight: 860,
+                width: formCompacto ? 560 : 820,
+                minHeight: detalheAlto
+                    ? 640
+                    : (formInvestidorEdicao ? 240 : (formCompacto ? 480 : 160)),
+                maxHeight: detalheAlto ? 900 : (formCompacto ? 720 : 860),
+                // Altura estável p/ Salvar no rodapé; edição de investidor fica baixa.
+                preferredHeight: alturaForm,
+                // Fluxo de investidores já omite AppBar na web — sem strip evita piscada.
+                stripAppBar: !_passoInvestidores,
+                onBack: _mostraVoltarDialogo ? _voltarDoDialogo : null,
+                headerActions: _botaoHeaderDialogo(),
                 child: pagina,
               );
             },
@@ -303,6 +474,20 @@ class _FinanceiroWebShellState extends State<FinanceiroWebShell> {
   Widget build(BuildContext context) {
     final menus = Modular.get<AppMenusController>();
     if (!podeVerFinanceiro(menus)) {
+      if (widget.comoDialogo) {
+        return WebPageDialog(
+          title: 'Investidores',
+          width: 820,
+          maxHeight: 520,
+          child: Center(
+            child: FinanceiroWebEmpty(
+              message: 'Você não tem permissão para acessar o Financeiro.',
+              actionLabel: 'Fechar',
+              onAction: widget.onExit,
+            ),
+          ),
+        );
+      }
       return ColoredBox(
         color: financeiroWebFundo,
         child: Center(
@@ -317,38 +502,58 @@ class _FinanceiroWebShellState extends State<FinanceiroWebShell> {
 
     return FinanceiroEscopo(
       loja: _loja,
-      child: LayoutBuilder(
-        builder: (context, constraints) {
-          final useRail = constraints.maxWidth >= 760;
-          return Scaffold(
-            key: _scaffoldKey,
-            backgroundColor: financeiroWebFundo,
-            drawer: useRail
-                ? null
-                : Drawer(child: SafeArea(child: _rail(closeDrawer: true))),
-            body: Row(
-              children: [
-                if (useRail) ...[
-                  SizedBox(
-                    width: constraints.maxWidth >= 1120 ? 264 : 232,
-                    child: _rail(),
-                  ),
-                  const VerticalDivider(width: 1, color: financeiroWebBorda),
-                ],
-                Expanded(
-                  child: Column(
+      child: widget.comoDialogo
+          ? WebPageDialog(
+              key: const ValueKey('financeiro-dialog-perfil'),
+              title: _tituloPasso(),
+              width: 820,
+              maxHeight: 860,
+              preferredHeight: 780,
+              stripAppBar: false,
+              onBack: _mostraVoltarDialogo ? _voltarDoDialogo : null,
+              headerActions: _botaoHeaderDialogo(),
+              child: _subfluxo() ?? const SizedBox(width: 820, height: 780),
+            )
+          : LayoutBuilder(
+              builder: (context, constraints) {
+                final useRail = constraints.maxWidth >= 760;
+                return Scaffold(
+                  key: _scaffoldKey,
+                  backgroundColor: financeiroWebFundo,
+                  drawer: useRail
+                      ? null
+                      : Drawer(
+                          child: SafeArea(child: _rail(closeDrawer: true)),
+                        ),
+                  body: Row(
                     children: [
-                      _topBar(showMenu: !useRail),
-                      const Divider(height: 1, color: financeiroWebBorda),
-                      Expanded(child: _conteudo()),
+                      if (useRail) ...[
+                        SizedBox(
+                          width: constraints.maxWidth >= 1120 ? 264 : 232,
+                          child: _rail(),
+                        ),
+                        const VerticalDivider(
+                          width: 1,
+                          color: financeiroWebBorda,
+                        ),
+                      ],
+                      Expanded(
+                        child: Column(
+                          children: [
+                            _topBar(showMenu: !useRail),
+                            const Divider(
+                              height: 1,
+                              color: financeiroWebBorda,
+                            ),
+                            Expanded(child: _conteudo()),
+                          ],
+                        ),
+                      ),
                     ],
                   ),
-                ),
-              ],
+                );
+              },
             ),
-          );
-        },
-      ),
     );
   }
 
@@ -487,6 +692,7 @@ class _FinanceiroWebShellState extends State<FinanceiroWebShell> {
     return ColoredBox(
       color: MyColors.card,
       child: ListView(
+        primary: false,
         padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 10),
         children: [
           Padding(
@@ -774,9 +980,9 @@ class _FinanceiroWebShellState extends State<FinanceiroWebShell> {
     }
     if (_passo == _PassoWeb.investidores) {
       return InvestidoresPage(
+        key: const ValueKey('passo-investidores'),
         aoVoltar: () {
-          if (widget.abrirInvestidores) {
-            _setPasso(_PassoWeb.abas);
+          if (widget.comoDialogo || widget.abrirInvestidores) {
             widget.onExit();
             return;
           }
@@ -788,25 +994,40 @@ class _FinanceiroWebShellState extends State<FinanceiroWebShell> {
           _setPasso(_PassoWeb.contratos);
         },
         aoAdicionar: () {
-          setState(() => _investidorEdicao = null);
+          setState(() {
+            _investidorEdicao = null;
+            _edicaoInvestidorDaLista = false;
+          });
+          _setPasso(_PassoWeb.investidorForm);
+        },
+        aoEditar: (item) {
+          setState(() {
+            _investidorEdicao = item;
+            _edicaoInvestidorDaLista = true;
+          });
           _setPasso(_PassoWeb.investidorForm);
         },
       );
     }
     if (_passo == _PassoWeb.investidorForm) {
       final editando = _investidorEdicao != null;
+      final daLista = _edicaoInvestidorDaLista;
       return InvestidorFormPage(
         investidor: _investidorEdicao,
         aoVoltar: () {
-          setState(() => _investidorEdicao = null);
-          _setPasso(editando ? _PassoWeb.contratos : _PassoWeb.investidores);
+          setState(() {
+            _investidorEdicao = null;
+            _edicaoInvestidorDaLista = false;
+          });
+          _setPasso((!editando || daLista) ? _PassoWeb.investidores : _PassoWeb.contratos);
         },
         aoSalvo: (item) {
           setState(() {
             _investidor = item;
             _investidorEdicao = null;
+            _edicaoInvestidorDaLista = false;
           });
-          _setPasso(_PassoWeb.contratos);
+          _setPasso(daLista ? _PassoWeb.investidores : _PassoWeb.contratos);
         },
       );
     }
@@ -820,7 +1041,10 @@ class _FinanceiroWebShellState extends State<FinanceiroWebShell> {
         },
         aoAdicionar: () => _setPasso(_PassoWeb.contratoForm),
         aoEditar: () {
-          setState(() => _investidorEdicao = _investidor);
+          setState(() {
+            _investidorEdicao = _investidor;
+            _edicaoInvestidorDaLista = false;
+          });
           _setPasso(_PassoWeb.investidorForm);
         },
         aoExcluir: () async {

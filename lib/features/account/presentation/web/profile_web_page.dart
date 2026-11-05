@@ -16,6 +16,7 @@ import 'package:costeira/features/auth/models/user_session.dart';
 import 'package:costeira/features/cadastros/domain/entities/parceiro_kind.dart';
 import 'package:costeira/features/cadastros/presentation/web/parceiros_list_web_dialog.dart';
 import 'package:costeira/features/financeiro/presentation/financeiro_acesso.dart';
+import 'package:costeira/features/financeiro/presentation/web/financeiro_web_shell.dart';
 import 'package:costeira/features/usuarios/presentation/web/sub_usuarios_list_web_dialog.dart';
 import 'package:costeira/theme/colors.dart';
 import 'package:flutter/material.dart';
@@ -32,7 +33,6 @@ class ProfileWebPage extends StatefulWidget {
     this.onOpenPluviosidade,
     this.onOpenIndicadores,
     this.onOpenFinanceiro,
-    this.onOpenInvestidores,
   });
 
   final VoidCallback? onOpenTasks;
@@ -41,7 +41,6 @@ class ProfileWebPage extends StatefulWidget {
   final VoidCallback? onOpenPluviosidade;
   final VoidCallback? onOpenIndicadores;
   final VoidCallback? onOpenFinanceiro;
-  final VoidCallback? onOpenInvestidores;
 
   @override
   State<ProfileWebPage> createState() => _ProfileWebPageState();
@@ -495,11 +494,16 @@ class _ProfileWebPageState extends State<ProfileWebPage> {
       }
     }
     if (slug == MenuSlug.investidores) {
-      final openInvestidores = widget.onOpenInvestidores;
-      if (openInvestidores != null) {
-        openInvestidores();
-        return;
-      }
+      await showDialog<void>(
+        context: context,
+        barrierDismissible: false,
+        builder: (dialogContext) => FinanceiroWebShell(
+          onExit: () => Navigator.of(dialogContext).pop(),
+          abrirInvestidores: true,
+          comoDialogo: true,
+        ),
+      );
+      return;
     }
     final Widget? dialog = switch (slug) {
       MenuSlug.fornecedores => const ParceirosListWebDialog(

@@ -173,6 +173,7 @@ class _FinanceiroShellPageState extends State<FinanceiroShellPage> {
   ModoAjusteSaldo _modoSaldo = ModoAjusteSaldo.abertura;
   ParteFin? _investidor;
   ParteFin? _investidorEdicao;
+  bool _edicaoInvestidorDaLista = false;
   ParceriaFin? _parceria;
   TituloParceriaFin? _tituloParceria;
   VendaParceriaFin? _vendaParceria;
@@ -495,22 +496,31 @@ class _FinanceiroShellPageState extends State<FinanceiroShellPage> {
         }),
         aoAdicionar: () => setState(() {
           _investidorEdicao = null;
+          _edicaoInvestidorDaLista = false;
+          _passo = _Passo.investidorForm;
+        }),
+        aoEditar: (item) => setState(() {
+          _investidorEdicao = item;
+          _edicaoInvestidorDaLista = true;
           _passo = _Passo.investidorForm;
         }),
       );
     }
     if (_passo == _Passo.investidorForm) {
       final editando = _investidorEdicao != null;
+      final daLista = _edicaoInvestidorDaLista;
       return InvestidorFormPage(
         investidor: _investidorEdicao,
         aoVoltar: () => setState(() {
-          _passo = editando ? _Passo.contratos : _Passo.investidores;
+          _passo = (!editando || daLista) ? _Passo.investidores : _Passo.contratos;
           _investidorEdicao = null;
+          _edicaoInvestidorDaLista = false;
         }),
         aoSalvo: (item) => setState(() {
           _investidor = item;
           _investidorEdicao = null;
-          _passo = _Passo.contratos;
+          _edicaoInvestidorDaLista = false;
+          _passo = daLista ? _Passo.investidores : _Passo.contratos;
         }),
       );
     }
@@ -525,6 +535,7 @@ class _FinanceiroShellPageState extends State<FinanceiroShellPage> {
         aoAdicionar: () => setState(() => _passo = _Passo.contratoForm),
         aoEditar: () => setState(() {
           _investidorEdicao = _investidor;
+          _edicaoInvestidorDaLista = false;
           _passo = _Passo.investidorForm;
         }),
         aoExcluir: () async {

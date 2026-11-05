@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 
@@ -773,8 +774,15 @@ int _vendaIdDaApuracao(Map<String, dynamic> a) {
 }
 
 class FinanceiroLoja extends ChangeNotifier {
-  FinanceiroLoja({FinanceiroApi? api}) : _api = api ?? FinanceiroApi(ApiClient.instance) {
-    carregar();
+  /// [carregarAoCriar] false evita o flood de `/financeiro/*` (ex.: diálogo
+  /// de Investidores no Perfil). Use [prepararParaInvestidores] nesse caso.
+  FinanceiroLoja({FinanceiroApi? api, bool carregarAoCriar = true})
+      : _api = api ?? FinanceiroApi(ApiClient.instance) {
+    if (carregarAoCriar) {
+      carregar();
+    } else {
+      carregando = false;
+    }
   }
 
   final FinanceiroApi _api;
@@ -802,6 +810,15 @@ class FinanceiroLoja extends ChangeNotifier {
   bool carregandoParcerias = false;
   String? erro;
   String? erroParcerias;
+  int? _parceriasInvestidorId;
+
+  /// Só contexto + investidores — sem carregar o módulo financeiro completo.
+  Future<void> prepararParaInvestidores() async {
+    carregandoInvestidores = true;
+    notifyListeners();
+    await _carregarContexto();
+    await carregarInvestidores();
+  }
 
   String get fazendaNome {
     if (carregandoContexto && fazendas.isEmpty) return 'Carregando…';
@@ -1141,11 +1158,15 @@ class FinanceiroLoja extends ChangeNotifier {
   }
 
   Future<void> carregarInvestidores() async {
-    carregandoInvestidores = true;
-    notifyListeners();
+    final tinhaDados = investidores.isNotEmpty;
+    if (!tinhaDados) {
+      carregandoInvestidores = true;
+      notifyListeners();
+    }
+    var mudou = !tinhaDados;
     try {
       final lista = await _api.investidores();
-      investidores = [
+      final nova = [
         for (final item in lista)
           ParteFin(
             id: int.tryParse(item['id'].toString()) ?? 0,
@@ -1153,51 +1174,103 @@ class FinanceiroLoja extends ChangeNotifier {
             papel: item['papel']?.toString() ?? 'investidor',
           ),
       ]..sort((a, b) => a.nome.toLowerCase().compareTo(b.nome.toLowerCase()));
+      mudou = !_mesmasPartes(investidores, nova);
+      investidores = nova;
     } finally {
+      final estavaCarregando = carregandoInvestidores;
       carregandoInvestidores = false;
-      notifyListeners();
+      if (mudou || estavaCarregando) notifyListeners();
     }
   }
 
   Future<void> carregarParcerias({required int investidorId}) async {
-    carregandoParcerias = true;
-    notifyListeners();
-    erroParcerias = null;
-    notifyListeners();
+    final mesmoInvestidor = _parceriasInvestidorId == investidorId;
+    final tinhaDados = mesmoInvestidor && parcerias.isNotEmpty;
+    if (!tinhaDados) {
+      if (!mesmoInvestidor) {
+        parcerias = const [];
+      }
+      carregandoParcerias = true;
+      erroParcerias = null;
+      notifyListeners();
+    }
+    var mudou = !tinhaDados;
     try {
       final lista = await _api.parcerias(investidorId: investidorId);
-      parcerias = [for (final item in lista) ParceriaFin.de(item)];
+      final nova = [for (final item in lista) ParceriaFin.de(item)];
+      mudou = !mesmoInvestidor || !_mesmasParcerias(parcerias, nova);
+      parcerias = nova;
+      _parceriasInvestidorId = investidorId;
       erroParcerias = null;
     } on ApiException catch (error) {
+      mudou = true;
       erroParcerias = error.message;
       parcerias = const [];
     } catch (_) {
+      mudou = true;
       erroParcerias = 'Não foi possível carregar os contratos.';
       parcerias = const [];
     } finally {
+      final estavaCarregando = carregandoParcerias;
       carregandoParcerias = false;
-      notifyListeners();
+      if (mudou || estavaCarregando) notifyListeners();
     }
   }
 
   Future<ParceriaFin?> carregarParceria(int id) async {
-    carregandoParcerias = true;
-    erroParcerias = null;
-    notifyListeners();
+    final tinhaDetalhe = parceriaDetalhe?.id == id;
+    if (!tinhaDetalhe) {
+      carregandoParcerias = true;
+      erroParcerias = null;
+      notifyListeners();
+    }
+    var mudou = !tinhaDetalhe;
     try {
       final lista = await _api.parcerias(id: id);
-      parceriaDetalhe = lista.isEmpty ? null : ParceriaFin.de(lista.first);
+      final nova = lista.isEmpty ? null : ParceriaFin.de(lista.first);
+      mudou = parceriaDetalhe?.id != nova?.id ||
+          parceriaDetalhe?.ativo != nova?.ativo ||
+          parceriaDetalhe?.codigo != nova?.codigo ||
+          (parceriaDetalhe?.qtdAnimais ?? -1) != (nova?.qtdAnimais ?? -1) ||
+          (parceriaDetalhe?.lancamentos.length ?? -1) !=
+              (nova?.lancamentos.length ?? -1);
+      parceriaDetalhe = nova;
       return parceriaDetalhe;
     } on ApiException catch (error) {
+      mudou = true;
       erroParcerias = error.message;
       return null;
     } catch (_) {
+      mudou = true;
       erroParcerias = 'Não foi possível carregar o contrato.';
       return null;
     } finally {
+      final estavaCarregando = carregandoParcerias;
       carregandoParcerias = false;
-      notifyListeners();
+      if (mudou || estavaCarregando) notifyListeners();
     }
+  }
+
+  static bool _mesmasPartes(List<ParteFin> a, List<ParteFin> b) {
+    if (identical(a, b)) return true;
+    if (a.length != b.length) return false;
+    for (var i = 0; i < a.length; i++) {
+      if (a[i].id != b[i].id || a[i].nome != b[i].nome) return false;
+    }
+    return true;
+  }
+
+  static bool _mesmasParcerias(List<ParceriaFin> a, List<ParceriaFin> b) {
+    if (identical(a, b)) return true;
+    if (a.length != b.length) return false;
+    for (var i = 0; i < a.length; i++) {
+      if (a[i].id != b[i].id ||
+          a[i].ativo != b[i].ativo ||
+          a[i].codigo != b[i].codigo) {
+        return false;
+      }
+    }
+    return true;
   }
 
   /// Marca venda como acertada no cache local (lista/detalhe).

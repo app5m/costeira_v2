@@ -1,4 +1,5 @@
 import 'package:costeira/core/api/api_exception.dart';
+import 'package:costeira/core/components/adaptive_selection_modal.dart';
 import 'package:costeira/core/components/app_snack.dart';
 import 'package:costeira/core/input_formatters/brazilian_currency_input_formatter.dart';
 import 'package:costeira/features/financeiro/domain/distribuicao_animais.dart';
@@ -6,6 +7,7 @@ import 'package:costeira/features/financeiro/domain/financeiro_mock.dart';
 import 'package:costeira/features/financeiro/presentation/pages/despesa_parceria_animais_page.dart';
 import 'package:costeira/features/financeiro/presentation/widgets/financeiro_ui.dart';
 import 'package:costeira/theme/colors.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:mask_text_input_formatter/mask_text_input_formatter.dart';
 
@@ -193,22 +195,38 @@ class _DespesaParceriaFormPageState extends State<DespesaParceriaFormPage> {
       for (final item in _animaisEscolhidos)
         if (item.animal.appAnimaisId != null) item.animal.appAnimaisId!: item.valor,
     };
-    final resultado = await Navigator.of(context).push<DespesaAnimaisSelecaoResultado>(
-      MaterialPageRoute(
-        builder: (_) => DespesaParceriaAnimaisPage(
+    final DespesaAnimaisSelecaoResultado? resultado;
+    if (kIsWeb) {
+      resultado = await showAdaptiveSelectionModal<DespesaAnimaisSelecaoResultado>(
+        context: context,
+        title: 'Selecionar animais',
+        builder: (embeddedInDialog) => DespesaParceriaAnimaisPage(
           animais: _disponiveis,
           valorTotal: _valorNumero,
           modoInicial: _modoAnimais,
           selecionadosIniciais: iniciais,
+          embeddedInDialog: embeddedInDialog,
         ),
-      ),
-    );
+      );
+    } else {
+      resultado = await Navigator.of(context).push<DespesaAnimaisSelecaoResultado>(
+        MaterialPageRoute(
+          builder: (_) => DespesaParceriaAnimaisPage(
+            animais: _disponiveis,
+            valorTotal: _valorNumero,
+            modoInicial: _modoAnimais,
+            selecionadosIniciais: iniciais,
+          ),
+        ),
+      );
+    }
     if (resultado == null || !mounted) return;
+    final selecionados = resultado;
     setState(() {
-      _modoAnimais = resultado.modo;
+      _modoAnimais = selecionados.modo;
       _animaisEscolhidos
         ..clear()
-        ..addAll(resultado.itens);
+        ..addAll(selecionados.itens);
     });
   }
 
@@ -294,13 +312,14 @@ class _DespesaParceriaFormPageState extends State<DespesaParceriaFormPage> {
 
     return Scaffold(
       backgroundColor: fundoFinanceiro,
-      appBar: AppBar(
+      appBar: kIsWeb ? null : AppBar(
         backgroundColor: MyColors.colorPrimary,
         foregroundColor: Colors.white,
         title: const Text('Adicionar despesa', style: TextStyle(fontFamily: 'Montserrat', fontWeight: FontWeight.w600)),
         leading: IconButton(icon: const Icon(Icons.arrow_back), onPressed: _salvando ? null : widget.aoVoltar),
       ),
       body: ListView(
+        primary: false,
         padding: const EdgeInsets.fromLTRB(16, 12, 16, 32),
         children: [
           CampoFinanceiro(
