@@ -369,6 +369,7 @@ class _TaskPageState extends State<TaskPage>
         : task.isOverdue
         ? const Color(0xFFC45C4A)
         : const Color(0xFFD9762B);
+    final urgenciaColor = colorFromHex(task.urgenciaCor);
 
     return GestureDetector(
       onTap: () {
@@ -387,95 +388,93 @@ class _TaskPageState extends State<TaskPage>
             side: const BorderSide(width: 1, color: Color(0xFFEBEBEB)),
             borderRadius: BorderRadius.circular(12),
           ),
-          shadows: const [BoxShadow(color: Color(0x0A000000), blurRadius: 24)],
+          shadows: const [
+            BoxShadow(
+              color: Color(0x0A000000),
+              blurRadius: 24,
+              offset: Offset(0, 0),
+            ),
+          ],
         ),
         child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          crossAxisAlignment: CrossAxisAlignment.center,
-          spacing: 8,
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
+            Container(
+              padding: const EdgeInsets.all(8),
+              clipBehavior: Clip.antiAlias,
+              decoration: ShapeDecoration(
+                color: const Color(0x198C8C8C),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(42.67),
+                ),
+              ),
+              child: SvgPicture.asset(
+                'icon/book-check.svg',
+                width: 16,
+                height: 16,
+                colorFilter: const ColorFilter.mode(
+                  Color(0xFF8C8C8C),
+                  BlendMode.srcIn,
+                ),
+              ),
+            ),
+            const SizedBox(width: 16),
             Expanded(
-              child: Row(
-                crossAxisAlignment: CrossAxisAlignment.center,
-                spacing: 16,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Container(
-                    padding: const EdgeInsets.all(8),
-                    decoration: ShapeDecoration(
-                      color: const Color(0x198C8C8C),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(42.67),
-                      ),
-                    ),
-                    child: SvgPicture.asset(
-                      'icon/book-check.svg',
-                      width: 16,
-                      height: 16,
-                      colorFilter: const ColorFilter.mode(
-                        Color(0xFF8C8C8C),
-                        BlendMode.srcIn,
-                      ),
+                  Text(
+                    task.descricao.trim().isEmpty
+                        ? 'Sem descricao'
+                        : task.descricao.trim(),
+                    style: const TextStyle(
+                      color: Color(0xFF313131),
+                      fontSize: 14,
+                      fontFamily: 'Montserrat',
+                      fontWeight: FontWeight.w500,
                     ),
                   ),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      spacing: 8,
-                      children: [
-                        _flag(task.statusNome, statusColor),
-                        Text(
-                          task.descricao,
-                          style: const TextStyle(
-                            color: Color(0xFF313131),
-                            fontSize: 14,
-                            fontFamily: 'Montserrat',
-                            fontWeight: FontWeight.w500,
-                          ),
-                        ),
-                        SubUserFlag(nome: task.subUsuarioNome),
-                        Text(
-                          task.urgenciaNome,
-                          style: const TextStyle(
-                            color: Color(0xFF313131),
-                            fontSize: 12,
-                            fontFamily: 'Montserrat',
-                            fontWeight: FontWeight.w500,
-                          ),
-                        ),
-                        Text(
-                          task.responsavel?.nome ?? 'Sem responsavel',
-                          style: const TextStyle(
-                            color: Color(0xFF8C8C8C),
-                            fontSize: 12,
-                            fontFamily: 'Montserrat',
-                            fontWeight: FontWeight.w500,
-                          ),
-                        ),
-                        Text(
-                          _taskDatesLabel(task),
-                          style: const TextStyle(
-                            color: Color(0xFF8C8C8C),
-                            fontSize: 12,
-                            fontFamily: 'Montserrat',
-                            fontWeight: FontWeight.w500,
-                          ),
-                        ),
-                      ],
+                  SubUserFlag(nome: task.subUsuarioNome),
+                  const SizedBox(height: 8),
+                  Wrap(
+                    spacing: 6,
+                    runSpacing: 6,
+                    children: [
+                      _flag(task.statusNome, statusColor),
+                      _flag(task.urgenciaNome, urgenciaColor),
+                    ],
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    task.responsavel?.nome ?? 'Sem responsavel',
+                    style: const TextStyle(
+                      color: Color(0xFF8C8C8C),
+                      fontSize: 12,
+                      fontFamily: 'Montserrat',
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    _taskDatesLabel(task),
+                    style: const TextStyle(
+                      color: Color(0xFF8C8C8C),
+                      fontSize: 12,
+                      fontFamily: 'Montserrat',
+                      fontWeight: FontWeight.w500,
                     ),
                   ),
                 ],
               ),
             ),
+            const SizedBox(width: 8),
             Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              spacing: 8,
               children: [
                 GestureDetector(
                   onTap: () => _deleteTask(task),
                   child: SvgPicture.asset('icon/trash.svg'),
                 ),
-                const SizedBox(height: 4),
+                const SizedBox(height: 12),
                 GestureDetector(
                   onTap: () async {
                     await Navigator.push(
@@ -486,24 +485,17 @@ class _TaskPageState extends State<TaskPage>
                   },
                   child: SvgPicture.asset('icon/square-pen.svg'),
                 ),
-                if (!task.isDone)
-                  GestureDetector(
-                    onTap: () => _setDone(task),
-                    child: const Icon(
-                      Icons.check_circle_outline,
-                      color: MyColors.colorPrimary,
-                      size: 22,
-                    ),
-                  )
-                else
-                  GestureDetector(
-                    onTap: () => _setDone(task),
-                    child: const Icon(
-                      Icons.undo,
-                      color: Color(0xFF8C8C8C),
-                      size: 22,
-                    ),
+                const SizedBox(height: 12),
+                GestureDetector(
+                  onTap: () => _setDone(task),
+                  child: Icon(
+                    task.isDone ? Icons.undo : Icons.check_circle_outline,
+                    color: task.isDone
+                        ? const Color(0xFF8C8C8C)
+                        : MyColors.colorPrimary,
+                    size: 22,
                   ),
+                ),
               ],
             ),
           ],
@@ -516,7 +508,7 @@ class _TaskPageState extends State<TaskPage>
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
       decoration: ShapeDecoration(
-        color: color.withValues(alpha: 0.22),
+        color: color.withValues(alpha: 0.18),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(64)),
       ),
       child: Text(
@@ -525,7 +517,7 @@ class _TaskPageState extends State<TaskPage>
           color: color,
           fontSize: 10,
           fontFamily: 'Montserrat',
-          fontWeight: FontWeight.w500,
+          fontWeight: FontWeight.w600,
         ),
       ),
     );
