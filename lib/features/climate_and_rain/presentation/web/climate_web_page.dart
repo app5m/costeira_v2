@@ -1,4 +1,5 @@
 import 'package:costeira/core/components/app_snack.dart';
+import 'package:costeira/core/components/sub_user_flag.dart';
 import 'package:costeira/core/components/web_dialog_frame.dart';
 import 'package:costeira/core/components/web_empty_state.dart';
 import 'package:costeira/core/components/web_page_dialog.dart';
@@ -673,7 +674,16 @@ class _ClimateTableRow extends StatelessWidget {
             children: [
               const _ClimateIcon(),
               const SizedBox(width: 12),
-              Expanded(flex: 2, child: _ValueText(_climateQuantity(climate))),
+              Expanded(
+                flex: 2,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    _ValueText(_climateQuantity(climate)),
+                    SubUserFlag(nome: climate.subUsuarioNome),
+                  ],
+                ),
+              ),
               const SizedBox(width: 16),
               Expanded(flex: 2, child: _ValueText(climate.dataIn)),
               const SizedBox(width: 16),
@@ -726,7 +736,15 @@ class _ClimateStackedRow extends StatelessWidget {
                 children: [
                   const _ClimateIcon(),
                   const SizedBox(width: 12),
-                  Expanded(child: _ValueText(_climateQuantity(climate))),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        _ValueText(_climateQuantity(climate)),
+                        SubUserFlag(nome: climate.subUsuarioNome),
+                      ],
+                    ),
+                  ),
                 ],
               ),
               const SizedBox(height: 13),
@@ -928,6 +946,11 @@ class _ClimateDetailsWebDialog extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           _DetailField(label: 'Quantidade', value: _climateQuantity(climate)),
+          if ((climate.subUsuarioNome ?? '').trim().isNotEmpty)
+            _DetailField(
+              label: 'Registrado por',
+              value: climate.subUsuarioNome,
+            ),
           _DetailField(label: 'Data início', value: climate.dataIn),
           _DetailField(label: 'Data fim', value: climate.dataOut),
         ],

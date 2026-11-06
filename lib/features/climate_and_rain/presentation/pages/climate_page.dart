@@ -1,5 +1,6 @@
 import 'package:costeira/app/app_routes.dart';
 import 'package:costeira/core/components/app_snack.dart';
+import 'package:costeira/core/components/sub_user_flag.dart';
 import 'package:costeira/features/climate_and_rain/domain/entities/climate_entity.dart';
 import 'package:costeira/features/climate_and_rain/presentation/page_controllers/climate_list_page_controller.dart';
 import 'package:costeira/features/climate_and_rain/presentation/page_controllers/climate_page_controller.dart';
@@ -473,6 +474,9 @@ class _ClimatePageState extends State<ClimatePage>
                                                     fontFamily: 'Montserrat',
                                                     fontWeight: FontWeight.w600,
                                                   ),
+                                                ),
+                                                SubUserFlag(
+                                                  nome: climate.subUsuarioNome,
                                                 ),
                                                 const SizedBox(height: 8),
                                                 _infoRow(

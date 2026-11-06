@@ -12,6 +12,7 @@ import 'package:costeira/core/components/app_form_field.dart';
 import 'package:costeira/core/components/primary_app_bar.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:lucide_icons/lucide_icons.dart';
 import 'package:mask_text_input_formatter/mask_text_input_formatter.dart';
 
 class MeusDados extends StatefulWidget {
@@ -469,52 +470,150 @@ class _FarmDataTab extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final profile = this.profile;
     final farm = profile?.farm;
 
-    if (farm == null) {
+    if (profile == null || !profile.hasFarmCadastro) {
       return const Center(
         child: Padding(
           padding: EdgeInsets.all(24),
           child: Text(
             'Os dados da fazenda não estão disponíveis no momento.',
             textAlign: TextAlign.center,
+            style: TextStyle(
+              color: Color(0xFF8C8C8C),
+              fontSize: 14,
+              fontFamily: 'Montserrat',
+              fontWeight: FontWeight.w500,
+            ),
           ),
         ),
       );
     }
 
-    return SingleChildScrollView(
-      padding: const EdgeInsets.all(16),
-      child: Column(
-        children: [
-          _ReadonlyInfoCard(title: 'Nome da Fazenda', value: farm.name),
-          _ReadonlyInfoCard(title: 'Endereço completo', value: farm.address),
-          _ReadonlyInfoCard(
-            title: 'Área total',
-            value: _formatArea(farm.totalArea),
+    final farmName = _orDash(
+      farm?.name.isNotEmpty == true ? farm!.name : profile.nomeFantasia,
+    );
+
+    final rows = <({String label, String value})>[
+      (label: 'Nome fantasia', value: _orDash(profile.nomeFantasia)),
+      (label: 'Razão social', value: _orDash(profile.razaoSocial)),
+      (label: 'CNPJ', value: _orDash(profile.cnpj)),
+      (label: 'Inscrição estadual', value: _orDash(profile.ie)),
+    ];
+
+    if (farm != null) {
+      if (farm.address.trim().isNotEmpty) {
+        rows.add((label: 'Endereço', value: farm.address.trim()));
+      }
+      if (farm.totalArea.trim().isNotEmpty) {
+        rows.add((label: 'Área total', value: _formatArea(farm.totalArea)));
+      }
+      if (farm.usefulArea.trim().isNotEmpty) {
+        rows.add((label: 'Área útil', value: _formatArea(farm.usefulArea)));
+      }
+      if (farm.summerLivestockArea.trim().isNotEmpty) {
+        rows.add((
+          label: 'Pecuária (verão)',
+          value: _formatArea(farm.summerLivestockArea),
+        ));
+      }
+      if (farm.winterLivestockArea.trim().isNotEmpty) {
+        rows.add((
+          label: 'Pecuária (inverno)',
+          value: _formatArea(farm.winterLivestockArea),
+        ));
+      }
+      if (farm.activities.isNotEmpty) {
+        rows.add((label: 'Atividades', value: _joinItems(farm.activities)));
+      }
+      if (farm.productionSystems.isNotEmpty) {
+        rows.add((
+          label: 'Sistema produtivo',
+          value: _joinItems(farm.productionSystems),
+        ));
+      }
+    }
+
+    return ListView(
+      padding: const EdgeInsets.fromLTRB(20, 16, 20, 24),
+      children: [
+        Container(
+          width: double.infinity,
+          padding: const EdgeInsets.all(16),
+          decoration: ShapeDecoration(
+            color: Colors.white,
+            shape: RoundedRectangleBorder(
+              side: const BorderSide(width: 1, color: Color(0xFFEBEBEB)),
+              borderRadius: BorderRadius.circular(12),
+            ),
+            shadows: const [
+              BoxShadow(
+                color: Color(0x0A000000),
+                blurRadius: 24,
+                offset: Offset(0, 0),
+              ),
+            ],
           ),
-          _ReadonlyInfoCard(
-            title: 'Área útil',
-            value: _formatArea(farm.usefulArea),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                children: [
+                  Container(
+                    width: 40,
+                    height: 40,
+                    decoration: BoxDecoration(
+                      color: const Color(0x14128977),
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    child: const Icon(
+                      LucideIcons.warehouse,
+                      size: 20,
+                      color: MyColors.colorPrimary,
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const Text(
+                          'Fazenda',
+                          style: TextStyle(
+                            color: Color(0xFF8C8C8C),
+                            fontSize: 12,
+                            fontFamily: 'Montserrat',
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                        const SizedBox(height: 2),
+                        Text(
+                          farmName,
+                          style: const TextStyle(
+                            color: Color(0xFF313131),
+                            fontSize: 14,
+                            fontFamily: 'Montserrat',
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 16),
+              const Divider(height: 1, color: Color(0xFFEBEBEB)),
+              const SizedBox(height: 8),
+              for (var i = 0; i < rows.length; i++) ...[
+                _FarmInfoRow(label: rows[i].label, value: rows[i].value),
+                if (i < rows.length - 1)
+                  const Divider(height: 1, color: Color(0xFFF3F3F3)),
+              ],
+            ],
           ),
-          _ReadonlyInfoCard(
-            title: 'Área utilizada para pecuários (verão)',
-            value: _formatArea(farm.summerLivestockArea),
-          ),
-          _ReadonlyInfoCard(
-            title: 'Área utilizada para pecuários (inverno)',
-            value: _formatArea(farm.winterLivestockArea),
-          ),
-          _ReadonlyInfoCard(
-            title: 'Atividades',
-            value: _joinItems(farm.activities),
-          ),
-          _ReadonlyInfoCard(
-            title: 'Sistema produtivo',
-            value: _joinItems(farm.productionSystems),
-          ),
-        ],
-      ),
+        ),
+      ],
     );
   }
 
@@ -534,51 +633,50 @@ class _FarmDataTab extends StatelessWidget {
     }
     return '$value ha';
   }
+
+  String _orDash(String value) {
+    final trimmed = value.trim();
+    return trimmed.isEmpty ? 'Não informado' : trimmed;
+  }
 }
 
-class _ReadonlyInfoCard extends StatelessWidget {
-  const _ReadonlyInfoCard({required this.title, required this.value});
+class _FarmInfoRow extends StatelessWidget {
+  const _FarmInfoRow({required this.label, required this.value});
 
-  final String title;
+  final String label;
   final String value;
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      width: double.infinity,
-      margin: const EdgeInsets.only(bottom: 12),
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: const Color(0xFFEBEBEB)),
-        boxShadow: const [
-          BoxShadow(
-            color: Color(0x0A000000),
-            blurRadius: 24,
-            offset: Offset(0, 0),
-          ),
-        ],
-      ),
-      child: Column(
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 10),
+      child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-            title,
-            style: const TextStyle(
-              color: Color(0xFF8C8C8C),
-              fontSize: 12,
-              fontWeight: FontWeight.w500,
+          SizedBox(
+            width: 128,
+            child: Text(
+              label,
+              style: const TextStyle(
+                color: Color(0xFF8C8C8C),
+                fontSize: 12,
+                fontFamily: 'Montserrat',
+                fontWeight: FontWeight.w500,
+              ),
             ),
           ),
-          const SizedBox(height: 6),
-          Text(
-            value.trim().isEmpty ? 'Não informado' : value,
-            style: const TextStyle(
-              color: Color(0xFF313131),
-              fontSize: 14,
-              fontWeight: FontWeight.w600,
-              height: 1.4,
+          const SizedBox(width: 8),
+          Expanded(
+            child: Text(
+              value.trim().isEmpty ? 'Não informado' : value,
+              textAlign: TextAlign.right,
+              style: const TextStyle(
+                color: Color(0xFF313131),
+                fontSize: 13,
+                fontFamily: 'Montserrat',
+                fontWeight: FontWeight.w600,
+                height: 1.35,
+              ),
             ),
           ),
         ],

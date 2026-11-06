@@ -508,8 +508,9 @@ class _FarmData extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final profile = this.profile;
     final farm = profile?.farm;
-    if (farm == null) {
+    if (profile == null || !profile.hasFarmCadastro) {
       return const Padding(
         padding: EdgeInsets.symmetric(vertical: 40),
         child: Text(
@@ -520,21 +521,50 @@ class _FarmData extends StatelessWidget {
     }
 
     final values = <({String label, String value})>[
-      (label: 'Nome da fazenda', value: farm.name),
-      (label: 'Endereço', value: farm.address),
-      (label: 'Área total', value: _area(farm.totalArea)),
-      (label: 'Área útil', value: _area(farm.usefulArea)),
       (
-        label: 'Área utilizada para pecuária (verão)',
-        value: _area(farm.summerLivestockArea),
+        label: 'Nome da fazenda',
+        value: _text(
+          farm?.name.isNotEmpty == true ? farm!.name : profile.nomeFantasia,
+        ),
       ),
-      (
-        label: 'Área utilizada para pecuária (inverno)',
-        value: _area(farm.winterLivestockArea),
-      ),
-      (label: 'Atividades', value: _items(farm.activities)),
-      (label: 'Sistemas de produção', value: _items(farm.productionSystems)),
+      (label: 'Nome fantasia', value: _text(profile.nomeFantasia)),
+      (label: 'Razão social', value: _text(profile.razaoSocial)),
+      (label: 'CNPJ', value: _text(profile.cnpj)),
+      (label: 'Inscrição estadual', value: _text(profile.ie)),
     ];
+
+    if (farm != null) {
+      if (farm.address.trim().isNotEmpty) {
+        values.add((label: 'Endereço', value: farm.address));
+      }
+      if (farm.totalArea.trim().isNotEmpty) {
+        values.add((label: 'Área total', value: _area(farm.totalArea)));
+      }
+      if (farm.usefulArea.trim().isNotEmpty) {
+        values.add((label: 'Área útil', value: _area(farm.usefulArea)));
+      }
+      if (farm.summerLivestockArea.trim().isNotEmpty) {
+        values.add((
+          label: 'Área utilizada para pecuária (verão)',
+          value: _area(farm.summerLivestockArea),
+        ));
+      }
+      if (farm.winterLivestockArea.trim().isNotEmpty) {
+        values.add((
+          label: 'Área utilizada para pecuária (inverno)',
+          value: _area(farm.winterLivestockArea),
+        ));
+      }
+      if (farm.activities.isNotEmpty) {
+        values.add((label: 'Atividades', value: _items(farm.activities)));
+      }
+      if (farm.productionSystems.isNotEmpty) {
+        values.add((
+          label: 'Sistemas de produção',
+          value: _items(farm.productionSystems),
+        ));
+      }
+    }
 
     return LayoutBuilder(
       builder: (context, constraints) {
@@ -563,10 +593,12 @@ class _FarmData extends StatelessWidget {
                   ),
                   const SizedBox(width: 18),
                   Expanded(
-                    child: _ReadonlyField(
-                      label: values[i + 1].label,
-                      value: values[i + 1].value,
-                    ),
+                    child: i + 1 < values.length
+                        ? _ReadonlyField(
+                            label: values[i + 1].label,
+                            value: values[i + 1].value,
+                          )
+                        : const SizedBox.shrink(),
                   ),
                 ],
               ),
@@ -577,6 +609,9 @@ class _FarmData extends StatelessWidget {
       },
     );
   }
+
+  String _text(String value) =>
+      value.trim().isEmpty ? 'Não informado' : value.trim();
 
   String _area(String value) =>
       value.trim().isEmpty ? 'Não informado' : '$value ha';
