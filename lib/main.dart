@@ -8,10 +8,10 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_modular/flutter_modular.dart';
 
+
 Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
   await Firebase.initializeApp();
 }
-
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await LocalStorageInitializer.initialize();

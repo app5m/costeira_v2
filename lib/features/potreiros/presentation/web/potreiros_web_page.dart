@@ -33,6 +33,8 @@ class _PotreirosWebPageState extends State<PotreirosWebPage>
 
   final ValueNotifier<int> _listRevision = ValueNotifier(0);
   final ValueNotifier<int> _chartsRevision = ValueNotifier(0);
+  final ScrollController _listScroll = ScrollController();
+  final ScrollController _chartsScroll = ScrollController();
 
   int? _deletingId;
   bool _listInitialized = false;
@@ -56,6 +58,8 @@ class _PotreirosWebPageState extends State<PotreirosWebPage>
   void dispose() {
     _listRevision.dispose();
     _chartsRevision.dispose();
+    _listScroll.dispose();
+    _chartsScroll.dispose();
     _pageController.dispose();
     _listController.dispose();
     super.dispose();
@@ -419,7 +423,10 @@ class _PotreirosWebPageState extends State<PotreirosWebPage>
         final wide = constraints.maxWidth >= 900;
         final horizontal = constraints.maxWidth < 720 ? 16.0 : 28.0;
         return Scrollbar(
+          controller: _listScroll,
           child: ListView(
+            controller: _listScroll,
+            primary: false,
             padding: EdgeInsets.fromLTRB(horizontal, 18, horizontal, 32),
             children: [
               Container(
@@ -496,43 +503,48 @@ class _PotreirosWebPageState extends State<PotreirosWebPage>
         final wide = constraints.maxWidth >= 980;
         final horizontal = constraints.maxWidth < 720 ? 16.0 : 28.0;
         return Scrollbar(
+          controller: _chartsScroll,
           child: ListView(
+            controller: _chartsScroll,
+            primary: false,
             padding: EdgeInsets.fromLTRB(horizontal, 18, horizontal, 32),
             children: [
               if (wide)
-                Row(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Expanded(
-                      child: _MetricCard(
-                        title: 'Área total',
-                        value: '${_formatDecimal(charts.areaTotalSomada)} ha',
+                IntrinsicHeight(
+                  child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      Expanded(
+                        child: _MetricCard(
+                          title: 'Área total',
+                          value: '${_formatDecimal(charts.areaTotalSomada)} ha',
+                        ),
                       ),
-                    ),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: _MetricCard(
-                        title: 'Área útil',
-                        value: '${_formatDecimal(charts.areaUtilSomada)} ha',
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: _MetricCard(
+                          title: 'Área útil',
+                          value: '${_formatDecimal(charts.areaUtilSomada)} ha',
+                        ),
                       ),
-                    ),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: _MetricCard(
-                        title: 'Uso',
-                        value: '${_formatDecimal(charts.percentualUso)}%',
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: _MetricCard(
+                          title: 'Uso',
+                          value: '${_formatDecimal(charts.percentualUso)}%',
+                        ),
                       ),
-                    ),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: _MetricCard(
-                        title: 'Campo perdido',
-                        value:
-                            '${_formatDecimal(charts.percentualCampoPerdido)}%',
-                        subtitle: '${_formatDecimal(charts.areaPerdida)} ha',
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: _MetricCard(
+                          title: 'Campo perdido',
+                          value:
+                              '${_formatDecimal(charts.percentualCampoPerdido)}%',
+                          subtitle: '${_formatDecimal(charts.areaPerdida)} ha',
+                        ),
                       ),
-                    ),
-                  ],
+                    ],
+                  ),
                 )
               else ...[
                 _MetricCard(
@@ -1028,6 +1040,7 @@ class _MetricCard extends StatelessWidget {
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(16),
+      alignment: Alignment.topLeft,
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(12),

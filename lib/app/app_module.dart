@@ -26,11 +26,13 @@ import 'package:costeira/features/climate_and_rain/presentation/pages/climate_pa
 import 'package:costeira/features/dashboard/dashboard_binds.dart';
 import 'package:costeira/features/financeiro/presentation/financeiro_shell_page.dart';
 import 'package:costeira/features/indicadores/presentation/pages/indicadores_page.dart';
+import 'package:costeira/features/indicadores/presentation/web/indicadores_web_page.dart';
 import 'package:costeira/features/relatorios/presentation/pages/relatorios_page.dart';
 import 'package:costeira/features/fazendas/fazendas_binds.dart';
 import 'package:costeira/features/cadastros/cadastros_binds.dart';
 import 'package:costeira/features/usuarios/presentation/pages/sub_usuario_form_page.dart';
 import 'package:costeira/features/usuarios/presentation/pages/sub_usuarios_list_page.dart';
+import 'package:costeira/features/usuarios/presentation/web/sub_usuarios_web_route_page.dart';
 import 'package:costeira/features/usuarios/usuarios_binds.dart';
 import 'package:costeira/features/cadastros/domain/entities/parceiro_kind.dart';
 import 'package:costeira/features/cadastros/presentation/pages/parceiro_form_page.dart';
@@ -290,7 +292,11 @@ class AppModule extends Module {
     r.child(AppRoutes.sync, child: (_) => const SyncPage());
     r.child(AppRoutes.climateRain, child: (_) => const ClimatePage());
     r.child(AppRoutes.estoque, child: (_) => const Insumos());
-    r.child(AppRoutes.indicadores, child: (_) => const IndicadoresPage());
+    r.child(
+      AppRoutes.indicadores,
+      child: (_) =>
+          kIsWeb ? const IndicadoresWebPage() : const IndicadoresPage(),
+    );
     r.child(AppRoutes.relatorios, child: (_) => const RelatoriosPage());
     r.child(
       AppRoutes.financeiro,
@@ -362,7 +368,12 @@ class AppModule extends Module {
         return ParceiroFormPage(data: data);
       },
     );
-    r.child(AppRoutes.usuarios, child: (_) => const SubUsuariosListPage());
+    r.child(
+      AppRoutes.usuarios,
+      child: (_) => kIsWeb
+          ? const SubUsuariosWebRoutePage()
+          : const SubUsuariosListPage(),
+    );
     r.child(AppRoutes.usuariosAdd, child: (_) => const SubUsuarioFormPage());
     r.child(
       AppRoutes.usuariosEdit,

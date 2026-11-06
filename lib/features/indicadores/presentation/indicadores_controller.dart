@@ -38,6 +38,8 @@ class IndicadoresController extends ChangeNotifier {
   final GetPotreirosUsecase _potreirosUsecase;
   final ResolveCurrentFarmId _fazenda;
 
+  bool _disposed = false;
+
   bool carregando = false;
   String? erro;
   IndicadoresLista lista = IndicadoresLista.vazia;
@@ -139,7 +141,8 @@ class IndicadoresController extends ChangeNotifier {
       erro = 'Não foi possível carregar os indicadores.';
     } finally {
       carregando = false;
-      notifyListeners();
+      // Só evita crash pós-dispose; não descarta o resultado já gravado em [lista].
+      if (!_disposed) notifyListeners();
     }
   }
 
@@ -259,5 +262,17 @@ class IndicadoresController extends ChangeNotifier {
     final dia = data.day.toString().padLeft(2, '0');
     final mes = data.month.toString().padLeft(2, '0');
     return '$dia/$mes/${data.year}';
+  }
+
+  @override
+  void notifyListeners() {
+    if (_disposed) return;
+    super.notifyListeners();
+  }
+
+  @override
+  void dispose() {
+    _disposed = true;
+    super.dispose();
   }
 }

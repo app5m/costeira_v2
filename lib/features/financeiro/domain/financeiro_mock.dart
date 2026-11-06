@@ -812,12 +812,74 @@ class FinanceiroLoja extends ChangeNotifier {
   String? erroParcerias;
   int? _parceriasInvestidorId;
 
-  /// Só contexto + investidores — sem carregar o módulo financeiro completo.
+  /// Contexto + investidores + contas (baixa/despesa). Sem flood do módulo completo.
   Future<void> prepararParaInvestidores() async {
     carregandoInvestidores = true;
     notifyListeners();
-    await _carregarContexto();
-    await carregarInvestidores();
+    try {
+      await _carregarContexto();
+      await Future.wait([
+        carregarInvestidores(),
+        _carregarContasParaParceria(),
+        _carregarCatalogoParceria(),
+      ]);
+    } finally {
+      carregandoInvestidores = false;
+      notifyListeners();
+    }
+  }
+
+  /// Contas ativas/inativas com saldo (extrato do período), para baixa/pagamento.
+  Future<void> _carregarContasParaParceria() async {
+    try {
+      final pacote = await Future.wait([
+        _api.contas(),
+        _api.contas(ativo: 0),
+        _api.extrato(filtro: filtroPeriodo, limite: 200),
+      ]);
+      extrato = pacote[2] as Map<String, dynamic>;
+      final linhas = _linhasExtrato(extrato);
+      final vistas = <int>{};
+      contas = [
+        for (final item in [
+          ...pacote[0] as List<Map<String, dynamic>>,
+          ...pacote[1] as List<Map<String, dynamic>>,
+        ])
+          if (vistas.add(int.tryParse(item['id'].toString()) ?? 0))
+            _contaDe(item, linhas),
+      ];
+    } catch (_) {
+      // Mantém lista vazia; a UI pede seleção / mostra sem contas.
+    }
+  }
+
+  /// Classificações e rubricas usadas em despesas da parceria.
+  Future<void> _carregarCatalogoParceria() async {
+    try {
+      final pacote = await Future.wait([
+        _api.classificacoes(),
+        _api.rubricas(),
+      ]);
+      classificacoes = [
+        for (final item in pacote[0] as List<Map<String, dynamic>>)
+          ClassificacaoFin(
+            id: int.tryParse(item['id'].toString()) ?? 0,
+            nome: _nomeFinanceiroExibicao(item['nome']?.toString() ?? ''),
+            tipo: item['tipo']?.toString() ?? '',
+            exigeCentro: item['exige_centro'].toString() == '1',
+            manual: item['manual_etapa2'].toString() == '1',
+            codigo: item['codigo']?.toString() ?? '',
+          ),
+      ];
+      rubricas = [
+        for (final item in pacote[1] as List<Map<String, dynamic>>)
+          RubricaFin(
+            id: int.tryParse(item['id'].toString()) ?? 0,
+            classificacaoId: int.tryParse(item['classificacao_id'].toString()) ?? 0,
+            nome: _nomeFinanceiroExibicao(item['nome']?.toString() ?? ''),
+          ),
+      ];
+    } catch (_) {}
   }
 
   String get fazendaNome {

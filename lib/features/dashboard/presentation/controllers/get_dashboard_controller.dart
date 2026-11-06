@@ -11,6 +11,7 @@ class GetDashboardController extends ChangeNotifier {
 
   final GetDashboardUsecase _getDashboardUsecase;
 
+  bool _disposed = false;
   bool _isLoading = false;
   String? _errorMessage;
   DashboardEntity? _dashboard;
@@ -25,6 +26,7 @@ class GetDashboardController extends ChangeNotifier {
   int get rows => _rows;
 
   Future<void> load({DashboardFilterEntity? filter}) async {
+    if (_disposed) return;
     final requestVersion = ++_reloadVersion;
     final nextFilter = filter ?? _filter;
 
@@ -33,6 +35,7 @@ class GetDashboardController extends ChangeNotifier {
 
     try {
       final user = await SessionStorage.getUserSession();
+      if (_disposed || requestVersion != _reloadVersion) return;
       final userId = sessionAccountUserId(user?.id ?? 0);
       if (userId <= 0) {
         throw ApiException('Usuario nao autenticado para carregar dashboard.');
@@ -41,7 +44,7 @@ class GetDashboardController extends ChangeNotifier {
       final requestFilter = nextFilter.copyWith(appUsersId: userId);
       final result = await _getDashboardUsecase(requestFilter);
 
-      if (requestVersion != _reloadVersion) {
+      if (_disposed || requestVersion != _reloadVersion) {
         return;
       }
 
@@ -49,10 +52,11 @@ class GetDashboardController extends ChangeNotifier {
       _rows = result.rows;
       _dashboard = result.firstOrEmpty;
     } on ApiException catch (error) {
+      if (_disposed || requestVersion != _reloadVersion) return;
       _errorMessage = error.message;
       rethrow;
     } finally {
-      if (requestVersion == _reloadVersion) {
+      if (!_disposed && requestVersion == _reloadVersion) {
         _setLoading(false);
       }
     }
@@ -100,6 +104,19 @@ class GetDashboardController extends ChangeNotifier {
   void _setLoading(bool value) {
     _isLoading = value;
     notifyListeners();
+  }
+
+  @override
+  void notifyListeners() {
+    if (_disposed) return;
+    super.notifyListeners();
+  }
+
+  @override
+  void dispose() {
+    _disposed = true;
+    _reloadVersion++;
+    super.dispose();
   }
 
   static DashboardFilterEntity _initialFilter() {

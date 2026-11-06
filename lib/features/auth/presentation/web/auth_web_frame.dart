@@ -18,6 +18,7 @@ class AuthWebFrame extends StatelessWidget {
     this.illustrationAlignment = Alignment.center,
     this.fallbackRoute,
     this.showBack = true,
+    this.showBrandHeader = true,
     this.contentMaxWidth = 520,
     this.header,
   });
@@ -30,6 +31,7 @@ class AuthWebFrame extends StatelessWidget {
   final Alignment illustrationAlignment;
   final String? fallbackRoute;
   final bool showBack;
+  final bool showBrandHeader;
   final double contentMaxWidth;
   final Widget? header;
 
@@ -131,11 +133,13 @@ class AuthWebFrame extends StatelessWidget {
                         mainAxisSize: MainAxisSize.min,
                         crossAxisAlignment: CrossAxisAlignment.stretch,
                         children: [
-                          Center(
-                            child:
-                                header ?? _ContentLogo(compact: isNarrowPanel),
-                          ),
-                          const SizedBox(height: 40),
+                          if (showBrandHeader) ...[
+                            Center(
+                              child: header ??
+                                  _ContentLogo(compact: isNarrowPanel),
+                            ),
+                            const SizedBox(height: 40),
+                          ],
                           Text(
                             title,
                             style: const TextStyle(

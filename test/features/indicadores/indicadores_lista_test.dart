@@ -284,4 +284,168 @@ void main() {
     expect(lista.financeiroMeta.avaliacaoEconomicaDisponivel, isFalse);
     expect(lista.financeiroMeta.baseCustos, 'competencia');
   });
+
+  test('parser mantém lotação/custo/mortalidade do payload real', () {
+    final lista = IndicadoresResponseModel.fromJson({
+      'status': '01',
+      'data': {
+        'periodo': {
+          'data_in': '01/07/2026',
+          'data_out': '30/06/2027',
+          'dias': 129,
+        },
+        'producao_rebanho': {
+          'gmd_global': {
+            'indicadores': {
+              'gmd_global': {'qtd': null, 'string': 'kg/dia', 'texto': null},
+              'qtd_pesagens': {'qtd': 0},
+            },
+            'graficos': {'gmd_global': []},
+            'detalhamento': [],
+          },
+          'gmd_lote_categoria': {
+            'indicadores': {'gmd_medio': {'qtd': null}},
+            'graficos': {'gmd_lote': []},
+            'detalhamento': [],
+          },
+          'kg_produzido': {
+            'indicadores': {
+              'kg_produzido': {'qtd': null, 'string': 'kg', 'texto': null},
+            },
+          },
+          'lotacao': {
+            'indicadores': {
+              'ua_ha_total': {'qtd': 0.019},
+              'cabecas': {'qtd': 7},
+              'ua_total': {'qtd': 93.333},
+              'area_total': {
+                'qtd': 5000,
+                'string': 'ha',
+                'texto': '5000.000 ha',
+              },
+            },
+            'graficos': {
+              'lotacao_piquete': [
+                {'id': 50, 'nome': 'teste', 'ua_ha': 0.0187},
+              ],
+            },
+            'detalhamento': [
+              {'id': 50, 'nome': 'teste', 'cabecas': 7, 'ocupacao': 'Ocupado'},
+            ],
+          },
+          'rebanho_medio': {
+            'indicadores': {
+              'estoque_medio': {'qtd': 7.4},
+              'total_entradas': {'qtd': 21},
+              'total_saidas': {'qtd': 3},
+              'saldo': {'qtd': 18},
+            },
+            'graficos': {'evolucao_estoque': []},
+            'detalhamento': [],
+          },
+          'area_medida_utilizada': {
+            'indicadores': {
+              'area_media': {'qtd': null, 'string': 'ha', 'texto': null},
+              'area_ativa': {
+                'qtd': 5000,
+                'string': 'ha',
+                'texto': '5000.000 ha',
+              },
+            },
+            'detalhamento': [],
+          },
+        },
+        'desfrute_saidas': {
+          'taxa_desfrute': {
+            'indicadores': {
+              'taxa_desfrute': {'qtd': null, 'string': '%', 'texto': null},
+            },
+            'detalhamento': [],
+          },
+          'taxa_abate': {'indicadores': {}, 'detalhamento': []},
+          'taxa_giro': {'indicadores': {}, 'detalhamento': []},
+          'mortalidade': {
+            'indicadores': {
+              'taxa_mortalidade': {
+                'qtd': 13.514,
+                'string': '%',
+                'texto': '13.514%',
+              },
+              'animais_perdidos': {'qtd': 1},
+              'estoque_medio': {'qtd': 7.4},
+            },
+            'detalhamento': [
+              {'id_movimentacao': 175, 'app_animais_id': 401, 'tipo': 'morte'},
+            ],
+          },
+        },
+        'reproducao': {
+          'taxa_prenhez': {
+            'indicadores': {
+              'valor': {'qtd': null, 'string': '%', 'texto': null},
+            },
+            'detalhamento': {'prenhas': 0, 'acasaladas': 0},
+          },
+        },
+        'financeiro': {
+          'custo_por_cabeca': {
+            'indicadores': {
+              'desembolso_cabeca_mes': {
+                'qtd': 14.462,
+                'string': r'R$',
+                'texto': r'R$ 14.462',
+              },
+              'custo_producao_cabeca': {
+                'qtd': 253.124,
+                'string': r'R$',
+                'texto': r'R$ 253.124',
+              },
+              'rebanho_medio': {
+                'qtd': 7.4,
+                'string': 'cab',
+                'texto': '7.400 cab',
+              },
+            },
+            'detalhamento': [
+              {
+                'id': 55,
+                'descricao': 'teste',
+                'classificacao': 'receita_operacional',
+                'valor': 1050000,
+              },
+            ],
+            'disponivel': true,
+            'avisos': [],
+          },
+          'percentual_custo_fixo': {
+            'indicadores': {
+              'percentual_custo_fixo': {
+                'qtd': 100,
+                'string': '%',
+                'texto': '100.000%',
+              },
+            },
+            'disponivel': true,
+          },
+          'metadados': {
+            'disponivel': true,
+            'avaliacao_economica_disponivel': false,
+          },
+        },
+      },
+    });
+
+    expect(lista.gmdGlobal.valor('gmd_global').temValor, isFalse);
+    expect(lista.lotacao.valor('cabecas').exibir(inteiro: true), '7');
+    expect(lista.rebanhoMedio.valor('estoque_medio').qtd, 7.4);
+    expect(lista.areaMedia.valor('area_media').temValor, isFalse);
+    expect(lista.areaMedia.valor('area_ativa').exibir(), '5000.000 ha');
+    expect(lista.mortalidade.valor('taxa_mortalidade').exibir(), '13.514%');
+    expect(
+      lista.custoPorCabeca.valor('desembolso_cabeca_mes').exibir(),
+      r'R$ 14.462',
+    );
+    expect(lista.custoPorCabeca.detalhamento, hasLength(1));
+    expect(lista.percentualCustoFixo.valor('percentual_custo_fixo').exibir(), '100.000%');
+  });
 }

@@ -15,6 +15,7 @@ import 'package:costeira/core/storage/session_storage.dart';
 import 'package:costeira/features/account/presentation/web/profile_web_page.dart';
 import 'package:costeira/features/account/repositories/account_repository.dart';
 import 'package:costeira/features/admin_clientes/presentation/pages/selecionar_cliente_page.dart';
+import 'package:costeira/features/auth/models/user_session.dart';
 import 'package:costeira/features/animals/presentation/pages/animals_page.dart';
 import 'package:costeira/features/animals/presentation/web/animals_web_page.dart';
 import 'package:costeira/features/base/pages/module_placeholder_page.dart';
@@ -83,6 +84,7 @@ class _MainNavigationPageState extends State<MainNavigationPage>
   _WebSidebarSection _webSidebarSection = _WebSidebarSection.navigation;
   String _userDisplayName = '';
   DashboardWebToolbarData? _dashboardToolbarData;
+  bool _isAdmin = false;
 
   @override
   void initState() {
@@ -94,6 +96,16 @@ class _MainNavigationPageState extends State<MainNavigationPage>
     _startPollTimer();
   }
 
+  void _syncAdminFlag(UserSession? session) {
+    if (session?.isAdmin == true) {
+      _isAdmin = true;
+      return;
+    }
+    if (session != null) {
+      _isAdmin = false;
+    }
+  }
+
   Future<void> _preload() async {
     final user = await SessionStorage.getUserSession();
     if (!mounted || user == null) {
@@ -102,6 +114,7 @@ class _MainNavigationPageState extends State<MainNavigationPage>
       }
       return;
     }
+    _syncAdminFlag(user);
     _userDisplayName = user.name.trim().isNotEmpty
         ? user.name.trim()
         : (user.nickname ?? '').trim();
@@ -120,6 +133,7 @@ class _MainNavigationPageState extends State<MainNavigationPage>
       }
       return;
     }
+    _syncAdminFlag(session);
     _userDisplayName = session.name.trim().isNotEmpty
         ? session.name.trim()
         : (session.nickname ?? '').trim();
@@ -146,6 +160,7 @@ class _MainNavigationPageState extends State<MainNavigationPage>
     Modular.get<ResolveCurrentFarmId>().limparCache();
     await SessionStorage.clearSelectedFarmId();
     final session = await SessionStorage.getUserSession();
+    _syncAdminFlag(session);
     if (session != null) {
       try {
         await Modular.get<ResolveCurrentFarmId>()(
@@ -538,6 +553,9 @@ class _MainNavigationPageState extends State<MainNavigationPage>
                           ? DashboardWebToolbar(data: _dashboardToolbarData!)
                           : null,
                       onMenu: () => _scaffoldKey.currentState?.openDrawer(),
+                      onChangeClient: _isAdmin
+                          ? () => unawaited(_trocarCliente())
+                          : null,
                       onNotifications: () => unawaited(_openNotifications()),
                     ),
                     Expanded(child: _webContent(tabs, hasTabs: hasTabs)),
@@ -1046,6 +1064,7 @@ class _WebTopBar extends StatelessWidget {
     this.controls,
     this.subtitle,
     this.onBack,
+    this.onChangeClient,
   });
 
   final String title;
@@ -1055,6 +1074,7 @@ class _WebTopBar extends StatelessWidget {
   final Widget? controls;
   final String? subtitle;
   final VoidCallback? onBack;
+  final VoidCallback? onChangeClient;
 
   @override
   Widget build(BuildContext context) {
@@ -1125,11 +1145,21 @@ class _WebTopBar extends StatelessWidget {
                     ),
             ),
             if (inline) ...[
-              SizedBox(
-                width: (constraints.maxWidth * .64).clamp(590.0, 720.0),
-                child: controls!,
+              Flexible(
+                child: Align(
+                  alignment: Alignment.centerRight,
+                  child: controls!,
+                ),
               ),
               const SizedBox(width: 12),
+            ],
+            if (onChangeClient != null) ...[
+              _HeaderIconButton(
+                tooltip: 'Mudar cliente',
+                onPressed: onChangeClient!,
+                icon: LucideIcons.users,
+              ),
+              const SizedBox(width: 8),
             ],
             _NotificationButton(onPressed: onNotifications),
           ],
@@ -1163,6 +1193,37 @@ class _WebTopBar extends StatelessWidget {
           ),
         );
       },
+    );
+  }
+}
+
+class _HeaderIconButton extends StatelessWidget {
+  const _HeaderIconButton({
+    required this.tooltip,
+    required this.onPressed,
+    required this.icon,
+  });
+
+  final String tooltip;
+  final VoidCallback onPressed;
+  final IconData icon;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: 46,
+      height: 46,
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(10),
+        border: Border.all(color: const Color(0xFFD9DDD3)),
+      ),
+      child: IconButton(
+        tooltip: tooltip,
+        padding: EdgeInsets.zero,
+        onPressed: onPressed,
+        icon: Icon(icon, size: 19, color: MyColors.colorPrimary),
+      ),
     );
   }
 }

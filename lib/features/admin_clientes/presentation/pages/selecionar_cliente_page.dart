@@ -2,12 +2,14 @@ import 'package:costeira/core/common/get_list/domain/entities/get_list_entity.da
 import 'package:costeira/core/common/get_list/domain/entities/get_list_params_entity.dart';
 import 'package:costeira/core/common/get_list/domain/usecases/get_list_usecase.dart';
 import 'package:costeira/core/storage/session_storage.dart';
+import 'package:costeira/features/admin_clientes/presentation/web/selecionar_cliente_web_page.dart';
 import 'package:costeira/features/fazendas/domain/usecases/resolve_current_farm_id.dart';
 import 'package:costeira/theme/colors.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_modular/flutter_modular.dart';
 
-class SelecionarClientePage extends StatefulWidget {
+class SelecionarClientePage extends StatelessWidget {
   const SelecionarClientePage({
     super.key,
     this.obrigatorio = false,
@@ -18,10 +20,36 @@ class SelecionarClientePage extends StatefulWidget {
   final VoidCallback? onEscolhido;
 
   @override
-  State<SelecionarClientePage> createState() => _SelecionarClientePageState();
+  Widget build(BuildContext context) {
+    if (kIsWeb) {
+      return SelecionarClienteWebPage(
+        obrigatorio: obrigatorio,
+        onEscolhido: onEscolhido,
+      );
+    }
+    return _SelecionarClienteMobilePage(
+      obrigatorio: obrigatorio,
+      onEscolhido: onEscolhido,
+    );
+  }
 }
 
-class _SelecionarClientePageState extends State<SelecionarClientePage> {
+class _SelecionarClienteMobilePage extends StatefulWidget {
+  const _SelecionarClienteMobilePage({
+    this.obrigatorio = false,
+    this.onEscolhido,
+  });
+
+  final bool obrigatorio;
+  final VoidCallback? onEscolhido;
+
+  @override
+  State<_SelecionarClienteMobilePage> createState() =>
+      _SelecionarClienteMobilePageState();
+}
+
+class _SelecionarClienteMobilePageState
+    extends State<_SelecionarClienteMobilePage> {
   final _busca = TextEditingController();
   List<ClienteLista> _clientes = const [];
   bool _loading = true;
@@ -130,7 +158,10 @@ class _SelecionarClientePageState extends State<SelecionarClientePage> {
                 prefixIcon: const Icon(Icons.search, color: Color(0xFF8C8C8C)),
                 filled: true,
                 fillColor: const Color(0xFFEBEBEB),
-                contentPadding: const EdgeInsets.symmetric(horizontal: 15, vertical: 14),
+                contentPadding: const EdgeInsets.symmetric(
+                  horizontal: 15,
+                  vertical: 14,
+                ),
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(8),
                   borderSide: BorderSide.none,
@@ -164,7 +195,10 @@ class _SelecionarClientePageState extends State<SelecionarClientePage> {
                   color: Color(0xFF8C8C8C),
                 ),
               ),
-              TextButton(onPressed: _carregar, child: const Text('Tentar de novo')),
+              TextButton(
+                onPressed: _carregar,
+                child: const Text('Tentar de novo'),
+              ),
             ],
           ),
         ),
@@ -208,7 +242,9 @@ class _SelecionarClientePageState extends State<SelecionarClientePage> {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            cliente.nome.isEmpty ? 'Cliente ${cliente.id}' : cliente.nome,
+                            cliente.nome.isEmpty
+                                ? 'Cliente ${cliente.id}'
+                                : cliente.nome,
                             style: const TextStyle(
                               fontFamily: 'Montserrat',
                               fontSize: 15,

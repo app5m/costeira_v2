@@ -180,6 +180,7 @@ class _DashboardWebPageState extends State<DashboardWebPage> {
   static const _customPeriodValue = '__custom_period__';
 
   late final GetDashboardController _dashboard;
+  late final ScrollController _scrollController;
   late List<AgriculturalYearRange> _years;
   late AgriculturalYearRange _year;
   DateTime? _customStart;
@@ -196,6 +197,7 @@ class _DashboardWebPageState extends State<DashboardWebPage> {
   @override
   void initState() {
     super.initState();
+    _scrollController = ScrollController();
     _year = AgriculturalYearRange.containing(DateTime.now());
     _years = AgriculturalYearRange.options(DateTime.now());
     _dashboard = Modular.get<GetDashboardController>();
@@ -208,6 +210,7 @@ class _DashboardWebPageState extends State<DashboardWebPage> {
   void dispose() {
     _dashboard.removeListener(_onDashboardChanged);
     _dashboard.dispose();
+    _scrollController.dispose();
     super.dispose();
   }
 
@@ -633,7 +636,10 @@ class _DashboardWebPageState extends State<DashboardWebPage> {
                   color: MyColors.colorPrimary,
                   onRefresh: _onRefresh,
                   child: Scrollbar(
+                    controller: _scrollController,
                     child: ListView(
+                      controller: _scrollController,
+                      primary: false,
                       physics: const AlwaysScrollableScrollPhysics(),
                       padding: EdgeInsets.fromLTRB(
                         viewportWidth < 760 ? 16 : 28,

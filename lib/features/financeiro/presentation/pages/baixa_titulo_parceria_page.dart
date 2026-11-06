@@ -108,8 +108,9 @@ class _BaixaTituloParceriaPageState extends State<BaixaTituloParceriaPage> {
   Widget build(BuildContext context) {
     final contas = FinanceiroEscopo.of(context).contas.where((c) => c.ativa).toList();
     final titulo = widget.titulo;
+    const horizontal = 16.0;
     return Scaffold(
-      backgroundColor: fundoFinanceiro,
+      backgroundColor: kIsWeb ? Colors.white : fundoFinanceiro,
       appBar: kIsWeb ? null : AppBar(
         backgroundColor: MyColors.colorPrimary,
         foregroundColor: Colors.white,
@@ -119,60 +120,86 @@ class _BaixaTituloParceriaPageState extends State<BaixaTituloParceriaPage> {
         ),
         leading: IconButton(icon: const Icon(Icons.arrow_back), onPressed: _enviando ? null : widget.aoVoltar),
       ),
-      body: ListView(
-        primary: false,
-        padding: const EdgeInsets.all(16),
+      body: Column(
         children: [
-          Text(
-            titulo.descricao.isEmpty ? (titulo.categoriaNome ?? 'Título #${titulo.id}') : titulo.descricao,
-            style: const TextStyle(fontFamily: 'Montserrat', fontSize: 18, fontWeight: FontWeight.w700),
-          ),
-          const SizedBox(height: 6),
-          Text(
-            'Saldo ${titulo.saldoPendenteString?.trim().isNotEmpty == true ? titulo.saldoPendenteString! : reais(titulo.saldoPendente)}',
-            style: const TextStyle(fontFamily: 'Montserrat', color: Color(0xFF8A8A8A)),
-          ),
-          const SizedBox(height: 16),
-          CampoFinanceiro(
-            rotulo: 'VALOR',
-            child: TextField(
-              controller: _valor,
-              keyboardType: tecladoMoeda,
-              inputFormatters: [mascaraMoeda],
-              decoration: decoracaoCampo('R\$ 0,00'),
-            ),
-          ),
-          const SizedBox(height: 12),
-          CampoFinanceiro(
-            rotulo: 'DATA',
-            child: TextField(
-              controller: _data,
-              inputFormatters: [_maskData],
-              keyboardType: tecladoData,
-              decoration: decoracaoCampo('DD/MM/AAAA'),
-            ),
-          ),
-          const SizedBox(height: 12),
-          CampoFinanceiro(
-            rotulo: 'CONTA',
-            child: DropdownButtonFormField<int>(
-              initialValue: contas.any((c) => c.id == _contaId) ? _contaId : null,
-              decoration: decoracaoCampo('Selecione'),
-              items: [
-                for (final conta in contas)
-                  DropdownMenuItem(
-                    value: conta.id,
-                    child: Text('${conta.nome} · ${reais(conta.saldo)}', style: const TextStyle(fontFamily: 'Montserrat')),
+          Expanded(
+            child: ListView(
+              primary: false,
+              padding: const EdgeInsets.fromLTRB(horizontal, 16, horizontal, 16),
+              children: [
+                Text(
+                  titulo.descricao.isEmpty
+                      ? (titulo.categoriaNome ?? 'Título #${titulo.id}')
+                      : titulo.descricao,
+                  style: const TextStyle(
+                    fontFamily: 'Montserrat',
+                    fontSize: 18,
+                    fontWeight: FontWeight.w700,
                   ),
+                ),
+                const SizedBox(height: 6),
+                Text(
+                  'Saldo ${titulo.saldoPendenteString?.trim().isNotEmpty == true ? titulo.saldoPendenteString! : reais(titulo.saldoPendente)}',
+                  style: const TextStyle(fontFamily: 'Montserrat', color: Color(0xFF8A8A8A)),
+                ),
+                const SizedBox(height: 16),
+                CampoFinanceiro(
+                  rotulo: 'VALOR',
+                  child: TextField(
+                    controller: _valor,
+                    keyboardType: tecladoMoeda,
+                    inputFormatters: [mascaraMoeda],
+                    decoration: decoracaoCampo('R\$ 0,00'),
+                  ),
+                ),
+                const SizedBox(height: 12),
+                CampoFinanceiro(
+                  rotulo: 'DATA',
+                  child: TextField(
+                    controller: _data,
+                    inputFormatters: [_maskData],
+                    keyboardType: tecladoData,
+                    decoration: decoracaoCampo('DD/MM/AAAA'),
+                  ),
+                ),
+                const SizedBox(height: 12),
+                CampoFinanceiro(
+                  rotulo: 'CONTA',
+                  child: DropdownButtonFormField<int>(
+                    initialValue: contas.any((c) => c.id == _contaId) ? _contaId : null,
+                    decoration: decoracaoCampo('Selecione'),
+                    items: [
+                      for (final conta in contas)
+                        DropdownMenuItem(
+                          value: conta.id,
+                          child: Text(
+                            '${conta.nome} · ${reais(conta.saldo)}',
+                            style: const TextStyle(fontFamily: 'Montserrat'),
+                          ),
+                        ),
+                    ],
+                    onChanged: (valor) => setState(() => _contaId = valor),
+                  ),
+                ),
               ],
-              onChanged: (valor) => setState(() => _contaId = valor),
             ),
           ),
-          const SizedBox(height: 24),
-          BotaoPrimarioFinanceiro(
-            rotulo: titulo.eReceber ? 'Confirmar Recebimento' : 'Confirmar Pagamento',
-            carregando: _enviando,
-            onPressed: _confirmar,
+          DecoratedBox(
+            decoration: BoxDecoration(
+              color: kIsWeb ? Colors.white : fundoFinanceiro,
+              border: const Border(top: BorderSide(color: Color(0xFFE8E8E8))),
+            ),
+            child: SafeArea(
+              top: false,
+              child: Padding(
+                padding: EdgeInsets.fromLTRB(horizontal, 12, horizontal, kIsWeb ? 16 : 12),
+                child: BotaoPrimarioFinanceiro(
+                  rotulo: titulo.eReceber ? 'Confirmar Recebimento' : 'Confirmar Pagamento',
+                  carregando: _enviando,
+                  onPressed: _confirmar,
+                ),
+              ),
+            ),
           ),
         ],
       ),

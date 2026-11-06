@@ -39,11 +39,16 @@ class AccountRepository {
     final profile = AccountProfile.fromJson(map);
     final session = await SessionStorage.getUserSession();
     if (session != null && session.id == userId) {
+      final grupo = session.isAdmin
+          ? session.idGrupo
+          : ((profile.idGrupo != null && profile.idGrupo! > 0)
+              ? profile.idGrupo
+              : session.idGrupo);
       await SessionStorage.saveUserSession(
         session.withSubUser(
           appSubUsersId: subUser.appSubUsersId,
           ownerUserId: subUser.ownerUserId,
-          idGrupo: profile.idGrupo ?? session.idGrupo,
+          idGrupo: grupo,
         ),
       );
     }

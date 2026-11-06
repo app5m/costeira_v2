@@ -114,6 +114,8 @@ class _ProfileWebPageState extends State<ProfileWebPage> {
         tipo: profile.tipoPessoa.toString(),
         appSubUsersId: user.appSubUsersId,
         ownerUserId: user.ownerUserId,
+        idGrupo: user.isAdmin ? user.idGrupo : (profile.idGrupo ?? user.idGrupo),
+        managedClientId: user.managedClientId,
       );
       await SessionStorage.saveUserSession(updatedUser);
       if (!mounted) return;

@@ -1,7 +1,10 @@
 import 'package:costeira/core/components/form_accordion.dart';
+import 'package:costeira/core/components/web_dialog_frame.dart';
 import 'package:costeira/features/indicadores/domain/indicador_valor.dart';
 import 'package:costeira/features/indicadores/presentation/indicadores_controller.dart';
+import 'package:costeira/features/indicadores/presentation/web/indicadores_filter_web_dialog.dart';
 import 'package:costeira/theme/colors.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
 const tituloPagina = TextStyle(
@@ -63,7 +66,7 @@ class CartaoIndicador extends StatelessWidget {
   final bool inteiro;
   /// Texto curto no card (só se [ajuda] for null — evita corte ilegível).
   final String? legenda;
-  /// Explicação completa: mostra `?` e abre sheet ao tocar.
+  /// Explicação completa: mostra `?` e abre dialog/sheet ao tocar.
   final String? ajuda;
 
   Future<void> _abrirAjuda(BuildContext context) async {
@@ -372,6 +375,44 @@ Future<void> _abrirSheetIndicador(
   required String titulo,
   required Widget filho,
 }) {
+  if (kIsWeb) {
+    return showDialog<void>(
+      context: context,
+      barrierDismissible: false,
+      builder: (dialogContext) => WebDialogFrame(
+        title: titulo,
+        width: 560,
+        maxHeight: 640,
+        bodyPadding: const EdgeInsets.fromLTRB(28, 12, 28, 8),
+        footer: Padding(
+          padding: const EdgeInsets.fromLTRB(28, 16, 28, 24),
+          child: SizedBox(
+            width: double.infinity,
+            height: 48,
+            child: ElevatedButton(
+              onPressed: () => Navigator.of(dialogContext).pop(),
+              style: ElevatedButton.styleFrom(
+                elevation: 0,
+                backgroundColor: MyColors.colorPrimary,
+                foregroundColor: Colors.white,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                textStyle: const TextStyle(
+                  fontFamily: 'Montserrat',
+                  fontSize: 14,
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
+              child: const Text('Entendi'),
+            ),
+          ),
+        ),
+        child: filho,
+      ),
+    );
+  }
+
   return showModalBottomSheet<void>(
     context: context,
     isScrollControlled: true,
@@ -565,7 +606,7 @@ class CaixaNota extends StatelessWidget {
 
   final String texto;
   final String? titulo;
-  /// Só título + `?`; abre sheet.
+  /// Só título + `?`; abre dialog/sheet.
   final bool compacta;
   final bool parcial;
   final List<String> pendencias;
@@ -975,33 +1016,47 @@ class _ListaCardsIndicadorState extends State<ListaCardsIndicador> {
           ],
           if (total > widget.limite) ...[
             const SizedBox(height: 10),
-            SizedBox(
-              width: double.infinity,
-              child: OutlinedButton(
-                onPressed: () => setState(() => _expandido = !_expandido),
-                style: OutlinedButton.styleFrom(
-                  foregroundColor: MyColors.colorPrimary,
-                  backgroundColor: Colors.white,
-                  side: const BorderSide(color: Color(0xFFE6E6E6)),
-                  padding: const EdgeInsets.symmetric(vertical: 12),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                ),
-                child: Text(
-                  _expandido ? 'Ver menos' : 'Ver mais ($total)',
-                  style: const TextStyle(
-                    fontFamily: 'Montserrat',
-                    fontSize: 13,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-              ),
+            _botaoVerMais(
+              rotulo: _expandido ? 'Ver menos' : 'Ver mais ($total)',
+              onPressed: () => setState(() => _expandido = !_expandido),
             ),
           ],
         ],
       ],
     );
+  }
+
+  Widget _botaoVerMais({
+    required String rotulo,
+    required VoidCallback onPressed,
+  }) {
+    final botao = OutlinedButton(
+      onPressed: onPressed,
+      style: OutlinedButton.styleFrom(
+        foregroundColor: MyColors.colorPrimary,
+        backgroundColor: Colors.white,
+        side: const BorderSide(color: Color(0xFFE6E6E6)),
+        padding: EdgeInsets.symmetric(
+          vertical: 12,
+          horizontal: kIsWeb ? 20 : 12,
+        ),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      ),
+      child: Text(
+        rotulo,
+        style: const TextStyle(
+          fontFamily: 'Montserrat',
+          fontSize: 13,
+          fontWeight: FontWeight.w600,
+        ),
+      ),
+    );
+
+    // Web: compacto e centralizado. Mobile: faixa larga pra toque.
+    if (kIsWeb) {
+      return Center(child: botao);
+    }
+    return SizedBox(width: double.infinity, child: botao);
   }
 }
 
@@ -1214,6 +1269,13 @@ class FiltrosIndicador extends StatelessWidget {
   }
 
   Future<void> _abrir(BuildContext context) {
+    if (kIsWeb) {
+      return showDialog<bool>(
+        context: context,
+        barrierDismissible: false,
+        builder: (_) => IndicadoresFilterWebDialog(controller: controller),
+      );
+    }
     return showModalBottomSheet<void>(
       context: context,
       isScrollControlled: true,

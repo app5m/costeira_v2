@@ -41,6 +41,7 @@ import 'package:costeira/features/movimentacoes/vendas/presentation/web/vendas_w
 import 'package:costeira/features/pastagem_nutricao_suplemento/presentation/pages/suplementacao/add_suplemento.dart';
 import 'package:costeira/features/financeiro/presentation/financeiro_shell_page.dart';
 import 'package:costeira/features/sanitarios/presentation/pages/add_planejamento.dart';
+import 'package:costeira/features/usuarios/presentation/web/sub_usuarios_list_web_dialog.dart';
 import 'package:costeira/theme/colors.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
@@ -77,6 +78,14 @@ class MenuActionResolver {
       'MENU ACTION: surface=$surface nome=${item.name} action=${item.action} slug=$slug',
     );
     if (surface == MenuSurface.profile) {
+      if (kIsWeb && slug == MenuSlug.usuarios) {
+        await showDialog<void>(
+          context: context,
+          barrierDismissible: false,
+          builder: (_) => const SubUsuariosListWebDialog(),
+        );
+        return;
+      }
       final route = profileRoute(slug);
       if (route == null) {
         Modular.to.pushNamed(
