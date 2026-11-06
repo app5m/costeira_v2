@@ -138,11 +138,18 @@ class _MainNavigationPageState extends State<MainNavigationPage>
   }
 
   Future<void> _aplicarCliente() async {
-    if (kIsWeb) {
-      final session = await SessionStorage.getUserSession();
-      if (session != null) {
-        await _prepareWebFarmContext(session.id);
-      }
+    Modular.get<ResolveCurrentFarmId>().limparCache();
+    await SessionStorage.clearSelectedFarmId();
+    final session = await SessionStorage.getUserSession();
+    if (session != null) {
+      try {
+        await Modular.get<ResolveCurrentFarmId>()(
+          userId: sessionAccountUserId(session.id),
+        );
+      } catch (_) {}
+    }
+    if (kIsWeb && session != null) {
+      await _prepareWebFarmContext(session.id);
     }
     if (!mounted) return;
     setState(() {

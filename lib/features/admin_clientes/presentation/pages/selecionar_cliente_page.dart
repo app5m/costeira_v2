@@ -2,6 +2,7 @@ import 'package:costeira/core/common/get_list/domain/entities/get_list_entity.da
 import 'package:costeira/core/common/get_list/domain/entities/get_list_params_entity.dart';
 import 'package:costeira/core/common/get_list/domain/usecases/get_list_usecase.dart';
 import 'package:costeira/core/storage/session_storage.dart';
+import 'package:costeira/features/fazendas/domain/usecases/resolve_current_farm_id.dart';
 import 'package:costeira/theme/colors.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_modular/flutter_modular.dart';
@@ -77,6 +78,7 @@ class _SelecionarClientePageState extends State<SelecionarClientePage> {
     }
     await SessionStorage.saveUserSession(session.withManagedClient(cliente.id));
     await SessionStorage.clearSelectedFarmId();
+    Modular.get<ResolveCurrentFarmId>().limparCache();
     if (!mounted) {
       return;
     }

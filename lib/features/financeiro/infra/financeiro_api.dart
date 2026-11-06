@@ -21,9 +21,10 @@ class FinanceiroApi {
     if (user == null) {
       throw ApiException('Usuario nao autenticado.');
     }
+    final accountId = sessionAccountUserId(user.id);
     int? farmId;
     try {
-      farmId = await Modular.get<ResolveCurrentFarmId>()(userId: user.id);
+      farmId = await Modular.get<ResolveCurrentFarmId>()(userId: accountId);
     } catch (_) {
       farmId = await SessionStorage.getSelectedFarmId();
     }
@@ -33,7 +34,7 @@ class FinanceiroApi {
     }
     return withSubUser({
       'token': WSConstantes.token,
-      'app_users_id': user.id,
+      'app_users_id': accountId,
       'app_fazendas_id': farmId,
     });
   }

@@ -2,7 +2,6 @@ import 'package:costeira/core/storage/sub_user_payload.dart';
 import 'package:costeira/core/storage/session_storage.dart';
 import 'package:costeira/features/fazendas/domain/entities/fazenda_filter_entity.dart';
 import 'package:costeira/features/fazendas/domain/usecases/get_fazendas_usecase.dart';
-import 'package:flutter/foundation.dart';
 
 class ResolveCurrentFarmId {
   ResolveCurrentFarmId(this._getFazendasUsecase);
@@ -10,34 +9,38 @@ class ResolveCurrentFarmId {
   final GetFazendasUsecase _getFazendasUsecase;
 
   int? _cache;
+  int? _cacheAccountId;
   Future<int?>? _inflight;
 
-  /// Limpa cache em memória (ex.: troca de fazenda / logout).
+  /// Limpa cache em memória (ex.: troca de fazenda / cliente / logout).
   void limparCache() {
     _cache = null;
+    _cacheAccountId = null;
     _inflight = null;
   }
 
   Future<int?> call({int? preferred, int? userId}) async {
-    if (preferred != null && preferred > 0) {
-      _cache = preferred;
-      return preferred;
-    }
-    if (_cache != null && _cache! > 0) {
-      return _cache;
+    final accountId = await _resolveAccountId(userId);
+    if (_cacheAccountId != null &&
+        accountId != null &&
+        _cacheAccountId != accountId) {
+      limparCache();
     }
 
-    // Preferir fazenda já salva — evita N× /fazendas/listar (FinanceiroApi._base).
-    final saved = await SessionStorage.getSelectedFarmId();
-    if (saved != null && saved > 0) {
-      _cache = saved;
-      return saved;
+    if (preferred != null && preferred > 0) {
+      _cache = preferred;
+      _cacheAccountId = accountId;
+      await SessionStorage.saveSelectedFarmId(preferred);
+      return preferred;
+    }
+    if (_cache != null && _cache! > 0 && _cacheAccountId == accountId) {
+      return _cache;
     }
 
     final pending = _inflight;
     if (pending != null) return pending;
 
-    final future = _resolverDaApi(userId);
+    final future = _resolverDaApi(accountId);
     _inflight = future;
     try {
       return await future;
@@ -48,15 +51,17 @@ class ResolveCurrentFarmId {
     }
   }
 
-  Future<int?> _resolverDaApi(int? userId) async {
+  Future<int?> _resolveAccountId(int? userId) async {
     final managedId = SessionStorage.cachedManagedClientId;
     final sessionUserId =
         managedId ?? userId ?? (await SessionStorage.getUserSession())?.id;
-    final resolvedUserId = sessionUserId == null
-        ? null
-        : kIsWeb
-        ? sessionAccountUserId(sessionUserId)
-        : sessionUserId;
+    if (sessionUserId == null || sessionUserId <= 0) {
+      return null;
+    }
+    return sessionAccountUserId(sessionUserId);
+  }
+
+  Future<int?> _resolverDaApi(int? resolvedUserId) async {
     if (resolvedUserId == null || resolvedUserId <= 0) {
       return null;
     }
@@ -65,9 +70,8 @@ class ResolveCurrentFarmId {
       FazendaFilterEntity(appUsersId: resolvedUserId),
     );
     if (result.data.isEmpty) {
-      if (kIsWeb) {
-        await SessionStorage.clearSelectedFarmId();
-      }
+      await SessionStorage.clearSelectedFarmId();
+      limparCache();
       return null;
     }
     final saved = await SessionStorage.getSelectedFarmId();
@@ -81,6 +85,7 @@ class ResolveCurrentFarmId {
       await SessionStorage.saveSelectedFarmId(selected);
     }
     _cache = selected;
+    _cacheAccountId = resolvedUserId;
     return selected;
   }
 }
