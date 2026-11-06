@@ -46,10 +46,16 @@ class AccountProfile {
       ie: json['ie']?.toString() ?? '',
       avatar: json['avatar']?.toString() ?? '',
       idGrupo: int.tryParse(json['id_grupo']?.toString() ?? ''),
-      farm: json['fazenda'] is Map<String, dynamic>
-          ? ProfileFarm.fromJson(json['fazenda'] as Map<String, dynamic>)
-          : null,
+      farm: ProfileFarm.fromProfileJson(json),
     );
+  }
+
+  bool get hasFarmCadastro {
+    return farm != null ||
+        nomeFantasia.trim().isNotEmpty ||
+        razaoSocial.trim().isNotEmpty ||
+        cnpj.trim().isNotEmpty ||
+        ie.trim().isNotEmpty;
   }
 }
 
@@ -87,6 +93,60 @@ class ProfileFarm {
       winterLivestockArea: json['area_pecuaria_inverno']?.toString() ?? '',
       activities: _parseItems(json['atividades']),
       productionSystems: _parseItems(json['producoes']),
+    );
+  }
+
+  /// Master: perfil manda empresa no root, sem `fazenda` aninhada.
+  /// Sub: às vezes `fazendas` (lista id/nome) sem detalhe.
+  static ProfileFarm? fromProfileJson(Map<String, dynamic> json) {
+    final nested = json['fazenda'];
+    if (nested is Map) {
+      return ProfileFarm.fromJson(Map<String, dynamic>.from(nested));
+    }
+
+    final fazendas = json['fazendas'];
+    if (fazendas is List && fazendas.isNotEmpty) {
+      final first = fazendas.first;
+      if (first is Map) {
+        final map = Map<String, dynamic>.from(first);
+        final nome = map['nome']?.toString().trim() ?? '';
+        if (nome.isNotEmpty || map['id'] != null) {
+          return ProfileFarm(
+            id: int.tryParse(map['id']?.toString() ?? '') ?? 0,
+            name: nome.isNotEmpty
+                ? nome
+                : (json['nome_fantasia']?.toString() ?? ''),
+            address: map['endereco']?.toString() ?? '',
+            totalArea: map['area_total']?.toString() ?? '',
+            usefulArea: map['area_util']?.toString() ?? '',
+            summerLivestockArea:
+                map['area_pecuaria_verao']?.toString() ?? '',
+            winterLivestockArea:
+                map['area_pecuaria_inverno']?.toString() ?? '',
+            activities: _parseItems(map['atividades']),
+            productionSystems: _parseItems(map['producoes']),
+          );
+        }
+      }
+    }
+
+    final nomeFantasia = json['nome_fantasia']?.toString().trim() ?? '';
+    final razao = json['razao_social']?.toString().trim() ?? '';
+    final cnpj = json['cnpj']?.toString().trim() ?? '';
+    if (nomeFantasia.isEmpty && razao.isEmpty && cnpj.isEmpty) {
+      return null;
+    }
+
+    return ProfileFarm(
+      id: 0,
+      name: nomeFantasia.isNotEmpty ? nomeFantasia : razao,
+      address: '',
+      totalArea: '',
+      usefulArea: '',
+      summerLivestockArea: '',
+      winterLivestockArea: '',
+      activities: const [],
+      productionSystems: const [],
     );
   }
 

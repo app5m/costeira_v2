@@ -1,3 +1,4 @@
+import 'package:costeira/core/storage/sub_usuario_nome.dart';
 import 'package:costeira/features/climate_and_rain/domain/entities/climate_entity.dart';
 
 class ClimateModel extends ClimateEntity {
@@ -13,6 +14,7 @@ class ClimateModel extends ClimateEntity {
     super.syncStatus,
     super.pendingAction,
     super.isLocalOnly = false,
+    super.subUsuarioNome,
   });
 
   factory ClimateModel.fromJson(Map<String, dynamic> json) {
@@ -28,6 +30,7 @@ class ClimateModel extends ClimateEntity {
       syncStatus: json['syncStatus']?.toString(),
       pendingAction: json['pendingAction']?.toString(),
       isLocalOnly: json['isLocalOnly'] == true,
+      subUsuarioNome: subUsuarioNome(json),
     );
   }
 }
